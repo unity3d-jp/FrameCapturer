@@ -8,9 +8,10 @@ using UnityEngine;
 [RequireComponent(typeof(Camera))]
 public class GifCapturer : MonoBehaviour
 {
-    [DllImport ("FrameCapturer")] public static extern IntPtr fcGifCreateFile(string path, int width, int height);
-    [DllImport ("FrameCapturer")] public static extern void   fcGifCloseFile(IntPtr ctx);
-    [DllImport ("FrameCapturer")] public static extern void   fcGifAddFrame(IntPtr ctx, IntPtr tex);
+    [DllImport ("AddLibraryPath")] public static extern void    AddLibraryPath();
+    [DllImport ("FrameCapturer")] public static extern IntPtr   fcGifCreateFile(string path, int width, int height);
+    [DllImport ("FrameCapturer")] public static extern void     fcGifCloseFile(IntPtr ctx);
+    [DllImport ("FrameCapturer")] public static extern void     fcGifAddFrame(IntPtr ctx, IntPtr tex);
 
 
     public RenderTexture m_rt;
@@ -20,7 +21,8 @@ public class GifCapturer : MonoBehaviour
 
     void OnEnable()
     {
-        //fcMakeTextureReadable();
+        AddLibraryPath();
+
         m_rt = new RenderTexture(256, 256, 32, RenderTextureFormat.ARGB32);
         m_rt.enableRandomWrite = true;
         m_rt.Create();
