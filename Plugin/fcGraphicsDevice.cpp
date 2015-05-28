@@ -58,9 +58,9 @@ BOOL WINAPI DllMain(HINSTANCE module_handle, DWORD reason_for_call, LPVOID reser
 {
     if (reason_for_call == DLL_PROCESS_ATTACH)
     {
-        HMODULE m = ::GetModuleHandleA("AlembicImporter.dll");
+        HMODULE m = ::GetModuleHandleA("FrameCapturer.dll");
         if (m) {
-            auto proc = (fcGetGraphicsDeviceT)::GetProcAddress(m, "aiGetGraphicsDevice");
+            auto proc = (fcGetGraphicsDeviceT)::GetProcAddress(m, "fcGetGraphicsDevice");
             if (proc) {
                 fcGraphicsDevice *dev = proc();
                 if (dev) {
