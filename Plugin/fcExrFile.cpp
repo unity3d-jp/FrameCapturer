@@ -10,7 +10,7 @@ private:
 };
 
 
-fcCLinkage fcExport fcExrContext* fcExrCreateFile(const char *path, int width, int height, fcETextureFormat fmt)
+fcCLinkage fcExport fcExrContext* fcExrCreateFile(const char *path, fcExrConfig *conf)
 {
     return nullptr;
 }
