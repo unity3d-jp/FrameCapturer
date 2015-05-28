@@ -6,47 +6,82 @@
 class fcGifContext
 {
 public:
-    fcGifContext(const char *path, int width, int height);
+    struct WorkData
+    {
+        std::string gif;
+        std::string raw;
+    };
+public:
+    fcGifContext(const char *path, fcGifConfig *conf);
     ~fcGifContext();
+    void addFrameTask(int i);
     void addFrame(void *tex);
 
 private:
-    int m_magic;
-    int m_width;
-    int m_height;
+    int m_magic; //  for debug
+    fcGifConfig m_conf;
     std::string m_path;
-    std::string m_buf;
+    std::vector<WorkData> m_work;
+    tbb::task_group m_tasks;
     jo_gif_t m_gif;
     void *m_tmp_tex;
+    volatile int m_frame_count;
+    volatile int m_active_task_count;
 };
 
 
-fcGifContext::fcGifContext(const char *path, int width, int height)
+fcGifContext::fcGifContext(const char *path, fcGifConfig *conf)
     : m_magic(fcE_GifContext)
-    , m_width(width)
-    , m_height(height)
+    , m_conf(*conf)
     , m_path(path)
     , m_tmp_tex(nullptr)
+    , m_frame_count(0)
+    , m_active_task_count(0)
 {
-    m_gif = jo_gif_start(path, width, height, 0, 255);
-    m_buf.resize(width*height*4);
+    m_gif = jo_gif_start(path, m_conf.width, m_conf.height, 0, 255);
+    m_work.resize(m_conf.max_active_tasks);
+    for (auto& wd : m_work)
+    {
+        wd.raw.resize(m_conf.width * m_conf.height * 4);
+    }
 }
 
 fcGifContext::~fcGifContext()
 {
+    m_tasks.wait();
     jo_gif_end(&m_gif);
     fcGetGraphicsDevice()->releaseTmpTexture(m_tmp_tex);
 }
 
+void fcGifContext::addFrameTask(int f)
+{
+    int w = f % m_conf.max_active_tasks;
+    bool update_palette = m_conf.keyframe != 0 && f%m_conf.keyframe == 0;
+    jo_gif_frame(&m_gif, (unsigned char*)&m_work[w].raw[0], 3, update_palette);
+    fcAtomicDecrement(&m_active_task_count);
+}
+
 void fcGifContext::addFrame(void *tex)
 {
-    bool palette = false;
     if (m_tmp_tex==nullptr)
     {
-        m_tmp_tex = fcGetGraphicsDevice()->createTmpTexture(m_width, m_height, fcE_ARGB32);
+        m_tmp_tex = fcGetGraphicsDevice()->createTmpTexture(m_conf.width, m_conf.height, fcE_ARGB32);
     }
-    fcGetGraphicsDevice()->copyTextureData(&m_buf[0], tex, m_tmp_tex, m_width, m_height, fcE_ARGB32);
-    jo_gif_frame(&m_gif, (unsigned char*)&m_buf[0], 3, palette);
+
+
+    //if (m_active_task_count >= m_conf.max_active_tasks)
+    {
+        m_tasks.wait();
+    }
+    fcAtomicIncrement(&m_active_task_count);
+    int f = ++m_frame_count;
+    int w = f % m_conf.max_active_tasks;
+
+    // get raw framebuffer
+    fcGetGraphicsDevice()->copyTextureData(&m_work[w].raw[0], tex, m_tmp_tex, m_conf.width, m_conf.height, fcE_ARGB32);
+
+    // compress asynchronously
+    m_tasks.run([=](){ addFrameTask(f % m_conf.max_active_tasks); });
 }
 
 
@@ -57,9 +92,9 @@ void fcGifContext::addFrame(void *tex)
 #endif // fcDebug
 
 
-fcCLinkage fcExport fcGifContext* fcGifCreateFile(const char *path, int width, int height)
+fcCLinkage fcExport fcGifContext* fcGifCreateFile(const char *path, fcGifConfig *conf)
 {
-    return new fcGifContext(path, width, height);
+    return new fcGifContext(path, conf);
 }
 
 fcCLinkage fcExport void fcGifCloseFile(fcGifContext *ctx)
@@ -68,7 +103,7 @@ fcCLinkage fcExport void fcGifCloseFile(fcGifContext *ctx)
     delete ctx;
 }
 
-fcCLinkage fcExport void fcGifAddFrame(fcGifContext *ctx, void *tex)
+fcCLinkage fcExport void fcGifWriteFrame(fcGifContext *ctx, void *tex)
 {
     fcCheckContext(ctx);
     ctx->addFrame(tex);

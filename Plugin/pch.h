@@ -4,6 +4,7 @@
 #include <thread>
 #include <mutex>
 #include <functional>
+#include <tbb/tbb.h>
 
 #include <ImfOutputFile.h>
 #include <ImfInputFile.h>
@@ -56,7 +57,9 @@
 
 
 #ifdef fcWindows
-#   define fcBreak() DebugBreak()
+    #define fcBreak() DebugBreak()
+    #define fcAtomicIncrement(v) (InterlockedIncrement((LONG volatile*)v)-1)
+    #define fcAtomicDecrement(v) (InterlockedDecrement((LONG volatile*)v)+1)
 #else // fcWindows
-#   define fcBreak() __builtin_trap()
+    #define fcBreak() __builtin_trap()
 #endif // fcWindows
