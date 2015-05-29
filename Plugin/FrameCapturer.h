@@ -42,7 +42,7 @@ struct fcExrConfig
 };
 fcCLinkage fcExport fcExrContext*   fcExrCreateContext(fcExrConfig *conf);
 fcCLinkage fcExport void            fcExrDestroyContext(fcExrContext *ctx);
-fcCLinkage fcExport void            fcExrWriteFile(fcExrContext *ctx, void *tex, int width, int height, fcETextureFormat fmt, const char *path);
+fcCLinkage fcExport bool            fcExrWriteFile(fcExrContext *ctx, const char *path, void *tex, int width, int height, fcETextureFormat fmt, int mask);
 
 #endif // fcSupportEXR
 

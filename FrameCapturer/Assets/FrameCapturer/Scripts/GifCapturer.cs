@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-
+[AddComponentMenu("FrameCapturer/GifCapturer")]
 [RequireComponent(typeof(Camera))]
 public class GifCapturer : MonoBehaviour
 {
