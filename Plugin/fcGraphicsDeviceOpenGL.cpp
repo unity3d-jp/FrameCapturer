@@ -4,6 +4,12 @@
 
 #ifdef fcSupportOpenGL
 
+#define GLEW_STATIC
+#include <GL/glew.h>
+#pragma comment(lib, "opengl32.lib")
+#pragma comment(lib, "glew32s.lib")
+
+
 class fcGraphicsDeviceOpenGL : public fcGraphicsDevice
 {
 public:

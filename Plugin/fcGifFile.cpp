@@ -21,10 +21,12 @@ private:
     fcGifConfig m_conf;
     std::vector<std::string> m_raw_buffers;
     std::list<std::string> m_gif_buffers;
-    tbb::task_group m_tasks;
     jo_gif_t m_gif;
     int m_frame;
+#ifdef fcWithTBB
+    tbb::task_group m_tasks;
     std::atomic_int m_active_task_count;
+#endif
 };
 
 
@@ -43,7 +45,9 @@ fcGifContext::fcGifContext(fcGifConfig *conf)
 
 fcGifContext::~fcGifContext()
 {
+#ifdef fcWithTBB
     m_tasks.wait();
+#endif
     jo_gif_end(&m_gif);
 }
 
@@ -86,6 +90,8 @@ void fcGifContext::addFrameTask(std::string &o_gif_buffer, const std::string &ra
 
 bool fcGifContext::addFrame(void *tex)
 {
+#ifdef fcWithTBB
+    // 実行中のタスクの数が上限に達している場合適当に待つ
     if (m_active_task_count >= m_conf.max_active_tasks)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -94,6 +100,7 @@ bool fcGifContext::addFrame(void *tex)
             m_tasks.wait();
         }
     }
+#endif
     int frame = m_frame++;
 
     // フレームバッファの内容取得
@@ -108,6 +115,7 @@ bool fcGifContext::addFrame(void *tex)
     m_gif_buffers.push_back(std::string());
     std::string& gif_buffer = m_gif_buffers.back();
     bool local_palette = frame==0 || (m_conf.keyframe != 0 && frame % m_conf.keyframe == 0);
+#ifdef fcWithTBB
     if (local_palette) {
         // パレットの更新は前後のフレームに影響をあたえるため、同期更新でなければならない
         m_tasks.wait();
@@ -121,6 +129,9 @@ bool fcGifContext::addFrame(void *tex)
             --m_active_task_count;
         });
     }
+#else
+    addFrameTask(gif_buffer, raw_buffer, frame, local_palette);
+#endif
 
     scrape(true);
     return true;
@@ -128,14 +139,18 @@ bool fcGifContext::addFrame(void *tex)
 
 void fcGifContext::clearFrame()
 {
+#ifdef fcWithTBB
     m_tasks.wait();
+#endif
     m_gif_buffers.clear();
     m_frame = 0;
 }
 
 bool fcGifContext::writeFile(const char *path)
 {
+#ifdef fcWithTBB
     m_tasks.wait();
+#endif
     scrape(false);
 
     FILE *fout = fopen(path, "wb");

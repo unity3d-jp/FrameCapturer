@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
-public class ExrCapturer : MonoBehaviour
+public class ExrGBufferCapturer : MonoBehaviour
 {
 
     public RenderTexture m_rt;
