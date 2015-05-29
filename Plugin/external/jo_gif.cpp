@@ -1,3 +1,8 @@
+// jo_gif.cpp
+// original: http://www.jonolick.com/home/gif-writer
+// modification by i-saint (changed file streaming to memory streaming)
+
+// original comment
 /* public domain, Simple, Minimalistic GIF writer - http://jonolick.com
  *
  * Quick Notes:
@@ -15,6 +20,7 @@
  *	jo_gif_end(&gif);
  * */
 
+
 #ifndef JO_INCLUDE_GIF_H
 #define JO_INCLUDE_GIF_H
 
@@ -26,8 +32,8 @@
 // or create jo_gif.h, #define JO_GIF_HEADER_FILE_ONLY, and
 // then include jo_gif.cpp from it.
 
-typedef struct {
-    FILE *fp;
+typedef struct
+{
     unsigned char palette[0x300];
     short width, height, repeat;
     int numColors, palSize;
@@ -37,7 +43,7 @@ typedef struct {
 // width/height	| the same for every frame
 // repeat       | 0 = loop forever, 1 = loop once, etc...
 // palSize		| must be power of 2 - 1. so, 255 not 256.
-extern jo_gif_t jo_gif_start(const char *filename, short width, short height, short repeat, int palSize);
+extern jo_gif_t jo_gif_start(short width, short height, short repeat, int palSize);
 
 // gif			| the state (returned from jo_gif_start)
 // rgba         | the pixels
@@ -47,6 +53,9 @@ extern void jo_gif_frame(std::ostream &os, int frame, jo_gif_t *gif, unsigned ch
 
 // gif          | the state (returned from jo_gif_start)
 extern void jo_gif_end(jo_gif_t *gif);
+
+void jo_gif_write_header(jo_gif_t *gif, FILE *fp);
+void jo_gif_write_footer(jo_gif_t *gif, FILE *fp);
 
 #endif
 
@@ -284,7 +293,8 @@ CONTINUE:
 
 static int jo_gif_clamp(int a, int b, int c) { return a < b ? b : a > c ? c : a; }
 
-jo_gif_t jo_gif_start(const char *filename, short width, short height, short repeat, int numColors) {
+jo_gif_t jo_gif_start(short width, short height, short repeat, int numColors)
+{
     numColors = numColors > 255 ? 255 : numColors < 2 ? 2 : numColors;
     jo_gif_t gif = {};
     gif.width = width;
@@ -292,26 +302,11 @@ jo_gif_t jo_gif_start(const char *filename, short width, short height, short rep
     gif.repeat = repeat;
     gif.numColors = numColors;
     gif.palSize = log2(numColors);
-
-    gif.fp = fopen(filename, "wb");
-    if(!gif.fp) {
-        printf("Error: Could not WriteGif to %s\n", filename);
-        return gif;
-    }
-
-    fwrite("GIF89a", 6, 1, gif.fp);
-    // Logical Screen Descriptor
-    fwrite(&gif.width, 2, 1, gif.fp);
-    fwrite(&gif.height, 2, 1, gif.fp);
-    putc(0xF0 | gif.palSize, gif.fp);
-    fwrite("\x00\x00", 2, 1, gif.fp); // bg color index (unused), aspect ratio
     return gif;
 }
 
-void jo_gif_frame(std::ostream &os, int frame, jo_gif_t *gif, unsigned char * rgba, short delayCsec, bool localPalette) {
-    if(!gif->fp) {
-        return;
-    }
+void jo_gif_frame(std::ostream &os, int frame, jo_gif_t *gif, unsigned char * rgba, short delayCsec, bool localPalette)
+{
     short width = gif->width;
     short height = gif->height;
     int size = width * height;
@@ -390,11 +385,24 @@ void jo_gif_frame(std::ostream &os, int frame, jo_gif_t *gif, unsigned char * rg
     free(indexedPixels);
 }
 
-void jo_gif_end(jo_gif_t *gif) {
-    if(!gif->fp) {
-        return;
-    }
-    putc(0x3b, gif->fp); // gif trailer
-    fclose(gif->fp);
+
+void jo_gif_end(jo_gif_t *gif)
+{
+}
+
+
+void jo_gif_write_header(jo_gif_t *gif, FILE *fp)
+{
+    fwrite("GIF89a", 6, 1, fp);
+    // Logical Screen Descriptor
+    fwrite(&gif->width, 2, 1, fp);
+    fwrite(&gif->height, 2, 1, fp);
+    putc(0xF0 | gif->palSize, fp);
+    fwrite("\x00\x00", 2, 1, fp); // bg color index (unused), aspect ratio
+}
+
+void jo_gif_write_footer(jo_gif_t *gif, FILE *fp)
+{
+    putc(0x3b, fp); // gif trailer
 }
 #endif

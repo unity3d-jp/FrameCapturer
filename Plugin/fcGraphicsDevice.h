@@ -31,12 +31,9 @@ class fcGraphicsDevice
 {
 public:
     virtual ~fcGraphicsDevice() {}
-    virtual void* createTmpTexture(int width, int height, fcETextureFormat format) = 0;
-    virtual void releaseTmpTexture(void *tex) = 0;
-    virtual bool copyTextureData(void *o_data, void *tex, void *tmp, int width, int height, int format) = 0;
-
     virtual void* getDevicePtr() = 0;
     virtual int getDeviceType() = 0;
+    virtual bool copyTextureData(void *o_buf, size_t bufsize, void *tex, int width, int height, fcETextureFormat format) = 0;
 };
 fcCLinkage fcExport fcGraphicsDevice* fcGetGraphicsDevice();
-
+int fcGetPixelSize(fcETextureFormat format);

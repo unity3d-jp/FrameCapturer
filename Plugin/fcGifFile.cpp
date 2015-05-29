@@ -6,80 +6,59 @@
 class fcGifContext
 {
 public:
-    struct WorkData
-    {
-        std::string gif;
-        std::string raw;
-    };
-public:
-    fcGifContext(const char *path, fcGifConfig *conf);
+    fcGifContext(fcGifConfig *conf);
     ~fcGifContext();
-    void scrape();
-    void addFrameTask(int frame, bool local_palette, std::string &buf);
     void addFrame(void *tex);
+    void clearFrame();
+    bool writeFile(const char *path);
+
+private:
+    void scrape(bool is_tasks_running);
+    void addFrameTask(std::string &o_gif_buffer, const std::string &raw_buffer, int frame, bool local_palette);
 
 private:
     int m_magic; //  for debug
     fcGifConfig m_conf;
-    std::string m_path;
-    std::vector<WorkData> m_work;
-    std::list<std::string> m_frames;
+    std::vector<std::string> m_raw_buffers;
+    std::list<std::string> m_gif_buffers;
     tbb::task_group m_tasks;
     jo_gif_t m_gif;
-    void *m_tmp_tex;
     int m_frame;
-    volatile int m_active_task_count;
+    std::atomic_int m_active_task_count;
 };
 
 
-fcGifContext::fcGifContext(const char *path, fcGifConfig *conf)
+fcGifContext::fcGifContext(fcGifConfig *conf)
     : m_magic(fcE_GifContext)
     , m_conf(*conf)
-    , m_path(path)
-    , m_tmp_tex(nullptr)
     , m_frame(0)
-    , m_active_task_count(0)
 {
-    m_gif = jo_gif_start(path, m_conf.width, m_conf.height, 0, 255);
-    m_work.resize(m_conf.max_active_tasks);
-    for (auto& wd : m_work)
+    m_gif = jo_gif_start(m_conf.width, m_conf.height, 0, 255);
+    m_raw_buffers.resize(m_conf.max_active_tasks);
+    for (auto& rf : m_raw_buffers)
     {
-        wd.raw.resize(m_conf.width * m_conf.height * 4);
+        rf.resize(m_conf.width * m_conf.height * fcGetPixelSize(fcE_ARGB32));
     }
 }
 
 fcGifContext::~fcGifContext()
 {
     m_tasks.wait();
-    scrape();
-    for (auto &buf : m_frames) {
-        fwrite(buf.c_str(), buf.size(), 1, m_gif.fp);
-    }
     jo_gif_end(&m_gif);
-    fcGetGraphicsDevice()->releaseTmpTexture(m_tmp_tex);
 }
 
-void fcGifContext::addFrameTask(int frame, bool local_palette, std::string &buf)
+void fcGifContext::scrape(bool updating)
 {
-    int w = frame % m_conf.max_active_tasks;
-
-    std::stringstream os(buf, std::ios::binary | std::ios::out);
-    jo_gif_frame(os, frame, &m_gif, (unsigned char*)&m_work[w].raw[0], 3, local_palette);
-    buf = os.str();
-    fcAtomicDecrement(&m_active_task_count);
-}
-
-void fcGifContext::scrape()
-{
-    int min_frames = std::max<int>(m_conf.max_active_tasks, 1);
+    // 実行中のタスクが更新中のデータを間引くのはマズいので、更新中は最低でもタスク数分は残す
+    int min_frames = updating ? std::max<int>(m_conf.max_active_tasks, 1) : 1;
 
     // 最大フレーム数超えてたら間引く
     if (m_conf.max_frame > 0)
     {
-        while (m_conf.max_frame > min_frames && m_frames.size() > m_conf.max_frame)
+        while (m_conf.max_frame > min_frames && m_gif_buffers.size() > m_conf.max_frame)
         {
             // 最初のフレームに含まれる情報削除すると読めなくなるので、2 番目以降から消す
-            m_frames.erase(++m_frames.begin());
+            m_gif_buffers.erase(++m_gif_buffers.begin());
         }
     }
 
@@ -87,24 +66,26 @@ void fcGifContext::scrape()
     if (m_conf.max_data_size > 0)
     {
         size_t size = 14; // gif header + footer size
-        for (auto &i : m_frames) { size += i.size(); }
-        while (m_frames.size() > min_frames && size > m_conf.max_data_size)
+        for (auto &i : m_gif_buffers) { size += i.size(); }
+        while (m_gif_buffers.size() > min_frames && size > m_conf.max_data_size)
         {
             // 同上
-            auto iter = ++m_frames.begin();
+            auto iter = ++m_gif_buffers.begin();
             size -= iter->size();
-            m_frames.erase(iter);
+            m_gif_buffers.erase(iter);
         }
     }
 }
 
+void fcGifContext::addFrameTask(std::string &o_gif_buffer, const std::string &raw_buffer, int frame, bool local_palette)
+{
+    std::stringstream os(std::ios::binary | std::ios::out);
+    jo_gif_frame(os, frame, &m_gif, (unsigned char*)&raw_buffer[0], m_conf.delay_csec, local_palette);
+    o_gif_buffer = os.str();
+}
+
 void fcGifContext::addFrame(void *tex)
 {
-    if (m_tmp_tex==nullptr)
-    {
-        m_tmp_tex = fcGetGraphicsDevice()->createTmpTexture(m_conf.width, m_conf.height, fcE_ARGB32);
-    }
-
     if (m_active_task_count >= m_conf.max_active_tasks)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -113,29 +94,57 @@ void fcGifContext::addFrame(void *tex)
             m_tasks.wait();
         }
     }
-    fcAtomicIncrement(&m_active_task_count);
     int frame = m_frame++;
-    int w = frame % m_conf.max_active_tasks;
+    std::string& raw_buffer = m_raw_buffers[frame % m_conf.max_active_tasks];
 
-    // get raw framebuffer
-    fcGetGraphicsDevice()->copyTextureData(&m_work[w].raw[0], tex, m_tmp_tex, m_conf.width, m_conf.height, fcE_ARGB32);
+    // フレームバッファの内容取得
+    fcGetGraphicsDevice()->copyTextureData(&raw_buffer[0], raw_buffer.size(), tex, m_conf.width, m_conf.height, fcE_ARGB32);
+    m_gif_buffers.push_back(std::string());
+    std::string& gif_buffer = m_gif_buffers.back();
 
-    scrape();
-    m_frames.push_back(std::string());
-    std::string& buf = m_frames.back();
-
+    // gif データを生成
     bool local_palette = frame==0 || (m_conf.keyframe != 0 && frame % m_conf.keyframe == 0);
     if (local_palette) {
-        // パレットの新は前後のフレームに影響をあたえるため、同期更新でなければならない
+        // パレットの更新は前後のフレームに影響をあたえるため、同期更新でなければならない
         m_tasks.wait();
-        addFrameTask(frame, local_palette, buf);
+        addFrameTask(gif_buffer, raw_buffer, frame, local_palette);
     }
     else
     {
-        // compress asynchronously
-        m_tasks.run([this, frame, local_palette, &buf](){ addFrameTask(frame, local_palette, buf); });
+        ++m_active_task_count;
+        m_tasks.run([this, &gif_buffer, &raw_buffer, frame, local_palette](){
+            addFrameTask(gif_buffer, raw_buffer, frame, local_palette);
+            --m_active_task_count;
+        });
     }
+
+    scrape(true);
 }
+
+void fcGifContext::clearFrame()
+{
+    m_tasks.wait();
+    m_gif_buffers.clear();
+    m_frame = 0;
+}
+
+bool fcGifContext::writeFile(const char *path)
+{
+    m_tasks.wait();
+    scrape(false);
+
+    FILE *fout = fopen(path, "wb");
+    if (fout == nullptr) { return false; }
+
+    jo_gif_write_header(&m_gif, fout);
+    for (auto &buf : m_gif_buffers) {
+        fwrite(buf.c_str(), buf.size(), 1, fout);
+    }
+    jo_gif_write_footer(&m_gif, fout);
+    fclose(fout);
+    return true;
+}
+
 
 
 #ifdef fcDebug
@@ -145,29 +154,31 @@ void fcGifContext::addFrame(void *tex)
 #endif // fcDebug
 
 
-fcCLinkage fcExport fcGifContext* fcGifCreateFile(const char *path, fcGifConfig *conf)
+fcCLinkage fcExport fcGifContext* fcGifCreateContext(fcGifConfig *conf)
 {
-    return new fcGifContext(path, conf);
+    return new fcGifContext(conf);
 }
 
-fcCLinkage fcExport void fcGifCloseFile(fcGifContext *ctx)
+fcCLinkage fcExport void fcGifDestroyContext(fcGifContext *ctx)
 {
     fcCheckContext(ctx);
     delete ctx;
 }
 
-fcCLinkage fcExport void fcGifWriteFrame(fcGifContext *ctx, void *tex)
+fcCLinkage fcExport void fcGifAddFrame(fcGifContext *ctx, void *tex)
 {
     fcCheckContext(ctx);
     ctx->addFrame(tex);
 }
 
-fcCLinkage fcExport void fcGifBeginAddFrame(fcGifContext *ctx, void *tex)
+fcCLinkage fcExport void fcGifClearFrame(fcGifContext *ctx)
 {
     fcCheckContext(ctx);
+    ctx->clearFrame();
 }
 
-fcCLinkage fcExport void fcGifEndAddFrame(fcGifContext *ctx)
+fcCLinkage fcExport bool fcGifWriteFile(fcGifContext *ctx, const char *path)
 {
     fcCheckContext(ctx);
+    return ctx->writeFile(path);
 }
