@@ -12,7 +12,7 @@ public class GifCapturer : MonoBehaviour
     {
         public int width;
         public int height;
-        public int interval; // centi second
+        public int delay_csec; // * centi second! *
         public int keyframe;
         public int max_active_tasks;
         public int max_frame;
@@ -20,7 +20,7 @@ public class GifCapturer : MonoBehaviour
 
         public void SetDefault()
         {
-            interval = 3; // 30ms
+            delay_csec = 3; // 30ms
             keyframe = 0;
             max_active_tasks = 5;
             max_frame = 0;
@@ -29,14 +29,31 @@ public class GifCapturer : MonoBehaviour
     };
 
     [DllImport ("AddLibraryPath")] public static extern void    AddLibraryPath();
-    [DllImport ("FrameCapturer")] public static extern IntPtr   fcGifCreateFile(string path, ref fcGifConfig conf);
-    [DllImport ("FrameCapturer")] public static extern void     fcGifCloseFile(IntPtr ctx);
-    [DllImport ("FrameCapturer")] public static extern void     fcGifWriteFrame(IntPtr ctx, IntPtr tex);
+    [DllImport ("FrameCapturer")] public static extern IntPtr   fcGifCreateContext(ref fcGifConfig conf);
+    [DllImport ("FrameCapturer")] public static extern void     fcGifDestroyContext(IntPtr ctx);
+    [DllImport ("FrameCapturer")] public static extern void     fcGifAddFrame(IntPtr ctx, IntPtr tex);
+    [DllImport ("FrameCapturer")] public static extern void     fcGifClearFrame(IntPtr ctx);
+    [DllImport ("FrameCapturer")] public static extern void     fcGifWriteFile(IntPtr ctx, string path);
 
 
     public RenderTexture m_rt;
     public float m_resolution_scale = 1.0f;
+    public float m_delay_csec = 3;
+    public float m_keyframe = 0;
+    public int m_max_frame = 0;
+    public int m_max_data_size = 0;
+    public int m_max_active_tasks = 5;
     IntPtr m_gif;
+    int m_frame;
+
+
+    public void WriteFile(string path)
+    {
+        if (m_gif != IntPtr.Zero)
+        {
+            fcGifWriteFile(m_gif, path);
+        }
+    }
 
 
     void OnEnable()
@@ -44,7 +61,6 @@ public class GifCapturer : MonoBehaviour
         AddLibraryPath();
 
         m_rt = new RenderTexture(256, 256, 32, RenderTextureFormat.ARGB32);
-        m_rt.enableRandomWrite = true;
         m_rt.Create();
         GetComponent<Camera>().targetTexture = m_rt;
 
@@ -54,12 +70,17 @@ public class GifCapturer : MonoBehaviour
         conf.SetDefault();
         conf.width = m_rt.width;
         conf.height = m_rt.height;
-        m_gif = fcGifCreateFile("hoge.gif", ref conf);
+        conf.max_frame = m_max_frame;
+        conf.max_data_size = m_max_data_size;
+        conf.max_active_tasks = m_max_active_tasks;
+        m_gif = fcGifCreateContext(ref conf);
     }
 
     void OnDisable()
     {
-        fcGifCloseFile(m_gif);
+        WriteFile("hoge.gif");
+
+        fcGifDestroyContext(m_gif);
         if (m_rt == null) { return; }
 
     }
@@ -67,7 +88,7 @@ public class GifCapturer : MonoBehaviour
     void OnPostRender()
     {
         if (m_rt == null) { return; }
-        fcGifWriteFrame(m_gif, m_rt.GetNativeTexturePtr());
+        fcGifAddFrame(m_gif, m_rt.GetNativeTexturePtr());
     }
 
 }

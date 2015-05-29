@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <atomic>
 #include <thread>
-#include <mutex>
 #include <functional>
 #include <tbb/tbb.h>
 
@@ -12,14 +12,6 @@
 #include <ImfStringAttribute.h>
 #include <ImfMatrixAttribute.h>
 #include <ImfArray.h>
-
-#pragma comment(lib, "Half.lib")
-#pragma comment(lib, "Iex-2_2.lib")
-#pragma comment(lib, "IexMath-2_2.lib")
-#pragma comment(lib, "IlmThread-2_2.lib")
-#pragma comment(lib, "IlmImf-2_2.lib")
-#pragma comment(lib, "zlibstatic.lib")
-
 
 
 #ifdef _WIN32
@@ -47,19 +39,29 @@
 #endif
 
 
+#define fcSupportOpenGL
+
+#define GLEW_STATIC
+#include <GL/glew.h>
+
 #ifdef fcWindows
+    #define fcSupportD3D11
+
     #include <windows.h>
-    #include <d3d11.h>
-#define fcSupportD3D11
+    #pragma comment(lib, "Half.lib")
+    #pragma comment(lib, "Iex-2_2.lib")
+    #pragma comment(lib, "IexMath-2_2.lib")
+    #pragma comment(lib, "IlmThread-2_2.lib")
+    #pragma comment(lib, "IlmImf-2_2.lib")
+    #pragma comment(lib, "zlibstatic.lib")
+    #pragma comment(lib, "opengl32.lib")
+    #pragma comment(lib, "glew32s.lib")
 #endif // fcWindows
-//#define fcSupportOpenGL
 
 
 
 #ifdef fcWindows
     #define fcBreak() DebugBreak()
-    #define fcAtomicIncrement(v) (InterlockedIncrement((LONG volatile*)v)-1)
-    #define fcAtomicDecrement(v) (InterlockedDecrement((LONG volatile*)v)+1)
 #else // fcWindows
     #define fcBreak() __builtin_trap()
 #endif // fcWindows

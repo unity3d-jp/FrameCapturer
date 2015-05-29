@@ -6,7 +6,7 @@ class fcGifContext;
 
 enum fcEMagic
 {
-    fcE_ExtContext = 1,
+    fcE_ExrContext = 1,
     fcE_GifContext = 2,
 };
 
@@ -38,27 +38,27 @@ struct fcExrConfig
 {
     int width;
     int height;
-    fcETextureFormat fmt;
+    int max_active_tasks;
 };
-fcCLinkage fcExport fcExrContext*   fcExrCreateFile(const char *path, fcExrConfig *conf);
-fcCLinkage fcExport void            fcExrCloseFile(fcExrContext *ctx);
-fcCLinkage fcExport void            fcExrWriteFrame(fcExrContext *ctx, void *tex);
-fcCLinkage fcExport void            fcExrBeginWriteFrame(fcExrContext *ctx, void *tex);
-fcCLinkage fcExport void            fcExrEndWriteFrame(fcExrContext *ctx);
+fcCLinkage fcExport fcExrContext*   fcExrCreateContext(fcExrConfig *conf);
+fcCLinkage fcExport void            fcExrDestroyContext(fcExrContext *ctx);
+fcCLinkage fcExport void            fcExrWriteFile(fcExrContext *ctx, void *tex, fcETextureFormat fmt, const char *path);
+
 
 struct fcGifConfig
 {
     int width;
     int height;
-    int interval;
+    int delay_csec;
     int keyframe;
     int max_active_tasks;
     int max_frame;
     int max_data_size;
 };
-fcCLinkage fcExport fcGifContext*   fcGifCreateFile(const char *path, fcGifConfig *conf);
-fcCLinkage fcExport void            fcGifCloseFile(fcGifContext *ctx);
-fcCLinkage fcExport void            fcGifWriteFrame(fcGifContext *ctx, void *tex);
-fcCLinkage fcExport void            fcGifAsyncWriteFrame(fcGifContext *ctx, void *tex);
+fcCLinkage fcExport fcGifContext*   fcGifCreateContext(fcGifConfig *conf);
+fcCLinkage fcExport void            fcGifDestroyContext(fcGifContext *ctx);
+fcCLinkage fcExport void            fcGifAddFrame(fcGifContext *ctx, void *tex);
+fcCLinkage fcExport void            fcGifClearFrame(fcGifContext *ctx);
+fcCLinkage fcExport bool            fcGifWriteFile(fcGifContext *ctx, const char *path);
 
 #endif // FrameCapturer_h

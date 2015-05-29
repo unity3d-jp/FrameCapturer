@@ -2,6 +2,29 @@
 #include "FrameCapturer.h"
 #include "fcGraphicsDevice.h"
 
+
+int fcGetPixelSize(fcETextureFormat format)
+{
+    switch (format)
+    {
+    case fcE_ARGB32:    return 4;
+
+    case fcE_ARGBHalf:  return 8;
+    case fcE_RGHalf:    return 4;
+    case fcE_RHalf:     return 2;
+
+    case fcE_ARGBFloat: return 16;
+    case fcE_RGFloat:   return 8;
+    case fcE_RFloat:    return 4;
+
+    case fcE_ARGBInt:   return 16;
+    case fcE_RGInt:     return 8;
+    case fcE_RInt:      return 4;
+    }
+    return 0;
+}
+
+
 fcGraphicsDevice* fcCreateGraphicsDeviceOpenGL(void *device);
 fcGraphicsDevice* fcCreateGraphicsDeviceD3D9(void *device);
 fcGraphicsDevice* fcCreateGraphicsDeviceD3D11(void *device);
@@ -14,8 +37,6 @@ typedef fcGraphicsDevice* (*fcGetGraphicsDeviceT)();
 
 fcCLinkage fcExport void UnitySetGraphicsDevice(void* device, int deviceType, int eventType)
 {
-    if (device == nullptr) { return; }
-
     if (eventType == kGfxDeviceEventInitialize) {
 #ifdef fcSupportD3D9
         if (deviceType == kGfxRendererD3D9)
@@ -26,6 +47,7 @@ fcCLinkage fcExport void UnitySetGraphicsDevice(void* device, int deviceType, in
 #ifdef fcSupportD3D11
         if (deviceType == kGfxRendererD3D11)
         {
+            if (device == nullptr) { return; }
             g_the_graphics_device = fcCreateGraphicsDeviceD3D11(device);
         }
 #endif // fcSupportD3D11
