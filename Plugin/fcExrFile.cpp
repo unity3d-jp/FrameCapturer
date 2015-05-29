@@ -2,13 +2,14 @@
 #include "FrameCapturer.h"
 #include "fcGraphicsDevice.h"
 
+#ifdef fcSupportEXR
 
 class fcExrContext
 {
 public:
     fcExrContext(fcExrConfig &conf);
     ~fcExrContext();
-    void writeFrame(void *tex, fcETextureFormat fmt, const char *path);
+    void writeFrame(void *tex, int width, int height, fcETextureFormat fmt, const char *path);
 
 private:
     void writeFrameTask(const std::string &raw_frame, fcETextureFormat fmt, const std::string &path);
@@ -41,7 +42,7 @@ void fcExrContext::writeFrameTask(const std::string &raw_frame, fcETextureFormat
 
 }
 
-void fcExrContext::writeFrame(void *tex, fcETextureFormat fmt, const char *_path)
+void fcExrContext::writeFrame(void *tex, int width, int height, fcETextureFormat fmt, const char *_path)
 {
     if (m_active_task_count >= m_conf.max_active_tasks)
     {
@@ -53,10 +54,10 @@ void fcExrContext::writeFrame(void *tex, fcETextureFormat fmt, const char *_path
     }
     int frame = m_frame++;
     std::string& raw_frame = m_raw_frames[frame % m_conf.max_active_tasks];
-    raw_frame.resize(m_conf.width*m_conf.height * fcGetPixelSize(fmt));
+    raw_frame.resize(width*height * fcGetPixelSize(fmt));
 
     // フレームバッファの内容取得
-    fcGetGraphicsDevice()->copyTextureData(&raw_frame[0], raw_frame.size(), tex, m_conf.width, m_conf.height, fmt);
+    fcGetGraphicsDevice()->copyTextureData(&raw_frame[0], raw_frame.size(), tex, width, height, fmt);
 
     // .exr 書き出しタスクを kick
     std::string path = _path;
@@ -86,8 +87,10 @@ fcCLinkage fcExport void fcExrDestroyContext(fcExrContext *ctx)
     delete ctx;
 }
 
-fcCLinkage fcExport void fcExrWriteFile(fcExrContext *ctx, void *tex, fcETextureFormat fmt, const char *path)
+fcCLinkage fcExport void fcExrWriteFile(fcExrContext *ctx, void *tex, int width, int height, fcETextureFormat fmt, const char *path)
 {
     fcCheckContext(ctx);
-    ctx->writeFrame(tex, fmt, path);
+    ctx->writeFrame(tex, width, height, fmt, path);
 }
+
+#endif // fcSupportEXR

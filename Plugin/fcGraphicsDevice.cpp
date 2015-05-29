@@ -47,7 +47,6 @@ fcCLinkage fcExport void UnitySetGraphicsDevice(void* device, int deviceType, in
 #ifdef fcSupportD3D11
         if (deviceType == kGfxRendererD3D11)
         {
-            if (device == nullptr) { return; }
             g_the_graphics_device = fcCreateGraphicsDeviceD3D11(device);
         }
 #endif // fcSupportD3D11
