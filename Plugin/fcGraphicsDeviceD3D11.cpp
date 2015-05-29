@@ -4,6 +4,8 @@
 
 #ifdef fcSupportD3D11
 #include <d3d11.h>
+const int fcD3D11MaxStagingTextures = 32;
+
 
 class fcGraphicsDeviceD3D11 : public fcGraphicsDevice
 {
@@ -78,6 +80,10 @@ static DXGI_FORMAT fcGetInternalFormatD3D11(fcETextureFormat fmt)
 
 ID3D11Texture2D* fcGraphicsDeviceD3D11::findOrCreateStagingTexture(int width, int height, fcETextureFormat format)
 {
+    if (m_staging_textures.size() >= fcD3D11MaxStagingTextures) {
+        clearStagingTextures();
+    }
+
     DXGI_FORMAT internal_format = fcGetInternalFormatD3D11(format);
     uint64_t hash = width + (height << 16) + ((uint64_t)internal_format << 32);
     {
@@ -114,7 +120,7 @@ bool fcGraphicsDeviceD3D11::copyTextureData(void *o_buf, size_t bufsize, void *t
 {
     if (m_context == nullptr || tex_ == nullptr) { return false; }
 
-    // Unity の D3D11 の RenderTexture の内容は完全に CPU からはアクセス不可能になっている。
+    // Unity の D3D11 の RenderTexture の内容は CPU からはアクセス不可能になっている。
     // なので staging texture を用意してそれに内容を移し、CPU はそれ経由でデータを読む。
     ID3D11Texture2D *tex = (ID3D11Texture2D*)tex_;
     ID3D11Texture2D *tmp = findOrCreateStagingTexture(width, height, format);

@@ -34,16 +34,21 @@ enum fcETextureFormat
 };
 
 
+#ifdef fcSupportEXR
+
 struct fcExrConfig
 {
-    int width;
-    int height;
     int max_active_tasks;
 };
 fcCLinkage fcExport fcExrContext*   fcExrCreateContext(fcExrConfig *conf);
 fcCLinkage fcExport void            fcExrDestroyContext(fcExrContext *ctx);
-fcCLinkage fcExport void            fcExrWriteFile(fcExrContext *ctx, void *tex, fcETextureFormat fmt, const char *path);
+fcCLinkage fcExport void            fcExrWriteFile(fcExrContext *ctx, void *tex, int width, int height, fcETextureFormat fmt, const char *path);
 
+#endif // fcSupportEXR
+
+
+
+#ifdef fcSupportGIF
 
 struct fcGifConfig
 {
@@ -57,8 +62,10 @@ struct fcGifConfig
 };
 fcCLinkage fcExport fcGifContext*   fcGifCreateContext(fcGifConfig *conf);
 fcCLinkage fcExport void            fcGifDestroyContext(fcGifContext *ctx);
-fcCLinkage fcExport void            fcGifAddFrame(fcGifContext *ctx, void *tex);
+fcCLinkage fcExport bool            fcGifAddFrame(fcGifContext *ctx, void *tex);
 fcCLinkage fcExport void            fcGifClearFrame(fcGifContext *ctx);
 fcCLinkage fcExport bool            fcGifWriteFile(fcGifContext *ctx, const char *path);
+
+#endif // fcSupportGIF
 
 #endif // FrameCapturer_h

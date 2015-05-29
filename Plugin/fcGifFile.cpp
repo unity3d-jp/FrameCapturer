@@ -8,7 +8,7 @@ class fcGifContext
 public:
     fcGifContext(fcGifConfig *conf);
     ~fcGifContext();
-    void addFrame(void *tex);
+    bool addFrame(void *tex);
     void clearFrame();
     bool writeFile(const char *path);
 
@@ -84,7 +84,7 @@ void fcGifContext::addFrameTask(std::string &o_gif_buffer, const std::string &ra
     o_gif_buffer = os.str();
 }
 
-void fcGifContext::addFrame(void *tex)
+bool fcGifContext::addFrame(void *tex)
 {
     if (m_active_task_count >= m_conf.max_active_tasks)
     {
@@ -95,14 +95,18 @@ void fcGifContext::addFrame(void *tex)
         }
     }
     int frame = m_frame++;
-    std::string& raw_buffer = m_raw_buffers[frame % m_conf.max_active_tasks];
 
     // フレームバッファの内容取得
-    fcGetGraphicsDevice()->copyTextureData(&raw_buffer[0], raw_buffer.size(), tex, m_conf.width, m_conf.height, fcE_ARGB32);
-    m_gif_buffers.push_back(std::string());
-    std::string& gif_buffer = m_gif_buffers.back();
+    std::string& raw_buffer = m_raw_buffers[frame % m_conf.max_active_tasks];
+    if (!fcGetGraphicsDevice()->copyTextureData(&raw_buffer[0], raw_buffer.size(), tex, m_conf.width, m_conf.height, fcE_ARGB32))
+    {
+        --frame;
+        return false;
+    }
 
     // gif データを生成
+    m_gif_buffers.push_back(std::string());
+    std::string& gif_buffer = m_gif_buffers.back();
     bool local_palette = frame==0 || (m_conf.keyframe != 0 && frame % m_conf.keyframe == 0);
     if (local_palette) {
         // パレットの更新は前後のフレームに影響をあたえるため、同期更新でなければならない
@@ -119,6 +123,7 @@ void fcGifContext::addFrame(void *tex)
     }
 
     scrape(true);
+    return true;
 }
 
 void fcGifContext::clearFrame()
@@ -165,10 +170,10 @@ fcCLinkage fcExport void fcGifDestroyContext(fcGifContext *ctx)
     delete ctx;
 }
 
-fcCLinkage fcExport void fcGifAddFrame(fcGifContext *ctx, void *tex)
+fcCLinkage fcExport bool fcGifAddFrame(fcGifContext *ctx, void *tex)
 {
     fcCheckContext(ctx);
-    ctx->addFrame(tex);
+    return ctx->addFrame(tex);
 }
 
 fcCLinkage fcExport void fcGifClearFrame(fcGifContext *ctx)

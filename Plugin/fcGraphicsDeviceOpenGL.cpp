@@ -64,7 +64,7 @@ bool fcGraphicsDeviceOpenGL::copyTextureData(void *o_buf, size_t bufsize, void *
     GLenum internal_type = 0;
     fcGetInternalFormatOpenGL(format, internal_format, internal_type);
     glGetTextureImage((GLuint)(size_t)tex, 0, internal_format, internal_type, bufsize, o_buf);
-    return false;
+    return true;
 }
 
 #endif // fcSupportOpenGL

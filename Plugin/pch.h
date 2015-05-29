@@ -39,23 +39,31 @@
 #endif
 
 
+#define fcSupportEXR
+#define fcSupportGIF
+
 #define fcSupportOpenGL
 
 #define GLEW_STATIC
 #include <GL/glew.h>
 
 #ifdef fcWindows
+    #define fcSupportD3D9
     #define fcSupportD3D11
 
     #include <windows.h>
-    #pragma comment(lib, "Half.lib")
-    #pragma comment(lib, "Iex-2_2.lib")
-    #pragma comment(lib, "IexMath-2_2.lib")
-    #pragma comment(lib, "IlmThread-2_2.lib")
-    #pragma comment(lib, "IlmImf-2_2.lib")
-    #pragma comment(lib, "zlibstatic.lib")
-    #pragma comment(lib, "opengl32.lib")
-    #pragma comment(lib, "glew32s.lib")
+    #ifdef fcSupportOpenGL
+        #pragma comment(lib, "opengl32.lib")
+        #pragma comment(lib, "glew32s.lib")
+    #endif
+    #ifdef fcSupportEXR
+        #pragma comment(lib, "Half.lib")
+        #pragma comment(lib, "Iex-2_2.lib")
+        #pragma comment(lib, "IexMath-2_2.lib")
+        #pragma comment(lib, "IlmThread-2_2.lib")
+        #pragma comment(lib, "IlmImf-2_2.lib")
+        #pragma comment(lib, "zlibstatic.lib")
+    #endif
 #endif // fcWindows
 
 
