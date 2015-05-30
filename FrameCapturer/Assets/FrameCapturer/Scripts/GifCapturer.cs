@@ -4,13 +4,16 @@ using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Rendering;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif // UNITY_EDITOR
+
 
 [AddComponentMenu("FrameCapturer/GifCapturer")]
 [RequireComponent(typeof(Camera))]
 public class GifCapturer : MonoBehaviour
 {
     public int m_resolution_width = 320;
-
     public int m_capture_every_n_frames = 2;
     public int m_interval_centi_sec = 3;
     public int m_max_frame = 0;
@@ -27,7 +30,7 @@ public class GifCapturer : MonoBehaviour
     Camera m_cam;
     int m_frame;
     bool m_pause = false;
-    bool m_first = true;
+
 
     public bool pause
     {
@@ -48,6 +51,13 @@ public class GifCapturer : MonoBehaviour
         }
     }
 
+
+#if UNITY_EDITOR
+    void Reset()
+    {
+        m_sh_copy = AssetDatabase.LoadAssetAtPath("Assets/FrameCapturer/Shaders/CopyFrameBuffer.shader", typeof(Shader)) as Shader;
+    }
+#endif // UNITY_EDITOR
 
     void OnEnable()
     {
@@ -112,14 +122,12 @@ public class GifCapturer : MonoBehaviour
                 m_mat_copy.SetPass(0);
                 Graphics.SetRenderTarget(m_rt_copy);
                 Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
-                if (m_first)
-                {
-                    // なぜか最初の DrawMeshNow() は上下反転するので 2 回描くことで回避
-                    m_first = false;
-                    Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
-                }
                 Graphics.SetRenderTarget(null);
-                FrameCapturer.fcGifAddFrame(m_gif, m_rt_copy.GetNativeTexturePtr());
+                // 最初のフレームは大抵ゴミが入ってるので省略
+                if (m_frame > 0)
+                {
+                    FrameCapturer.fcGifAddFrame(m_gif, m_rt_copy.GetNativeTexturePtr());
+                }
             }
         }
     }

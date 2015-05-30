@@ -123,8 +123,8 @@ bool fcGraphicsDeviceD3D9::copyTextureData(void *o_buf, size_t bufsize, void *te
     HRESULT hr;
     IDirect3DTexture9 *tex = (IDirect3DTexture9*)tex_;
 
-    // D3D9 の render target の内容は CPU からはアクセス不可能になっている。
-    // なので staging texture を用意してそれに内容を移し、CPU はそれ経由でデータを読む。
+    // D3D11 と同様 render target の内容は CPU からはアクセス不可能になっている。
+    // staging texture を用意してそれに内容を移し、CPU はそれ経由でデータを読む。
     IDirect3DSurface9 *surf_dst = findOrCreateStagingTexture(width, height, format);
     if (surf_dst == nullptr) { return false; }
 
@@ -140,15 +140,36 @@ bool fcGraphicsDeviceD3D9::copyTextureData(void *o_buf, size_t bufsize, void *te
         hr = surf_dst->LockRect(&locked, nullptr, D3DLOCK_READONLY);
         if (SUCCEEDED(hr))
         {
-            memcpy(o_buf, locked.pBits, bufsize);
+            char *wpixels = (char*)o_buf;
+            int wpitch = width * fcGetPixelSize(format);
+            const char *rpixels = (const char*)locked.pBits;
+            int rpitch = locked.Pitch;
+
+            // D3D11 と同様表向き解像度と内部解像度が違うケースを考慮
+            // (しかし、少なくとも手元の環境では常に wpitch == rpitch っぽい)
+            if (wpitch == rpitch)
+            {
+                memcpy(wpixels, rpixels, bufsize);
+            }
+            else
+            {
+                for (int i = 0; i < height; ++i)
+                {
+                    memcpy(wpixels, rpixels, wpitch);
+                    wpixels += wpitch;
+                    rpixels += rpitch;
+                }
+            }
+
             surf_dst->UnlockRect();
 
+            // D3D9 ではピクセルの並びは BGRA になっているので並べ替える
             if (format == fcE_ARGB32) { BGRA_To_RGBA((RGBA<uint8_t>*)o_buf, bufsize / 4); }
             ret = true;
         }
     }
 
-    //surf_src->Release(); // 必要なはずだが、なんか Unity が warning を発するので省略…。
+    surf_src->Release();
     return ret;
 }
 
