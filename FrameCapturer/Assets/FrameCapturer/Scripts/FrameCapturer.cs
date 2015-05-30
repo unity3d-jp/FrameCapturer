@@ -38,7 +38,7 @@ public static class FrameCapturer
 
 public static class FrameCapturerUtils
 {
-    public static Mesh GenerateQuad()
+    public static Mesh CreateFullscreenQuad()
     {
         Vector3[] vertices = new Vector3[4] {
                 new Vector3( 1.0f, 1.0f, 0.0f),

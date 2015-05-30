@@ -50,7 +50,7 @@ public class ExrGBufferCapturer : MonoBehaviour
 
     void OnEnable()
     {
-        m_quad = FrameCapturerUtils.GenerateQuad();
+        m_quad = FrameCapturerUtils.CreateFullscreenQuad();
 
         Camera cam = GetComponent<Camera>();
         if (cam.depthTextureMode == DepthTextureMode.None)
@@ -102,6 +102,7 @@ public class ExrGBufferCapturer : MonoBehaviour
         m_mat_depth.SetPass(0);
         Graphics.SetRenderTarget(m_depth);
         Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
+        Graphics.SetRenderTarget(null);
 
         WriteFile( m_gbuffer[0], m_output_folder + "/diffuse_"    + m_frame.ToString("0000") + ".exr", 0x7);
         WriteFile2(m_gbuffer[0], m_output_folder + "/occulusion_" + m_frame.ToString("0000") + ".exr", 0x8);

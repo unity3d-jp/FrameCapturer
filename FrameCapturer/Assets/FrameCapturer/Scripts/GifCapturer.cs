@@ -3,67 +3,124 @@ using System.Collections;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 [AddComponentMenu("FrameCapturer/GifCapturer")]
 [RequireComponent(typeof(Camera))]
 public class GifCapturer : MonoBehaviour
 {
-    public RenderTexture m_rt;
-    public bool m_capture_on_postrender = true;
-    public float m_resolution_scale = 1.0f;
-    public int m_delay_csec = 3;
+    public int m_resolution_width = 320;
+
+    public int m_capture_every_n_frames = 2;
+    public int m_interval_centi_sec = 3;
     public int m_max_frame = 0;
     public int m_max_data_size = 0;
-    public int m_max_active_tasks = 5;
+    public int m_max_active_tasks = 0;
     public int m_keyframe = 0;
+    public Shader m_sh_copy;
+
     IntPtr m_gif;
+    Material m_mat_copy;
+    Mesh m_quad;
+    CommandBuffer m_cb;
+    RenderTexture m_rt_copy;
+    Camera m_cam;
     int m_frame;
+    bool m_pause = false;
+    bool m_first = true;
 
+    public bool pause
+    {
+        get { return m_pause; }
+        set { m_pause = value; }
+    }
 
-    public void WriteFile(string path)
+    public void WriteFile(string path="")
     {
         if (m_gif != IntPtr.Zero)
         {
+            if (path.Length==0)
+            {
+                path = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
+            }
             FrameCapturer.fcGifWriteFile(m_gif, path);
+            Debug.Log("GifCapturer.WriteFile() : " + path);
         }
     }
 
 
     void OnEnable()
     {
-        FrameCapturer.AddLibraryPath();
+        m_cam = GetComponent<Camera>();
+        m_quad = FrameCapturerUtils.CreateFullscreenQuad();
+        m_mat_copy = new Material(m_sh_copy);
 
-        m_rt = new RenderTexture(256, 256, 32, RenderTextureFormat.ARGB32);
-        m_rt.Create();
-        GetComponent<Camera>().targetTexture = m_rt;
+        int capture_width = m_resolution_width;
+        int capture_height = (int)(m_resolution_width / ((float)m_cam.pixelWidth / (float)m_cam.pixelHeight));
+        m_rt_copy = new RenderTexture(capture_width, capture_height, 0, RenderTextureFormat.ARGB32);
+        m_rt_copy.Create();
 
-        FrameCapturer.fcGifConfig conf;
-        conf.width = m_rt.width;
-        conf.height = m_rt.height;
-        conf.delay_csec = m_delay_csec;
-        conf.keyframe = m_keyframe;
-        conf.max_frame = m_max_frame;
-        conf.max_data_size = m_max_data_size;
-        conf.max_active_tasks = m_max_active_tasks;
-        m_gif = FrameCapturer.fcGifCreateContext(ref conf);
+        {
+            m_cb = new CommandBuffer();
+            m_cb.name = "GifCapturer: copy frame buffer";
+            int tid = Shader.PropertyToID("_GifFrameBuffer");
+            m_cb.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Point);
+            m_cb.Blit(BuiltinRenderTextureType.CurrentActive, tid);
+            // tid は意図的に開放しない
+            m_cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
+        }
+        {
+            if(m_max_active_tasks<=0)
+            {
+                m_max_active_tasks = SystemInfo.processorCount;
+            }
+            FrameCapturer.fcGifConfig conf;
+            conf.width = m_rt_copy.width;
+            conf.height = m_rt_copy.height;
+            conf.delay_csec = m_interval_centi_sec;
+            conf.keyframe = m_keyframe;
+            conf.max_frame = m_max_frame;
+            conf.max_data_size = m_max_data_size;
+            conf.max_active_tasks = m_max_active_tasks;
+            FrameCapturer.AddLibraryPath();
+            m_gif = FrameCapturer.fcGifCreateContext(ref conf);
+        }
     }
 
     void OnDisable()
     {
-        WriteFile("hoge.gif");
-
+        WriteFile();
         FrameCapturer.fcGifDestroyContext(m_gif);
-        if (m_rt == null) { return; }
 
+        m_cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb);
+        m_cb.Release();
+        m_cb = null;
+
+        m_rt_copy.Release();
+        m_rt_copy = null;
     }
 
-    void OnPostRender()
+    IEnumerator OnPostRender()
     {
-        if (!m_capture_on_postrender) { return; }
+        if (!m_pause)
+        {
+            yield return new WaitForEndOfFrame();
 
-        if (m_rt == null) { return; }
-        FrameCapturer.fcGifAddFrame(m_gif, m_rt.GetNativeTexturePtr());
-        ++m_frame;
+            int frame = m_frame++;
+            if (frame % m_capture_every_n_frames == 0)
+            {
+                m_mat_copy.SetPass(0);
+                Graphics.SetRenderTarget(m_rt_copy);
+                Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
+                if (m_first)
+                {
+                    // なぜか最初の DrawMeshNow() は上下反転するので 2 回描くことで回避
+                    m_first = false;
+                    Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
+                }
+                Graphics.SetRenderTarget(null);
+                FrameCapturer.fcGifAddFrame(m_gif, m_rt_copy.GetNativeTexturePtr());
+            }
+        }
     }
-
 }
