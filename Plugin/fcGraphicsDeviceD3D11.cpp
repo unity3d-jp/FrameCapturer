@@ -130,17 +130,25 @@ bool fcGraphicsDeviceD3D11::copyTextureData(void *o_buf, size_t bufsize, void *t
     HRESULT hr = m_context->Map(tmp, 0, D3D11_MAP_READ, 0, &mapped);
     if (SUCCEEDED(hr))
     {
-        // 表向きの解像度と内部解像度は一致しないことがあるようなので 1 ラインづつコピー。
-        // (手元の環境では内部解像度は 32 の倍数になるっぽい)
-        int psize = fcGetPixelSize(format);
-        int pitch = width*psize;
-        const char *rpixels = (const char*)mapped.pData;
         char *wpixels = (char*)o_buf;
-        for (int i = 0; i < height; ++i)
+        int wpitch = width * fcGetPixelSize(format);
+        const char *rpixels = (const char*)mapped.pData;
+        int rpitch = mapped.RowPitch;
+
+        // 表向きの解像度と内部解像度は一致しないことがあるようで、その場合 1 ラインづつコピーする必要がある。
+        // (手元の環境では内部解像度は 32 の倍数になるっぽく見える)
+        if (wpitch == rpitch)
         {
-            memcpy(wpixels, rpixels, pitch);
-            wpixels += pitch;
-            rpixels += mapped.RowPitch;
+            memcpy(wpixels, rpixels, bufsize);
+        }
+        else
+        {
+            for (int i = 0; i < height; ++i)
+            {
+                memcpy(wpixels, rpixels, wpitch);
+                wpixels += wpitch;
+                rpixels += rpitch;
+            }
         }
 
         m_context->Unmap(tex, 0);
