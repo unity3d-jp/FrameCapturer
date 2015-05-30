@@ -29,8 +29,15 @@ v2f vert(appdata_img v)
 }
 
 
-float2 flip_y(float2 t)
+float2 get_texcoord(v2f i)
 {
+    float2 t = i.spos.xy * 0.5 + 0.5;
+    return t;
+}
+
+float2 get_texcoord_iy(v2f i)
+{
+    float2 t = i.spos.xy * 0.5 + 0.5;
     t.y = 1.0 - t.y;
     return t;
 }
@@ -38,18 +45,14 @@ float2 flip_y(float2 t)
 
 half4 copy_framebuffer(v2f i) : SV_Target
 {
-    float2 t = i.spos.xy * 0.5 + 0.5;
-    t = flip_y(t);
-    half4 r = tex2D(_GifFrameBuffer, t);
+    half4 r = tex2D(_GifFrameBuffer, get_texcoord_iy(i));
     r.a = 1.0;
     return r;
 }
 
 half4 copy_rendertarget(v2f i) : SV_Target
 {
-    float2 t = i.spos.xy * 0.5 + 0.5;
-    t = flip_y(t);
-    return tex2D(_RenderTarget, t);
+    return tex2D(_RenderTarget, get_texcoord_iy(i));
 }
 
 struct gbuffer_out
@@ -62,9 +65,7 @@ struct gbuffer_out
 };
 gbuffer_out copy_gbuffer(v2f i)
 {
-    float2 t = i.spos.xy * 0.5 + 0.5;
-    t = flip_y(t);
-
+    float2 t = get_texcoord(i);
     gbuffer_out o;
     o.diffuse           = tex2D(_CameraGBufferTexture0, t);
     o.spec_smoothness   = tex2D(_CameraGBufferTexture1, t);
@@ -76,15 +77,13 @@ gbuffer_out copy_gbuffer(v2f i)
 
 float copy_depth(v2f i) : SV_Target
 {
-    float2 t = i.spos.xy * 0.5 + 0.5;
-    t = flip_y(t);
-    return tex2D(_CameraDepthTexture, t).r;
+    return tex2D(_CameraDepthTexture, get_texcoord(i)).r;
 }
 
 ENDCG
 
-// Pass 0: copy_framebuffer
 Subshader {
+    // Pass 0: copy_framebuffer
     Pass {
         Blend Off Cull Off ZTest Off ZWrite Off
         CGPROGRAM
@@ -92,10 +91,8 @@ Subshader {
         #pragma fragment copy_framebuffer
         ENDCG
     }
-}
 
-// Pass 1: copy_rendertarget
-Subshader {
+    // Pass 1: copy_rendertarget
     Pass {
         Blend Off Cull Off ZTest Off ZWrite Off
         CGPROGRAM
@@ -103,10 +100,8 @@ Subshader {
         #pragma fragment copy_rendertarget
         ENDCG
     }
-}
 
-// Pass 2: copy_gbuffer
-Subshader {
+    // Pass 2: copy_gbuffer
     Pass {
         Blend Off Cull Off ZTest Off ZWrite Off
         CGPROGRAM
@@ -114,10 +109,8 @@ Subshader {
         #pragma fragment copy_gbuffer
         ENDCG
     }
-}
 
-// Pass 3: copy_depth
-Subshader {
+    // Pass 3: copy_depth
     Pass {
         Blend Off Cull Off ZTest Off ZWrite Off
         CGPROGRAM
