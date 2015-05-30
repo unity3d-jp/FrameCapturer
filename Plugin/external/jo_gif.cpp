@@ -1,6 +1,6 @@
 // jo_gif.cpp
 // original: http://www.jonolick.com/home/gif-writer
-// modification by i-saint (changed file streaming to memory streaming)
+// modified by i-saint (changed file streaming to memory streaming)
 
 // original comment
 /* public domain, Simple, Minimalistic GIF writer - http://jonolick.com
@@ -40,22 +40,6 @@ typedef struct
     //int frame;
 } jo_gif_t;
 
-// width/height	| the same for every frame
-// repeat       | 0 = loop forever, 1 = loop once, etc...
-// palSize		| must be power of 2 - 1. so, 255 not 256.
-extern jo_gif_t jo_gif_start(short width, short height, short repeat, int palSize);
-
-// gif			| the state (returned from jo_gif_start)
-// rgba         | the pixels
-// delayCsec    | amount of time in between frames (in centiseconds)
-// localPalette | true if you want a unique palette generated for this frame (does not effect future frames)
-extern void jo_gif_frame(std::ostream &os, int frame, jo_gif_t *gif, unsigned char *rgba, short delayCsec, bool localPalette);
-
-// gif          | the state (returned from jo_gif_start)
-extern void jo_gif_end(jo_gif_t *gif);
-
-void jo_gif_write_header(jo_gif_t *gif, FILE *fp);
-void jo_gif_write_footer(jo_gif_t *gif, FILE *fp);
 
 #endif
 
@@ -70,7 +54,8 @@ void jo_gif_write_footer(jo_gif_t *gif, FILE *fp);
 #include <math.h>
 
 // Based on NeuQuant algorithm
-static void jo_gif_quantize(unsigned char *rgba, int rgbaSize, int sample, unsigned char *map, int numColors) {
+static void jo_gif_quantize(unsigned char *rgba, int rgbaSize, int sample, unsigned char *map, int numColors)
+{
     // defs for freq and bias
     const int intbiasshift = 16; /* bias for fractions */
     const int intbias = (((int) 1) << intbiasshift);
@@ -219,7 +204,8 @@ typedef struct {
     int curBits;
 } jo_gif_lzw_t;
 
-static void jo_gif_lzw_write(jo_gif_lzw_t *s, int code) {
+static void jo_gif_lzw_write(jo_gif_lzw_t *s, int code)
+{
     s->outBits |= code << s->curBits;
     s->curBits += s->numBits;
     while(s->curBits >= 8) {
@@ -234,7 +220,8 @@ static void jo_gif_lzw_write(jo_gif_lzw_t *s, int code) {
     }
 }
 
-static void jo_gif_lzw_encode(std::ostream &os, unsigned char *in, int len) {
+static void jo_gif_lzw_encode(std::ostream &os, unsigned char *in, int len)
+{
     jo_gif_lzw_t state = {&os, 9};
     int maxcode = 511;
 
@@ -305,7 +292,13 @@ jo_gif_t jo_gif_start(short width, short height, short repeat, int numColors)
     return gif;
 }
 
-void jo_gif_frame(std::ostream &os, int frame, jo_gif_t *gif, unsigned char * rgba, short delayCsec, bool localPalette)
+struct jo_gif_frame_t
+{
+    std::string palette;
+    std::string pixels;
+};
+
+void jo_gif_frame(jo_gif_t *gif, jo_gif_frame_t *fdata, unsigned char * rgba, int frame, bool localPalette)
 {
     short width = gif->width;
     short height = gif->height;
@@ -314,7 +307,8 @@ void jo_gif_frame(std::ostream &os, int frame, jo_gif_t *gif, unsigned char * rg
     unsigned char localPalTbl[0x300];
     unsigned char *palette = frame == 0 || !localPalette ? gif->palette : localPalTbl;
     if (frame == 0 || localPalette) {
-        jo_gif_quantize(rgba, size*4, 1, palette, gif->numColors);		
+        jo_gif_quantize(rgba, size*4, 1, palette, gif->numColors);
+        fdata->palette.assign((char*)palette, 3 * (1 << (gif->palSize + 1)) );
     }
 
     unsigned char *indexedPixels = (unsigned char *)malloc(size);
@@ -354,10 +348,42 @@ void jo_gif_frame(std::ostream &os, int frame, jo_gif_t *gif, unsigned char * rg
         }
         free(ditheredPixels);
     }
+
+    std::ostringstream pixels(std::ios::binary);
+    jo_gif_lzw_encode(pixels, indexedPixels, size);
+    fdata->pixels = pixels.str();
+
+    free(indexedPixels);
+}
+
+
+void jo_gif_end(jo_gif_t *gif)
+{
+}
+
+
+void jo_gif_write_header(std::ostream &os, jo_gif_t *gif)
+{
+    os.write("GIF89a", 6);
+    // Logical Screen Descriptor
+    os.write((char*)&gif->width, 2);
+    os.write((char*)&gif->height, 2);
+    os.put(0xF0 | gif->palSize);
+    os.write("\x00\x00", 2); // bg color index (unused), aspect ratio
+}
+
+
+void jo_gif_write_frame(std::ostream &os, jo_gif_t *gif, jo_gif_frame_t *fdata, int frame, short delayCsec)
+{
+    short width = gif->width;
+    short height = gif->height;
+    int size = width * height;
+    unsigned char *palette = fdata->palette.empty() ? nullptr : (unsigned char*)&fdata->palette[0];
+
     if (frame == 0) {
         // Global Color Table
-        os.write((char*)palette, 3*(1<<(gif->palSize+1)));
-        if(gif->repeat >= 0) {
+        os.write((char*)palette, 3 * (1 << (gif->palSize + 1)));
+        if (gif->repeat >= 0) {
             // Netscape Extension
             os.write("\x21\xff\x0bNETSCAPE2.0\x03\x01", 16);
             os.write((char*)&gif->repeat, 2); // loop count (extra iterations, 0=repeat forever)
@@ -372,37 +398,20 @@ void jo_gif_frame(std::ostream &os, int frame, jo_gif_t *gif, unsigned char * rg
     os.write("\x2c\x00\x00\x00\x00", 5); // header, x,y
     os.write((char*)&width, 2);
     os.write((char*)&height, 2);
-    if (frame == 0 || !localPalette) {
+    if (frame == 0 || !palette) {
         os.put(0);
-    } else {
+    }
+    else {
         os.put(0x80 | gif->palSize);
         os.write((char*)palette, 3 * (1 << (gif->palSize + 1)));
     }
     os.put(8); // block terminator
-    jo_gif_lzw_encode(os, indexedPixels, size);
+    os.write(&fdata->pixels[0], fdata->pixels.size());
     os.put(0); // block terminator
-
-    free(indexedPixels);
 }
 
-
-void jo_gif_end(jo_gif_t *gif)
+void jo_gif_write_footer(std::ostream &os, jo_gif_t *gif)
 {
-}
-
-
-void jo_gif_write_header(jo_gif_t *gif, FILE *fp)
-{
-    fwrite("GIF89a", 6, 1, fp);
-    // Logical Screen Descriptor
-    fwrite(&gif->width, 2, 1, fp);
-    fwrite(&gif->height, 2, 1, fp);
-    putc(0xF0 | gif->palSize, fp);
-    fwrite("\x00\x00", 2, 1, fp); // bg color index (unused), aspect ratio
-}
-
-void jo_gif_write_footer(jo_gif_t *gif, FILE *fp)
-{
-    putc(0x3b, fp); // gif trailer
+    os.put(0x3b); // gif trailer
 }
 #endif
