@@ -46,6 +46,7 @@
 #include <atomic>
 #include <thread>
 #include <functional>
+#include <fstream>
 
 #ifdef fcWithTBB
     #include <tbb/tbb.h>
