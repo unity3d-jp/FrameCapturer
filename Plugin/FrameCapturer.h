@@ -54,6 +54,7 @@ struct fcGifConfig
 {
     int width;
     int height;
+    int num_colors;
     int delay_csec;
     int keyframe;
     int max_active_tasks;

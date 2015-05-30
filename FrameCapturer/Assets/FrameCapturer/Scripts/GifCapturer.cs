@@ -14,6 +14,7 @@ using UnityEditor;
 public class GifCapturer : MonoBehaviour
 {
     public int m_resolution_width = 320;
+    public int m_num_colors = 255;
     public int m_capture_every_n_frames = 2;
     public int m_interval_centi_sec = 3;
     public int m_max_frame = 0;
@@ -57,6 +58,11 @@ public class GifCapturer : MonoBehaviour
     {
         m_sh_copy = AssetDatabase.LoadAssetAtPath("Assets/FrameCapturer/Shaders/CopyFrameBuffer.shader", typeof(Shader)) as Shader;
     }
+
+    void OnValidate()
+    {
+        m_num_colors = Mathf.Clamp(m_num_colors, 1, 255);
+    }
 #endif // UNITY_EDITOR
 
     void OnEnable()
@@ -87,6 +93,7 @@ public class GifCapturer : MonoBehaviour
             FrameCapturer.fcGifConfig conf;
             conf.width = m_rt_copy.width;
             conf.height = m_rt_copy.height;
+            conf.num_colors = m_num_colors;
             conf.delay_csec = m_interval_centi_sec;
             conf.keyframe = m_keyframe;
             conf.max_frame = m_max_frame;

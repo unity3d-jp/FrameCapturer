@@ -15,6 +15,7 @@ public static class FrameCapturer
     {
         public int width;
         public int height;
+        public int num_colors;
         public int delay_csec; // * centi second! *
         public int keyframe;
         public int max_active_tasks;
