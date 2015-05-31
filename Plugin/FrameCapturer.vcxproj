@@ -156,13 +156,13 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86\</Command>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86_64\</Command>
     </PostBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>fcSupportGIF;fcSupportEXR;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcDebug;fcVerboseDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>fcSupportGIF;fcSupportEXR;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcWithTBB;fcDebug;fcVerboseDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -190,14 +190,14 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86\</Command>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86_64\</Command>
     </PostBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>fcSupportGIF;fcSupportEXR;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>fcSupportGIF;fcSupportEXR;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcWithTBB;fcDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -224,14 +224,14 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Master|x64'">
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86\</Command>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86_64\</Command>
     </PostBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>fcSupportGIF;fcSupportEXR;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcMaster;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>fcSupportGIF;fcSupportEXR;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcWithTBB;fcMaster;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Full</Optimization>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -244,7 +244,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MasterMT|x64'">
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86\</Command>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86_64\</Command>
     </PostBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>

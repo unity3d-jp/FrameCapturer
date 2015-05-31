@@ -46,3 +46,6 @@
 #include <thread>
 #include <functional>
 #include <fstream>
+#ifdef fcWindows
+    #include <windows.h>
+#endif
