@@ -187,7 +187,7 @@ gbuffer_out frag_gbuffer(vs_out v)
 
     float glow = 0.0;
     if(g_enable_glowline) {
-        glow += max((modc(length(ray_pos)-time*1.5, 10.0)-9.0)*2.5, 0.0);
+        glow += max((modc(length(ray_pos+float3(0.0, 2.0, 0.0))-time*1.5, 7.0)-5.0)*2.5, 0.0);
         float2 p = pattern(ray_pos.xz*0.5);
         if(p.x<1.3) { glow = 0.0; }
     }

@@ -52,6 +52,8 @@ public class GifCapturer : MonoBehaviour
         }
     }
 
+    RenderTexture GetGifBuffer() { return m_rt_copy; }
+
 
 #if UNITY_EDITOR
     void Reset()

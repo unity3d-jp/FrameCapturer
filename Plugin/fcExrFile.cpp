@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "FrameCapturer.h"
+#include "fcThreadPool.h"
 #include "fcGraphicsDevice.h"
 
 #ifdef fcSupportEXR
@@ -36,13 +37,11 @@ private:
     };
 
 private:
-    int m_magic; //  for debug
+    fcEMagic m_magic; //  for debug
     fcExrConfig m_conf;
     std::vector<WorkData> m_raw_frames;
     int m_frame;
-#ifdef fcWithTBB
-    tbb::task_group m_tasks;
-#endif
+    fcTaskGroup m_tasks;
 };
 
 
@@ -56,9 +55,7 @@ fcExrContext::fcExrContext(fcExrConfig &conf)
 
 fcExrContext::~fcExrContext()
 {
-#ifdef fcWithTBB
     m_tasks.wait();
-#endif
 }
 
 
@@ -152,15 +149,13 @@ bool fcExrContext::writeFrame(const char *path_, void *tex, int width, int heigh
     else
     {
         wd = &m_raw_frames[m_frame % m_conf.max_active_tasks];
-#ifdef fcWithTBB
         if (wd->refcount > 0)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
             if (wd->refcount > 0) { m_tasks.wait(); }
         }
-#endif
         wd->buffer.resize(width * height * fcGetPixelSize(fmt));
-        if (!fcGetGraphicsDevice()->copyTextureData(&wd->buffer[0], wd->buffer.size(), tex, width, height, fmt))
+        if (!fcGetGraphicsDevice()->readTexture(&wd->buffer[0], wd->buffer.size(), tex, width, height, fmt))
         {
             return false;
         }
@@ -169,22 +164,18 @@ bool fcExrContext::writeFrame(const char *path_, void *tex, int width, int heigh
 
     // exr 書き出しタスクを kick
     std::string path = path_;
-#ifdef fcWithTBB
     ++wd->refcount;
     m_tasks.run([this, path, wd, width, height, fmt, mask](){
         writeFrameTask(path, wd->buffer, width, height, fmt, mask);
         --wd->refcount;
     });
-#else
-    writeFrameTask(path, wd->buffer, width, height, fmt, mask);
-#endif
     return true;
 }
 
 
 
 #ifdef fcDebug
-#define fcCheckContext(v) if(v==nullptr || *(int*)v!=fcE_ExrContext) { fcBreak(); }
+#define fcCheckContext(v) if(v==nullptr || *(fcEMagic*)v!=fcE_ExrContext) { fcBreak(); }
 #else  // fcDebug
 #define fcCheckContext(v) 
 #endif // fcDebug

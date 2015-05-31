@@ -14,7 +14,8 @@ public:
     ~fcGraphicsDeviceD3D11();
     void* getDevicePtr() override;
     int getDeviceType() override;
-    bool copyTextureData(void *o_buf, size_t bufsize, void *tex, int width, int height, fcETextureFormat format) override;
+    bool readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcETextureFormat format) override;
+    bool writeTexture(void *o_tex, int width, int height, fcETextureFormat format, const void *buf, size_t bufsize) override;
 
 private:
     void clearStagingTextures();
@@ -116,7 +117,7 @@ void fcGraphicsDeviceD3D11::clearStagingTextures()
     m_staging_textures.clear();
 }
 
-bool fcGraphicsDeviceD3D11::copyTextureData(void *o_buf, size_t bufsize, void *tex_, int width, int height, fcETextureFormat format)
+bool fcGraphicsDeviceD3D11::readTexture(void *o_buf, size_t bufsize, void *tex_, int width, int height, fcETextureFormat format)
 {
     if (m_context == nullptr || tex_ == nullptr) { return false; }
 
@@ -155,6 +156,24 @@ bool fcGraphicsDeviceD3D11::copyTextureData(void *o_buf, size_t bufsize, void *t
         return true;
     }
     return false;
+}
+
+bool fcGraphicsDeviceD3D11::writeTexture(void *o_tex, int width, int height, fcETextureFormat format, const void *buf, size_t bufsize)
+{
+    int psize = fcGetPixelSize(format);
+    int pitch = psize * width;
+    const size_t num_pixels = bufsize / psize;
+
+    D3D11_BOX box;
+    box.left = 0;
+    box.right = width;
+    box.top = 0;
+    box.bottom = ceildiv((UINT)num_pixels, (UINT)width);
+    box.front = 0;
+    box.back = 1;
+    ID3D11Texture2D *tex = (ID3D11Texture2D*)o_tex;
+    m_context->UpdateSubresource(tex, 0, &box, buf, pitch, 0);
+    return true;
 }
 
 #endif // fcSupportD3D11

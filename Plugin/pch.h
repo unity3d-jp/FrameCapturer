@@ -1,16 +1,15 @@
+//options:
+//#define fcSupportGIF
+//#define fcSupportEXR
+//#define fcSupportOpenGL
+//#define fcSupportD3D9
+//#define fcSupportD3D11
+//#define fcWithTBB
+
+
 #ifdef _WIN32
     #define fcWindows
 #endif // _WIN32
-
-#define fcSupportEXR
-#define fcSupportGIF
-#define fcSupportOpenGL
-#ifdef fcWindows
-    #define fcSupportD3D9
-    #define fcSupportD3D11
-#endif
-#define fcWithTBB
-
 
 
 #define fcCLinkage extern "C"
@@ -47,7 +46,3 @@
 #include <thread>
 #include <functional>
 #include <fstream>
-
-#ifdef fcWithTBB
-    #include <tbb/tbb.h>
-#endif
