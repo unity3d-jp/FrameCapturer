@@ -17,7 +17,8 @@ public:
     ~fcGraphicsDeviceOpenGL();
     void* getDevicePtr() override;
     int getDeviceType() override;
-    bool copyTextureData(void *o_buf, size_t bufsize, void *tex, int width, int height, fcETextureFormat format) override;
+    bool readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcETextureFormat format) override;
+    bool writeTexture(void *o_tex, int width, int height, fcETextureFormat format, const void *buf, size_t bufsize) override;
 
 private:
     void *m_device;
@@ -64,12 +65,26 @@ static void fcGetInternalFormatOpenGL(fcETextureFormat format, GLenum &o_fmt, GL
     }
 }
 
-bool fcGraphicsDeviceOpenGL::copyTextureData(void *o_buf, size_t bufsize, void *tex, int width, int height, fcETextureFormat format)
+bool fcGraphicsDeviceOpenGL::readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcETextureFormat format)
 {
     GLenum internal_format = 0;
     GLenum internal_type = 0;
     fcGetInternalFormatOpenGL(format, internal_format, internal_type);
     glGetTextureImage((GLuint)(size_t)tex, 0, internal_format, internal_type, bufsize, o_buf);
+    return true;
+}
+
+bool fcGraphicsDeviceOpenGL::writeTexture(void *o_tex, int width, int height, fcETextureFormat format, const void *buf, size_t bufsize)
+{
+    GLenum internal_format = 0;
+    GLenum internal_type = 0;
+    fcGetInternalFormatOpenGL(format, internal_format, internal_type);
+
+    int psize = fcGetPixelSize(format);
+    int pitch = psize * width;
+    const size_t num_pixels = bufsize / psize;
+
+    glTextureSubImage2D((GLuint)(size_t)o_tex, 0, 0, 0, width, height, internal_format, internal_type, buf);
     return true;
 }
 

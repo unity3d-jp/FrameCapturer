@@ -32,6 +32,7 @@ float kaleidoscopic_IFS(float3 z)
 
 float tglad_formula(float3 z0)
 {
+    float sp = length(z0+float3(0.0, 2.0, 0.0))-_Time.y*1.5;
     z0 = modc(z0, 2.0);
 
     float mr=0.25, mxr=1.0;
@@ -43,6 +44,7 @@ float tglad_formula(float3 z0)
         z+=p0;
     }
     float dS=(length(max(abs(z.xyz)-float3(1.2,49.0,1.4),0.0))-0.06)/z.w;
+    dS = max(sp, dS);
     return dS;
 }
 

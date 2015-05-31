@@ -33,7 +33,15 @@ public:
     virtual ~fcGraphicsDevice() {}
     virtual void* getDevicePtr() = 0;
     virtual int getDeviceType() = 0;
-    virtual bool copyTextureData(void *o_buf, size_t bufsize, void *tex, int width, int height, fcETextureFormat format) = 0;
+    virtual bool readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcETextureFormat format) = 0;
+    virtual bool writeTexture(void *o_tex, int width, int height, fcETextureFormat format, const void *buf, size_t bufsize) = 0;
 };
 fcCLinkage fcExport fcGraphicsDevice* fcGetGraphicsDevice();
 int fcGetPixelSize(fcETextureFormat format);
+
+
+template<class IntType>
+inline IntType ceildiv(IntType a, IntType b)
+{
+    return a / b + (a%b == 0 ? 0 : 1);
+}
