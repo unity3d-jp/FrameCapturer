@@ -394,16 +394,25 @@ void jo_gif_write_header(std::ostream &os, jo_gif_t *gif)
 }
 
 
-void jo_gif_write_frame(std::ostream &os, jo_gif_t *gif, jo_gif_frame_t *fdata, int frame, short delayCsec)
+void jo_gif_write_frame(std::ostream &os, jo_gif_t *gif, jo_gif_frame_t *fdata, jo_gif_frame_t *palette_optional, int frame, short delayCsec)
 {
     short width = gif->width;
     short height = gif->height;
     int size = width * height;
-    unsigned char *palette = fdata->palette.empty() ? nullptr : (unsigned char*)&fdata->palette[0];
+    unsigned char *palette = nullptr;
+    int palette_size = 0;
+    if (palette_optional != nullptr) {
+        palette = (unsigned char*)&palette_optional->palette[0];
+        palette_size = palette_optional->palette.size();
+    }
+    else {
+        palette = fdata->palette.empty() ? nullptr : (unsigned char*)&fdata->palette[0];
+        palette_size = fdata->palette.size();
+    }
 
     if (frame == 0) {
         // Global Color Table
-        os.write((char*)palette, 3 * (1 << (gif->palSize + 1)));
+        os.write((char*)palette, palette_size);
         if (gif->repeat >= 0) {
             // Netscape Extension
             os.write("\x21\xff\x0bNETSCAPE2.0\x03\x01", 16);
@@ -424,7 +433,7 @@ void jo_gif_write_frame(std::ostream &os, jo_gif_t *gif, jo_gif_frame_t *fdata, 
     }
     else {
         os.put(0x80 | gif->palSize);
-        os.write((char*)palette, 3 * (1 << (gif->palSize + 1)));
+        os.write((char*)palette, palette_size);
     }
     os.put(8); // block terminator
     os.write(&fdata->encoded[0], fdata->encoded.size());

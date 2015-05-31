@@ -34,6 +34,7 @@ private:
     {
         std::string buffer;
         std::atomic_int refcount;
+        WorkData() { refcount = 0; }
     };
 
 private:

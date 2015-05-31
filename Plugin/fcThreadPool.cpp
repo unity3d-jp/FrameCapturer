@@ -64,23 +64,30 @@ void fcThreadPool::enqueue(const std::function<void()> &f)
 }
 
 
+
+fcTaskGroup::fcTaskGroup()
+{
+    m_active_tasks = 0;
+}
+
+fcTaskGroup::~fcTaskGroup()
+{
+}
+
 void fcTaskGroup::wait()
 {
     fcThreadPool &pool = fcThreadPool::getInstance();
-    std::function<void()> task;
     while (m_active_tasks > 0)
     {
+        std::function<void()> task;
         {
             std::unique_lock<std::mutex> lock(pool.m_queue_mutex);
-            while (!pool.m_stop && pool.m_tasks.empty()) {
-                pool.m_condition.wait(lock);
+            if (!pool.m_tasks.empty()) {
+                task = pool.m_tasks.front();
+                pool.m_tasks.pop_front();
             }
-            if (pool.m_stop) { return; }
-
-            task = pool.m_tasks.front();
-            pool.m_tasks.pop_front();
         }
-        task();
+        if (task) { task(); }
     }
 }
 

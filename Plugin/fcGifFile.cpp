@@ -43,6 +43,7 @@ fcGifContext::fcGifContext(fcGifConfig *conf)
     , m_conf(*conf)
     , m_frame(0)
 {
+    m_active_task_count = 0;
     m_gif = jo_gif_start(m_conf.width, m_conf.height, 0, m_conf.num_colors);
     m_raw_buffers.resize(m_conf.max_active_tasks);
     for (auto& rf : m_raw_buffers)
@@ -187,25 +188,17 @@ void fcGifContext::write(std::ostream &os, int begin_frame, int end_frame)
     std::advance(begin, begin_frame);
     std::advance(end, end_frame);
 
-    // パレット移動
-    if (begin->palette.empty())
-    {
-        for (auto i = begin; i != m_gif_buffers.begin(); --i) {
-            if (!i->palette.empty())
-            {
-                begin->palette = i->palette;
-                break;
-            }
-        }
-    }
+    // パレット探索
+    auto palette = begin;
+    while (palette->palette.empty()) { --palette; }
 
     int frame = 0;
     jo_gif_write_header(os, &m_gif);
     for (auto i = begin; i != end; ++i) {
-        jo_gif_write_frame(os, &m_gif, &(*i), frame++, m_conf.delay_csec);
+        jo_gif_frame_t *pal = frame == 0 ? &(*palette) : nullptr;
+        jo_gif_write_frame(os, &m_gif, &(*i), pal, frame++, m_conf.delay_csec);
     }
     jo_gif_write_footer(os, &m_gif);
-
 }
 
 bool fcGifContext::writeFile(const char *path, int begin_frame, int end_frame)
@@ -230,8 +223,6 @@ int fcGifContext::writeMemory(void *buf, int begin_frame, int end_frame)
 
 int fcGifContext::getFrameCount()
 {
-    m_tasks.wait();
-    scrape(false);
     return m_gif_buffers.size();
 }
 
@@ -265,32 +256,27 @@ void fcGifContext::getFrameData(void *tex, int frame)
 
 int fcGifContext::getExpectedDataSize(int begin_frame, int end_frame)
 {
-    m_tasks.wait();
-    scrape(false);
-
     adjust_frame(begin_frame, end_frame, (int)m_gif_buffers.size());
     auto begin = m_gif_buffers.begin();
     auto end = m_gif_buffers.begin();
     std::advance(begin, begin_frame);
     std::advance(end, end_frame);
 
+
     size_t size = 14; // gif header + footer size
-    if (m_gif.repeat >= 0) { size += 19; }
-
-    // パレット探す
-    if (begin->palette.empty())
-    {
-        for (auto i = begin; i != m_gif_buffers.begin(); --i) {
-            if (!i->palette.empty())
-            {
-                size += i->palette.size();
-                break;
-            }
-        }
-    }
-
     for (auto i = begin; i != end; ++i)
     {
+        if (i == begin) {
+            if (m_gif.repeat >= 0) { size += 19; }
+            // パレット探索
+            if (begin->palette.empty())
+            {
+                auto palette = begin;
+                while (palette->palette.empty()) { --palette; }
+                size += palette->palette.size();
+            }
+        }
+
         size += i->palette.size() + i->encoded.size() + 20;
     }
     return (int)size;

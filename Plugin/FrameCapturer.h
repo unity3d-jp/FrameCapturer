@@ -68,7 +68,6 @@ fcCLinkage fcExport bool            fcGifAddFrame(fcGifContext *ctx, void *tex);
 fcCLinkage fcExport void            fcGifClearFrame(fcGifContext *ctx);
 fcCLinkage fcExport bool            fcGifWriteFile(fcGifContext *ctx, const char *path, int begin_frame, int end_frame);
 fcCLinkage fcExport int             fcGifWriteMemory(fcGifContext *ctx, void *buf, int begin_frame, int end_frame);
-
 fcCLinkage fcExport int             fcGifGetFrameCount(fcGifContext *ctx);
 fcCLinkage fcExport void            fcGifGetFrameData(fcGifContext *ctx, void *tex, int frame);
 fcCLinkage fcExport int             fcGifGetExpectedDataSize(fcGifContext *ctx, int begin_frame, int end_frame);
