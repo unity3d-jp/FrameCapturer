@@ -11,7 +11,7 @@ using UnityEditor;
 
 [AddComponentMenu("FrameCapturer/GifCapturer")]
 [RequireComponent(typeof(Camera))]
-public class GifCapturer : MonoBehaviour
+public class GifCapturer : MovieCapturer
 {
     public int m_resolution_width = 320;
     public int m_num_colors = 255;
@@ -27,19 +27,19 @@ public class GifCapturer : MonoBehaviour
     Material m_mat_copy;
     Mesh m_quad;
     CommandBuffer m_cb;
-    RenderTexture m_rt_copy;
+    public RenderTexture m_rt_copy;
     Camera m_cam;
     int m_frame;
-    bool m_pause = false;
+    public bool m_recode = false;
 
 
-    public bool pause
+    public override bool recode
     {
-        get { return m_pause; }
-        set { m_pause = value; }
+        get { return m_recode; }
+        set { m_recode = value; }
     }
 
-    public void WriteFile(string path="")
+    public override void WriteFile(string path = "", int begin_frame = 0, int end_frame = -1)
     {
         if (m_gif != IntPtr.Zero)
         {
@@ -47,13 +47,40 @@ public class GifCapturer : MonoBehaviour
             {
                 path = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
             }
-            FrameCapturer.fcGifWriteFile(m_gif, path);
+            FrameCapturer.fcGifWriteFile(m_gif, path, begin_frame, end_frame);
             Debug.Log("GifCapturer.WriteFile() : " + path);
         }
     }
 
-    RenderTexture GetGifBuffer() { return m_rt_copy; }
+    public override RenderTexture GetScratchBuffer() { return m_rt_copy; }
 
+    public override void ClearFrame()
+    {
+        FrameCapturer.fcGifClearFrame(m_gif);
+        m_frame = 0;
+    }
+
+    public override void EraseFrame(int begin_frame, int end_frame)
+    {
+        FrameCapturer.fcGifEraseFrame(m_gif, begin_frame, end_frame);
+    }
+
+    public override int GetExpectedFileSize(int begin_frame = 0, int end_frame = -1)
+    {
+        return FrameCapturer.fcGifGetExpectedDataSize(m_gif, begin_frame, end_frame);
+    }
+
+    public override int GetFrameCount()
+    {
+        return FrameCapturer.fcGifGetFrameCount(m_gif);
+    }
+
+    public override void GetFrameData(RenderTexture rt, int frame)
+    {
+        FrameCapturer.fcGifGetFrameData(m_gif, rt.GetNativeTexturePtr(), frame);
+    }
+
+    public IntPtr GetGifContext() { return m_gif; }
 
 #if UNITY_EDITOR
     void Reset()
@@ -76,6 +103,7 @@ public class GifCapturer : MonoBehaviour
         int capture_width = m_resolution_width;
         int capture_height = (int)(m_resolution_width / ((float)m_cam.pixelWidth / (float)m_cam.pixelHeight));
         m_rt_copy = new RenderTexture(capture_width, capture_height, 0, RenderTextureFormat.ARGB32);
+        m_rt_copy.wrapMode = TextureWrapMode.Repeat;
         m_rt_copy.Create();
 
         {
@@ -108,8 +136,8 @@ public class GifCapturer : MonoBehaviour
 
     void OnDisable()
     {
-        WriteFile();
         FrameCapturer.fcGifDestroyContext(m_gif);
+        m_gif = IntPtr.Zero;
 
         m_cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb);
         m_cb.Release();
@@ -121,7 +149,7 @@ public class GifCapturer : MonoBehaviour
 
     IEnumerator OnPostRender()
     {
-        if (!m_pause)
+        if (m_recode)
         {
             yield return new WaitForEndOfFrame();
 
@@ -132,11 +160,7 @@ public class GifCapturer : MonoBehaviour
                 Graphics.SetRenderTarget(m_rt_copy);
                 Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                 Graphics.SetRenderTarget(null);
-                // 最初のフレームは大抵ゴミが入ってるので省略
-                if (m_frame > 0)
-                {
-                    FrameCapturer.fcGifAddFrame(m_gif, m_rt_copy.GetNativeTexturePtr());
-                }
+                FrameCapturer.fcGifAddFrame(m_gif, m_rt_copy.GetNativeTexturePtr());
             }
         }
     }

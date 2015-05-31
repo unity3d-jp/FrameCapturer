@@ -40,6 +40,8 @@ private:
 class fcTaskGroup
 {
 public:
+    fcTaskGroup();
+    ~fcTaskGroup();
     template<class F> void run(const F &f);
     void wait();
 
