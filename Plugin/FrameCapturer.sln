@@ -9,21 +9,46 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AddLibraryPath", "AddLibrar
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
 		Debug|x64 = Debug|x64
+		Master|Win32 = Master|Win32
 		Master|x64 = Master|x64
+		MasterMT|Win32 = MasterMT|Win32
+		MasterMT|x64 = MasterMT|x64
+		Release|Win32 = Release|Win32
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{08361722-5520-47AC-A0C2-31E8A062B73F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{08361722-5520-47AC-A0C2-31E8A062B73F}.Debug|Win32.Build.0 = Debug|Win32
 		{08361722-5520-47AC-A0C2-31E8A062B73F}.Debug|x64.ActiveCfg = Debug|x64
 		{08361722-5520-47AC-A0C2-31E8A062B73F}.Debug|x64.Build.0 = Debug|x64
+		{08361722-5520-47AC-A0C2-31E8A062B73F}.Master|Win32.ActiveCfg = Master|Win32
+		{08361722-5520-47AC-A0C2-31E8A062B73F}.Master|Win32.Build.0 = Master|Win32
 		{08361722-5520-47AC-A0C2-31E8A062B73F}.Master|x64.ActiveCfg = Master|x64
 		{08361722-5520-47AC-A0C2-31E8A062B73F}.Master|x64.Build.0 = Master|x64
+		{08361722-5520-47AC-A0C2-31E8A062B73F}.MasterMT|Win32.ActiveCfg = MasterMT|Win32
+		{08361722-5520-47AC-A0C2-31E8A062B73F}.MasterMT|Win32.Build.0 = MasterMT|Win32
+		{08361722-5520-47AC-A0C2-31E8A062B73F}.MasterMT|x64.ActiveCfg = MasterMT|x64
+		{08361722-5520-47AC-A0C2-31E8A062B73F}.MasterMT|x64.Build.0 = MasterMT|x64
+		{08361722-5520-47AC-A0C2-31E8A062B73F}.Release|Win32.ActiveCfg = Release|Win32
+		{08361722-5520-47AC-A0C2-31E8A062B73F}.Release|Win32.Build.0 = Release|Win32
 		{08361722-5520-47AC-A0C2-31E8A062B73F}.Release|x64.ActiveCfg = Release|x64
 		{08361722-5520-47AC-A0C2-31E8A062B73F}.Release|x64.Build.0 = Release|x64
+		{51C3D584-97C6-4A44-90B7-B370144AA606}.Debug|Win32.ActiveCfg = Debug|Win32
+		{51C3D584-97C6-4A44-90B7-B370144AA606}.Debug|Win32.Build.0 = Debug|Win32
 		{51C3D584-97C6-4A44-90B7-B370144AA606}.Debug|x64.ActiveCfg = Debug|x64
 		{51C3D584-97C6-4A44-90B7-B370144AA606}.Debug|x64.Build.0 = Debug|x64
+		{51C3D584-97C6-4A44-90B7-B370144AA606}.Master|Win32.ActiveCfg = Master|Win32
+		{51C3D584-97C6-4A44-90B7-B370144AA606}.Master|Win32.Build.0 = Master|Win32
 		{51C3D584-97C6-4A44-90B7-B370144AA606}.Master|x64.ActiveCfg = Master|x64
 		{51C3D584-97C6-4A44-90B7-B370144AA606}.Master|x64.Build.0 = Master|x64
+		{51C3D584-97C6-4A44-90B7-B370144AA606}.MasterMT|Win32.ActiveCfg = MasterMT|Win32
+		{51C3D584-97C6-4A44-90B7-B370144AA606}.MasterMT|Win32.Build.0 = MasterMT|Win32
+		{51C3D584-97C6-4A44-90B7-B370144AA606}.MasterMT|x64.ActiveCfg = MasterMT|x64
+		{51C3D584-97C6-4A44-90B7-B370144AA606}.MasterMT|x64.Build.0 = MasterMT|x64
+		{51C3D584-97C6-4A44-90B7-B370144AA606}.Release|Win32.ActiveCfg = Release|Win32
+		{51C3D584-97C6-4A44-90B7-B370144AA606}.Release|Win32.Build.0 = Release|Win32
 		{51C3D584-97C6-4A44-90B7-B370144AA606}.Release|x64.ActiveCfg = Release|x64
 		{51C3D584-97C6-4A44-90B7-B370144AA606}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection

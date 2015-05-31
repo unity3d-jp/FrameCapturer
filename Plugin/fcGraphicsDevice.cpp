@@ -69,6 +69,32 @@ fcCLinkage fcExport void UnityRenderEvent(int eventID)
 }
 
 
+#ifdef fcSupportOpenGL
+fcCLinkage fcExport void fcInitializeOpenGL()
+{
+    UnitySetGraphicsDevice(nullptr, kGfxRendererOpenGL, kGfxDeviceEventInitialize);
+}
+#endif
+
+#ifdef fcSupportD3D9
+fcCLinkage fcExport void fcInitializeD3D9(void *device)
+{
+    UnitySetGraphicsDevice(device, kGfxRendererD3D9, kGfxDeviceEventInitialize);
+}
+#endif
+
+#ifdef fcSupportD3D11
+fcCLinkage fcExport void fcInitializeD3D11(void *device)
+{
+    UnitySetGraphicsDevice(device, kGfxRendererD3D11, kGfxDeviceEventInitialize);
+}
+#endif
+
+fcCLinkage fcExport void fcFinalizeGraphicsDevice()
+{
+    UnitySetGraphicsDevice(nullptr, kGfxRendererNull, kGfxDeviceEventShutdown);
+}
+
 
 
 #if !defined(fcMaster) && defined(fcWindows)

@@ -13,7 +13,8 @@ public:
     ~fcGraphicsDeviceD3D9();
     void* getDevicePtr() override;
     int getDeviceType() override;
-    bool copyTextureData(void *o_buf, size_t bufsize, void *tex, int width, int height, fcETextureFormat format) override;
+    bool readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcETextureFormat format) override;
+    bool writeTexture(void *o_tex, int width, int height, fcETextureFormat format, const void *buf, size_t bufsize) override;
 
 private:
     void clearStagingTextures();
@@ -118,7 +119,7 @@ inline void BGRA_To_RGBA(RGBA<T> *data, int data_num)
     }
 }
 
-bool fcGraphicsDeviceD3D9::copyTextureData(void *o_buf, size_t bufsize, void *tex_, int width, int height, fcETextureFormat format)
+bool fcGraphicsDeviceD3D9::readTexture(void *o_buf, size_t bufsize, void *tex_, int width, int height, fcETextureFormat format)
 {
     HRESULT hr;
     IDirect3DTexture9 *tex = (IDirect3DTexture9*)tex_;
@@ -171,6 +172,31 @@ bool fcGraphicsDeviceD3D9::copyTextureData(void *o_buf, size_t bufsize, void *te
 
     surf_src->Release();
     return ret;
+}
+
+bool fcGraphicsDeviceD3D9::writeTexture(void *o_tex, int width, int height, fcETextureFormat format, const void *buf, size_t bufsize)
+{
+    int psize = fcGetPixelSize(format);
+    int pitch = psize * width;
+    const size_t num_pixels = bufsize / psize;
+
+    HRESULT hr;
+    IDirect3DTexture9 *tex = (IDirect3DTexture9*)o_tex;
+    D3DLOCKED_RECT locked;
+    hr = tex->LockRect(0, &locked, nullptr, D3DLOCK_DISCARD);
+    if (SUCCEEDED(hr))
+    {
+        const char *rpixels = (const char*)buf;
+        int rpitch = psize * width;
+        char *wpixels = (char*)locked.pBits;
+        int wpitch = locked.Pitch;
+
+        memcpy(wpixels, rpixels, bufsize);
+
+        tex->UnlockRect(0);
+        return true;
+    }
+    return false;
 }
 
 #endif // fcSupportD3D9

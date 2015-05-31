@@ -34,6 +34,7 @@ enum fcETextureFormat
 };
 
 
+
 #ifdef fcSupportEXR
 
 struct fcExrConfig
@@ -65,8 +66,28 @@ fcCLinkage fcExport fcGifContext*   fcGifCreateContext(fcGifConfig *conf);
 fcCLinkage fcExport void            fcGifDestroyContext(fcGifContext *ctx);
 fcCLinkage fcExport bool            fcGifAddFrame(fcGifContext *ctx, void *tex);
 fcCLinkage fcExport void            fcGifClearFrame(fcGifContext *ctx);
-fcCLinkage fcExport bool            fcGifWriteFile(fcGifContext *ctx, const char *path);
+fcCLinkage fcExport bool            fcGifWriteFile(fcGifContext *ctx, const char *path, int begin_frame, int end_frame);
+fcCLinkage fcExport int             fcGifWriteMemory(fcGifContext *ctx, void *buf, int begin_frame, int end_frame);
+
+fcCLinkage fcExport int             fcGifGetFrameCount(fcGifContext *ctx);
+fcCLinkage fcExport void            fcGifGetFrameData(fcGifContext *ctx, void *tex, int frame);
+fcCLinkage fcExport int             fcGifGetExpectedDataSize(fcGifContext *ctx, int begin_frame, int end_frame);
+fcCLinkage fcExport void            fcGifEraseFrame(fcGifContext *ctx, int begin_frame, int end_frame);
 
 #endif // fcSupportGIF
+
+
+
+#ifdef fcSupportOpenGL
+fcCLinkage fcExport void    fcInitializeOpenGL();
+#endif
+#ifdef fcSupportD3D9
+fcCLinkage fcExport void    fcInitializeD3D9(void *device);
+#endif
+#ifdef fcSupportD3D11
+fcCLinkage fcExport void    fcInitializeD3D11(void *device);
+#endif
+fcCLinkage fcExport void    fcFinalizeGraphicsDevice();
+
 
 #endif // FrameCapturer_h

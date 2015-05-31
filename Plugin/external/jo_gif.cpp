@@ -295,7 +295,8 @@ jo_gif_t jo_gif_start(short width, short height, short repeat, int numColors)
 struct jo_gif_frame_t
 {
     std::string palette;
-    std::string pixels;
+    std::string indexed;
+    std::string encoded;
 };
 
 void jo_gif_frame(jo_gif_t *gif, jo_gif_frame_t *fdata, unsigned char * rgba, int frame, bool localPalette)
@@ -349,11 +350,31 @@ void jo_gif_frame(jo_gif_t *gif, jo_gif_frame_t *fdata, unsigned char * rgba, in
         free(ditheredPixels);
     }
 
+    fdata->indexed.assign((char*)indexedPixels, size);
+
     std::ostringstream pixels(std::ios::binary);
     jo_gif_lzw_encode(pixels, indexedPixels, size);
-    fdata->pixels = pixels.str();
+    fdata->encoded = pixels.str();
 
     free(indexedPixels);
+}
+
+
+void jo_gif_decode(void *o_buf, jo_gif_frame_t *fdata, jo_gif_frame_t *palette_frame)
+{
+    // todo: decode lzw instead of using indexed pixels
+    int num_pixels = fdata->indexed.size();
+    unsigned char *op = (unsigned char*)o_buf;
+    unsigned char *palette = (unsigned char*)&palette_frame->palette[0];
+    unsigned char *indexed = (unsigned char*)&fdata->indexed[0];
+    for (int i = 0; i < num_pixels; ++i)
+    {
+        int i4 = i * 4;
+        op[i4 + 0] = palette[indexed[i] * 3 + 0];
+        op[i4 + 1] = palette[indexed[i] * 3 + 1];
+        op[i4 + 2] = palette[indexed[i] * 3 + 2];
+        op[i4 + 3] = 255;
+    }
 }
 
 
@@ -406,7 +427,7 @@ void jo_gif_write_frame(std::ostream &os, jo_gif_t *gif, jo_gif_frame_t *fdata, 
         os.write((char*)palette, 3 * (1 << (gif->palSize + 1)));
     }
     os.put(8); // block terminator
-    os.write(&fdata->pixels[0], fdata->pixels.size());
+    os.write(&fdata->encoded[0], fdata->encoded.size());
     os.put(0); // block terminator
 }
 
