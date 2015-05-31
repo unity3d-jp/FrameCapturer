@@ -109,13 +109,23 @@ struct RGBA
 };
 
 template<class T>
-inline void BGRA_To_RGBA(RGBA<T> *data, int data_num)
+inline void BGRA_RGBA_conversion(RGBA<T> *data, int num_pixels)
 {
-    for (int i = 0; i < data_num; ++i) {
-        RGBA<T> &p = data[i];
-        T t = p.b;
-        p.b = p.r;
-        p.r = t;
+    for (int i = 0; i < num_pixels; ++i) {
+        std::swap(data[i].r, data[i].b);
+    }
+}
+
+template<class T>
+inline void copy_with_BGRA_RGBA_conversion(RGBA<T> *dst, const RGBA<T> *src, int num_pixels)
+{
+    for (int i = 0; i < num_pixels; ++i) {
+        RGBA<T>       &d = dst[i];
+        const RGBA<T> &s = src[i];
+        d.r = s.b;
+        d.g = s.g;
+        d.b = s.r;
+        d.a = s.a;
     }
 }
 
@@ -161,11 +171,15 @@ bool fcGraphicsDeviceD3D9::readTexture(void *o_buf, size_t bufsize, void *tex_, 
                     rpixels += rpitch;
                 }
             }
-
             surf_dst->UnlockRect();
 
             // D3D9 ではピクセルの並びは BGRA になっているので並べ替える
-            if (format == fcE_ARGB32) { BGRA_To_RGBA((RGBA<uint8_t>*)o_buf, bufsize / 4); }
+            switch (format)
+            {
+            case fcE_ARGB32: BGRA_RGBA_conversion((RGBA<uint8_t>*)o_buf, bufsize / 4); break;
+            case fcE_ARGBHalf: BGRA_RGBA_conversion((RGBA<uint16_t>*)o_buf, bufsize / 8); break;
+            case fcE_ARGBFloat: BGRA_RGBA_conversion((RGBA<uint32_t>*)o_buf, bufsize / 16); break;
+            }
             ret = true;
         }
     }
@@ -182,20 +196,39 @@ bool fcGraphicsDeviceD3D9::writeTexture(void *o_tex, int width, int height, fcET
 
     HRESULT hr;
     IDirect3DTexture9 *tex = (IDirect3DTexture9*)o_tex;
+
+    // D3D11 と違い、D3D9 では書き込みも staging texture を経由する必要がある。
+    IDirect3DSurface9 *surf_src = findOrCreateStagingTexture(width, height, format);
+    if (surf_src == nullptr) { return false; }
+
+    IDirect3DSurface9* surf_dst = nullptr;
+    hr = tex->GetSurfaceLevel(0, &surf_dst);
+    if (FAILED(hr)){ return false; }
+
+    bool ret = false;
     D3DLOCKED_RECT locked;
-    hr = tex->LockRect(0, &locked, nullptr, D3DLOCK_DISCARD);
+    hr = surf_src->LockRect(&locked, nullptr, D3DLOCK_DISCARD);
     if (SUCCEEDED(hr))
     {
         const char *rpixels = (const char*)buf;
         int rpitch = psize * width;
         char *wpixels = (char*)locked.pBits;
         int wpitch = locked.Pitch;
+        switch (format)
+        {
+        case fcE_ARGB32: copy_with_BGRA_RGBA_conversion((RGBA<uint8_t>*)wpixels, (RGBA<uint8_t>*)rpixels, bufsize / 4); break;
+        case fcE_ARGBHalf: copy_with_BGRA_RGBA_conversion((RGBA<uint16_t>*)wpixels, (RGBA<uint16_t>*)rpixels, bufsize / 8); break;
+        case fcE_ARGBFloat: copy_with_BGRA_RGBA_conversion((RGBA<uint32_t>*)wpixels, (RGBA<uint32_t>*)rpixels, bufsize / 16); break;
+        }
+        surf_src->UnlockRect();
 
-        memcpy(wpixels, rpixels, bufsize);
-
-        tex->UnlockRect(0);
-        return true;
+        hr = m_device->UpdateSurface(surf_src, nullptr, surf_dst, nullptr);
+        if (SUCCEEDED(hr)) {
+            ret = true;
+        }
     }
+    surf_dst->Release();
+
     return false;
 }
 
