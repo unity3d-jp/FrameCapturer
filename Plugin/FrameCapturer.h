@@ -1,4 +1,4 @@
-#ifndef FrameCapturer_h
+﻿#ifndef FrameCapturer_h
 #define FrameCapturer_h
 
 class fcExrContext;

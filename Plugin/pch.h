@@ -1,4 +1,4 @@
-//options:
+﻿//options:
 //#define fcSupportGIF
 //#define fcSupportEXR
 //#define fcSupportOpenGL
