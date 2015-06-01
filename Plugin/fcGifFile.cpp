@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "FrameCapturer.h"
 #include "fcThreadPool.h"
 #include "fcGraphicsDevice.h"
@@ -61,7 +61,7 @@ fcGifContext::~fcGifContext()
 
 static inline void advance_palette_and_pop_front(std::list<jo_gif_frame_t>& frames)
 {
-    // æ“ª‚ÌƒpƒŒƒbƒg‚ğ‚¢‚Á‚±æ‚ÌƒtƒŒ[ƒ€‚ÖˆÚ“®
+    // å…ˆé ­ã®ãƒ‘ãƒ¬ãƒƒãƒˆã‚’ã„ã£ã“å…ˆã®ãƒ•ãƒ¬ãƒ¼ãƒ ã¸ç§»å‹•
     if (frames.size() >= 2)
     {
         auto &first = frames.front();
@@ -75,13 +75,13 @@ static inline void advance_palette_and_pop_front(std::list<jo_gif_frame_t>& fram
 
 void fcGifContext::scrape(bool updating)
 {
-    // Å‘å—e—Ê‚©Å‘åƒtƒŒ[ƒ€”‚ªİ’è‚³‚ê‚Ä‚¢‚éê‡A‚»‚ê‚ç‚ğ’´‰ß‚µ‚½ƒtƒŒ[ƒ€‚ğ‚±‚±‚ÅØ‚èÌ‚Ä‚éB
-    // Ø‚èÌ‚Ä‚éƒtƒŒ[ƒ€‚ªƒpƒŒƒbƒg‚ğ‚Á‚Ä‚¢‚éê‡ƒpƒŒƒbƒg‚ÌˆÚ“®‚às‚¤B
+    // æœ€å¤§å®¹é‡ã‹æœ€å¤§ãƒ•ãƒ¬ãƒ¼ãƒ æ•°ãŒè¨­å®šã•ã‚Œã¦ã„ã‚‹å ´åˆã€ãã‚Œã‚‰ã‚’è¶…éã—ãŸãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ã“ã“ã§åˆ‡ã‚Šæ¨ã¦ã‚‹ã€‚
+    // åˆ‡ã‚Šæ¨ã¦ã‚‹ãƒ•ãƒ¬ãƒ¼ãƒ ãŒãƒ‘ãƒ¬ãƒƒãƒˆã‚’æŒã£ã¦ã„ã‚‹å ´åˆãƒ‘ãƒ¬ãƒƒãƒˆã®ç§»å‹•ã‚‚è¡Œã†ã€‚
 
-    // Às’†‚Ìƒ^ƒXƒN‚ªXV’†‚Ìƒf[ƒ^‚ğŠÔˆø‚­‚Ì‚Íƒ}ƒY‚¢‚Ì‚ÅAXV’†‚ÍÅ’á‚Å‚àƒ^ƒXƒN”•ª‚Íc‚·
+    // å®Ÿè¡Œä¸­ã®ã‚¿ã‚¹ã‚¯ãŒæ›´æ–°ä¸­ã®ãƒ‡ãƒ¼ã‚¿ã‚’é–“å¼•ãã®ã¯ãƒã‚ºã„ã®ã§ã€æ›´æ–°ä¸­ã¯æœ€ä½ã§ã‚‚ã‚¿ã‚¹ã‚¯æ•°åˆ†ã¯æ®‹ã™
     int min_frames = updating ? std::max<int>(m_conf.max_active_tasks, 1) : 1;
 
-    // Å‘åƒtƒŒ[ƒ€”’´‚¦‚Ä‚½‚çŠÔˆø‚­
+    // æœ€å¤§ãƒ•ãƒ¬ãƒ¼ãƒ æ•°è¶…ãˆã¦ãŸã‚‰é–“å¼•ã
     if (m_conf.max_frame > 0)
     {
         while (m_conf.max_frame > min_frames && m_gif_buffers.size() > m_conf.max_frame)
@@ -90,7 +90,7 @@ void fcGifContext::scrape(bool updating)
         }
     }
 
-    // Å‘å—e—Ê’´‚¦‚Ä‚½‚çŠÔˆø‚­
+    // æœ€å¤§å®¹é‡è¶…ãˆã¦ãŸã‚‰é–“å¼•ã
     if (m_conf.max_data_size > 0)
     {
         size_t size = 14; // gif header + footer size
@@ -116,7 +116,7 @@ void fcGifContext::addFrameTask(jo_gif_frame_t &o_fdata, const std::string &raw_
 
 bool fcGifContext::addFrame(void *tex)
 {
-    // Às’†‚Ìƒ^ƒXƒN‚Ì”‚ªãŒÀ‚É’B‚µ‚Ä‚¢‚éê‡“K“–‚É‘Ò‚Â
+    // å®Ÿè¡Œä¸­ã®ã‚¿ã‚¹ã‚¯ã®æ•°ãŒä¸Šé™ã«é”ã—ã¦ã„ã‚‹å ´åˆé©å½“ã«å¾…ã¤
     if (m_active_task_count >= m_conf.max_active_tasks)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -127,7 +127,7 @@ bool fcGifContext::addFrame(void *tex)
     }
     int frame = m_frame++;
 
-    // ƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚Ì“à—eæ“¾
+    // ãƒ•ãƒ¬ãƒ¼ãƒ ãƒãƒƒãƒ•ã‚¡ã®å†…å®¹å–å¾—
     std::string& raw_buffer = m_raw_buffers[frame % m_conf.max_active_tasks];
     if (!fcGetGraphicsDevice()->readTexture(&raw_buffer[0], raw_buffer.size(), tex, m_conf.width, m_conf.height, fcE_ARGB32))
     {
@@ -135,12 +135,12 @@ bool fcGifContext::addFrame(void *tex)
         return false;
     }
 
-    // gif ƒf[ƒ^‚ğ¶¬
+    // gif ãƒ‡ãƒ¼ã‚¿ã‚’ç”Ÿæˆ
     m_gif_buffers.push_back(jo_gif_frame_t());
     jo_gif_frame_t& fdata = m_gif_buffers.back();
     bool local_palette = frame==0 || (m_conf.keyframe != 0 && frame % m_conf.keyframe == 0);
     if (local_palette) {
-        // ƒpƒŒƒbƒg‚ÌXV‚Í‘OŒã‚ÌƒtƒŒ[ƒ€‚É‰e‹¿‚ğ‚ ‚½‚¦‚é‚½‚ßA“¯ŠúXV‚Å‚È‚¯‚ê‚Î‚È‚ç‚È‚¢
+        // ãƒ‘ãƒ¬ãƒƒãƒˆã®æ›´æ–°ã¯å‰å¾Œã®ãƒ•ãƒ¬ãƒ¼ãƒ ã«å½±éŸ¿ã‚’ã‚ãŸãˆã‚‹ãŸã‚ã€åŒæœŸæ›´æ–°ã§ãªã‘ã‚Œã°ãªã‚‰ãªã„
         m_tasks.wait();
         addFrameTask(fdata, raw_buffer, frame, local_palette);
     }
@@ -188,7 +188,7 @@ void fcGifContext::write(std::ostream &os, int begin_frame, int end_frame)
     std::advance(begin, begin_frame);
     std::advance(end, end_frame);
 
-    // ƒpƒŒƒbƒg’Tõ
+    // ãƒ‘ãƒ¬ãƒƒãƒˆæ¢ç´¢
     auto palette = begin;
     while (palette->palette.empty()) { --palette; }
 
@@ -268,7 +268,7 @@ int fcGifContext::getExpectedDataSize(int begin_frame, int end_frame)
     {
         if (i == begin) {
             if (m_gif.repeat >= 0) { size += 19; }
-            // ƒpƒŒƒbƒg’Tõ
+            // ãƒ‘ãƒ¬ãƒƒãƒˆæ¢ç´¢
             if (begin->palette.empty())
             {
                 auto palette = begin;

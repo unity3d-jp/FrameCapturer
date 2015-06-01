@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "FrameCapturer.h"
 #include "fcGraphicsDevice.h"
 
@@ -134,8 +134,8 @@ bool fcGraphicsDeviceD3D9::readTexture(void *o_buf, size_t bufsize, void *tex_, 
     HRESULT hr;
     IDirect3DTexture9 *tex = (IDirect3DTexture9*)tex_;
 
-    // D3D11 ‚Æ“¯—l render target ‚Ì“à—e‚Í CPU ‚©‚ç‚ÍƒAƒNƒZƒX•s‰Â”\‚É‚È‚Á‚Ä‚¢‚éB
-    // staging texture ‚ğ—pˆÓ‚µ‚Ä‚»‚ê‚É“à—e‚ğˆÚ‚µACPU ‚Í‚»‚êŒo—R‚Åƒf[ƒ^‚ğ“Ç‚ŞB
+    // D3D11 ã¨åŒæ§˜ render target ã®å†…å®¹ã¯ CPU ã‹ã‚‰ã¯ã‚¢ã‚¯ã‚»ã‚¹ä¸å¯èƒ½ã«ãªã£ã¦ã„ã‚‹ã€‚
+    // staging texture ã‚’ç”¨æ„ã—ã¦ãã‚Œã«å†…å®¹ã‚’ç§»ã—ã€CPU ã¯ãã‚ŒçµŒç”±ã§ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã‚€ã€‚
     IDirect3DSurface9 *surf_dst = findOrCreateStagingTexture(width, height, format);
     if (surf_dst == nullptr) { return false; }
 
@@ -156,8 +156,8 @@ bool fcGraphicsDeviceD3D9::readTexture(void *o_buf, size_t bufsize, void *tex_, 
             const char *rpixels = (const char*)locked.pBits;
             int rpitch = locked.Pitch;
 
-            // D3D11 ‚Æ“¯—l•\Œü‚«‰ğ‘œ“x‚Æ“à•”‰ğ‘œ“x‚ªˆá‚¤ƒP[ƒX‚ğl—¶
-            // (‚µ‚©‚µA­‚È‚­‚Æ‚àèŒ³‚ÌŠÂ‹«‚Å‚Íí‚É wpitch == rpitch ‚Á‚Û‚¢)
+            // D3D11 ã¨åŒæ§˜è¡¨å‘ãè§£åƒåº¦ã¨å†…éƒ¨è§£åƒåº¦ãŒé•ã†ã‚±ãƒ¼ã‚¹ã‚’è€ƒæ…®
+            // (ã—ã‹ã—ã€å°‘ãªãã¨ã‚‚æ‰‹å…ƒã®ç’°å¢ƒã§ã¯å¸¸ã« wpitch == rpitch ã£ã½ã„)
             if (wpitch == rpitch)
             {
                 memcpy(wpixels, rpixels, bufsize);
@@ -173,7 +173,7 @@ bool fcGraphicsDeviceD3D9::readTexture(void *o_buf, size_t bufsize, void *tex_, 
             }
             surf_dst->UnlockRect();
 
-            // D3D9 ‚Å‚ÍƒsƒNƒZƒ‹‚Ì•À‚Ñ‚Í BGRA ‚É‚È‚Á‚Ä‚¢‚é‚Ì‚Å•À‚×‘Ö‚¦‚é
+            // D3D9 ã§ã¯ãƒ”ã‚¯ã‚»ãƒ«ã®ä¸¦ã³ã¯ BGRA ã«ãªã£ã¦ã„ã‚‹ã®ã§ä¸¦ã¹æ›¿ãˆã‚‹
             switch (format)
             {
             case fcE_ARGB32: BGRA_RGBA_conversion((RGBA<uint8_t>*)o_buf, bufsize / 4); break;
@@ -197,7 +197,7 @@ bool fcGraphicsDeviceD3D9::writeTexture(void *o_tex, int width, int height, fcET
     HRESULT hr;
     IDirect3DTexture9 *tex = (IDirect3DTexture9*)o_tex;
 
-    // D3D11 ‚Æˆá‚¢AD3D9 ‚Å‚Í‘‚«‚İ‚à staging texture ‚ğŒo—R‚·‚é•K—v‚ª‚ ‚éB
+    // D3D11 ã¨é•ã„ã€D3D9 ã§ã¯æ›¸ãè¾¼ã¿ã‚‚ staging texture ã‚’çµŒç”±ã™ã‚‹å¿…è¦ãŒã‚ã‚‹ã€‚
     IDirect3DSurface9 *surf_src = findOrCreateStagingTexture(width, height, format);
     if (surf_src == nullptr) { return false; }
 

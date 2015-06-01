@@ -1,4 +1,4 @@
-#ifndef fcThreadPool_h
+﻿#ifndef fcThreadPool_h
 #define fcThreadPool_h
 
 #ifndef fcWithTBB
