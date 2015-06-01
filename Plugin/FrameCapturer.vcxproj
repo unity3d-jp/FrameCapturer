@@ -9,12 +9,12 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="MasterMT|Win32">
-      <Configuration>MasterMT</Configuration>
+    <ProjectConfiguration Include="GifOnlyMT|Win32">
+      <Configuration>GifOnlyMT</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="MasterMT|x64">
-      <Configuration>MasterMT</Configuration>
+    <ProjectConfiguration Include="GifOnlyMT|x64">
+      <Configuration>GifOnlyMT</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Master|Win32">
@@ -49,9 +49,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Master|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='MasterMT|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='MasterMT|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|Win32'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -87,7 +87,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterMT|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|x64'" Label="Configuration">
     <PlatformToolset>v120</PlatformToolset>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -97,7 +97,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterMT|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|Win32'" Label="Configuration">
     <PlatformToolset>v120</PlatformToolset>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -136,9 +136,9 @@
     <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterMT|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|x64'">
     <IncludePath>external;external\glew-1.12.0\include;external\ilmbase-2.2.0\Imath;external\ilmbase-2.2.0\IlmThread;external\ilmbase-2.2.0\IexMath;external\ilmbase-2.2.0\Iex;external\ilmbase-2.2.0\Half;external\ilmbase-2.2.0\config;external\openexr-2.2.0\IlmImf;external\openexr-2.2.0\config;$(IncludePath)</IncludePath>
-    <LibraryPath>external\libs\x86_64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>external\libs\x86_64mt;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -148,9 +148,9 @@
     <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterMT|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|Win32'">
     <IncludePath>external;external\glew-1.12.0\include;external\ilmbase-2.2.0\Imath;external\ilmbase-2.2.0\IlmThread;external\ilmbase-2.2.0\IexMath;external\ilmbase-2.2.0\Iex;external\ilmbase-2.2.0\Half;external\ilmbase-2.2.0\config;external\openexr-2.2.0\IlmImf;external\openexr-2.2.0\config;$(IncludePath)</IncludePath>
-    <LibraryPath>external\libs\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath>external\libs\x86mt;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -242,7 +242,7 @@
       <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MasterMT|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|x64'">
     <PostBuildEvent>
       <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86_64\</Command>
     </PostBuildEvent>
@@ -251,7 +251,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>fcSupportGIF;fcSupportEXR;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcMaster;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>fcSupportGIF;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcMaster;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Full</Optimization>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -283,7 +283,7 @@
       <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MasterMT|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|Win32'">
     <PostBuildEvent>
       <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86\</Command>
     </PostBuildEvent>
