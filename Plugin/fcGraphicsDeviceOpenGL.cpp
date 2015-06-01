@@ -83,7 +83,6 @@ bool fcGraphicsDeviceOpenGL::writeTexture(void *o_tex, int width, int height, fc
     int psize = fcGetPixelSize(format);
     int pitch = psize * width;
     const size_t num_pixels = bufsize / psize;
-
     glTextureSubImage2D((GLuint)(size_t)o_tex, 0, 0, 0, width, height, internal_format, internal_type, buf);
     return true;
 }

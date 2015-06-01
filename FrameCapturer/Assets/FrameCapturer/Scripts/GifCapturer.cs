@@ -27,11 +27,16 @@ public class GifCapturer : MovieCapturer
     Material m_mat_copy;
     Mesh m_quad;
     CommandBuffer m_cb;
-    public RenderTexture m_rt_copy;
+    public RenderTexture m_scratch_buffer;
     Camera m_cam;
     int m_frame;
     public bool m_recode = false;
 
+    GifCapturer()
+    {
+        // Plugins/* を dll サーチパスに追加
+        try { FrameCapturer.AddLibraryPath(); } catch { }
+    }
 
     public override bool recode
     {
@@ -52,12 +57,39 @@ public class GifCapturer : MovieCapturer
         }
     }
 
-    public override RenderTexture GetScratchBuffer() { return m_rt_copy; }
+    public override RenderTexture GetScratchBuffer() { return m_scratch_buffer; }
 
-    public override void ClearFrame()
+    public override void ResetRecordingState()
     {
-        FrameCapturer.fcGifClearFrame(m_gif);
+        FrameCapturer.fcGifDestroyContext(m_gif);
+        m_gif = IntPtr.Zero;
+        if(m_scratch_buffer != null)
+        {
+            m_scratch_buffer.Release();
+            m_scratch_buffer = null;
+        }
+
+        int capture_width = m_resolution_width;
+        int capture_height = (int)(m_resolution_width / ((float)m_cam.pixelWidth / (float)m_cam.pixelHeight));
+        m_scratch_buffer = new RenderTexture(capture_width, capture_height, 0, RenderTextureFormat.ARGB32);
+        m_scratch_buffer.wrapMode = TextureWrapMode.Repeat;
+        m_scratch_buffer.Create();
+
         m_frame = 0;
+        if (m_max_active_tasks <= 0)
+        {
+            m_max_active_tasks = SystemInfo.processorCount;
+        }
+        FrameCapturer.fcGifConfig conf;
+        conf.width = m_scratch_buffer.width;
+        conf.height = m_scratch_buffer.height;
+        conf.num_colors = m_num_colors;
+        conf.delay_csec = m_interval_centi_sec;
+        conf.keyframe = m_keyframe;
+        conf.max_frame = m_max_frame;
+        conf.max_data_size = m_max_data_size;
+        conf.max_active_tasks = m_max_active_tasks;
+        m_gif = FrameCapturer.fcGifCreateContext(ref conf);
     }
 
     public override void EraseFrame(int begin_frame, int end_frame)
@@ -100,12 +132,6 @@ public class GifCapturer : MovieCapturer
         m_quad = FrameCapturerUtils.CreateFullscreenQuad();
         m_mat_copy = new Material(m_sh_copy);
 
-        int capture_width = m_resolution_width;
-        int capture_height = (int)(m_resolution_width / ((float)m_cam.pixelWidth / (float)m_cam.pixelHeight));
-        m_rt_copy = new RenderTexture(capture_width, capture_height, 0, RenderTextureFormat.ARGB32);
-        m_rt_copy.wrapMode = TextureWrapMode.Repeat;
-        m_rt_copy.Create();
-
         {
             m_cb = new CommandBuffer();
             m_cb.name = "GifCapturer: copy frame buffer";
@@ -115,23 +141,7 @@ public class GifCapturer : MovieCapturer
             // tid は意図的に開放しない
             m_cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
         }
-        {
-            if(m_max_active_tasks<=0)
-            {
-                m_max_active_tasks = SystemInfo.processorCount;
-            }
-            FrameCapturer.fcGifConfig conf;
-            conf.width = m_rt_copy.width;
-            conf.height = m_rt_copy.height;
-            conf.num_colors = m_num_colors;
-            conf.delay_csec = m_interval_centi_sec;
-            conf.keyframe = m_keyframe;
-            conf.max_frame = m_max_frame;
-            conf.max_data_size = m_max_data_size;
-            conf.max_active_tasks = m_max_active_tasks;
-            FrameCapturer.AddLibraryPath();
-            m_gif = FrameCapturer.fcGifCreateContext(ref conf);
-        }
+        ResetRecordingState();
     }
 
     void OnDisable()
@@ -143,8 +153,8 @@ public class GifCapturer : MovieCapturer
         m_cb.Release();
         m_cb = null;
 
-        m_rt_copy.Release();
-        m_rt_copy = null;
+        m_scratch_buffer.Release();
+        m_scratch_buffer = null;
     }
 
     IEnumerator OnPostRender()
@@ -157,10 +167,10 @@ public class GifCapturer : MovieCapturer
             if (frame % m_capture_every_n_frames == 0)
             {
                 m_mat_copy.SetPass(0);
-                Graphics.SetRenderTarget(m_rt_copy);
+                Graphics.SetRenderTarget(m_scratch_buffer);
                 Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                 Graphics.SetRenderTarget(null);
-                FrameCapturer.fcGifAddFrame(m_gif, m_rt_copy.GetNativeTexturePtr());
+                FrameCapturer.fcGifAddFrame(m_gif, m_scratch_buffer.GetNativeTexturePtr());
             }
         }
     }
