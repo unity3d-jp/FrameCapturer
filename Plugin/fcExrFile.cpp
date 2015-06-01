@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "FrameCapturer.h"
 #include "fcThreadPool.h"
 #include "fcGraphicsDevice.h"
@@ -141,10 +141,10 @@ bool fcExrContext::writeFrame(const char *path_, void *tex, int width, int heigh
 {
     WorkData *wd = nullptr;
 
-    // ƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚Ì“à—eŽæ“¾
+    // ãƒ•ãƒ¬ãƒ¼ãƒ ãƒãƒƒãƒ•ã‚¡ã®å†…å®¹å–å¾—
     if (tex == nullptr)
     {
-        // tex ‚ª null ‚Ìê‡A‘O‰ñŽæ“¾‚µ‚½Œ‹‰Ê‚ðŽg‚¢‰ñ‚·B (exr ‘‚«o‚µ‚Ìê‡‚í‚è‚Æ‚æ‚­‚ ‚éƒP[ƒX)
+        // tex ãŒ null ã®å ´åˆã€å‰å›žå–å¾—ã—ãŸçµæžœã‚’ä½¿ã„å›žã™ã€‚ (exr æ›¸ãå‡ºã—ã®å ´åˆã‚ã‚Šã¨ã‚ˆãã‚ã‚‹ã‚±ãƒ¼ã‚¹)
         wd = &m_raw_frames[(m_frame - 1) % m_conf.max_active_tasks];
     }
     else
@@ -163,7 +163,7 @@ bool fcExrContext::writeFrame(const char *path_, void *tex, int width, int heigh
         ++m_frame;
     }
 
-    // exr ‘‚«o‚µƒ^ƒXƒN‚ð kick
+    // exr æ›¸ãå‡ºã—ã‚¿ã‚¹ã‚¯ã‚’ kick
     std::string path = path_;
     ++wd->refcount;
     m_tasks.run([this, path, wd, width, height, fmt, mask](){
