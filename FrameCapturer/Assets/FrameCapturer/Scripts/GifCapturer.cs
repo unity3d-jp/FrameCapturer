@@ -13,11 +13,11 @@ using UnityEditor;
 [RequireComponent(typeof(Camera))]
 public class GifCapturer : MovieCapturer
 {
-    public int m_resolution_width = 320;
+    public int m_resolution_width = 300;
     public int m_num_colors = 255;
     public int m_capture_every_n_frames = 2;
     public int m_interval_centi_sec = 3;
-    public int m_max_frame = 0;
+    public int m_max_frame = 1800;
     public int m_max_data_size = 0;
     public int m_max_active_tasks = 0;
     public int m_keyframe = 0;
