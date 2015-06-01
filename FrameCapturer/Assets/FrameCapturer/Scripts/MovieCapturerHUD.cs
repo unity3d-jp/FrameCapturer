@@ -17,6 +17,7 @@ public class MovieCapturerHUD : MonoBehaviour
     bool m_update_status;
     bool m_update_preview;
 
+
     public bool recode
     {
         get { return m_capturer.recode; }
@@ -26,12 +27,7 @@ public class MovieCapturerHUD : MonoBehaviour
             if (value)
             {
                 GetComponent<Image>().color = new Color(1.0f, 0.5f, 0.5f, 0.5f);
-                RenderTexture buf = m_capturer.GetScratchBuffer();
-                m_gif_preview.texture = buf;
-                float s = (float)buf.width / (float)buf.height;
-                float xs = Mathf.Min(s, 1.8f);
-                float ys = 1.8f / s;
-                m_gif_preview.rectTransform.localScale = new Vector3(xs, ys, 1.0f);
+                UpdatePreviewImage(m_capturer.GetScratchBuffer());
             }
             else
             {
@@ -46,9 +42,13 @@ public class MovieCapturerHUD : MonoBehaviour
         m_capturer.WriteFile("", m_begin_frame, m_end_frame);
     }
 
-    public void ClearFrame()
+    public void ResetRecordingState()
     {
-        m_capturer.ClearFrame();
+        m_capturer.ResetRecordingState();
+        if(recode)
+        {
+            UpdatePreviewImage(m_capturer.GetScratchBuffer());
+        }
         m_update_status = true;
     }
 
@@ -91,6 +91,17 @@ public class MovieCapturerHUD : MonoBehaviour
 
 
 
+    void UpdatePreviewImage(RenderTexture rt)
+    {
+        const float MaxXScale = 1.8f;
+        m_gif_preview.texture = rt;
+        float s = (float)rt.width / (float)rt.height;
+        float xs = Mathf.Min(s, MaxXScale);
+        float ys = MaxXScale / s;
+        m_gif_preview.rectTransform.localScale = new Vector3(xs, ys, 1.0f);
+    }
+
+
     void OnEnable()
     {
 
@@ -118,12 +129,7 @@ public class MovieCapturerHUD : MonoBehaviour
         {
             m_update_preview = false;
             m_capturer.GetFrameData(m_gif_image, m_current_frame);
-
-            m_gif_preview.texture = m_gif_image;
-            float s = (float)m_gif_image.width / (float)m_gif_image.height;
-            float xs = Mathf.Min(s, 1.8f);
-            float ys = 1.8f / s;
-            m_gif_preview.rectTransform.localScale = new Vector3(xs, ys, 1.0f);
+            UpdatePreviewImage(m_gif_image);
         }
         if(m_update_status || recode)
         {

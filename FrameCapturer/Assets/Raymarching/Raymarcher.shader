@@ -137,8 +137,8 @@ void raymarching(float2 pos, const int num_steps, inout float o_total_distance, 
         o_num_steps += 1.0;
         if(o_last_distance < 0.001 || o_total_distance > max_distance) { break; }
     }
-    o_total_distance = min(o_total_distance, max_distance);
-    //if(o_total_distance > max_distance) { discard; }
+    //o_total_distance = min(o_total_distance, max_distance);
+    if(o_total_distance > max_distance) { discard; }
 }
 
 
