@@ -6,7 +6,7 @@ public abstract class MovieCapturer : MonoBehaviour
     public abstract bool recode { get; set; }
     public abstract void WriteFile(string path = "", int begin_frame = 0, int end_frame = -1);
     public abstract RenderTexture GetScratchBuffer();
-    public abstract void ClearFrame();
+    public abstract void ResetRecordingState();
     public abstract void EraseFrame(int begin_frame, int end_frame);
     public abstract int GetExpectedFileSize(int begin_frame = 0, int end_frame = -1);
     public abstract int GetFrameCount();
