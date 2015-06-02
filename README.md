@@ -1,5 +1,5 @@
 # FrameCapturer
-[english](README_EN.md)  
+[English](README_EN.md)  
   
 フレームバッファの内容をキャプチャして画像や動画に出力する Unity 用のプラグインです。現在アニメ gif と exr への出力に対応しています。
 
@@ -20,6 +20,7 @@
 1. [このパッケージ](https://github.com/unity3d-jp/FrameCapturer/blob/master/Packages/GifRecoder.unitypackage?raw=true)をインポート
 2. 録画したいカメラに GifCapturer コンポーネントを追加
 3. UI オブジェクト GifCapturerHUD.prefab をどこかに配置し、それの MovieCapturerHUD.capturer に 2 で追加したコンポーネントを設定
+
 3 は必須ではありませんが、GifCapturer には録画の on/off 切り替えやファイルへの書き出しなどをコントロールするための GUI やスクリプトが必要になります。GifCapturerHUD.prefab を改造して独自の GUI を作るのもいいでしょう。
   
 ## Exr Capturer  
