@@ -1,5 +1,6 @@
 # FrameCapturer
-
+[english](README_EN.md)  
+  
 フレームバッファの内容をキャプチャして画像や動画に出力する Unity 用のプラグインです。現在アニメ gif と exr への出力に対応しています。
 
 ## Gif Capturer
@@ -10,7 +11,7 @@
 - D3D9, D3D11, OpenGL と x86, x86-64 の組み合わせに対応 (ただし Windows でのみ動作を確認)
 
 以下の動画を見ると何ができるのか大体わかると思います。  
-[![atomic C84 preview](http://img.youtube.com/vi/VRmVIzhxewI/0.jpg)](http://www.youtube.com/watch?v=VRmVIzhxewI)  
+[![FrameCapturer: GifRecorder](http://img.youtube.com/vi/VRmVIzhxewI/0.jpg)](http://www.youtube.com/watch?v=VRmVIzhxewI)  
 
 以下はこのプラグインで出力されたアニメ gif の例です。  
 ![example1](Screenshots/gif_example1.gif)  
@@ -19,8 +20,7 @@
 1. [このパッケージ](https://github.com/unity3d-jp/FrameCapturer/blob/master/Packages/GifRecoder.unitypackage?raw=true)をインポート
 2. 録画したいカメラに GifCapturer コンポーネントを追加
 3. UI オブジェクト GifCapturerHUD.prefab をどこかに配置し、それの MovieCapturerHUD.capturer に 2 で追加したコンポーネントを設定
-
-3 は必須ではありませんが、GifCapturer は外部から録画の on/off などをコントロールする必要があるため、UI の類はどこかにつける必要があります。GifCapturerHUD.prefab を改造して独自の UI を作るのもいいでしょう。
+3 は必須ではありませんが、GifCapturer には録画の on/off 切り替えやファイルへの書き出しなどをコントロールするための GUI やスクリプトが必要になります。GifCapturerHUD.prefab を改造して独自の GUI を作るのもいいでしょう。
   
 ## Exr Capturer  
 Exr は主に映像業界で使われるフォーマットで、G-Buffer やマテリアル ID など、コンポジットに使うためのデータを保持するのに用いられます。  
