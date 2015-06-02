@@ -9,7 +9,7 @@ features:
 - In-game previewer and simple editor
 - Supports D3D9, D3D11 and OpenGL graphics APIs, x86 and x86-64 architectures. (Confirmed only on Windows)
 
-demo video:
+demo video:  
 [![FrameCapturer: GifRecorder](http://img.youtube.com/vi/VRmVIzhxewI/0.jpg)](http://www.youtube.com/watch?v=VRmVIzhxewI)  
 
 examples: this image is exported by this plug-in. (This scene is included in this repository)  
