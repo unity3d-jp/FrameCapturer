@@ -20,11 +20,21 @@ public class ExrCapturer : MonoBehaviour
     int m_frame;
 
 
+    void AddLayer(RenderTexture rt, int ch, string name)
+    {
+        FrameCapturer.fcExrAddLayer(m_exr, rt.GetNativeTexturePtr(), rt.format, ch, name);
+    }
+
     public void WriteFile(RenderTexture rt, string path)
     {
         if (m_exr != IntPtr.Zero)
         {
-            FrameCapturer.fcExrWriteFile(m_exr, path, rt.GetNativeTexturePtr(), rt.width, rt.height, rt.format);
+            FrameCapturer.fcExrBeginFrame(m_exr, path, rt.width, rt.height);
+            AddLayer(rt, 0, "R");
+            AddLayer(rt, 1, "G");
+            AddLayer(rt, 2, "B");
+            AddLayer(rt, 3, "A");
+            FrameCapturer.fcExrEndFrame(m_exr);
         }
     }
 

@@ -61,7 +61,7 @@ struct gbuffer_out
     half4 spec_smoothness   : SV_Target1; // RT1: spec color (rgb), smoothness (a)
     half4 normal            : SV_Target2; // RT2: normal (rgb), --unused, very low precision-- (a) 
     half4 emission          : SV_Target3; // RT3: emission (rgb), --unused-- (a)
-    float depth             : SV_Target4;
+    //float depth             : SV_Target4;
 };
 gbuffer_out copy_gbuffer(v2f i)
 {
@@ -71,7 +71,7 @@ gbuffer_out copy_gbuffer(v2f i)
     o.spec_smoothness   = tex2D(_CameraGBufferTexture1, t);
     o.normal            = tex2D(_CameraGBufferTexture2, t);
     o.emission          = tex2D(_LightBuffer, t);
-    o.depth             = tex2D(_CameraDepthTexture, t).r;
+    //o.depth             = tex2D(_CameraDepthTexture, t).r;
     return o;
 }
 
