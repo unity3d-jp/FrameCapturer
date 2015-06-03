@@ -66,8 +66,8 @@ void fcThreadPool::enqueue(const std::function<void()> &f)
 
 
 fcTaskGroup::fcTaskGroup()
+    : m_active_tasks(0)
 {
-    m_active_tasks = 0;
 }
 
 fcTaskGroup::~fcTaskGroup()

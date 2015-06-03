@@ -19,7 +19,7 @@
 ### 使い方
 1. [このパッケージ](https://github.com/unity3d-jp/FrameCapturer/blob/master/Packages/GifRecoder.unitypackage?raw=true)をインポート
 2. 録画したいカメラに GifCapturer コンポーネントを追加
-3. UI オブジェクト GifCapturerHUD.prefab をどこかに配置し、それの MovieCapturerHUD.capturer に 2 で追加したコンポーネントを設定
+3. uGUI オブジェクト GifCapturerHUD.prefab をどこかに配置し、それの capturer に 2 で追加したコンポーネントを設定
 
 3 は必須ではありませんが、GifCapturer には録画の on/off 切り替えやファイルへの書き出しなどをコントロールするための GUI やスクリプトが必要になります。GifCapturerHUD.prefab を改造して独自の GUI を作るのもいいでしょう。
   
