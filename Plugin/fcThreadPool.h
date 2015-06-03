@@ -46,7 +46,7 @@ public:
     void wait();
 
 private:
-    std::atomic_int m_active_tasks;
+    std::atomic<int> m_active_tasks;
 };
 
 template<class F>

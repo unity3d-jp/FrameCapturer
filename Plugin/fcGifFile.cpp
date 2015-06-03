@@ -2,9 +2,9 @@
 #include "FrameCapturer.h"
 #include "fcThreadPool.h"
 #include "fcGraphicsDevice.h"
-#include "jo_gif.cpp"
 
 #ifdef fcSupportGIF
+#include "jo_gif.cpp"
 
 class fcGifContext
 {
@@ -34,7 +34,7 @@ private:
     jo_gif_t m_gif;
     int m_frame;
     fcTaskGroup m_tasks;
-    std::atomic_int m_active_task_count;
+    std::atomic<int> m_active_task_count;
 };
 
 
@@ -42,8 +42,8 @@ fcGifContext::fcGifContext(fcGifConfig *conf)
     : m_magic(fcE_GifContext)
     , m_conf(*conf)
     , m_frame(0)
+    , m_active_task_count(0)
 {
-    m_active_task_count = 0;
     m_gif = jo_gif_start(m_conf.width, m_conf.height, 0, m_conf.num_colors);
     m_raw_buffers.resize(m_conf.max_active_tasks);
     for (auto& rf : m_raw_buffers)

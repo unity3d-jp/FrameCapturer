@@ -24,6 +24,7 @@ private:
 private:
     ID3D11Device *m_device;
     ID3D11DeviceContext *m_context;
+    ID3D11Query *m_query_event;
     std::map<uint64_t, ID3D11Texture2D*> m_staging_textures;
 };
 
@@ -36,11 +37,15 @@ fcGraphicsDevice* fcCreateGraphicsDeviceD3D11(void *device)
 fcGraphicsDeviceD3D11::fcGraphicsDeviceD3D11(void *device)
     : m_device((ID3D11Device*)device)
     , m_context(nullptr)
+    , m_query_event(nullptr)
 {
     clearStagingTextures();
     if (m_device != nullptr)
     {
         m_device->GetImmediateContext(&m_context);
+
+        D3D11_QUERY_DESC qdesc = {D3D11_QUERY_EVENT , 0};
+        m_device->CreateQuery(&qdesc, &m_query_event);
     }
 }
 
@@ -50,6 +55,9 @@ fcGraphicsDeviceD3D11::~fcGraphicsDeviceD3D11()
     {
         m_context->Release();
         m_context = nullptr;
+
+        m_query_event->Release();
+        m_query_event = nullptr;
     }
 }
 
@@ -120,6 +128,7 @@ void fcGraphicsDeviceD3D11::clearStagingTextures()
 bool fcGraphicsDeviceD3D11::readTexture(void *o_buf, size_t bufsize, void *tex_, int width, int height, fcETextureFormat format)
 {
     if (m_context == nullptr || tex_ == nullptr) { return false; }
+    int psize = fcGetPixelSize(format);
 
     // Unity の D3D11 の RenderTexture の内容は CPU からはアクセス不可能になっている。
     // なので staging texture を用意してそれに内容を移し、CPU はそれ経由でデータを読む。
@@ -127,7 +136,14 @@ bool fcGraphicsDeviceD3D11::readTexture(void *o_buf, size_t bufsize, void *tex_,
     ID3D11Texture2D *tmp = findOrCreateStagingTexture(width, height, format);
     m_context->CopyResource(tmp, tex);
 
-    D3D11_MAPPED_SUBRESOURCE mapped = {nullptr, width*4, 0};
+    // ID3D11DeviceContext::Map() はその時点までのコマンドの終了を待ってくれないっぽくて、
+    // ↑の CopyResource() が終わるのを手動で待たないといけない。
+    m_context->End(m_query_event);
+    while (m_context->GetData(m_query_event, nullptr, 0, 0) == S_FALSE) {
+        std::this_thread::sleep_for(std::chrono::microseconds(100));
+    }
+
+    D3D11_MAPPED_SUBRESOURCE mapped = { 0 };
     HRESULT hr = m_context->Map(tmp, 0, D3D11_MAP_READ, 0, &mapped);
     if (SUCCEEDED(hr))
     {

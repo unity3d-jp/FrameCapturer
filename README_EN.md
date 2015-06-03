@@ -18,7 +18,7 @@ examples: this image is exported by this plug-in. (This scene is included in thi
 ### Usage
 1. Import [this package](https://github.com/unity3d-jp/FrameCapturer/blob/master/Packages/GifRecoder.unitypackage?raw=true) to your project
 2. Add GifCapturer component to camera that you want to record
-3. Place GifCapturerHUD.prefab (uGUI object) to somewahere, and set GifCapturer (that added in 2.) to its capturer parameter
+3. Place GifCapturerHUD.prefab (uGUI object) to somewahere, and set GifCapturer (that is added in 2.) to its capturer parameter
 
 3 is not required, but GifCapturer needs GUI or scripts to turn on/off recording, write to file, etc. Modifing GifCapturerHUD.prefab is good way to make your own GUI.  
 
