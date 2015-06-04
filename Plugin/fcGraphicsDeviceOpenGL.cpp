@@ -10,7 +10,7 @@
 #pragma comment(lib, "glew32s.lib")
 
 
-class fcGraphicsDeviceOpenGL : public fcGraphicsDevice
+class fcGraphicsDeviceOpenGL : public fcIGraphicsDevice
 {
 public:
     fcGraphicsDeviceOpenGL(void *device);
@@ -25,7 +25,7 @@ private:
 };
 
 
-fcGraphicsDevice* fcCreateGraphicsDeviceOpenGL(void *device)
+fcIGraphicsDevice* fcCreateGraphicsDeviceOpenGL(void *device)
 {
     return new fcGraphicsDeviceOpenGL(device);
 }
@@ -79,10 +79,6 @@ bool fcGraphicsDeviceOpenGL::writeTexture(void *o_tex, int width, int height, fc
     GLenum internal_format = 0;
     GLenum internal_type = 0;
     fcGetInternalFormatOpenGL(format, internal_format, internal_type);
-
-    int psize = fcGetPixelSize(format);
-    int pitch = psize * width;
-    const size_t num_pixels = bufsize / psize;
     glTextureSubImage2D((GLuint)(size_t)o_tex, 0, 0, 0, width, height, internal_format, internal_type, buf);
     return true;
 }
