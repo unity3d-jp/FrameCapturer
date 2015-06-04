@@ -13,8 +13,8 @@ using UnityEditor;
 [RequireComponent(typeof(Camera))]
 public class ExrCapturer : MonoBehaviour
 {
-    public bool m_capture_framebuffer;
-    public bool m_capture_gbuffer;
+    public bool m_capture_framebuffer = true;
+    public bool m_capture_gbuffer = true;
 
     public string m_output_directory = "ExrOutput";
     public int m_begin_frame = 0;
@@ -29,7 +29,7 @@ public class ExrCapturer : MonoBehaviour
     CommandBuffer m_cb;
     RenderTexture m_frame_buffer;
     RenderTexture[] m_gbuffer;
-    RenderTexture m_depth;
+    public RenderTexture m_depth;
     RenderBuffer[] m_rt_gbuffer;
     Camera m_cam;
 
@@ -63,6 +63,13 @@ public class ExrCapturer : MonoBehaviour
             m_frame_buffer.Create();
         }
 
+        if (m_capture_gbuffer &&
+            m_cam.renderingPath != RenderingPath.DeferredShading &&
+            (m_cam.renderingPath == RenderingPath.UsePlayerSettings && PlayerSettings.renderingPath != RenderingPath.DeferredShading))
+        {
+            Debug.Log("ExrCapturer: Rendering path must be deferred to use capture_gbuffer mode.");
+            m_capture_gbuffer = false;
+        }
         if(m_capture_gbuffer)
         {
             m_gbuffer = new RenderTexture[4];
