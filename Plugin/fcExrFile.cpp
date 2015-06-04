@@ -18,6 +18,8 @@
 #pragma comment(lib, "IlmThread-2_2.lib")
 #pragma comment(lib, "IlmImf-2_2.lib")
 #pragma comment(lib, "zlibstatic.lib")
+#include "fcExrFile.h"
+
 
 
 struct fcExrFrameData
@@ -33,15 +35,15 @@ struct fcExrFrameData
     {}
 };
 
-
-class fcExrContext
+class fcExrContext : public fcIExrContext
 {
 public:
-    fcExrContext(fcExrConfig &conf);
+    fcExrContext(fcExrConfig &conf, fcIGraphicsDevice *dev);
     ~fcExrContext();
-    bool beginFrame(const char *path, int width, int height);
-    bool addLayer(void *tex, fcETextureFormat fmt, int channel, const char *name);
-    bool endFrame();
+    void release() override;
+    bool beginFrame(const char *path, int width, int height) override;
+    bool addLayer(void *tex, fcETextureFormat fmt, int channel, const char *name) override;
+    bool endFrame() override;
 
 private:
     void endFrameTask(fcExrFrameData *exr);
@@ -49,6 +51,7 @@ private:
 private:
     fcEMagic m_magic; //  for debug
     fcExrConfig m_conf;
+    fcIGraphicsDevice *m_dev;
     fcExrFrameData *m_exr;
     fcTaskGroup m_tasks;
     std::atomic<int> m_active_task_count;
@@ -57,9 +60,16 @@ private:
 };
 
 
-fcExrContext::fcExrContext(fcExrConfig &conf)
+fcIExrContext* fcCreateExrContext(fcExrConfig &conf, fcIGraphicsDevice *dev)
+{
+    return new fcExrContext(conf, dev);
+}
+
+
+fcExrContext::fcExrContext(fcExrConfig &conf, fcIGraphicsDevice *dev)
     : m_magic(fcE_ExrContext)
     , m_conf(conf)
+    , m_dev(dev)
     , m_exr(nullptr)
     , m_active_task_count(0)
     , m_tex_prev(nullptr)
@@ -69,9 +79,15 @@ fcExrContext::fcExrContext(fcExrConfig &conf)
 fcExrContext::~fcExrContext()
 {
     m_tasks.wait();
+    m_magic = fcE_Deleted;
 }
 
 
+
+void fcExrContext::release()
+{
+    delete this;
+}
 
 bool fcExrContext::beginFrame(const char *path, int width, int height)
 {
@@ -107,7 +123,7 @@ bool fcExrContext::addLayer(void *tex, fcETextureFormat fmt, int channel, const 
         m_exr->raw_frames.push_back(std::string());
         raw_frame = &m_exr->raw_frames.back();
         raw_frame->resize(m_exr->width * m_exr->height * fcGetPixelSize(fmt));
-        if (!fcGetGraphicsDevice()->readTexture(&(*raw_frame)[0], raw_frame->size(), tex, m_exr->width, m_exr->height, fmt))
+        if (!m_dev->readTexture(&(*raw_frame)[0], raw_frame->size(), tex, m_exr->width, m_exr->height, fmt))
         {
             m_exr->raw_frames.pop_back();
             return false;
@@ -166,43 +182,4 @@ void fcExrContext::endFrameTask(fcExrFrameData *exr)
     fout.writePixels(exr->height);
     delete exr;
 }
-
-
-
-
-#ifdef fcDebug
-#define fcCheckContext(v) if(v==nullptr || *(fcEMagic*)v!=fcE_ExrContext) { fcBreak(); }
-#else  // fcDebug
-#define fcCheckContext(v) 
-#endif // fcDebug
-
-fcCLinkage fcExport fcExrContext* fcExrCreateContext(fcExrConfig *conf)
-{
-    return new fcExrContext(*conf);
-}
-
-fcCLinkage fcExport void fcExrDestroyContext(fcExrContext *ctx)
-{
-    fcCheckContext(ctx);
-    delete ctx;
-}
-
-fcCLinkage fcExport bool fcExrBeginFrame(fcExrContext *ctx, const char *path, int width, int height)
-{
-    fcCheckContext(ctx);
-    return ctx->beginFrame(path, width, height);
-}
-
-fcCLinkage fcExport bool fcExrAddLayer(fcExrContext *ctx, void *tex, fcETextureFormat fmt, int ch, const char *name)
-{
-    fcCheckContext(ctx);
-    return ctx->addLayer(tex, fmt, ch, name);
-}
-
-fcCLinkage fcExport bool fcExrEndFrame(fcExrContext *ctx)
-{
-    fcCheckContext(ctx);
-    return ctx->endFrame();
-}
-
 #endif // fcSupportEXR

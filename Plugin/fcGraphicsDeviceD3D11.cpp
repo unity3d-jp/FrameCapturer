@@ -7,7 +7,7 @@
 const int fcD3D11MaxStagingTextures = 32;
 
 
-class fcGraphicsDeviceD3D11 : public fcGraphicsDevice
+class fcGraphicsDeviceD3D11 : public fcIGraphicsDevice
 {
 public:
     fcGraphicsDeviceD3D11(void *device);
@@ -29,7 +29,7 @@ private:
 };
 
 
-fcGraphicsDevice* fcCreateGraphicsDeviceD3D11(void *device)
+fcIGraphicsDevice* fcCreateGraphicsDeviceD3D11(void *device)
 {
     return new fcGraphicsDeviceD3D11(device);
 }

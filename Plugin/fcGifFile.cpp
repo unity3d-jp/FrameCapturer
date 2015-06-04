@@ -1,25 +1,30 @@
 ﻿#include "pch.h"
+
+#ifdef fcSupportGIF
 #include "FrameCapturer.h"
 #include "fcThreadPool.h"
 #include "fcGraphicsDevice.h"
-
-#ifdef fcSupportGIF
+#include "fcGifFile.h"
 #include "jo_gif.cpp"
 
-class fcGifContext
+
+
+class fcGifContext : public fcIGifContext
 {
 public:
-    fcGifContext(fcGifConfig *conf);
+    fcGifContext(fcGifConfig &conf, fcIGraphicsDevice *dev);
     ~fcGifContext();
-    bool addFrame(void *tex);
-    void clearFrame();
-    bool writeFile(const char *path, int begin_frame, int end_frame);
-    int  writeMemory(void *buf, int begin_frame, int end_frame);
+    void release() override;
 
-    int getFrameCount();
-    void getFrameData(void *tex, int frame);
-    int getExpectedDataSize(int begin_frame, int end_frame);
-    void eraseFrame(int begin_frame, int end_frame);
+    bool addFrame(void *tex) override;
+    void clearFrame() override;
+    bool writeFile(const char *path, int begin_frame, int end_frame) override;
+    int  writeMemory(void *buf, int begin_frame, int end_frame) override;
+
+    int getFrameCount() override;
+    void getFrameData(void *tex, int frame) override;
+    int getExpectedDataSize(int begin_frame, int end_frame) override;
+    void eraseFrame(int begin_frame, int end_frame) override;
 
 private:
     void scrape(bool is_tasks_running);
@@ -29,6 +34,7 @@ private:
 private:
     fcEMagic m_magic; //  for debug
     fcGifConfig m_conf;
+    fcIGraphicsDevice *m_dev;
     std::vector<std::string> m_raw_buffers;
     std::list<jo_gif_frame_t> m_gif_buffers;
     jo_gif_t m_gif;
@@ -38,9 +44,16 @@ private:
 };
 
 
-fcGifContext::fcGifContext(fcGifConfig *conf)
+fcIGifContext* fcCreateGifContext(fcGifConfig &conf, fcIGraphicsDevice *dev)
+{
+    return new fcGifContext(conf, dev);
+}
+
+
+fcGifContext::fcGifContext(fcGifConfig &conf, fcIGraphicsDevice *dev)
     : m_magic(fcE_GifContext)
-    , m_conf(*conf)
+    , m_conf(conf)
+    , m_dev(dev)
     , m_frame(0)
     , m_active_task_count(0)
 {
@@ -56,8 +69,14 @@ fcGifContext::~fcGifContext()
 {
     m_tasks.wait();
     jo_gif_end(&m_gif);
+    m_magic = fcE_Deleted;
 }
 
+
+void fcGifContext::release()
+{
+    delete this;
+}
 
 static inline void advance_palette_and_pop_front(std::list<jo_gif_frame_t>& frames)
 {
@@ -129,7 +148,7 @@ bool fcGifContext::addFrame(void *tex)
 
     // フレームバッファの内容取得
     std::string& raw_buffer = m_raw_buffers[frame % m_conf.max_active_tasks];
-    if (!fcGetGraphicsDevice()->readTexture(&raw_buffer[0], raw_buffer.size(), tex, m_conf.width, m_conf.height, fcE_ARGB32))
+    if (!m_dev->readTexture(&raw_buffer[0], raw_buffer.size(), tex, m_conf.width, m_conf.height, fcE_ARGB32))
     {
         --frame;
         return false;
@@ -250,7 +269,7 @@ void fcGifContext::getFrameData(void *tex, int frame)
     std::string raw_pixels;
     raw_pixels.resize(m_conf.width * m_conf.height * 4);
     jo_gif_decode(&raw_pixels[0], fdata, palette);
-    fcGetGraphicsDevice()->writeTexture(tex, m_gif.width, m_gif.height, fcE_ARGB32, &raw_pixels[0], raw_pixels.size());
+    m_dev->writeTexture(tex, m_gif.width, m_gif.height, fcE_ARGB32, &raw_pixels[0], raw_pixels.size());
 }
 
 
@@ -296,71 +315,5 @@ void fcGifContext::eraseFrame(int begin_frame, int end_frame)
 }
 
 
-
-#ifdef fcDebug
-#define fcCheckContext(v) if(v==nullptr || *(fcEMagic*)v!=fcE_GifContext) { fcBreak(); }
-#else  // fcDebug
-#define fcCheckContext(v) 
-#endif // fcDebug
-
-
-fcCLinkage fcExport fcGifContext* fcGifCreateContext(fcGifConfig *conf)
-{
-    return new fcGifContext(conf);
-}
-
-fcCLinkage fcExport void fcGifDestroyContext(fcGifContext *ctx)
-{
-    fcCheckContext(ctx);
-    delete ctx;
-}
-
-fcCLinkage fcExport bool fcGifAddFrame(fcGifContext *ctx, void *tex)
-{
-    fcCheckContext(ctx);
-    return ctx->addFrame(tex);
-}
-
-fcCLinkage fcExport void fcGifClearFrame(fcGifContext *ctx)
-{
-    fcCheckContext(ctx);
-    ctx->clearFrame();
-}
-
-fcCLinkage fcExport bool fcGifWriteFile(fcGifContext *ctx, const char *path, int begin_frame, int end_frame)
-{
-    fcCheckContext(ctx);
-    return ctx->writeFile(path, begin_frame, end_frame);
-}
-
-fcCLinkage fcExport int fcGifWriteMemory(fcGifContext *ctx, void *buf, int begin_frame, int end_frame)
-{
-    fcCheckContext(ctx);
-    return ctx->writeMemory(buf, begin_frame, end_frame);
-}
-
-fcCLinkage fcExport int fcGifGetFrameCount(fcGifContext *ctx)
-{
-    fcCheckContext(ctx);
-    return ctx->getFrameCount();
-}
-
-fcCLinkage fcExport void fcGifGetFrameData(fcGifContext *ctx, void *tex, int frame)
-{
-    fcCheckContext(ctx);
-    return ctx->getFrameData(tex, frame);
-}
-
-fcCLinkage fcExport int fcGifGetExpectedDataSize(fcGifContext *ctx, int begin_frame, int end_frame)
-{
-    fcCheckContext(ctx);
-    return ctx->getExpectedDataSize(begin_frame, end_frame);
-}
-
-fcCLinkage fcExport void fcGifEraseFrame(fcGifContext *ctx, int begin_frame, int end_frame)
-{
-    fcCheckContext(ctx);
-    ctx->eraseFrame(begin_frame, end_frame);
-}
 
 #endif // fcSupportGIF
