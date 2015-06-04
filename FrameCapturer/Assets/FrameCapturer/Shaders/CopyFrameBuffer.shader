@@ -5,6 +5,7 @@ Properties {
 
 CGINCLUDE
 #include "UnityCG.cginc"
+//#pragma multi_compile ___ UNITY_HDR_ON
 
 sampler2D _TmpFrameBuffer;
 sampler2D _RenderTarget;
@@ -12,7 +13,7 @@ sampler2D _RenderTarget;
 sampler2D _CameraGBufferTexture0;
 sampler2D _CameraGBufferTexture1;
 sampler2D _CameraGBufferTexture2;
-sampler2D _LightBuffer;
+sampler2D _CameraGBufferTexture3;
 sampler2D_float _CameraDepthTexture;
 int _InvertY;
 
@@ -20,7 +21,7 @@ int _InvertY;
 struct v2f {
     float4 pos : POSITION;
     float4 spos : TEXCOORD0;
-};  
+};
 
 v2f vert(appdata_img v)
 {
@@ -69,7 +70,7 @@ gbuffer_out copy_gbuffer(v2f i)
     o.diffuse           = tex2D(_CameraGBufferTexture0, t);
     o.spec_smoothness   = tex2D(_CameraGBufferTexture1, t);
     o.normal            = tex2D(_CameraGBufferTexture2, t);
-    o.emission          = tex2D(_LightBuffer, t);
+    o.emission          = tex2D(_CameraGBufferTexture3, t);
     return o;
 }
 
