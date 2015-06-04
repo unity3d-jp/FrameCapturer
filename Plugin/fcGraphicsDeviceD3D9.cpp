@@ -173,12 +173,9 @@ bool fcGraphicsDeviceD3D9::readTexture(void *o_buf, size_t bufsize, void *tex_, 
             }
             surf_dst->UnlockRect();
 
-            // D3D9 ではピクセルの並びは BGRA になっているので並べ替える
-            switch (format)
-            {
-            case fcE_ARGB32: BGRA_RGBA_conversion((RGBA<uint8_t>*)o_buf, bufsize / 4); break;
-            case fcE_ARGBHalf: BGRA_RGBA_conversion((RGBA<uint16_t>*)o_buf, bufsize / 8); break;
-            case fcE_ARGBFloat: BGRA_RGBA_conversion((RGBA<uint32_t>*)o_buf, bufsize / 16); break;
+            // D3D9 の ARGB32 のピクセルの並びは BGRA になっているので並べ替える
+            if (format == fcE_ARGB32) {
+                BGRA_RGBA_conversion((RGBA<uint8_t>*)o_buf, bufsize / 4);
             }
             ret = true;
         }
@@ -214,11 +211,13 @@ bool fcGraphicsDeviceD3D9::writeTexture(void *o_tex, int width, int height, fcET
         int rpitch = psize * width;
         char *wpixels = (char*)locked.pBits;
         int wpitch = locked.Pitch;
-        switch (format)
-        {
-        case fcE_ARGB32: copy_with_BGRA_RGBA_conversion((RGBA<uint8_t>*)wpixels, (RGBA<uint8_t>*)rpixels, bufsize / 4); break;
-        case fcE_ARGBHalf: copy_with_BGRA_RGBA_conversion((RGBA<uint16_t>*)wpixels, (RGBA<uint16_t>*)rpixels, bufsize / 8); break;
-        case fcE_ARGBFloat: copy_with_BGRA_RGBA_conversion((RGBA<uint32_t>*)wpixels, (RGBA<uint32_t>*)rpixels, bufsize / 16); break;
+
+        // こちらも ARGB32 の場合 BGRA に並べ替える必要がある
+        if (format == fcE_ARGB32) {
+            copy_with_BGRA_RGBA_conversion((RGBA<uint8_t>*)wpixels, (RGBA<uint8_t>*)rpixels, bufsize / 4);
+        }
+        else {
+            memcpy(wpixels, rpixels, bufsize);
         }
         surf_src->UnlockRect();
 
