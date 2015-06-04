@@ -8,7 +8,7 @@
 #include "fcExrFile.h"
 
 #ifdef fcDebug
-#define fcTypeCheck(v) if(v==nullptr || *(fcEMagic*)v!=fcE_ExrContext) { fcBreak(); }
+#define fcTypeCheck(v) if(v==nullptr || *(fcEMagic*)((void**)v+1)!=fcE_ExrContext) { fcBreak(); }
 #else  // fcDebug
 #define fcTypeCheck(v) 
 #endif // fcDebug
@@ -58,7 +58,7 @@ fcCLinkage fcExport bool fcExrEndFrame(fcIExrContext *ctx)
 #include "fcGifFile.h"
 
 #ifdef fcDebug
-#define fcTypeCheck(v) if(v==nullptr || *(fcEMagic*)v!=fcE_GifContext) { fcBreak(); }
+#define fcTypeCheck(v) if(v==nullptr || *(fcEMagic*)((void**)v+1)!=fcE_GifContext) { fcBreak(); }
 #else  // fcDebug
 #define fcTypeCheck(v) 
 #endif // fcDebug

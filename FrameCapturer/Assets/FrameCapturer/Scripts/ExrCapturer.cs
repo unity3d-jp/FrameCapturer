@@ -119,24 +119,7 @@ public class ExrCapturer : MonoBehaviour
         int frame = m_frame++;
         if (frame >= m_begin_frame && frame <= m_end_frame)
         {
-            yield return new WaitForEndOfFrame();
             Debug.Log("ExrCapturer: frame " + frame);
-
-            if(m_capture_framebuffer)
-            {
-                m_mat_copy.SetPass(0);
-                Graphics.SetRenderTarget(m_frame_buffer);
-                Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
-                Graphics.SetRenderTarget(null);
-
-                string path = m_output_directory + "/frame_" + frame.ToString("0000") + ".exr";
-                FrameCapturer.fcExrBeginFrame(m_exr, path, m_frame_buffer.width, m_frame_buffer.height);
-                AddLayer(m_frame_buffer, 0, "R");
-                AddLayer(m_frame_buffer, 1, "G");
-                AddLayer(m_frame_buffer, 2, "B");
-                AddLayer(m_frame_buffer, 3, "A");
-                FrameCapturer.fcExrEndFrame(m_exr);
-            }
 
             if(m_capture_gbuffer)
             {
@@ -165,6 +148,23 @@ public class ExrCapturer : MonoBehaviour
                 AddLayer(m_gbuffer[3], 1, "Emission.G");
                 AddLayer(m_gbuffer[3], 2, "Emission.B");
                 AddLayer(m_depth, 0, "Depth");
+                FrameCapturer.fcExrEndFrame(m_exr);
+            }
+
+            yield return new WaitForEndOfFrame();
+            if(m_capture_framebuffer)
+            {
+                m_mat_copy.SetPass(1);
+                Graphics.SetRenderTarget(m_frame_buffer);
+                Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
+                Graphics.SetRenderTarget(null);
+
+                string path = m_output_directory + "/frame_" + frame.ToString("0000") + ".exr";
+                FrameCapturer.fcExrBeginFrame(m_exr, path, m_frame_buffer.width, m_frame_buffer.height);
+                AddLayer(m_frame_buffer, 0, "R");
+                AddLayer(m_frame_buffer, 1, "G");
+                AddLayer(m_frame_buffer, 2, "B");
+                AddLayer(m_frame_buffer, 3, "A");
                 FrameCapturer.fcExrEndFrame(m_exr);
             }
         }

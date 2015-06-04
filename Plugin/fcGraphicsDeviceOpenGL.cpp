@@ -53,15 +53,15 @@ static void fcGetInternalFormatOpenGL(fcETextureFormat format, GLenum &o_fmt, GL
 
     case fcE_ARGBHalf:  o_fmt = GL_RGBA; o_type = GL_HALF_FLOAT; return;
     case fcE_RGHalf:    o_fmt = GL_RG; o_type = GL_HALF_FLOAT; return;
-    case fcE_RHalf:     o_fmt = GL_R; o_type = GL_HALF_FLOAT; return;
+    case fcE_RHalf:     o_fmt = GL_RED; o_type = GL_HALF_FLOAT; return;
 
     case fcE_ARGBFloat: o_fmt = GL_RGBA; o_type = GL_FLOAT; return;
     case fcE_RGFloat:   o_fmt = GL_RG; o_type = GL_FLOAT; return;
-    case fcE_RFloat:    o_fmt = GL_R; o_type = GL_FLOAT; return;
+    case fcE_RFloat:    o_fmt = GL_RED; o_type = GL_FLOAT; return;
 
-    case fcE_ARGBInt:   o_fmt = GL_RGBA; o_type = GL_INT; return;
-    case fcE_RGInt:     o_fmt = GL_RG; o_type = GL_INT; return;
-    case fcE_RInt:      o_fmt = GL_R; o_type = GL_INT; return;
+    case fcE_ARGBInt:   o_fmt = GL_RGBA_INTEGER; o_type = GL_INT; return;
+    case fcE_RGInt:     o_fmt = GL_RG_INTEGER; o_type = GL_INT; return;
+    case fcE_RInt:      o_fmt = GL_RED_INTEGER; o_type = GL_INT; return;
     }
 }
 
@@ -70,7 +70,13 @@ bool fcGraphicsDeviceOpenGL::readTexture(void *o_buf, size_t bufsize, void *tex,
     GLenum internal_format = 0;
     GLenum internal_type = 0;
     fcGetInternalFormatOpenGL(format, internal_format, internal_type);
-    glGetTextureImage((GLuint)(size_t)tex, 0, internal_format, internal_type, bufsize, o_buf);
+
+    //// glGetTextureImage() is available only OpenGL 4.5 or later...
+    // glGetTextureImage((GLuint)(size_t)tex, 0, internal_format, internal_type, bufsize, o_buf);
+
+    glBindTexture(GL_TEXTURE_2D, (GLuint)(size_t)tex);
+    glGetTexImage(GL_TEXTURE_2D, 0, internal_format, internal_type, o_buf);
+    glBindTexture(GL_TEXTURE_2D, 0);
     return true;
 }
 
@@ -79,7 +85,13 @@ bool fcGraphicsDeviceOpenGL::writeTexture(void *o_tex, int width, int height, fc
     GLenum internal_format = 0;
     GLenum internal_type = 0;
     fcGetInternalFormatOpenGL(format, internal_format, internal_type);
-    glTextureSubImage2D((GLuint)(size_t)o_tex, 0, 0, 0, width, height, internal_format, internal_type, buf);
+
+    //// glTextureSubImage2D() is available only OpenGL 4.5 or later...
+    // glTextureSubImage2D((GLuint)(size_t)o_tex, 0, 0, 0, width, height, internal_format, internal_type, buf);
+
+    glBindTexture(GL_TEXTURE_2D, (GLuint)(size_t)o_tex);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, internal_format, internal_type, buf);
+    glBindTexture(GL_TEXTURE_2D, 0);
     return true;
 }
 

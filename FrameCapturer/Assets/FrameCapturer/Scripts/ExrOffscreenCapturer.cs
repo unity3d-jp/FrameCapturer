@@ -6,10 +6,23 @@ using UnityEngine;
 
 
 [AddComponentMenu("FrameCapturer/ExrOffscreenCapturer")]
-[RequireComponent(typeof(Camera))]
 public class ExrOffscreenCapturer : MonoBehaviour
 {
-    public RenderTexture[] m_render_targets;
+    [System.Serializable]
+    public class ChannelData
+    {
+        public string name;
+        public int channel;
+    }
+
+    [System.Serializable]
+    public class CaptureData
+    {
+        public RenderTexture target;
+        public ChannelData[] channels;
+    }
+
+    public CaptureData[] m_targets;
 
     public string m_output_directory = "ExrOutput";
     public string m_output_filename;
@@ -18,14 +31,12 @@ public class ExrOffscreenCapturer : MonoBehaviour
     public int m_max_active_tasks = 1;
     IntPtr m_exr;
     int m_frame;
-    Camera m_cam;
 
 
 
     void OnEnable()
     {
         System.IO.Directory.CreateDirectory(m_output_directory);
-        m_cam = GetComponent<Camera>();
 
         FrameCapturer.fcExrConfig conf;
         conf.max_active_tasks = m_max_active_tasks;
@@ -37,27 +48,36 @@ public class ExrOffscreenCapturer : MonoBehaviour
         FrameCapturer.fcExrDestroyContext(m_exr);
     }
 
-    IEnumerator OnPostRender()
+    void Update()
+    {
+        StartCoroutine(Capture());
+    }
+
+    IEnumerator Capture()
     {
         int frame = m_frame++;
         if (frame >= m_begin_frame && frame <= m_end_frame)
         {
+            if (m_targets.Length == 0) { yield break; }
             yield return new WaitForEndOfFrame();
+
+
             Debug.Log("ExrOffscreenCapturer: frame " + frame);
 
-            for (int i = 0; i < m_render_targets.Length; ++i )
-            {
-                var rt = m_render_targets[i];
-                if (rt == null) { continue; }
+            var rt = m_targets[0].target;
+            string path = m_output_directory + "/" + m_output_filename + "_" + frame.ToString("0000") + ".exr";
 
-                string path = m_output_directory + "/" + m_output_filename + i.ToString() + "_" + frame.ToString("0000") + ".exr";
-                FrameCapturer.fcExrBeginFrame(m_exr, path, rt.width, rt.height);
-                AddLayer(rt, 0, "R");
-                AddLayer(rt, 1, "G");
-                AddLayer(rt, 2, "B");
-                AddLayer(rt, 3, "A");
-                FrameCapturer.fcExrEndFrame(m_exr);
+            FrameCapturer.fcExrBeginFrame(m_exr, path, rt.width, rt.height);
+            for (int ti = 0; ti < m_targets.Length; ++ti)
+            {
+                var target = m_targets[ti];
+                for (int ci = 0; ci < target.channels.Length; ++ti)
+                {
+                    var ch = target.channels[ti];
+                    AddLayer(target.target, ch.channel, ch.name);
+                }
             }
+            FrameCapturer.fcExrEndFrame(m_exr);
         }
     }
     void AddLayer(RenderTexture rt, int ch, string name)
