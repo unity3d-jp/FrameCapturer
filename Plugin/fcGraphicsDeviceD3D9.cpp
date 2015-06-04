@@ -6,7 +6,7 @@
 #include <d3d9.h>
 const int fcD3D9MaxStagingTextures = 32;
 
-class fcGraphicsDeviceD3D9 : public fcGraphicsDevice
+class fcGraphicsDeviceD3D9 : public fcIGraphicsDevice
 {
 public:
     fcGraphicsDeviceD3D9(void *device);
@@ -26,7 +26,7 @@ private:
 };
 
 
-fcGraphicsDevice* fcCreateGraphicsDeviceD3D9(void *device)
+fcIGraphicsDevice* fcCreateGraphicsDeviceD3D9(void *device)
 {
     return new fcGraphicsDeviceD3D9(device);
 }

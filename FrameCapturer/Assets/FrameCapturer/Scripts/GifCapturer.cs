@@ -27,10 +27,10 @@ public class GifCapturer : MovieCapturer
     Material m_mat_copy;
     Mesh m_quad;
     CommandBuffer m_cb;
-    public RenderTexture m_scratch_buffer;
+    RenderTexture m_scratch_buffer;
     Camera m_cam;
     int m_frame;
-    public bool m_recode = false;
+    bool m_recode = false;
 
     GifCapturer()
     {
@@ -133,9 +133,9 @@ public class GifCapturer : MovieCapturer
         m_mat_copy = new Material(m_sh_copy);
 
         {
+            int tid = Shader.PropertyToID("_TmpFrameBuffer");
             m_cb = new CommandBuffer();
             m_cb.name = "GifCapturer: copy frame buffer";
-            int tid = Shader.PropertyToID("_GifFrameBuffer");
             m_cb.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Point);
             m_cb.Blit(BuiltinRenderTextureType.CurrentActive, tid);
             // tid は意図的に開放しない

@@ -25,14 +25,14 @@ int fcGetPixelSize(fcETextureFormat format)
 }
 
 
-fcGraphicsDevice* fcCreateGraphicsDeviceOpenGL(void *device);
-fcGraphicsDevice* fcCreateGraphicsDeviceD3D9(void *device);
-fcGraphicsDevice* fcCreateGraphicsDeviceD3D11(void *device);
+fcIGraphicsDevice* fcCreateGraphicsDeviceOpenGL(void *device);
+fcIGraphicsDevice* fcCreateGraphicsDeviceD3D9(void *device);
+fcIGraphicsDevice* fcCreateGraphicsDeviceD3D11(void *device);
 
 
-fcGraphicsDevice *g_the_graphics_device;
-fcCLinkage fcExport fcGraphicsDevice* fcGetGraphicsDevice() { return g_the_graphics_device; }
-typedef fcGraphicsDevice* (*fcGetGraphicsDeviceT)();
+fcIGraphicsDevice *g_the_graphics_device;
+fcCLinkage fcExport fcIGraphicsDevice* fcGetGraphicsDevice() { return g_the_graphics_device; }
+typedef fcIGraphicsDevice* (*fcGetGraphicsDeviceT)();
 
 
 fcCLinkage fcExport void UnitySetGraphicsDevice(void* device, int deviceType, int eventType)
@@ -109,7 +109,7 @@ BOOL WINAPI DllMain(HINSTANCE module_handle, DWORD reason_for_call, LPVOID reser
         if (m) {
             auto proc = (fcGetGraphicsDeviceT)::GetProcAddress(m, "fcGetGraphicsDevice");
             if (proc) {
-                fcGraphicsDevice *dev = proc();
+                fcIGraphicsDevice *dev = proc();
                 if (dev) {
                     UnitySetGraphicsDevice(dev->getDevicePtr(), dev->getDeviceType(), kGfxDeviceEventInitialize);
                 }

@@ -6,7 +6,7 @@ Properties {
 CGINCLUDE
 #include "UnityCG.cginc"
 
-sampler2D _GifFrameBuffer;
+sampler2D _TmpFrameBuffer;
 sampler2D _RenderTarget;
 
 sampler2D _CameraGBufferTexture0;
@@ -14,6 +14,7 @@ sampler2D _CameraGBufferTexture1;
 sampler2D _CameraGBufferTexture2;
 sampler2D _LightBuffer;
 sampler2D_float _CameraDepthTexture;
+int _InvertY;
 
 
 struct v2f {
@@ -45,14 +46,14 @@ float2 get_texcoord_iy(v2f i)
 
 half4 copy_framebuffer(v2f i) : SV_Target
 {
-    half4 r = tex2D(_GifFrameBuffer, get_texcoord_iy(i));
+    half4 r = tex2D(_TmpFrameBuffer, get_texcoord_iy(i));
     r.a = 1.0;
     return r;
 }
 
 half4 copy_rendertarget(v2f i) : SV_Target
 {
-    return tex2D(_RenderTarget, get_texcoord_iy(i));
+    return tex2D(_RenderTarget, get_texcoord(i));
 }
 
 struct gbuffer_out
