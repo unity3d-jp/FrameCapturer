@@ -30,13 +30,6 @@ v2f vert(appdata_img v)
 }
 
 
-float2 get_texcoord_iy(v2f i)
-{
-    float2 t = i.spos.xy * 0.5 + 0.5;
-    t.y = 1.0-t.y;
-    return t;
-}
-
 float2 get_texcoord(v2f i)
 {
     float2 t = i.spos.xy * 0.5 + 0.5;
@@ -55,14 +48,9 @@ float2 get_texcoord_gb(v2f i)
 
 half4 copy_framebuffer(v2f i) : SV_Target
 {
-    half4 r = tex2D(_TmpFrameBuffer, get_texcoord(i));
-    r.a = 1.0;
-    return r;
-}
-
-half4 copy_framebuffer_iy(v2f i) : SV_Target
-{
-    half4 r = tex2D(_TmpFrameBuffer, get_texcoord_iy(i));
+    float2 t = get_texcoord(i);
+    t.y = 1.0-t.y;
+    half4 r = tex2D(_TmpFrameBuffer, t);
     r.a = 1.0;
     return r;
 }
@@ -97,16 +85,7 @@ half4 copy_rendertarget(v2f i) : SV_Target
 ENDCG
 
 Subshader {
-    // Pass 0: copy_framebuffer_iy
-    Pass {
-        Blend Off Cull Off ZTest Off ZWrite Off
-        CGPROGRAM
-        #pragma vertex vert
-        #pragma fragment copy_framebuffer_iy
-        ENDCG
-    }
-
-    // Pass 1: copy_framebuffer
+    // Pass 0: copy_framebuffer
     Pass {
         Blend Off Cull Off ZTest Off ZWrite Off
         CGPROGRAM
@@ -115,7 +94,7 @@ Subshader {
         ENDCG
     }
 
-    // Pass 2: copy_gbuffer
+    // Pass 1: copy_gbuffer
     Pass {
         Blend Off Cull Off ZTest Off ZWrite Off
         CGPROGRAM
@@ -124,7 +103,7 @@ Subshader {
         ENDCG
     }
 
-    // Pass 3: copy_depth
+    // Pass 2: copy_depth
     Pass {
         Blend Off Cull Off ZTest Off ZWrite Off
         CGPROGRAM
@@ -133,7 +112,7 @@ Subshader {
         ENDCG
     }
 
-    // Pass 4: copy_rendertarget
+    // Pass 3: copy_rendertarget
     Pass {
         Blend Off Cull Off ZTest Off ZWrite Off
         CGPROGRAM
