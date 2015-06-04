@@ -8,8 +8,6 @@ CGINCLUDE
 //#pragma multi_compile ___ UNITY_HDR_ON
 
 sampler2D _TmpFrameBuffer;
-sampler2D _RenderTarget;
-
 sampler2D _CameraGBufferTexture0;
 sampler2D _CameraGBufferTexture1;
 sampler2D _CameraGBufferTexture2;
@@ -51,9 +49,7 @@ half4 copy_framebuffer(v2f i) : SV_Target
 {
     float2 t = get_texcoord(i);
     t.y = 1.0-t.y;
-    half4 r = tex2D(_TmpFrameBuffer, t);
-    r.a = 1.0;
-    return r;
+    return tex2D(_TmpFrameBuffer, t);
 }
 
 struct gbuffer_out
@@ -81,7 +77,7 @@ float4 copy_depth(v2f i) : SV_Target
 
 half4 copy_rendertarget(v2f i) : SV_Target
 {
-    return tex2D(_RenderTarget, get_texcoord(i));
+    return tex2D(_TmpFrameBuffer, get_texcoord_gb(i));
 }
 ENDCG
 
