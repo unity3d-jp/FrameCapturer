@@ -130,6 +130,7 @@ public class ExrCapturer : MonoBehaviour
                 m_mat_copy.SetPass(2);
                 Graphics.SetRenderTarget(m_depth);
                 Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
+                Graphics.SetRenderTarget(null);
 
                 string path = m_output_directory + "/gbuffer_" + frame.ToString("0000") + ".exr";
                 FrameCapturer.fcExrBeginFrame(m_exr, path, m_gbuffer[0].width, m_gbuffer[0].height);
