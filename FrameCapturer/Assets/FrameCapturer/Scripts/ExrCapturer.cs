@@ -123,11 +123,11 @@ public class ExrCapturer : MonoBehaviour
 
             if(m_capture_gbuffer)
             {
-                m_mat_copy.SetPass(2);
+                m_mat_copy.SetPass(1);
                 Graphics.SetRenderTarget(m_rt_gbuffer, m_gbuffer[0].depthBuffer);
                 Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
 
-                m_mat_copy.SetPass(3);
+                m_mat_copy.SetPass(2);
                 Graphics.SetRenderTarget(m_depth);
                 Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
 
@@ -154,7 +154,7 @@ public class ExrCapturer : MonoBehaviour
             yield return new WaitForEndOfFrame();
             if(m_capture_framebuffer)
             {
-                m_mat_copy.SetPass(1);
+                m_mat_copy.SetPass(0);
                 Graphics.SetRenderTarget(m_frame_buffer);
                 Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                 Graphics.SetRenderTarget(null);
