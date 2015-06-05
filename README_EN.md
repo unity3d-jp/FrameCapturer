@@ -24,4 +24,13 @@ examples: this image is exported by this plug-in. (This scene is included in thi
 
 
 ## Exr Capturer  
-ExrCapturer can export G-Buffer. But currently unstable and many features are work in progess.
+Exr is a HDR image file format, and ExrCapturer can export G-Buffer, frame buffer, and any RenderTextures to exr files. This is useful for movie makers (visual effects & composition).
+Exporting exr is hard to do in real-time. So ExrCapturer assumes delta-time is fixed and exports frames in predefined range.
+
+![exr_example1](Screenshots/exr_example1.png)  
+
+### Usage
+1. Import [this package](https://github.com/unity3d-jp/FrameCapturer/blob/master/Packages/FrameCapturer_Exr.unitypackage?raw=true) to your project
+2. Add ExrCapturer component to camera that you want to record
+3. Set begin / end frame and play  
+![ExrCapturer](Screenshots/ExrCapturer.png)  

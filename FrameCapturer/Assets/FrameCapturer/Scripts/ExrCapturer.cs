@@ -29,7 +29,7 @@ public class ExrCapturer : MonoBehaviour
     CommandBuffer m_cb;
     RenderTexture m_frame_buffer;
     RenderTexture[] m_gbuffer;
-    public RenderTexture m_depth;
+    RenderTexture m_depth;
     RenderBuffer[] m_rt_gbuffer;
     Camera m_cam;
 
@@ -172,7 +172,7 @@ public class ExrCapturer : MonoBehaviour
                 AddLayer(m_frame_buffer, 0, "R");
                 AddLayer(m_frame_buffer, 1, "G");
                 AddLayer(m_frame_buffer, 2, "B");
-                AddLayer(m_frame_buffer, 3, "A");
+                //AddLayer(m_frame_buffer, 3, "A");
                 FrameCapturer.fcExrEndFrame(m_exr);
             }
         }
