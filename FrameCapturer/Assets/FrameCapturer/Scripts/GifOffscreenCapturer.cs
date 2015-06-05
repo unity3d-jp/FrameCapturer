@@ -156,7 +156,7 @@ public class GifOffscreenCapturer : MovieCapturer
             int frame = m_frame++;
             if (frame % m_capture_every_n_frames == 0)
             {
-                m_mat_copy.SetTexture("_TmpFrameBuffer", m_target);
+                m_mat_copy.SetTexture("_TmpRenderTarget", m_target);
                 m_mat_copy.SetPass(3);
                 Graphics.SetRenderTarget(m_scratch_buffer);
                 Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);

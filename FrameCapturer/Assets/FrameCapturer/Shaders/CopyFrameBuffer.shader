@@ -13,6 +13,7 @@ sampler2D _CameraGBufferTexture1;
 sampler2D _CameraGBufferTexture2;
 sampler2D _CameraGBufferTexture3;
 sampler2D_float _CameraDepthTexture;
+sampler2D _TmpRenderTarget;
 int _InvertY;
 
 
@@ -77,7 +78,7 @@ float4 copy_depth(v2f i) : SV_Target
 
 half4 copy_rendertarget(v2f i) : SV_Target
 {
-    return tex2D(_TmpFrameBuffer, get_texcoord_gb(i));
+    return tex2D(_TmpRenderTarget, get_texcoord_gb(i));
 }
 ENDCG
 
