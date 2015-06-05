@@ -12,7 +12,7 @@
 - 非同期＆並列エンコーディング (メインスレッドをブロックしない)
 - 簡単な in-game プレビューア＆エディタ
 - D3D9, D3D11, OpenGL と x86, x86-64 の組み合わせに対応 (ただし Windows でのみ動作を確認)
-- 
+
 以下の動画を見ると何ができるのか大体わかると思います。  
 [![FrameCapturer: GifRecorder](http://img.youtube.com/vi/VRmVIzhxewI/0.jpg)](http://www.youtube.com/watch?v=VRmVIzhxewI)  
 
