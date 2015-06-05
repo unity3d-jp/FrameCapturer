@@ -73,7 +73,9 @@ public class ExrOffscreenCapturer : MonoBehaviour
 
     void Update()
     {
-        StartCoroutine(Capture());
+        if (m_targets.Length != 0) {
+            StartCoroutine(Capture());
+        }
     }
 
     IEnumerator Capture()
@@ -81,9 +83,7 @@ public class ExrOffscreenCapturer : MonoBehaviour
         int frame = m_frame++;
         if (frame >= m_begin_frame && frame <= m_end_frame)
         {
-            if (m_targets.Length == 0) { yield break; }
             yield return new WaitForEndOfFrame();
-
 
             Debug.Log("ExrOffscreenCapturer: frame " + frame);
 
@@ -95,7 +95,7 @@ public class ExrOffscreenCapturer : MonoBehaviour
             {
                 var target = m_targets[ti];
                 var scratch = m_scratch_buffers[ti];
-                m_mat_copy.SetTexture("_TmpFrameBuffer", target.target);
+                m_mat_copy.SetTexture("_TmpRenderTarget", target.target);
                 m_mat_copy.SetPass(3);
                 Graphics.SetRenderTarget(scratch);
                 Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
