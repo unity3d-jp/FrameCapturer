@@ -18,6 +18,22 @@ public class MovieCapturerHUD : MonoBehaviour
     bool m_update_preview;
 
 
+    public int begin_frame
+    {
+        get { return m_begin_frame; }
+    }
+
+    public int end_frame
+    {
+        get { return m_end_frame; }
+    }
+
+    public int current_frame
+    {
+        get { return m_current_frame; }
+    }
+
+
     public bool recode
     {
         get { return m_capturer.recode; }
