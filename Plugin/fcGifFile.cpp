@@ -103,7 +103,7 @@ void fcGifContext::scrape(bool updating)
     // 最大フレーム数超えてたら間引く
     if (m_conf.max_frame > 0)
     {
-        while (m_conf.max_frame > min_frames && m_gif_buffers.size() > m_conf.max_frame)
+        while (m_conf.max_frame > min_frames && m_gif_buffers.size() > size_t(m_conf.max_frame))
         {
             advance_palette_and_pop_front(m_gif_buffers);
         }
@@ -119,7 +119,7 @@ void fcGifContext::scrape(bool updating)
             size += fdata.palette.size() + fdata.encoded.size() + 20;
         }
 
-        while (m_gif_buffers.size() > min_frames && size > m_conf.max_data_size)
+        while (m_gif_buffers.size() > size_t(min_frames) && size > size_t(m_conf.max_data_size))
         {
             auto &fdata = m_gif_buffers.front();
             size -= fdata.palette.size() + fdata.encoded.size() + 20;
@@ -247,7 +247,7 @@ int fcGifContext::getFrameCount()
 
 void fcGifContext::getFrameData(void *tex, int frame)
 {
-    if (frame >= m_gif_buffers.size()) { return; }
+    if (frame >= 0 && size_t(frame) >= m_gif_buffers.size()) { return; }
     m_tasks.wait();
     scrape(false);
 
