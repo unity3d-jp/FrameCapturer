@@ -32,8 +32,10 @@ public class GifOffscreenCapturer : MovieCapturer
 
     GifOffscreenCapturer()
     {
+#if UNITY_STANDALONE_WIN
         // Plugins/* を dll サーチパスに追加
         try { FrameCapturer.AddLibraryPath(); } catch { }
+#endif
     }
 
     public override bool recode
