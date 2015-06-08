@@ -50,7 +50,9 @@ half4 copy_framebuffer(v2f i) : SV_Target
 {
     float2 t = get_texcoord(i);
     t.y = 1.0-t.y;
-    return tex2D(_TmpFrameBuffer, t);
+    half4 r = tex2D(_TmpFrameBuffer, t);
+    r.a = 1.0;
+    return r;
 }
 
 struct gbuffer_out
