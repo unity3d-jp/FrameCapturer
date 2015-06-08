@@ -97,6 +97,12 @@ else:
     else:
       embed_libs = [embed_libs]
 
+if sys.platform == "darwin":
+  import platform
+  vers = map(int, platform.mac_ver()[0].split("."))
+  if vers[0] > 10 or vers[1] >= 9:
+    env.Append(CPPFLAGS=" -std=c++11 -Wno-deprecated-register")
+
 capturer = {"name": "FrameCapturer",
             "type": "dynamicmodule",
             "defs": defines,
