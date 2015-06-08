@@ -5,7 +5,7 @@
 #include "fcThreadPool.h"
 #include "fcGraphicsDevice.h"
 #include "fcGifFile.h"
-#include "jo_gif.cpp"
+#include "external/jo_gif.cpp"
 
 
 

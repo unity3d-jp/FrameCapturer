@@ -4,10 +4,15 @@
 
 #ifdef fcSupportOpenGL
 
+#ifndef fcDontForceStaticGLEW
 #define GLEW_STATIC
+#endif
 #include <GL/glew.h>
+
+#if defined(fcWindows) && !defined(fcNoAutoLink)
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glew32s.lib")
+#endif
 
 
 class fcGraphicsDeviceOpenGL : public fcIGraphicsDevice
