@@ -51,8 +51,6 @@ if use_externals:
   if excons.GetArgument("d3d11", 0, int) != 0:
     defines.append("fcSupportD3D11")
 
-  defines.append("GLEW_STATIC")
-
   inc_dirs.extend(["Plugin/external/ilmbase-2.2.0/Half",
                    "Plugin/external/ilmbase-2.2.0/Iex",
                    "Plugin/external/ilmbase-2.2.0/IexMath",
@@ -71,6 +69,7 @@ if use_externals:
 
 else:
   defines.append("fcNoAutoLink")
+  defines.append("fcDontForceStaticGLEW")
   
   if sys.platform == "win32":
     if excons.GetArgument("d3d9", 1, int) != 0:
