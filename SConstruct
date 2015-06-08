@@ -97,27 +97,34 @@ else:
     else:
       embed_libs = [embed_libs]
 
-targets = [
-  { "name": "FrameCapturer",
-    "type": "dynamicmodule",
-    "defs": defines,
-    "incdirs": inc_dirs,
-    "libdirs": lib_dirs,
-    "libs": libs,
-    "custom": customs,
-    "srcs": sources,
-    "install": install_files
-  },
-  { "name": "AddLibraryPath",
-    "type": "dynamicmodule",
-    "custom": [dl.Require],
-    "srcs": ["Plugin/AddLibraryPath.cpp"]
-  }
-]
+capturer = {"name": "FrameCapturer",
+            "type": "dynamicmodule",
+            "defs": defines,
+            "incdirs": inc_dirs,
+            "libdirs": lib_dirs,
+            "libs": libs,
+            "custom": customs,
+            "srcs": sources,
+            "install": install_files}
 
-unity.Plugin(targets[0], libs=embed_libs)
-unity.Plugin(targets[1], package="FrameCapturer")
+unity.Plugin(capturer, libs=embed_libs)
+
+if sys.platform == "win32":
+  path_hack = {"name": "AddLibraryPath",
+               "type": "dynamicmodule",
+               "custom": [dl.Require],
+               "srcs": ["Plugin/AddLibraryPath.cpp"]}
+
+  unity.Plugin(path_hack, package="FrameCapturer")
+
+  # Add 'AddLibraryPath' as a dependency for 'AlembicImporter'
+  capturer["deps"] = ["AddLibraryPath"]
+
+  targets = [path_hack, capturer]
+
+else:
+  targets = [capturer]
 
 excons.DeclareTargets(env, targets)
 
-Default(["FrameCapturer", "AddLibraryPath"])
+Default(["FrameCapturer"])
