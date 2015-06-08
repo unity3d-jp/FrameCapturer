@@ -31,6 +31,18 @@ public class FrameCapturerPackaging
 "Assets/FrameCapturer/Example/GifOffscreenCapturerExample.unity",
 "Assets/FrameCapturer/Scripts/GifCapturer.cs",
 "Assets/FrameCapturer/Scripts/GifOffscreenCapturer.cs",
+
+// TweetMedia
+"Assets/TweetMedia/Examples/Example.unity",
+"Assets/TweetMedia/Prefabs/TweetMedia.prefab",
+"Assets/TweetMedia/Scripts/TweetMedia.cs",
+"Assets/TweetMedia/Scripts/TweetMediaGUI.cs",
+"Assets/TweetMedia/Scripts/TweetMediaPlugin.cs",
+"Assets/Plugins/x86_64/TweetMedia.dll",
+"Assets/Plugins/x86/TweetMedia.dll",
+// TweetMedia Ext
+"Assets/TweetMedia/Prefabs/TweetScreenshot.prefab",
+"Assets/TweetMedia/Scripts/TMExtAttachScreenshot.cs",
         };
         AssetDatabase.ExportPackage(files, "FrameCapturer.unitypackage");
     }
