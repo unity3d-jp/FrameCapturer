@@ -19,6 +19,10 @@ public class TweetMediaGUI : MonoBehaviour
     public UnityEngine.UI.Button m_button_pin;
     public UnityEngine.UI.InputField m_input_message;
     public UnityEngine.UI.Button m_button_tweet;
+    Action<TweetMedia.AuthStateCode> m_auth_event_handler;
+    Action<TweetMedia.TweetStateCode> m_tweet_event_handler;
+
+
 
     string status_text
     {
@@ -26,19 +30,19 @@ public class TweetMediaGUI : MonoBehaviour
         set { if (m_text_status != null) { m_text_status.text = value; } }
     }
 
-    public virtual void OnChangeAuthState(TweetMedia.AuthStateCode code)
+    public virtual void HandleAuthEvent(TweetMedia.AuthStateCode code)
     {
         switch(code)
         {
-            case TweetMedia.AuthStateCode.VerifyingCredentialsBegin:
+            case TweetMedia.AuthStateCode.VerifyCredentialsBegin:
                 status_text = "";
                 m_ui_auth.SetActive(false);
                 m_ui_tweet.SetActive(false);
                 break;
-            case TweetMedia.AuthStateCode.VerifyingCredentialsSucceeded:
+            case TweetMedia.AuthStateCode.VerifyCredentialsSucceeded:
                 m_ui_tweet.SetActive(true);
                 break;
-            case TweetMedia.AuthStateCode.VerifyingCredentialsFailed:
+            case TweetMedia.AuthStateCode.VerifyCredentialsFailed:
                 m_ui_auth.SetActive(true);
                 break;
 
@@ -57,14 +61,14 @@ public class TweetMediaGUI : MonoBehaviour
                 status_text = m_tweet_media.error_message;
                 break;
 
-            case TweetMedia.AuthStateCode.EnterPinBegin:
+            case TweetMedia.AuthStateCode.EnterPINBegin:
                 status_text = "";
                 break;
-            case TweetMedia.AuthStateCode.EnterPinSucceeded:
+            case TweetMedia.AuthStateCode.EnterPINSucceeded:
                 m_ui_auth.SetActive(false);
                 m_ui_tweet.SetActive(true);
                 break;
-            case TweetMedia.AuthStateCode.EnterPinFailed:
+            case TweetMedia.AuthStateCode.EnterPINFailed:
                 status_text = m_tweet_media.error_message;
                 break;
         }
@@ -78,8 +82,8 @@ public class TweetMediaGUI : MonoBehaviour
 
     public virtual void Start()
     {
-        m_tweet_media.on_change_auth_state = OnChangeAuthState;
-        m_tweet_media.on_change_tweet_state = OnChangeTweetState;
+        m_tweet_media.AddAuthEventHandler(HandleAuthEvent);
+        m_tweet_media.AddTweetEventHandler(HandleTweetEvent);
         if (m_begin_auth_on_start)
         {
             BeginAuthorization();
@@ -102,7 +106,7 @@ public class TweetMediaGUI : MonoBehaviour
     }
 
 
-    public virtual void OnChangeTweetState(TweetMedia.TweetStateCode code)
+    public virtual void HandleTweetEvent(TweetMedia.TweetStateCode code)
     {
         switch (code)
         {

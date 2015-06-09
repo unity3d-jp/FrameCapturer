@@ -1,6 +1,6 @@
 # FrameCapturer
 [English](README_EN.md)  
-  
+
 フレームバッファの内容をキャプチャして画像や動画に出力する Unity 用のプラグインです。現在アニメ gif と exr への出力に対応しています。
 
 ## Gif Capturer
@@ -12,6 +12,7 @@
 - 非同期＆並列エンコーディング (メインスレッドをブロックしない)
 - 簡単な in-game プレビューア＆エディタ
 - D3D9, D3D11, OpenGL と x86, x86-64 の組み合わせに対応 (ただし Windows でのみ動作を確認)
+- Twitter へ録画結果をゲーム内から直接投稿
 
 以下の動画を見ると何ができるのか大体わかると思います。  
 [![FrameCapturer: GifRecorder](http://img.youtube.com/vi/VRmVIzhxewI/0.jpg)](http://www.youtube.com/watch?v=VRmVIzhxewI)  
@@ -24,8 +25,12 @@
 2. 録画したいカメラに GifCapturer コンポーネントを追加
 3. uGUI オブジェクト GifCapturerHUD.prefab をどこかに配置し、それの capturer に 2 で追加したコンポーネントを設定
 
-3 は必須ではありませんが、GifCapturer には録画の on/off 切り替えやファイルへの書き出しなどをコントロールするための GUI やスクリプトが必要になります。GifCapturerHUD.prefab を改造して独自の GUI を作るのもいいでしょう。
-  
+3 は必須ではありませんが、GifCapturer には録画の on/off 切り替えやファイルへの書き出しなどをコントロールするための GUI やスクリプトが必要になります。
+GifCapturerHUD.prefab は機能はともかく見た目は必要最小限のため、これを使う場合も独自に改良した方がいいでしょう。
+
+Twitter への投稿機能は、[TweetMedia](https://github.com/unity3d-jp/TweetMedia) によって実現されています。詳しくはそちらをご参照ください。  
+TweetScreenshot.prefab はこちらのパッケージにしかない prefab で、録画した gif を添付する機能が追加された Tweet 用 GUI になっています。
+
 ## Exr Capturer  
 Exr は主に映像業界で使われる画像フォーマットで、float や half のピクセルデータで構成された画像、いわゆる HDR 画像を保持できます。  
 ExrCapturer は主に映像向けの用途を想定したもので、G-Buffer やマテリアル ID などを書き出し、コンポジットに使うことを目的としています。現状 G-Buffer の書き出しと、任意の RenderTexture の書き出しに対応しています。  
