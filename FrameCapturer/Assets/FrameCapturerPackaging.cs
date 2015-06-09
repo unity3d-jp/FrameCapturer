@@ -10,8 +10,8 @@ using UnityEditor;
 
 public class FrameCapturerPackaging
 {
-    [MenuItem("Assets/FrameCapturer/ExportGif")]
-    public static void ExportPackage_Gif()
+    [MenuItem("Assets/FrameCapturer/MakePackage (GIF)")]
+    public static void MakePackage_GIF()
     {
         string[] files = new string[]
         {
@@ -31,13 +31,25 @@ public class FrameCapturerPackaging
 "Assets/FrameCapturer/Example/GifOffscreenCapturerExample.unity",
 "Assets/FrameCapturer/Scripts/GifCapturer.cs",
 "Assets/FrameCapturer/Scripts/GifOffscreenCapturer.cs",
+
+// TweetMedia
+"Assets/TweetMedia/Examples/Example.unity",
+"Assets/TweetMedia/Prefabs/TweetMedia.prefab",
+"Assets/TweetMedia/Scripts/TweetMedia.cs",
+"Assets/TweetMedia/Scripts/TweetMediaGUI.cs",
+"Assets/TweetMedia/Scripts/TweetMediaPlugin.cs",
+"Assets/Plugins/x86_64/TweetMedia.dll",
+"Assets/Plugins/x86/TweetMedia.dll",
+// TweetMedia Ext
+"Assets/TweetMedia/Prefabs/TweetScreenshot.prefab",
+"Assets/TweetMedia/Scripts/TMExtAttachScreenshot.cs",
         };
         AssetDatabase.ExportPackage(files, "FrameCapturer.unitypackage");
     }
 
 
-    [MenuItem("Assets/FrameCapturer/ExportComplete")]
-    public static void ExportPackage_Complete()
+    [MenuItem("Assets/FrameCapturer/MakePackage (EXR)")]
+    public static void MakePackage_EXR()
     {
         string[] files = new string[]
         {

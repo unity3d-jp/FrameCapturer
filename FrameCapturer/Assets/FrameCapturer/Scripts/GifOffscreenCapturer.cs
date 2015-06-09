@@ -53,7 +53,16 @@ public class GifOffscreenCapturer : MovieCapturer
                 path = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
             }
             FrameCapturer.fcGifWriteFile(m_gif, path, begin_frame, end_frame);
-            Debug.Log("GifCapturer.WriteFile() : " + path);
+            print("GifOffscreenCapturer.WriteFile() : " + path);
+        }
+    }
+
+    public override void WriteMemory(System.IntPtr dst_buf, int begin_frame = 0, int end_frame = -1)
+    {
+        if (m_gif != IntPtr.Zero)
+        {
+            FrameCapturer.fcGifWriteMemory(m_gif, dst_buf, begin_frame, end_frame);
+            print("GifOffscreenCapturer.WriteMemry()");
         }
     }
 

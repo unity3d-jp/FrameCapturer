@@ -55,7 +55,16 @@ public class GifCapturer : MovieCapturer
                 path = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
             }
             FrameCapturer.fcGifWriteFile(m_gif, path, begin_frame, end_frame);
-            Debug.Log("GifCapturer.WriteFile() : " + path);
+            print("GifCapturer.WriteFile() : " + path);
+        }
+    }
+
+    public override void WriteMemory(System.IntPtr dst_buf, int begin_frame = 0, int end_frame = -1)
+    {
+        if (m_gif != IntPtr.Zero)
+        {
+            FrameCapturer.fcGifWriteMemory(m_gif, dst_buf, begin_frame, end_frame);
+            print("GifCapturer.WriteMemry()");
         }
     }
 
@@ -133,6 +142,10 @@ public class GifCapturer : MovieCapturer
         m_cam = GetComponent<Camera>();
         m_quad = FrameCapturerUtils.CreateFullscreenQuad();
         m_mat_copy = new Material(m_sh_copy);
+        if (m_cam.targetTexture != null)
+        {
+            m_mat_copy.EnableKeyword("OFFSCREEN");
+        }
 
         {
             int tid = Shader.PropertyToID("_TmpFrameBuffer");
