@@ -22,28 +22,35 @@ public class TMExtAttachScreenshot : MonoBehaviour
         return TweetMediaPlugin.tmEMediaType.Unknown;
     }
 
-    void AttachScreenshot()
+    void AttachScreenshot(TweetMedia.TweetStateCode code)
     {
-        if (!m_toggle_screenshot.isOn) { return; }
-        m_toggle_screenshot.isOn = false;
-
-        MovieCapturer capturer = m_capturer_hud.m_capturer;
-        var mtype = GetMediaType(capturer);
-        if(mtype!=TweetMediaPlugin.tmEMediaType.Unknown)
+        if (code == TweetMedia.TweetStateCode.Begin)
         {
-            int begin = m_capturer_hud.begin_frame;
-            int end = m_capturer_hud.end_frame;
-            int data_size = capturer.GetExpectedFileSize(begin, end);
-            IntPtr data = Marshal.AllocHGlobal(data_size);
-            capturer.WriteMemory(data, begin, end);
-            m_tweet_media.AddMedia(data, data_size, mtype);
-            Marshal.FreeHGlobal(data);
+            if (!m_toggle_screenshot.isOn) { return; }
+            m_toggle_screenshot.isOn = false;
+
+            MovieCapturer capturer = m_capturer_hud.m_capturer;
+            var mtype = GetMediaType(capturer);
+            if (mtype != TweetMediaPlugin.tmEMediaType.Unknown)
+            {
+                int begin = m_capturer_hud.begin_frame;
+                int end = m_capturer_hud.end_frame;
+                int data_size = capturer.GetExpectedFileSize(begin, end);
+                IntPtr data = Marshal.AllocHGlobal(data_size);
+                capturer.WriteMemory(data, begin, end);
+                m_tweet_media.AddMedia(data, data_size, mtype);
+                Marshal.FreeHGlobal(data);
+            }
         }
     }
 
     void Start()
     {
+        if (m_capturer_hud == null)
+        {
+            Debug.LogError("TMExtAttachScreenshot: m_capturer_hud is null");
+        }
         m_tweet_media = GetComponent<TweetMedia>();
-        m_tweet_media.AddOnTweetHandler(AttachScreenshot);
+        m_tweet_media.AddTweetEventHandler(AttachScreenshot);
     }
 }

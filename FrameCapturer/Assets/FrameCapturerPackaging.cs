@@ -10,8 +10,8 @@ using UnityEditor;
 
 public class FrameCapturerPackaging
 {
-    [MenuItem("Assets/FrameCapturer/ExportGif")]
-    public static void ExportPackage_Gif()
+    [MenuItem("Assets/FrameCapturer/MakePackage (GIF)")]
+    public static void MakePackage_GIF()
     {
         string[] files = new string[]
         {
@@ -48,8 +48,8 @@ public class FrameCapturerPackaging
     }
 
 
-    [MenuItem("Assets/FrameCapturer/ExportComplete")]
-    public static void ExportPackage_Complete()
+    [MenuItem("Assets/FrameCapturer/MakePackage (EXR)")]
+    public static void MakePackage_EXR()
     {
         string[] files = new string[]
         {
