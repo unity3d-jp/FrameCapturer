@@ -39,7 +39,34 @@ Exr エクスポートは非常に重く、リアルタイムで行うのは厳�
 ![exr_example1](Screenshots/exr_example1.png)  
 
 ### 使い方
-1. [このパッケージ](https://github.com/unity3d-jp/FrameCapturer/blob/master/Packages/FrameCapturer_Exr.unitypackage?raw=true)をインポート
+
+#### G-Buffer & フレームバッファのキャプチャ (ExrCapturer)
+1. [このパッケージ](https://github.com/unity3d-jp/FrameCapturer/blob/master/Packages/FrameCapturer_Exr.unitypackage?raw=true)をインポート  
+  (Exr は用途が特殊なため、専用パッケージになっています。また、64 bit 版のみの提供となります)
 2. 録画したいカメラに ExrCapturer コンポーネントを追加
-3. 録画開始/終了フレームなどを設定し、Play  
+3. キャプチャしたい要素 (capture_framebuffer, capture_gbuffer)、録画開始 / 終了フレームなどを設定し、Play  
+
 ![ExrCapturer](Screenshots/ExrCapturer.png)  
+
+depth_format は、depth を 16 bit で書き出す場合 Half、32 bit で書き出す場合 Float を指定します。
+通常 depth は元データが 24 bit のため Float が望ましいのですが、編集ソフトが Float 画像に対応していない場合などに Half で書き出す必要性が生じます。
+
+---
+
+#### RenderTexture のキャプチャ (ExrOffscreenCapturer)
+1. パッケージをインポート (同上)
+2. 録画したいカメラに ExrOffscreenCapturer コンポーネントを追加
+3. RenderTexture を用意し、カメラと ExrOffscreenCapturer に設定
+
+大体 ExrCapturer と同じですが、3 の RenderTexture を ExrOffscreenCapturer に設定する手順がやや複雑です。  
+exr はピクセルの各チャンネル (RGBA) を個別にレイヤーとして持つ構造になっています。
+これに合わせ、ExrOffscreenCapturer もチャンネル単位で書き出す要素を指定するようになっています。
+
+Targets は 1 要素が 1 つの RenderTexture に対応します。
+書き出したい数だけ Size を増やし、それぞれ Target に RenderTexture を指定します。  
+Channnels にチャンネル情報を指定します。
+Name は他とかぶっていなければなんでもよく、これがそのまま編集ツールで見えるレイヤー名になります。
+Channel は何番目のチャンネルかを指定するもので、0,1,2,3 がそれぞれ R,G,B,A に対応します。  
+
+例: 1 つの RenderTexture の RGBA 各要素を書き出したい場合、以下のような設定になります。(ExrOffscreenCapturerExample.unity からの抜粋)  
+![ExrOffscreenCapturer](Screenshots/ExrOffscreenCapturer.png)  
