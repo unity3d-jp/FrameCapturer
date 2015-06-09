@@ -9,15 +9,15 @@ public class TweetMedia : MonoBehaviour
 {
     public enum AuthStateCode
     {
-        VerifyingCredentialsBegin,
-        VerifyingCredentialsSucceeded,
-        VerifyingCredentialsFailed,
+        VerifyCredentialsBegin,
+        VerifyCredentialsSucceeded,
+        VerifyCredentialsFailed,
         RequestAuthURLBegin,
         RequestAuthURLSucceeded,
         RequestAuthURLFailed,
-        EnterPinBegin,
-        EnterPinSucceeded,
-        EnterPinFailed,
+        EnterPINBegin,
+        EnterPINSucceeded,
+        EnterPINFailed,
     }
 
     public enum TweetStateCode
@@ -33,36 +33,32 @@ public class TweetMedia : MonoBehaviour
     public string m_path_to_savedata;
 
     TweetMediaPlugin.tmContext m_ctx;
-    Action<AuthStateCode> m_on_change_auth_state;
-    Action<TweetStateCode> m_on_change_tweet_state;
-    List<Action> m_on_tweet_handlers = new List<Action>();
+    List<Action<AuthStateCode>> m_auth_event_handlers = new List<Action<AuthStateCode>>();
+    List<Action<TweetStateCode>> m_tweet_event_handlers = new List<Action<TweetStateCode>>();
     string m_auth_url = "";
     string m_error_message = "";
     string m_pin = "";
 
 
-    public void AddOnTweetHandler(Action act)
+
+    public void AddAuthEventHandler(Action<AuthStateCode> act)
     {
-        m_on_tweet_handlers.Add(act);
+        m_auth_event_handlers.Add(act);
+    }
+    public void RemoveAuthEventHandler(Action<AuthStateCode> act)
+    {
+        m_auth_event_handlers.Remove(act);
     }
 
-    public void RemoveOnTweetHandler(Action act)
+    public void AddTweetEventHandler(Action<TweetStateCode> act)
     {
-        m_on_tweet_handlers.Remove(act);
+        m_tweet_event_handlers.Add(act);
+    }
+    public void RemoveTweetEventHandler(Action<TweetStateCode> act)
+    {
+        m_tweet_event_handlers.Remove(act);
     }
 
-
-    public Action<AuthStateCode> on_change_auth_state
-    {
-        get { return m_on_change_auth_state; }
-        set { m_on_change_auth_state = value; }
-    }
-
-    public Action<TweetStateCode> on_change_tweet_state
-    {
-        get { return m_on_change_tweet_state; }
-        set { m_on_change_tweet_state = value; }
-    }
 
     public string auth_url
     {
@@ -83,11 +79,7 @@ public class TweetMedia : MonoBehaviour
     {
         set
         {
-            if (m_on_change_auth_state != null)
-            {
-                m_on_change_auth_state.Invoke(value);
-            }
-
+            m_auth_event_handlers.ForEach((h) => { h.Invoke(value); });
         }
     }
 
@@ -95,11 +87,7 @@ public class TweetMedia : MonoBehaviour
     {
         set
         {
-            if (m_on_change_tweet_state != null)
-            {
-                m_on_change_tweet_state.Invoke(value);
-            }
-
+            m_tweet_event_handlers.ForEach((h) => { h.Invoke(value); });
         }
     }
 
@@ -114,15 +102,15 @@ public class TweetMedia : MonoBehaviour
 
     IEnumerator Authorize()
     {
-        TweetMediaPlugin.tmVerifyCredentialsAsync(m_ctx);
-
         bool authorized = false;
 
         // 保存された token が有効かチェック
+        auth_state = AuthStateCode.VerifyCredentialsBegin;
+        TweetMediaPlugin.tmLoadCredentials(m_ctx, m_path_to_savedata);
+        TweetMediaPlugin.tmVerifyCredentialsAsync(m_ctx);
         while (enabled)
         {
             var state = TweetMediaPlugin.tmGetVerifyCredentialsState(m_ctx);
-            auth_state = AuthStateCode.VerifyingCredentialsBegin;
             if (state.code == TweetMediaPlugin.tmEStatusCode.InProgress)
             {
                 yield return 0;
@@ -132,12 +120,12 @@ public class TweetMedia : MonoBehaviour
                 if (state.code == TweetMediaPlugin.tmEStatusCode.Succeeded)
                 {
                     authorized = true;
-                    auth_state = AuthStateCode.VerifyingCredentialsSucceeded;
+                    auth_state = AuthStateCode.VerifyCredentialsSucceeded;
                 }
                 else
                 {
                     m_error_message = state.error_message;
-                    auth_state = AuthStateCode.VerifyingCredentialsFailed;
+                    auth_state = AuthStateCode.VerifyCredentialsFailed;
                 }
                 break;
             }
@@ -147,8 +135,8 @@ public class TweetMedia : MonoBehaviour
         while (enabled && !authorized)
         {
             // 認証 URL を取得
-            TweetMediaPlugin.tmRequestAuthURLAsync(m_ctx, m_consumer_key, m_consumer_secret);
             auth_state = AuthStateCode.RequestAuthURLBegin;
+            TweetMediaPlugin.tmRequestAuthURLAsync(m_ctx, m_consumer_key, m_consumer_secret);
             while (enabled)
             {
                 var state = TweetMediaPlugin.tmGetRequestAuthURLState(m_ctx);
@@ -167,7 +155,7 @@ public class TweetMedia : MonoBehaviour
                     {
                         m_error_message = state.error_message;
                         auth_state = AuthStateCode.RequestAuthURLFailed;
-                        // ここで失敗したらほとんど続けようがない (consumer key & secret が無効かネットワーク障害)
+                        // ここで失敗したらほとんど続けようがない (consumer key / secret が無効かネットワーク障害)
                         yield break;
                     }
                     break;
@@ -178,9 +166,9 @@ public class TweetMedia : MonoBehaviour
             while (enabled && m_pin.Length == 0) { yield return 0; }
 
             m_error_message = "";
+            auth_state = AuthStateCode.EnterPINBegin;
             TweetMediaPlugin.tmEnterPinAsync(m_ctx, m_pin);
             m_pin = "";
-            auth_state = AuthStateCode.EnterPinBegin;
             while (enabled)
             {
                 var state = TweetMediaPlugin.tmGetEnterPinState(m_ctx);
@@ -194,12 +182,12 @@ public class TweetMedia : MonoBehaviour
                     {
                         authorized = true;
                         TweetMediaPlugin.tmSaveCredentials(m_ctx, m_path_to_savedata);
-                        auth_state = AuthStateCode.EnterPinSucceeded;
+                        auth_state = AuthStateCode.EnterPINSucceeded;
                     }
                     else
                     {
                         m_error_message = state.error_message;
-                        auth_state = AuthStateCode.EnterPinFailed;
+                        auth_state = AuthStateCode.EnterPINFailed;
                     }
                     break;
                 }
@@ -228,14 +216,13 @@ public class TweetMedia : MonoBehaviour
 
     public void BeginTweet(string message)
     {
-        m_on_tweet_handlers.ForEach((act) => { act.Invoke(); });
         StartCoroutine(Tweet(message));
     }
 
     IEnumerator Tweet(string message)
     {
-        int handle = TweetMediaPlugin.tmTweetAsync(m_ctx, message);
         tweet_state = TweetStateCode.Begin;
+        int handle = TweetMediaPlugin.tmTweetAsync(m_ctx, message);
         while(enabled) {
             TweetMediaPlugin.tmTweetState state = TweetMediaPlugin.tmGetTweetState(m_ctx, handle);
             if (state.code == TweetMediaPlugin.tmEStatusCode.InProgress)
@@ -268,7 +255,6 @@ public class TweetMedia : MonoBehaviour
             Debug.LogError("TweetMedia: set consumer_key and consumer_secret!");
         }
         m_ctx = TweetMediaPlugin.tmCreateContext();
-        TweetMediaPlugin.tmLoadCredentials(m_ctx, m_path_to_savedata);
     }
 
     void OnDisable()
