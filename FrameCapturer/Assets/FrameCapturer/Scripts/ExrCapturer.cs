@@ -13,10 +13,20 @@ using UnityEditor;
 [RequireComponent(typeof(Camera))]
 public class ExrCapturer : MonoBehaviour
 {
+    public enum DepthFormat
+    {
+        Half,
+        Float,
+    }
+
+
     public bool m_capture_framebuffer = true;
     public bool m_capture_gbuffer = true;
+    public DepthFormat m_depth_format = DepthFormat.Float;
 
     public string m_output_directory = "ExrOutput";
+    public string m_filename_framebuffer = "FrameBuffer";
+    public string m_filename_gbuffer = "GBuffer";
     public int m_begin_frame = 0;
     public int m_end_frame = 100;
     public int m_max_active_tasks = 1;
@@ -47,6 +57,10 @@ public class ExrCapturer : MonoBehaviour
         m_cam = GetComponent<Camera>();
         m_quad = FrameCapturerUtils.CreateFullscreenQuad();
         m_mat_copy = new Material(m_sh_copy);
+        if (m_cam.targetTexture != null)
+        {
+            m_mat_copy.EnableKeyword("OFFSCREEN");
+        }
 
         if (m_capture_framebuffer)
         {
@@ -82,7 +96,8 @@ public class ExrCapturer : MonoBehaviour
                 m_rt_gbuffer[i] = m_gbuffer[i].colorBuffer;
             }
             {
-                m_depth = new RenderTexture(m_cam.pixelWidth, m_cam.pixelHeight, 0, RenderTextureFormat.RFloat);
+                RenderTextureFormat format = m_depth_format == DepthFormat.Half ? RenderTextureFormat.RHalf : RenderTextureFormat.RFloat;
+                m_depth = new RenderTexture(m_cam.pixelWidth, m_cam.pixelHeight, 0, format);
                 m_depth.filterMode = FilterMode.Point;
                 m_depth.Create();
             }
@@ -139,7 +154,7 @@ public class ExrCapturer : MonoBehaviour
                 Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                 Graphics.SetRenderTarget(null);
 
-                string path = m_output_directory + "/gbuffer_" + frame.ToString("0000") + ".exr";
+                string path = m_output_directory + "/" + m_filename_gbuffer + "_" + frame.ToString("0000") + ".exr";
                 FrameCapturer.fcExrBeginFrame(m_exr, path, m_gbuffer[0].width, m_gbuffer[0].height);
                 AddLayer(m_gbuffer[0], 0, "Albedo.R");
                 AddLayer(m_gbuffer[0], 1, "Albedo.G");
@@ -167,7 +182,7 @@ public class ExrCapturer : MonoBehaviour
                 Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                 Graphics.SetRenderTarget(null);
 
-                string path = m_output_directory + "/frame_" + frame.ToString("0000") + ".exr";
+                string path = m_output_directory + "/" + m_filename_framebuffer + "_" + frame.ToString("0000") + ".exr";
                 FrameCapturer.fcExrBeginFrame(m_exr, path, m_frame_buffer.width, m_frame_buffer.height);
                 AddLayer(m_frame_buffer, 0, "R");
                 AddLayer(m_frame_buffer, 1, "G");
