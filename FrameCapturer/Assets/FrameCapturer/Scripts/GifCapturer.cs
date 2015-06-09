@@ -140,6 +140,10 @@ public class GifCapturer : MovieCapturer
         m_cam = GetComponent<Camera>();
         m_quad = FrameCapturerUtils.CreateFullscreenQuad();
         m_mat_copy = new Material(m_sh_copy);
+        if (m_cam.targetTexture != null)
+        {
+            m_mat_copy.EnableKeyword("OFFSCREEN");
+        }
 
         {
             int tid = Shader.PropertyToID("_TmpFrameBuffer");
