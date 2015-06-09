@@ -6,6 +6,7 @@ Properties {
 CGINCLUDE
 #include "UnityCG.cginc"
 //#pragma multi_compile ___ UNITY_HDR_ON
+#pragma multi_compile ___ OFFSCREEN
 
 sampler2D _TmpFrameBuffer;
 sampler2D _CameraGBufferTexture0;
@@ -49,7 +50,9 @@ float2 get_texcoord_gb(v2f i)
 half4 copy_framebuffer(v2f i) : SV_Target
 {
     float2 t = get_texcoord(i);
+#if !defined(OFFSCREEN) || !defined(UNITY_UV_STARTS_AT_TOP)
     t.y = 1.0-t.y;
+#endif
     half4 r = tex2D(_TmpFrameBuffer, t);
     r.a = 1.0;
     return r;
