@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrameCapturer", "FrameCaptu
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AddLibraryPath", "AddLibraryPath.vcxproj", "{51C3D584-97C6-4A44-90B7-B370144AA606}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mp4v2test", "mp4test\MP4Test.vcxproj", "{7676585B-7ABD-4372-9E6A-05539D637E5A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -50,6 +52,22 @@ Global
 		{51C3D584-97C6-4A44-90B7-B370144AA606}.Release|Win32.Build.0 = Release|Win32
 		{51C3D584-97C6-4A44-90B7-B370144AA606}.Release|x64.ActiveCfg = Release|x64
 		{51C3D584-97C6-4A44-90B7-B370144AA606}.Release|x64.Build.0 = Release|x64
+		{7676585B-7ABD-4372-9E6A-05539D637E5A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7676585B-7ABD-4372-9E6A-05539D637E5A}.Debug|Win32.Build.0 = Debug|Win32
+		{7676585B-7ABD-4372-9E6A-05539D637E5A}.Debug|x64.ActiveCfg = Debug|x64
+		{7676585B-7ABD-4372-9E6A-05539D637E5A}.Debug|x64.Build.0 = Debug|x64
+		{7676585B-7ABD-4372-9E6A-05539D637E5A}.GifOnlyMT|Win32.ActiveCfg = GifOnlyMT|Win32
+		{7676585B-7ABD-4372-9E6A-05539D637E5A}.GifOnlyMT|Win32.Build.0 = GifOnlyMT|Win32
+		{7676585B-7ABD-4372-9E6A-05539D637E5A}.GifOnlyMT|x64.ActiveCfg = GifOnlyMT|x64
+		{7676585B-7ABD-4372-9E6A-05539D637E5A}.GifOnlyMT|x64.Build.0 = GifOnlyMT|x64
+		{7676585B-7ABD-4372-9E6A-05539D637E5A}.Master|Win32.ActiveCfg = Master|Win32
+		{7676585B-7ABD-4372-9E6A-05539D637E5A}.Master|Win32.Build.0 = Master|Win32
+		{7676585B-7ABD-4372-9E6A-05539D637E5A}.Master|x64.ActiveCfg = Master|x64
+		{7676585B-7ABD-4372-9E6A-05539D637E5A}.Master|x64.Build.0 = Master|x64
+		{7676585B-7ABD-4372-9E6A-05539D637E5A}.Release|Win32.ActiveCfg = Release|Win32
+		{7676585B-7ABD-4372-9E6A-05539D637E5A}.Release|Win32.Build.0 = Release|Win32
+		{7676585B-7ABD-4372-9E6A-05539D637E5A}.Release|x64.ActiveCfg = Release|x64
+		{7676585B-7ABD-4372-9E6A-05539D637E5A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
