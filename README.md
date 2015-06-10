@@ -31,11 +31,11 @@ GifCapturerHUD.prefab は機能はともかく見た目は必要最小限のた�
 Twitter への投稿機能は、[TweetMedia](https://github.com/unity3d-jp/TweetMedia) によって実現されています。詳しくはそちらをご参照ください。  
 TweetScreenshot.prefab はこちらのパッケージにしかない prefab で、録画した gif を添付する機能が追加された Tweet 用 GUI になっています。
 
+
 ## Exr Capturer  
 Exr は主に映像業界で使われる画像フォーマットで、float や half のピクセルデータで構成された画像、いわゆる HDR 画像を保持できます。  
 ExrCapturer は主に映像向けの用途を想定したもので、G-Buffer やマテリアル ID などを書き出し、コンポジットに使うことを目的としています。現状 G-Buffer の書き出しと、任意の RenderTexture の書き出しに対応しています。  
 Exr エクスポートは非常に重く、リアルタイムで行うのは厳しい処理であるため、デルタタイムを固定して事前に指定しておいた範囲のフレームを書き出す、という使い方を想定しています。  
-
 
 ### 使い方
 
@@ -57,7 +57,7 @@ G-Buffer の出力は、デフォルトでは単一ファイルに多数のレ�
 以下は Photoshop に [ProEXR](http://www.fnordware.com/ProEXR/) を使って読み込んだ場合のレイヤー構成です。  
 ![exr_example1](Screenshots/ExrLayers.png)  
 
-ファイルの分離やレイヤー名の変更を行いたい場合、OnPostRender.cs の OnPostRender() 内のエクスポート部分を書き換える必要があります。
+ファイルの分離やレイヤー名の変更を行いたい場合、ExrCapturer.cs の OnPostRender() 内のエクスポート部分を書き換える必要があります。
 該当箇所のソースは以下のようになっており、書き換え自体は難しくないはずです。
 ```cs
 FrameCapturer.fcExrBeginFrame(m_exr, path, m_gbuffer[0].width, m_gbuffer[0].height);
@@ -108,3 +108,10 @@ Channel は何番目のチャンネルかを指定するもので、0,1,2,3 が�
   http://www.openexr.com/  
 - Twitter への投稿に TweetMedia を使用しています。  
   https://github.com/unity3d-jp/TweetMedia
+
+  ## License
+  Copyright (C) 2015 Unity Technologies Japan, G.K.
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
