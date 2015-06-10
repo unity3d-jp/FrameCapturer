@@ -68,9 +68,6 @@ fcIGifContext* fcCreateGifContext(fcGifConfig &conf, fcIGraphicsDevice *dev);
 
 fcCLinkage fcExport fcIGifContext* fcGifCreateContext(fcGifConfig *conf)
 {
-    if (fcCreateGifContext == nullptr) {
-        // todo
-    }
     return fcCreateGifContext(*conf, fcGetGraphicsDevice());
 }
 
@@ -131,3 +128,80 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
 #undef fcTypeCheck
 
 #endif // fcSupportGIF
+
+
+
+
+#ifdef fcSupportMP4
+#include "fcMP4File.h"
+
+#ifdef fcDebug
+#define fcTypeCheck(v) if(v==nullptr || *(fcEMagic*)((void**)v+1)!=fcE_MP4Context) { fcBreak(); }
+#else  // fcDebug
+#define fcTypeCheck(v) 
+#endif // fcDebug
+
+fcIMP4Context* fcCreateMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev);
+
+fcCLinkage fcExport fcIMP4Context* fcMP4CreateContext(fcMP4Config *conf)
+{
+    return fcCreateMP4Context(*conf, fcGetGraphicsDevice());
+}
+
+fcCLinkage fcExport void fcMP4DestroyContext(fcIMP4Context *ctx)
+{
+    if (ctx == nullptr) { return; }
+    fcTypeCheck(ctx);
+    ctx->release();
+}
+
+fcCLinkage fcExport bool fcMP4AddFrame(fcIMP4Context *ctx, void *tex)
+{
+    fcTypeCheck(ctx);
+    return ctx->addFrame(tex);
+}
+
+fcCLinkage fcExport void fcMP4ClearFrame(fcIMP4Context *ctx)
+{
+    fcTypeCheck(ctx);
+    ctx->clearFrame();
+}
+
+fcCLinkage fcExport bool fcMP4WriteFile(fcIMP4Context *ctx, const char *path, int begin_frame, int end_frame)
+{
+    fcTypeCheck(ctx);
+    return ctx->writeFile(path, begin_frame, end_frame);
+}
+
+fcCLinkage fcExport int fcMP4WriteMemory(fcIMP4Context *ctx, void *buf, int begin_frame, int end_frame)
+{
+    fcTypeCheck(ctx);
+    return ctx->writeMemory(buf, begin_frame, end_frame);
+}
+
+fcCLinkage fcExport int fcMP4GetFrameCount(fcIMP4Context *ctx)
+{
+    fcTypeCheck(ctx);
+    return ctx->getFrameCount();
+}
+
+fcCLinkage fcExport void fcMP4GetFrameData(fcIMP4Context *ctx, void *tex, int frame)
+{
+    fcTypeCheck(ctx);
+    return ctx->getFrameData(tex, frame);
+}
+
+fcCLinkage fcExport int fcMP4GetExpectedDataSize(fcIMP4Context *ctx, int begin_frame, int end_frame)
+{
+    fcTypeCheck(ctx);
+    return ctx->getExpectedDataSize(begin_frame, end_frame);
+}
+
+fcCLinkage fcExport void fcMP4EraseFrame(fcIMP4Context *ctx, int begin_frame, int end_frame)
+{
+    fcTypeCheck(ctx);
+    ctx->eraseFrame(begin_frame, end_frame);
+}
+#undef fcTypeCheck
+
+#endif // fcSupportMP4
