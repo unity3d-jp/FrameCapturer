@@ -4,12 +4,14 @@
 class fcIGraphicsDevice;
 class fcIExrContext;
 class fcIGifContext;
+class fcIMP4Context;
 
 enum fcEMagic
 {
     fcE_Deleted    = 0xDEADBEEF,
     fcE_ExrContext = 0x10101010,
     fcE_GifContext = 0x20202020,
+    fcE_MP4Context = 0x30303030,
 };
 
 enum fcETextureFormat
@@ -78,5 +80,30 @@ fcCLinkage fcExport int             fcGifGetExpectedDataSize(fcIGifContext *ctx,
 fcCLinkage fcExport void            fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, int end_frame);
 
 #endif // fcSupportGIF
+
+
+
+#ifdef fcSupportMP4
+
+struct fcMP4Config
+{
+    int width;
+    int height;
+    int max_active_tasks;
+    int max_frame;
+    int max_data_size;
+};
+fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
+fcCLinkage fcExport void            fcMP4DestroyContext(fcIMP4Context *ctx);
+fcCLinkage fcExport bool            fcMP4AddFrame(fcIMP4Context *ctx, void *tex);
+fcCLinkage fcExport void            fcMP4ClearFrame(fcIMP4Context *ctx);
+fcCLinkage fcExport bool            fcMP4WriteFile(fcIMP4Context *ctx, const char *path, int begin_frame, int end_frame);
+fcCLinkage fcExport int             fcMP4WriteMemory(fcIMP4Context *ctx, void *buf, int begin_frame, int end_frame);
+fcCLinkage fcExport int             fcMP4GetFrameCount(fcIMP4Context *ctx);
+fcCLinkage fcExport void            fcMP4GetFrameData(fcIMP4Context *ctx, void *tex, int frame);
+fcCLinkage fcExport int             fcMP4GetExpectedDataSize(fcIMP4Context *ctx, int begin_frame, int end_frame);
+fcCLinkage fcExport void            fcMP4EraseFrame(fcIMP4Context *ctx, int begin_frame, int end_frame);
+
+#endif // fcSupportMP4
 
 #endif // FrameCapturer_h

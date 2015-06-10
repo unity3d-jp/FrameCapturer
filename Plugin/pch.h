@@ -1,6 +1,7 @@
 ﻿//options:
 //#define fcSupportGIF
 //#define fcSupportEXR
+//#define fcSupportMP4
 //#define fcSupportOpenGL
 //#define fcSupportD3D9
 //#define fcSupportD3D11
@@ -46,6 +47,7 @@
 #include <thread>
 #include <functional>
 #include <fstream>
+#include <sstream>
 #ifdef fcWindows
     #include <windows.h>
 #endif
