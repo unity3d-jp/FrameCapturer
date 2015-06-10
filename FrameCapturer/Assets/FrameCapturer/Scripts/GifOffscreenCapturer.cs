@@ -10,6 +10,7 @@ using UnityEditor;
 
 
 [AddComponentMenu("FrameCapturer/GifOffscreenCapturer")]
+[RequireComponent(typeof(Camera))]
 public class GifOffscreenCapturer : MovieCapturer
 {
     public RenderTexture m_target;
@@ -151,12 +152,7 @@ public class GifOffscreenCapturer : MovieCapturer
         m_scratch_buffer = null;
     }
 
-    void Update()
-    {
-        StartCoroutine(Capture());
-    }
-
-    IEnumerator Capture()
+    IEnumerator OnPostRender()
     {
         if (m_recode)
         {
