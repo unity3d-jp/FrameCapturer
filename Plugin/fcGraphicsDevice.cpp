@@ -20,6 +20,9 @@ int fcGetPixelSize(fcETextureFormat format)
     case fcE_ARGBInt:   return 16;
     case fcE_RGInt:     return 8;
     case fcE_RInt:      return 4;
+    
+    default:
+         break;
     }
     return 0;
 }
@@ -64,7 +67,7 @@ fcCLinkage fcExport void UnitySetGraphicsDevice(void* device, int deviceType, in
     }
 }
 
-fcCLinkage fcExport void UnityRenderEvent(int eventID)
+fcCLinkage fcExport void UnityRenderEvent(int)
 {
 }
 

@@ -23,7 +23,9 @@ public static class FrameCapturer
         public int max_data_size;
     };
 
+#if UNITY_STANDALONE_WIN
     [DllImport ("AddLibraryPath")] public static extern void    AddLibraryPath();
+#endif
 
     [DllImport ("FrameCapturer")] public static extern IntPtr   fcExrCreateContext(ref fcExrConfig conf);
     [DllImport ("FrameCapturer")] public static extern void     fcExrDestroyContext(IntPtr ctx);
