@@ -68,9 +68,9 @@ fcIGifContext* fcCreateGifContext(fcGifConfig &conf, fcIGraphicsDevice *dev);
 
 fcCLinkage fcExport fcIGifContext* fcGifCreateContext(fcGifConfig *conf)
 {
-    if (fcCreateGifContext == nullptr) {
-        // todo
-    }
+    // if (fcCreateGifContext == nullptr) {
+    //     // todo
+    // }
     return fcCreateGifContext(*conf, fcGetGraphicsDevice());
 }
 
