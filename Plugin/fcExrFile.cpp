@@ -12,12 +12,16 @@
 #include <ImfStringAttribute.h>
 #include <ImfMatrixAttribute.h>
 #include <ImfArray.h>
+
+#if defined(fcWindows) && !defined(fcNoAutoLink)
 #pragma comment(lib, "Half.lib")
 #pragma comment(lib, "Iex-2_2.lib")
 #pragma comment(lib, "IexMath-2_2.lib")
 #pragma comment(lib, "IlmThread-2_2.lib")
 #pragma comment(lib, "IlmImf-2_2.lib")
 #pragma comment(lib, "zlibstatic.lib")
+#endif
+
 #include "fcExrFile.h"
 
 
