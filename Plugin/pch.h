@@ -17,7 +17,7 @@
     #define fcExport __declspec(dllexport)
     #define fcBreak() DebugBreak()
 #else // fcWindows
-    #define fcExport
+    #define fcExport __attribute__((visibility("default")))
     #define fcBreak() __builtin_trap()
 #endif // fcWindows
 

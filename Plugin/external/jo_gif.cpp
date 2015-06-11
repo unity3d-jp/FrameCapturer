@@ -222,8 +222,15 @@ static void jo_gif_lzw_write(jo_gif_lzw_t *s, int code)
 
 static void jo_gif_lzw_encode(std::ostream &os, unsigned char *in, int len)
 {
-    jo_gif_lzw_t state = {&os, 9};
+    jo_gif_lzw_t state;
     int maxcode = 511;
+    
+    state.os = &os;
+    state.numBits = 9;
+    state.idx = 0;
+    state.tmp = 0;
+    state.outBits = 0;
+    state.curBits = 0;
 
     // Note: 30k stack space for dictionary =|
     const int hashSize = 5003;
@@ -378,7 +385,7 @@ void jo_gif_decode(void *o_buf, jo_gif_frame_t *fdata, jo_gif_frame_t *palette_f
 }
 
 
-void jo_gif_end(jo_gif_t *gif)
+void jo_gif_end(jo_gif_t *)
 {
 }
 
@@ -398,7 +405,7 @@ void jo_gif_write_frame(std::ostream &os, jo_gif_t *gif, jo_gif_frame_t *fdata, 
 {
     short width = gif->width;
     short height = gif->height;
-    int size = width * height;
+    // int size = width * height;
     unsigned char *palette = nullptr;
     int palette_size = 0;
     if (palette_optional != nullptr) {
@@ -440,7 +447,7 @@ void jo_gif_write_frame(std::ostream &os, jo_gif_t *gif, jo_gif_frame_t *fdata, 
     os.put(0); // block terminator
 }
 
-void jo_gif_write_footer(std::ostream &os, jo_gif_t *gif)
+void jo_gif_write_footer(std::ostream &os, jo_gif_t *)
 {
     os.put(0x3b); // gif trailer
 }
