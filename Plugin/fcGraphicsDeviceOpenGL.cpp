@@ -81,6 +81,7 @@ bool fcGraphicsDeviceOpenGL::readTexture(void *o_buf, size_t, void *tex, int, in
     //// glGetTextureImage() is available only OpenGL 4.5 or later...
     // glGetTextureImage((GLuint)(size_t)tex, 0, internal_format, internal_type, bufsize, o_buf);
 
+    glFinish();
     glBindTexture(GL_TEXTURE_2D, (GLuint)(size_t)tex);
     glGetTexImage(GL_TEXTURE_2D, 0, internal_format, internal_type, o_buf);
     glBindTexture(GL_TEXTURE_2D, 0);

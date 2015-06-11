@@ -9,6 +9,7 @@ using UnityEditor;
 
 
 [AddComponentMenu("FrameCapturer/ExrOffscreenCapturer")]
+[RequireComponent(typeof(Camera))]
 public class ExrOffscreenCapturer : MonoBehaviour
 {
     [System.Serializable]
@@ -28,7 +29,7 @@ public class ExrOffscreenCapturer : MonoBehaviour
     public CaptureData[] m_targets;
 
     public string m_output_directory = "ExrOutput";
-    public string m_output_filename;
+    public string m_output_filename = "Offscreen";
     public int m_begin_frame = 0;
     public int m_end_frame = 100;
     public int m_max_active_tasks = 1;
@@ -71,14 +72,8 @@ public class ExrOffscreenCapturer : MonoBehaviour
         FrameCapturer.fcExrDestroyContext(m_exr);
     }
 
-    void Update()
-    {
-        if (m_targets.Length != 0) {
-            StartCoroutine(Capture());
-        }
-    }
 
-    IEnumerator Capture()
+    IEnumerator OnPostRender()
     {
         int frame = m_frame++;
         if (frame >= m_begin_frame && frame <= m_end_frame)
