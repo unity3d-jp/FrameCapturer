@@ -37,11 +37,13 @@
   <ItemGroup>
     <ClCompile Include="fcColorSpace.cpp" />
     <ClCompile Include="fcH264Encoder.cpp" />
+    <ClCompile Include="fcMP4Muxer.cpp" />
     <ClCompile Include="mp4test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fcColorSpace.h" />
     <ClInclude Include="fcH264Encoder.h" />
+    <ClInclude Include="fcMP4Muxer.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7676585B-7ABD-4372-9E6A-05539D637E5A}</ProjectGuid>
