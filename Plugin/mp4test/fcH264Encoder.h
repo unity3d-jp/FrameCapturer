@@ -10,17 +10,30 @@ class ISVCEncoder;
 class fcH264Encoder
 {
 public:
-    struct result
+    enum FrameType
+    {
+        videoFrameTypeInvalid,    ///< encoder not ready or parameters are invalidate
+        videoFrameTypeIDR,        ///< IDR frame in H.264
+        videoFrameTypeI,          ///< I frame type
+        videoFrameTypeP,          ///< P frame type
+        videoFrameTypeSkip,       ///< skip the frame based encoder kernel
+        videoFrameTypeIPMixed     ///< a frame where I and P slices are mixing, not supported yet
+    };
+    struct Result
     {
         void *data;
-        int data_size;
+        int size;
+        FrameType type;
+
+        Result(void *d = nullptr, int s = 0, FrameType t = videoFrameTypeInvalid)
+            : data(d), size(s), type(t) {}
     };
 
     fcH264Encoder(int width, int height, float frame_rate, int target_bitrate);
     ~fcH264Encoder();
     operator bool() const;
-    result encodeRGBA(const bRGBA *src);
-    result encodeI420(const void *src_y, const void *src_u, const void *src_v);
+    Result encodeRGBA(const bRGBA *src);
+    Result encodeI420(const void *src_y, const void *src_u, const void *src_v);
 
 private:
     ISVCEncoder *m_encoder;

@@ -88,10 +88,9 @@ fcH264Encoder::operator bool() const
     return m_encoder != nullptr;
 }
 
-fcH264Encoder::result fcH264Encoder::encodeRGBA(const bRGBA *src)
+fcH264Encoder::Result fcH264Encoder::encodeRGBA(const bRGBA *src)
 {
-    result r = {nullptr, 0};
-    if (!m_encoder) { return r; }
+    if (!m_encoder) { return Result(); }
 
     m_buf.resize(m_width * m_height * 3 / 2);
     uint8_t *pic_y = (uint8_t*)&m_buf[0];
@@ -101,10 +100,9 @@ fcH264Encoder::result fcH264Encoder::encodeRGBA(const bRGBA *src)
     return encodeI420(pic_y, pic_u, pic_v);
 }
 
-fcH264Encoder::result fcH264Encoder::encodeI420(const void *src_y, const void *src_u, const void *src_v)
+fcH264Encoder::Result fcH264Encoder::encodeI420(const void *src_y, const void *src_u, const void *src_v)
 {
-    result r = { nullptr, 0 };
-    if (!m_encoder) { return r; }
+    if (!m_encoder) { return Result(); }
 
     SSourcePicture src;
     memset(&src, 0, sizeof(src));
@@ -123,10 +121,10 @@ fcH264Encoder::result fcH264Encoder::encodeI420(const void *src_y, const void *s
 
     int ret = m_encoder->EncodeFrame(&src, &dst);
     if (ret == 0) {
-        if (dst.eFrameType != videoFrameTypeSkip) {
-            r.data = dst.sLayerInfo[0].pBsBuf;
-            r.data_size = dst.iFrameSizeInBytes;
-        }
+        return Result(
+            dst.sLayerInfo[0].pBsBuf,
+            dst.iFrameSizeInBytes,
+            (FrameType)dst.eFrameType);
     }
-    return r;
+    return Result();
 }
