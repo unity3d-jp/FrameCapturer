@@ -44,7 +44,7 @@ public class MP4Capturer : MovieCapturer
         set { m_recode = value; }
     }
 
-    public override void WriteFile(string path = "", int begin_frame = 0, int end_frame = -1)
+    public override bool WriteFile(string path = "", int begin_frame = 0, int end_frame = -1)
     {
         if (m_ctx.ptr != IntPtr.Zero)
         {
@@ -52,18 +52,21 @@ public class MP4Capturer : MovieCapturer
             {
                 path = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
             }
-            FrameCapturer.fcMP4WriteFile(m_ctx, path, begin_frame, end_frame);
-            print("GifCapturer.WriteFile() : " + path);
+            return FrameCapturer.fcMP4WriteFile(m_ctx, path, begin_frame, end_frame);
+            Debug.Log("MP4Capturer.WriteFile() : " + path);
         }
+        return false;
     }
 
-    public override void WriteMemory(System.IntPtr dst_buf, int begin_frame = 0, int end_frame = -1)
+    public override int WriteMemory(System.IntPtr dst_buf, int begin_frame = 0, int end_frame = -1)
     {
+        int ret = 0;
         if (m_ctx.ptr != IntPtr.Zero)
         {
-            FrameCapturer.fcMP4WriteMemory(m_ctx, dst_buf, begin_frame, end_frame);
-            print("GifCapturer.WriteMemry()");
+            ret = FrameCapturer.fcMP4WriteMemory(m_ctx, dst_buf, begin_frame, end_frame);
+            Debug.Log("MP4Capturer.WriteMemry()");
         }
+        return ret;
     }
 
     public override RenderTexture GetScratchBuffer() { return m_scratch_buffer; }

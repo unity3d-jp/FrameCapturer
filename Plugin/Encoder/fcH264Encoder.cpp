@@ -70,7 +70,7 @@ fcH264Encoder::Result fcH264Encoder::encodeRGBA(const bRGBA *src)
 {
     if (!m_encoder) { return Result(); }
 
-    m_buf.resize((m_width+1) * (m_height+1) * 3 / 2);
+    m_buf.resize(roundup<2>(m_width) * roundup<2>(m_height) * 3 / 2);
     uint8_t *pic_y = (uint8_t*)&m_buf[0];
     uint8_t *pic_u = pic_y + (m_width * m_height);
     uint8_t *pic_v = pic_u + ((m_width * m_height) >> 2);

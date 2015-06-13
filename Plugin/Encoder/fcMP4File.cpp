@@ -63,6 +63,7 @@ private:
     void enqueueTask(const std::function<void()> &f);
     void processTasks();
 
+    void resetEncoder();
     void scrape(bool is_tasks_running);
     void wait();
     void waitOne();
@@ -108,10 +109,10 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
     for (auto& rf : m_raw_buffers)
     {
         rf.rgba.resize(m_conf.width * m_conf.height * 4);
-        rf.i420.resize((m_conf.width+1) * (m_conf.height+1) * 3 / 2);
+        rf.i420.resize(roundup<2>(m_conf.width) * roundup<2>(m_conf.height) * 3 / 2);
     }
 
-    m_encoder.reset(new fcH264Encoder(m_conf.width, m_conf.height, m_conf.framerate, m_conf.bitrate));
+    resetEncoder();
     m_muxer.reset(new fcMP4Muxer());
 
     // run working thread
@@ -129,6 +130,12 @@ fcMP4Context::~fcMP4Context()
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
+void fcMP4Context::resetEncoder()
+{
+    wait();
+    m_encoder.reset();
+    m_encoder.reset(new fcH264Encoder(m_conf.width, m_conf.height, m_conf.framerate, m_conf.bitrate));
+}
 
 void fcMP4Context::enqueueTask(const std::function<void()> &f)
 {
@@ -267,6 +274,8 @@ void fcMP4Context::clearFrame()
 {
     wait();
     m_frame = 0;
+    m_h264_buffers.clear();
+    resetEncoder();
 }
 
 
@@ -358,7 +367,7 @@ void fcMP4Context::getFrameData(void *tex, int frame)
 
     RawFrameData raw;
     raw.rgba.resize(m_conf.width * m_conf.height * 4);
-    raw.i420.resize(m_conf.width * m_conf.height * 3/2);
+    raw.i420.resize(roundup<2>(m_conf.width) * roundup<2>(m_conf.height) * 3 / 2);
     // todo: decode
     m_dev->writeTexture(tex, m_conf.width, m_conf.height, fcE_ARGB32, &raw.rgba[0], raw.rgba.size());
 }
@@ -372,9 +381,10 @@ int fcMP4Context::getExpectedDataSize(int begin_frame, int end_frame)
     std::advance(begin, begin_frame);
     std::advance(end, end_frame);
 
-
-    size_t size = 0;
-    // todo
+    size_t size = 2048; // mp4 metadata
+    for (auto i = begin; i != end; ++i) {
+        size += i->data.size();
+    }
     return (int)size;
 }
 
