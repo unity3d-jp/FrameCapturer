@@ -60,8 +60,12 @@ public:
     void eraseFrame(int begin_frame, int end_frame) override;
 
 private:
+    void enqueueTask(const std::function<void()> &f);
+    void processTasks();
+
     void scrape(bool is_tasks_running);
-    void waitOneTask();
+    void wait();
+    void waitOne();
     void addFrameTask(H264FrameData &o_fdata, RawFrameData &raw_buffer, bool rgba2i420);
     void write(std::ostream &os, int begin_frame, int end_frame);
 
@@ -73,8 +77,12 @@ private:
     std::list<H264FrameData> m_h264_buffers;
     int m_frame;
 
-    fcTaskGroup m_tasks;
     std::atomic<int> m_active_task_count;
+    std::thread m_worker;
+    std::mutex m_queue_mutex;
+    std::condition_variable m_condition;
+    std::deque<std::function<void()>> m_tasks;
+    bool m_stop;
 };
 
 
@@ -90,6 +98,7 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
     , m_dev(dev)
     , m_frame(0)
     , m_active_task_count(0)
+    , m_stop(false)
 {
     m_raw_buffers.resize(m_conf.max_active_tasks);
     for (auto& rf : m_raw_buffers)
@@ -97,12 +106,46 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         rf.rgba.resize(m_conf.width * m_conf.height * fcGetPixelSize(fcE_ARGB32));
         rf.i420.resize(m_conf.width * m_conf.height * 3 / 2);
     }
+
+    m_worker = std::thread([this](){ processTasks(); });
 }
 
 fcMP4Context::~fcMP4Context()
 {
-    m_tasks.wait();
+    m_stop = true;
+    m_condition.notify_all();
+    m_worker.join();
+
     m_magic = fcE_Deleted;
+}
+
+
+void fcMP4Context::enqueueTask(const std::function<void()> &f)
+{
+    {
+        std::unique_lock<std::mutex> lock(m_queue_mutex);
+        m_tasks.push_back(std::function<void()>(f));
+    }
+    m_condition.notify_one();
+}
+
+void fcMP4Context::processTasks()
+{
+    while (!m_stop)
+    {
+        std::function<void()> task;
+        {
+            std::unique_lock<std::mutex> lock(m_queue_mutex);
+            while (!m_stop && m_tasks.empty()) {
+                m_condition.wait(lock);
+            }
+            if (m_stop) { return; }
+
+            task = m_tasks.front();
+            m_tasks.pop_front();
+        }
+        task();
+    }
 }
 
 
@@ -140,23 +183,27 @@ void fcMP4Context::addFrameTask(H264FrameData &o_fdata, RawFrameData &raw, bool 
     o_fdata.data.assign((char*)ret.data, ret.size);
 }
 
-void fcMP4Context::waitOneTask()
+void fcMP4Context::wait()
 {
-    // 実行中のタスクの数が上限に達している場合適当に待つ
-    if (m_active_task_count >= m_conf.max_active_tasks)
+    while (m_active_task_count > 0)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        if (m_active_task_count >= m_conf.max_active_tasks)
-        {
-            m_tasks.wait();
-        }
+    }
+}
+
+void fcMP4Context::waitOne()
+{
+    // 実行中のタスクの数が上限に達している場合適当に待つ
+    while (m_active_task_count >= m_conf.max_active_tasks)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
 
 bool fcMP4Context::addFrameTexture(void *tex)
 {
-    waitOneTask();
+    waitOne();
     int frame = m_frame++;
     RawFrameData& raw = m_raw_buffers[frame % m_conf.max_active_tasks];
 
@@ -171,7 +218,7 @@ bool fcMP4Context::addFrameTexture(void *tex)
     m_h264_buffers.push_back(H264FrameData());
     H264FrameData& fdata = m_h264_buffers.back();
     ++m_active_task_count;
-    m_tasks.run([this, &fdata, &raw](){
+    enqueueTask([this, &fdata, &raw](){
         addFrameTask(fdata, raw, true);
         --m_active_task_count;
     });
@@ -182,7 +229,7 @@ bool fcMP4Context::addFrameTexture(void *tex)
 
 bool fcMP4Context::addFramePixels(void *pixels, fcEColorSpace cs)
 {
-    waitOneTask();
+    waitOne();
     int frame = m_frame++;
     RawFrameData& raw = m_raw_buffers[frame % m_conf.max_active_tasks];
 
@@ -199,7 +246,7 @@ bool fcMP4Context::addFramePixels(void *pixels, fcEColorSpace cs)
     m_h264_buffers.push_back(H264FrameData());
     H264FrameData& fdata = m_h264_buffers.back();
     ++m_active_task_count;
-    m_tasks.run([this, &fdata, &raw, rgba2i420](){
+    enqueueTask([this, &fdata, &raw, rgba2i420](){
         addFrameTask(fdata, raw, rgba2i420);
         --m_active_task_count;
     });
@@ -210,7 +257,7 @@ bool fcMP4Context::addFramePixels(void *pixels, fcEColorSpace cs)
 
 void fcMP4Context::clearFrame()
 {
-    m_tasks.wait();
+    wait();
     m_frame = 0;
 }
 
@@ -229,7 +276,7 @@ static inline void adjust_frame(int &begin_frame, int &end_frame, int max_frame)
 
 void fcMP4Context::write(std::ostream &os, int begin_frame, int end_frame)
 {
-    m_tasks.wait();
+    wait();
     scrape(false);
 
     adjust_frame(begin_frame, end_frame, (int)m_h264_buffers.size());
@@ -292,7 +339,7 @@ int fcMP4Context::getFrameCount()
 void fcMP4Context::getFrameData(void *tex, int frame)
 {
     if (frame >= m_h264_buffers.size()) { return; }
-    m_tasks.wait();
+    wait();
     scrape(false);
 
     H264FrameData *fdata = nullptr;
@@ -326,7 +373,7 @@ int fcMP4Context::getExpectedDataSize(int begin_frame, int end_frame)
 
 void fcMP4Context::eraseFrame(int begin_frame, int end_frame)
 {
-    m_tasks.wait();
+    wait();
     scrape(false);
 
     adjust_frame(begin_frame, end_frame, (int)m_h264_buffers.size());
