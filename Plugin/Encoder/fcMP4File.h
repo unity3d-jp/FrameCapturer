@@ -5,7 +5,8 @@ class fcIMP4Context
 public:
     virtual void release() = 0;
 
-    virtual bool addFrame(void *tex) = 0;
+    virtual bool addFrameTexture(void *tex) = 0;
+    virtual bool addFramePixels(void *pixels, fcEColorSpace cs)=0;
     virtual void clearFrame() = 0;
     virtual bool writeFile(const char *path, int begin_frame, int end_frame) = 0;
     virtual int  writeMemory(void *buf, int begin_frame, int end_frame) = 0;

@@ -1,8 +1,8 @@
 ﻿#include "pch.h"
 #include "FrameCapturer.h"
-#include "fcGraphicsDevice.h"
 
 #ifdef fcSupportD3D11
+#include "fcGraphicsDevice.h"
 #include <d3d11.h>
 const int fcD3D11MaxStagingTextures = 32;
 

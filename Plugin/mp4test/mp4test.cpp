@@ -1,11 +1,9 @@
-#define MP4V2_USE_STATIC_LIB
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <vector>
 #include <windows.h>
-#include "fcH264Encoder.h"
-#include "fcMP4Muxer.h"
+#include "../FrameCapturer.h"
 
 
 #define OutputH264 "test.h264"
@@ -13,8 +11,12 @@
 #define Width  320
 #define Height 240
 
+struct RGBA
+{
+    uint8_t r, g, b, a;
+};
 
-void CreateTestData(bRGBA *rgba, int width, int height, int scroll)
+void CreateTestData(RGBA *rgba, int width, int height, int scroll)
 {
     const int block_size = 32;
     for (int iy = 0; iy < height; iy++) {
@@ -37,44 +39,18 @@ void CreateTestData(bRGBA *rgba, int width, int height, int scroll)
 
 int main(int argc, char** argv)
 {
-    struct h264frame
-    {
-        std::string data;
-        fcH264Encoder::FrameType type;
-    };
+    fcMP4Config conf;
+    conf.width = Width;
+    conf.height = Height;
+    fcIMP4Context *ctx = fcMP4CreateContext(&conf);
 
-
-    std::vector<h264frame> h264_frames;
-    {
-        fcH264Encoder encoder(Width, Height, 30.0f, 128000);
-        if (!encoder) {
-            printf("Failed to create H264 encoder.\n");
-        }
-
-        std::vector<bRGBA> pic_rgba(Width * Height);
-        for (int i = 0; i < 100; ++i) {
-            CreateTestData(&pic_rgba[0], Width, Height, i);
-            auto r = encoder.encodeRGBA(&pic_rgba[0]);
-            if (r.data) {
-                h264_frames.push_back(h264frame());
-                h264_frames.back().data.assign((char*)r.data, r.size);
-                h264_frames.back().type = r.type;
-            }
-        }
+    std::vector<RGBA> pic_rgba(Width * Height);
+    for (int i = 0; i < 100; ++i) {
+        CreateTestData(&pic_rgba[0], Width, Height, i);
+        fcMP4AddFramePixels(ctx, &pic_rgba[0]);
     }
+    fcMP4WriteFile(ctx, "out.mp4", 0, -1);
 
-    // dump raw h264 frames to file
-    {
-        std::ofstream fo(OutputH264, std::ios::binary);
-        for (const auto &frame : h264_frames) {
-            fo.write((char*)&frame.data[0], frame.data.size());
-        }
-    }
-
-    {
-        fcMP4Muxer muxer;
-        muxer.mux(OutputMP4, OutputH264, 30);
-    }
-
+    fcMP4DestroyContext(ctx);
 }
 

@@ -1,9 +1,9 @@
 ﻿#include "pch.h"
+#include "FrameCapturer.h"
 
 #ifdef fcSupportGIF
-#include "FrameCapturer.h"
 #include "fcThreadPool.h"
-#include "fcGraphicsDevice.h"
+#include "GraphicsDevice/fcGraphicsDevice.h"
 #include "fcGifFile.h"
 #include "jo_gif.cpp"
 
