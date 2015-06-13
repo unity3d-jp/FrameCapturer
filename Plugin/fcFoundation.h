@@ -30,4 +30,11 @@ inline void* module_getsymbol(module_t mod, const char *name) { return ::dlsym(m
 
 #endif
 
+
+template<int N, class IntType>
+inline IntType roundup(IntType v)
+{
+    return v + (N - v % N);
+}
+
 #endif // fcFoundation_h

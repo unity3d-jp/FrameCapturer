@@ -1,16 +1,14 @@
-﻿
-
-#include <algorithm>
+﻿#include <algorithm>
 #include <string>
 #include <vector>
+#include <deque>
 #include <list>
 #include <map>
 #include <memory>
-#include <atomic>
 #include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <atomic>
 #include <functional>
 #include <fstream>
 #include <sstream>
-#ifdef fcWindows
-    #include <windows.h>
-#endif

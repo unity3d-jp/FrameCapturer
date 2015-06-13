@@ -37,8 +37,8 @@ public static class FrameCapturer
     [DllImport ("FrameCapturer")] public static extern void     fcGifDestroyContext(IntPtr ctx);
     [DllImport ("FrameCapturer")] public static extern void     fcGifAddFrame(IntPtr ctx, IntPtr tex);
     [DllImport ("FrameCapturer")] public static extern void     fcGifClearFrame(IntPtr ctx);
-    [DllImport ("FrameCapturer")] public static extern void     fcGifWriteFile(IntPtr ctx, string path, int begin_frame=0, int end_frame=-1);
-    [DllImport ("FrameCapturer")] public static extern void     fcGifWriteMemory(IntPtr ctx, IntPtr out_buf, int begin_frame=0, int end_frame=-1);
+    [DllImport ("FrameCapturer")] public static extern bool     fcGifWriteFile(IntPtr ctx, string path, int begin_frame=0, int end_frame=-1);
+    [DllImport ("FrameCapturer")] public static extern int      fcGifWriteMemory(IntPtr ctx, IntPtr out_buf, int begin_frame=0, int end_frame=-1);
     [DllImport ("FrameCapturer")] public static extern int      fcGifGetFrameCount(IntPtr ctx);
     [DllImport ("FrameCapturer")] public static extern void     fcGifGetFrameData(IntPtr ctx, IntPtr tex, int frame);
     [DllImport ("FrameCapturer")] public static extern int      fcGifGetExpectedDataSize(IntPtr ctx, int begin_frame, int end_frame);
