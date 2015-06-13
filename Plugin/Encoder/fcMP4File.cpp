@@ -108,7 +108,7 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
     for (auto& rf : m_raw_buffers)
     {
         rf.rgba.resize(m_conf.width * m_conf.height * 4);
-        rf.i420.resize(m_conf.width * m_conf.height * 3 / 2);
+        rf.i420.resize((m_conf.width+1) * (m_conf.height+1) * 3 / 2);
     }
 
     m_encoder.reset(new fcH264Encoder(m_conf.width, m_conf.height, m_conf.framerate, m_conf.bitrate));
@@ -177,6 +177,7 @@ void fcMP4Context::scrape(bool updating)
 
 void fcMP4Context::addFrameTask(H264FrameData &o_fdata, RawFrameData &raw, bool rgba2i420)
 {
+    // 必要であれば RGBA -> I420 変換
     int frame_size = m_conf.width * m_conf.height;
     uint8_t *y = (uint8_t*)&raw.i420[0];
     uint8_t *u = y + frame_size;
@@ -184,6 +185,8 @@ void fcMP4Context::addFrameTask(H264FrameData &o_fdata, RawFrameData &raw, bool 
     if (rgba2i420) {
         RGBA_to_I420(y, u, v, (bRGBA*)&raw.rgba[0], m_conf.width, m_conf.height);
     }
+
+    // I420 のピクセルデータを H264 へエンコード
     auto ret = m_encoder->encodeI420(y, u, v);
     o_fdata.data.assign((char*)ret.data, ret.size);
 }
