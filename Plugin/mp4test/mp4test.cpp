@@ -42,6 +42,7 @@ int main(int argc, char** argv)
     fcMP4Config conf;
     conf.width = Width;
     conf.height = Height;
+    conf.bitrate = 256000;
     fcIMP4Context *ctx = fcMP4CreateContext(&conf);
 
     std::vector<RGBA> pic_rgba(Width * Height);
