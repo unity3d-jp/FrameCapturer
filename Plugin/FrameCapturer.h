@@ -129,14 +129,14 @@ struct fcMP4Config
     int height;
     int bitrate;
     int framerate;
-    int max_active_tasks;
+    int max_buffers;
     int max_frame;
     int max_data_size;
 
     fcMP4Config()
         : width(320), height(240)
         , bitrate(256000), framerate(30)
-        , max_active_tasks(8), max_frame(0), max_data_size(0) {}
+        , max_buffers(8), max_frame(0), max_data_size(0) {}
 };
 fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
 fcCLinkage fcExport void            fcMP4DestroyContext(fcIMP4Context *ctx);
