@@ -1,57 +1,35 @@
-﻿#include "openh264/codec_api.h"
+﻿#include "pch.h"
+#include "openh264/codec_api.h"
+#include "fcFoundation.h"
 #include "fcH264Encoder.h"
 
 
-#define fcWindows
-
 #ifdef fcWindows
-
-    #include <windows.h>
     #if defined(_M_AMD64)
         #define OpenH264DLL "openh264-1.4.0-win64msvc.dll"
     #elif defined(_M_IX86)
         #define OpenH264DLL "openh264-1.4.0-win32msvc.dll"
     #endif
-
 #else 
-    #include <dlfcn.h>
 #endif
-
 
 typedef int  (*WelsCreateSVCEncoderT)(ISVCEncoder** ppEncoder);
 typedef void (*WelsDestroySVCEncoderT)(ISVCEncoder* pEncoder);
 
+module_t g_h264_dll;
 WelsCreateSVCEncoderT g_WelsCreateSVCEncoder = nullptr;
 WelsDestroySVCEncoderT g_WelsDestroySVCEncoder = nullptr;
 
-#ifdef fcWindows
-HMODULE g_h264_dll;
-
 static void LoadOpenH264Module()
 {
     if (g_h264_dll != nullptr) { return; }
-    g_h264_dll = ::LoadLibraryA(OpenH264DLL);
+    g_h264_dll = module_load(OpenH264DLL);
     if (g_h264_dll != nullptr) {
-        g_WelsCreateSVCEncoder = (WelsCreateSVCEncoderT)::GetProcAddress(g_h264_dll, "WelsCreateSVCEncoder");
-        g_WelsDestroySVCEncoder = (WelsDestroySVCEncoderT)::GetProcAddress(g_h264_dll, "WelsDestroySVCEncoder");
+        (void*&)g_WelsCreateSVCEncoder = module_getsymbol(g_h264_dll, "WelsCreateSVCEncoder");
+        (void*&)g_WelsDestroySVCEncoder = module_getsymbol(g_h264_dll, "WelsDestroySVCEncoder");
     }
 }
 
-#else
-
-void *g_h264_dll;
-
-static void LoadOpenH264Module()
-{
-    if (g_h264_dll != nullptr) { return; }
-    g_h264_dll = ::dlopen(OpenH264DLL, RTLD_GLOBAL);
-    if (g_h264_dll != nullptr) {
-        g_WelsCreateSVCEncoder = (WelsCreateSVCEncoderT)::dlsym(g_h264_dll, "WelsCreateSVCEncoder");
-        g_WelsDestroySVCEncoder = (WelsDestroySVCEncoderT)::dlsym(g_h264_dll, "WelsDestroySVCEncoder");
-    }
-}
-
-#endif // fcWindows
 
 
 fcH264Encoder::fcH264Encoder(int width, int height, float frame_rate, int target_bitrate)

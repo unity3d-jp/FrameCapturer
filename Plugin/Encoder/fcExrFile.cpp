@@ -1,9 +1,9 @@
 ﻿#include "pch.h"
 #include "FrameCapturer.h"
-#include "fcThreadPool.h"
-#include "fcGraphicsDevice.h"
 
 #ifdef fcSupportEXR
+#include "fcThreadPool.h"
+#include "GraphicsDevice/fcGraphicsDevice.h"
 #include <half.h>
 #include <ImfRgbaFile.h>
 #include <ImfOutputFile.h>

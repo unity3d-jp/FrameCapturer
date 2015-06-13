@@ -1,11 +1,11 @@
 ﻿#include "pch.h"
 #include "FrameCapturer.h"
-#include "fcGraphicsDevice.h"
+#include "GraphicsDevice/fcGraphicsDevice.h"
 
 
 
 #ifdef fcSupportEXR
-#include "fcExrFile.h"
+#include "Encoder/fcExrFile.h"
 
 #ifdef fcDebug
 #define fcTypeCheck(v) if(v==nullptr || *(fcEMagic*)((void**)v+1)!=fcE_ExrContext) { fcBreak(); }
@@ -55,7 +55,7 @@ fcCLinkage fcExport bool fcExrEndFrame(fcIExrContext *ctx)
 
 
 #ifdef fcSupportGIF
-#include "fcGifFile.h"
+#include "Encoder/fcGifFile.h"
 
 #ifdef fcDebug
 #define fcTypeCheck(v) if(v==nullptr || *(fcEMagic*)((void**)v+1)!=fcE_GifContext) { fcBreak(); }
@@ -133,7 +133,7 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
 
 
 #ifdef fcSupportMP4
-#include "fcMP4File.h"
+#include "Encoder/fcMP4File.h"
 
 #ifdef fcDebug
 #define fcTypeCheck(v) if(v==nullptr || *(fcEMagic*)((void**)v+1)!=fcE_MP4Context) { fcBreak(); }
@@ -155,10 +155,16 @@ fcCLinkage fcExport void fcMP4DestroyContext(fcIMP4Context *ctx)
     ctx->release();
 }
 
-fcCLinkage fcExport bool fcMP4AddFrame(fcIMP4Context *ctx, void *tex)
+fcCLinkage fcExport bool fcMP4AddFrameTexture(fcIMP4Context *ctx, void *tex)
 {
     fcTypeCheck(ctx);
-    return ctx->addFrame(tex);
+    return ctx->addFrameTexture(tex);
+}
+
+fcCLinkage fcExport bool fcMP4AddFramePixels(fcIMP4Context *ctx, void *pixels, fcEColorSpace cs)
+{
+    fcTypeCheck(ctx);
+    return ctx->addFramePixels(pixels, cs);
 }
 
 fcCLinkage fcExport void fcMP4ClearFrame(fcIMP4Context *ctx)
