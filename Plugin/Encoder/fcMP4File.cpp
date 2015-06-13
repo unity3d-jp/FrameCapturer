@@ -77,6 +77,9 @@ private:
     std::list<H264FrameData> m_h264_buffers;
     int m_frame;
 
+    std::unique_ptr<fcH264Encoder> m_encoder;
+    std::unique_ptr<fcMP4Muxer> m_muxer;
+
     std::atomic<int> m_active_task_count;
     std::thread m_worker;
     std::mutex m_queue_mutex;
@@ -100,23 +103,30 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
     , m_active_task_count(0)
     , m_stop(false)
 {
-    m_raw_buffers.resize(m_conf.max_active_tasks);
+    // allocate working buffer
+    m_raw_buffers.resize(m_conf.max_buffers);
     for (auto& rf : m_raw_buffers)
     {
-        rf.rgba.resize(m_conf.width * m_conf.height * fcGetPixelSize(fcE_ARGB32));
+        rf.rgba.resize(m_conf.width * m_conf.height * 4);
         rf.i420.resize(m_conf.width * m_conf.height * 3 / 2);
     }
 
+    m_encoder.reset(new fcH264Encoder(m_conf.width, m_conf.height, m_conf.framerate, m_conf.bitrate));
+    m_muxer.reset(new fcMP4Muxer());
+
+    // run working thread
     m_worker = std::thread([this](){ processTasks(); });
 }
 
 fcMP4Context::~fcMP4Context()
 {
+    // stop working thread
     m_stop = true;
     m_condition.notify_all();
     m_worker.join();
 
     m_magic = fcE_Deleted;
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
 
@@ -160,18 +170,13 @@ void fcMP4Context::scrape(bool updating)
     // 切り捨てるフレームがパレットを持っている場合パレットの移動も行う。
 
     // 実行中のタスクが更新中のデータを間引くのはマズいので、更新中は最低でもタスク数分は残す
-    int min_frames = updating ? std::max<int>(m_conf.max_active_tasks, 1) : 1;
+    int min_frames = updating ? std::max<int>(m_conf.max_buffers, 1) : 1;
 
     // todo
 }
 
-fcThreadLocal fcH264Encoder *g_encoder;
-
 void fcMP4Context::addFrameTask(H264FrameData &o_fdata, RawFrameData &raw, bool rgba2i420)
 {
-    if (g_encoder == nullptr) {
-        g_encoder = new fcH264Encoder(m_conf.width, m_conf.height, m_conf.framerate, m_conf.bitrate);
-    }
     int frame_size = m_conf.width * m_conf.height;
     uint8_t *y = (uint8_t*)&raw.i420[0];
     uint8_t *u = y + frame_size;
@@ -179,7 +184,7 @@ void fcMP4Context::addFrameTask(H264FrameData &o_fdata, RawFrameData &raw, bool 
     if (rgba2i420) {
         RGBA_to_I420(y, u, v, (bRGBA*)&raw.rgba[0], m_conf.width, m_conf.height);
     }
-    auto ret = g_encoder->encodeI420(y, u, v);
+    auto ret = m_encoder->encodeI420(y, u, v);
     o_fdata.data.assign((char*)ret.data, ret.size);
 }
 
@@ -194,7 +199,7 @@ void fcMP4Context::wait()
 void fcMP4Context::waitOne()
 {
     // 実行中のタスクの数が上限に達している場合適当に待つ
-    while (m_active_task_count >= m_conf.max_active_tasks)
+    while (m_active_task_count >= m_conf.max_buffers)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -205,7 +210,7 @@ bool fcMP4Context::addFrameTexture(void *tex)
 {
     waitOne();
     int frame = m_frame++;
-    RawFrameData& raw = m_raw_buffers[frame % m_conf.max_active_tasks];
+    RawFrameData& raw = m_raw_buffers[frame % m_conf.max_buffers];
 
     // フレームバッファの内容取得
     if (!m_dev->readTexture(&raw.rgba[0], raw.rgba.size(), tex, m_conf.width, m_conf.height, fcE_ARGB32))
@@ -231,7 +236,7 @@ bool fcMP4Context::addFramePixels(void *pixels, fcEColorSpace cs)
 {
     waitOne();
     int frame = m_frame++;
-    RawFrameData& raw = m_raw_buffers[frame % m_conf.max_active_tasks];
+    RawFrameData& raw = m_raw_buffers[frame % m_conf.max_buffers];
 
     bool rgba2i420 = true;
     if (cs == fcE_RGBA) {
@@ -296,8 +301,7 @@ void fcMP4Context::write(std::ostream &os, int begin_frame, int end_frame)
         }
     }
     {
-        fcMP4Muxer muxer;
-        muxer.mux(tmp_mp4_filename, tmp_h264_filename, m_conf.framerate);
+        m_muxer->mux(tmp_mp4_filename, tmp_h264_filename, m_conf.framerate);
     }
     {
         char buf[1024];
