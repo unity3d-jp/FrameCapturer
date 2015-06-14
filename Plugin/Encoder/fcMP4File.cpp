@@ -382,7 +382,7 @@ void fcMP4Context::eraseFrame(int begin_frame, int end_frame)
 }
 
 
-fcCLinkage fcExport fcIMP4Context* fcCreateMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
+fcCLinkage fcExport fcIMP4Context* fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev)
 {
     if (fcH264Encoder::loadModule()) {
         return new fcMP4Context(conf, dev);

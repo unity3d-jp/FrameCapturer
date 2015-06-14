@@ -2,6 +2,7 @@
 #include "FrameCapturer.h"
 
 #ifdef fcSupportOpenGL
+#include "fcFoundation.h"
 #include "fcGraphicsDevice.h"
 
 #define GLEW_STATIC

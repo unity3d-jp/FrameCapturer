@@ -8,49 +8,53 @@
 #ifdef fcSupportEXR
 #include "Encoder/fcExrFile.h"
 
-#ifdef fcDebug
-#define fcTypeCheck(v) if(v==nullptr || *(fcEMagic*)((void**)v+1)!=fcE_ExrContext) { fcBreak(); }
-#else  // fcDebug
-#define fcTypeCheck(v) 
-#endif // fcDebug
+#ifdef fcEXRSplitModule
+    #define fcEXRModuleName  "FrameCapturer_EXR" fcModuleExt
+    static module_t fcExrModule;
+    fcExrCreateContextImplT fcExrCreateContextImpl;
+#else
+    fcCLinkage fcExport fcIExrContext* fcExrCreateContextImpl(fcExrConfig &conf, fcIGraphicsDevice *dev);
+#endif
 
-// exr エクスポート部分を dll に分離することを見越して interface 化している。
-// (exr 必要な人は少ない上、exr のライブラリをリンクすると 2MB 以上バイナリ増えるので…)
-
-//fcCreateExrContextT fcCreateExrContext;
-fcIExrContext* fcCreateExrContext(fcExrConfig &conf, fcIGraphicsDevice *dev);
 
 fcCLinkage fcExport fcIExrContext* fcExrCreateContext(fcExrConfig *conf)
 {
-    return fcCreateExrContext(*conf, fcGetGraphicsDevice());
+#ifdef fcEXRSplitModule
+    if (!fcExrModule) {
+        fcExrModule = module_load(fcEXRModuleName);
+        if (fcExrModule) {
+            (void*&)fcExrCreateContextImpl = module_getsymbol(fcExrModule, "fcExrCreateContextImpl");
+        }
+    }
+    return fcExrCreateContextImpl ? fcExrCreateContextImpl(*conf, fcGetGraphicsDevice()) : nullptr;
+#else
+    return fcExrCreateContextImpl(*conf, fcGetGraphicsDevice());
+#endif
 }
 
 fcCLinkage fcExport void fcExrDestroyContext(fcIExrContext *ctx)
 {
-    if (ctx == nullptr) { return; }
-    fcTypeCheck(ctx);
+    if (!ctx) { return; }
     ctx->release();
 }
 
 fcCLinkage fcExport bool fcExrBeginFrame(fcIExrContext *ctx, const char *path, int width, int height)
 {
-    fcTypeCheck(ctx);
+    if (!ctx) { return false; }
     return ctx->beginFrame(path, width, height);
 }
 
 fcCLinkage fcExport bool fcExrAddLayer(fcIExrContext *ctx, void *tex, fcETextureFormat fmt, int ch, const char *name)
 {
-    fcTypeCheck(ctx);
+    if (!ctx) { return false; }
     return ctx->addLayer(tex, fmt, ch, name);
 }
 
 fcCLinkage fcExport bool fcExrEndFrame(fcIExrContext *ctx)
 {
-    fcTypeCheck(ctx);
+    if (!ctx) { return false; }
     return ctx->endFrame();
 }
-#undef fcTypeCheck
-
 #endif // fcSupportEXR
 
 
@@ -58,76 +62,83 @@ fcCLinkage fcExport bool fcExrEndFrame(fcIExrContext *ctx)
 #ifdef fcSupportGIF
 #include "Encoder/fcGifFile.h"
 
-#ifdef fcDebug
-#define fcTypeCheck(v) if(v==nullptr || *(fcEMagic*)((void**)v+1)!=fcE_GifContext) { fcBreak(); }
-#else  // fcDebug
-#define fcTypeCheck(v) 
-#endif // fcDebug
+#ifdef fcGIFSplitModule
+    #define fcGIFModuleName  "FrameCapturer_GIF" fcModuleExt
+    static module_t fcGifModule;
+    fcGifCreateContextImplT fcGifCreateContextImpl;
+#else
+    fcCLinkage fcExport fcIGifContext* fcGifCreateContextImpl(fcGifConfig &conf, fcIGraphicsDevice *dev);
+#endif
 
-//fcCreateGifContextT fcCreateGifContext;
-fcIGifContext* fcCreateGifContext(fcGifConfig &conf, fcIGraphicsDevice *dev);
 
 fcCLinkage fcExport fcIGifContext* fcGifCreateContext(fcGifConfig *conf)
 {
-    return fcCreateGifContext(*conf, fcGetGraphicsDevice());
+#ifdef fcGIFSplitModule
+    if (!fcGifModule) {
+        fcGifModule = module_load(fcGIFModuleName);
+        if (fcGifModule) {
+            (void*&)fcExrCreateContextImpl = module_getsymbol(fcGifModule, "fcGifCreateContextImpl");
+        }
+    }
+    return fcExrCreateContextImpl ? fcExrCreateContextImpl(*conf, fcGetGraphicsDevice()) : nullptr;
+#else
+    return fcGifCreateContextImpl(*conf, fcGetGraphicsDevice());
+#endif
 }
 
 fcCLinkage fcExport void fcGifDestroyContext(fcIGifContext *ctx)
 {
-    if (ctx == nullptr) { return; }
-    fcTypeCheck(ctx);
+    if (!ctx) { return; }
     ctx->release();
 }
 
 fcCLinkage fcExport bool fcGifAddFrame(fcIGifContext *ctx, void *tex)
 {
-    fcTypeCheck(ctx);
+    if (!ctx) { return false; }
     return ctx->addFrame(tex);
 }
 
 fcCLinkage fcExport void fcGifClearFrame(fcIGifContext *ctx)
 {
-    fcTypeCheck(ctx);
+    if (!ctx) { return; }
     ctx->clearFrame();
 }
 
 fcCLinkage fcExport bool fcGifWriteFile(fcIGifContext *ctx, const char *path, int begin_frame, int end_frame)
 {
-    fcTypeCheck(ctx);
+    if (!ctx) { return false; }
     return ctx->writeFile(path, begin_frame, end_frame);
 }
 
 fcCLinkage fcExport int fcGifWriteMemory(fcIGifContext *ctx, void *buf, int begin_frame, int end_frame)
 {
-    fcTypeCheck(ctx);
+    if (!ctx) { return 0; }
     return ctx->writeMemory(buf, begin_frame, end_frame);
 }
 
 fcCLinkage fcExport int fcGifGetFrameCount(fcIGifContext *ctx)
 {
-    fcTypeCheck(ctx);
+    if (!ctx) { return 0; }
     return ctx->getFrameCount();
 }
 
 fcCLinkage fcExport void fcGifGetFrameData(fcIGifContext *ctx, void *tex, int frame)
 {
-    fcTypeCheck(ctx);
+    if (!ctx) { return; }
     return ctx->getFrameData(tex, frame);
 }
 
 fcCLinkage fcExport int fcGifGetExpectedDataSize(fcIGifContext *ctx, int begin_frame, int end_frame)
 {
-    fcTypeCheck(ctx);
+    if (!ctx) { return 0; }
     return ctx->getExpectedDataSize(begin_frame, end_frame);
 }
 
 fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, int end_frame)
 {
-    fcTypeCheck(ctx);
+    if (!ctx) { return; }
     ctx->eraseFrame(begin_frame, end_frame);
 }
-#undef fcTypeCheck
-
 #endif // fcSupportGIF
 
 
@@ -136,28 +147,28 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
 #ifdef fcSupportMP4
 #include "Encoder/fcMP4File.h"
 
-#ifdef fcSplitModule
+#ifdef fcMP4SplitModule
     #define fcMP4ModuleName  "FrameCapturer_MP4" fcModuleExt
     static module_t fcMP4Module;
-    static fcCreateMP4ContextT fcCreateMP4ContextImp;
+    static fcMP4CreateContextImplT fcMP4CreateContextImpl;
 #else
-    fcIMP4Context* fcCreateMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev);
+    fcCLinkage fcExport fcIMP4Context* fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev);
 #endif
 
 
 fcCLinkage fcExport fcIMP4Context* fcMP4CreateContext(fcMP4Config *conf)
 {
-#ifdef fcSplitModule
-    if (fcMP4Module == nullptr) {
+#ifdef fcMP4SplitModule
+    if (!fcMP4Module) {
         fcMP4Module = module_load(fcMP4ModuleName);
         if (fcMP4Module) {
-            (void*&)fcCreateMP4ContextImp = module_getsymbol(fcMP4Module, "fcCreateMP4Context");
+            (void*&)fcMP4CreateContextImpl = module_getsymbol(fcMP4Module, "fcMP4CreateContextImpl");
         }
     }
-    return fcCreateMP4ContextImp ? fcCreateMP4ContextImp(*conf, fcGetGraphicsDevice()) : nullptr;
+    return fcMP4CreateContextImpl ? fcMP4CreateContextImpl(*conf, fcGetGraphicsDevice()) : nullptr;
 #else
-    fcCreateMP4Context(*conf, fcGetGraphicsDevice());
-#endif // fcSplitModule
+    fcMP4CreateContextImpl(*conf, fcGetGraphicsDevice());
+#endif
 }
 
 fcCLinkage fcExport void fcMP4DestroyContext(fcIMP4Context *ctx)

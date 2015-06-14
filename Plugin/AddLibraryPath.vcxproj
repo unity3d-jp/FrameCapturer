@@ -112,6 +112,9 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86_64\</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -125,6 +128,9 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86\</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -138,6 +144,9 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86_64\</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -151,6 +160,9 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86\</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Master|x64'">
     <ClCompile>
@@ -159,14 +171,18 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization>Full</Optimization>
+      <Optimization>MinSpace</Optimization>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86_64\</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">
     <ClCompile>
@@ -175,14 +191,18 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization>Full</Optimization>
+      <Optimization>MinSpace</Optimization>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86\</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

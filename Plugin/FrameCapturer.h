@@ -9,7 +9,10 @@
 //#define fcSupportD3D9
 //#define fcSupportD3D11
 //#define fcWithTBB
-#define fcSplitModule
+
+//#define fcGIFSplitModule
+#define fcEXRSplitModule
+#define fcMP4SplitModule
 
 
 #if defined(_WIN32)

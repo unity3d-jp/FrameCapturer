@@ -20,6 +20,6 @@ protected:
     virtual ~fcIMP4Context() {}
 };
 
-typedef fcIMP4Context* (*fcCreateMP4ContextT)(fcMP4Config &conf, fcIGraphicsDevice*);
+typedef fcIMP4Context* (*fcMP4CreateContextImplT)(fcMP4Config &conf, fcIGraphicsDevice*);
 
 #endif // fcSupportMP4
