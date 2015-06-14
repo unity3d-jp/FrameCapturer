@@ -28,6 +28,8 @@ public:
             : data(d), size(s), type(t) {}
     };
 
+    static bool loadModule();
+
     fcH264Encoder(int width, int height, float frame_rate, int target_bitrate);
     ~fcH264Encoder();
     operator bool() const;

@@ -11,54 +11,70 @@
         #define OpenH264DLL "openh264-1.4.0-win32msvc.dll"
     #endif
 #else 
+#define "libopenh264-1.4.0-osx64.dylib"
 #endif
 
-typedef int  (*WelsCreateSVCEncoderT)(ISVCEncoder** ppEncoder);
-typedef void (*WelsDestroySVCEncoderT)(ISVCEncoder* pEncoder);
+namespace {
 
-module_t g_h264_dll;
-WelsCreateSVCEncoderT g_WelsCreateSVCEncoder = nullptr;
-WelsDestroySVCEncoderT g_WelsDestroySVCEncoder = nullptr;
+typedef int  (*WelsCreateSVCEncoder_t)(ISVCEncoder** ppEncoder);
+typedef void (*WelsDestroySVCEncoder_t)(ISVCEncoder* pEncoder);
 
-static void LoadOpenH264Module()
+#define decl(name) name##_t name##_imp;
+decl(WelsCreateSVCEncoder)
+decl(WelsDestroySVCEncoder)
+#undef decl
+
+module_t g_mod_h264;
+
+static bool LoadOpenH264Module()
 {
-    if (g_h264_dll != nullptr) { return; }
-    g_h264_dll = module_load(OpenH264DLL);
-    if (g_h264_dll != nullptr) {
-        (void*&)g_WelsCreateSVCEncoder = module_getsymbol(g_h264_dll, "WelsCreateSVCEncoder");
-        (void*&)g_WelsDestroySVCEncoder = module_getsymbol(g_h264_dll, "WelsDestroySVCEncoder");
-    }
+    if (g_mod_h264 != nullptr) { return true; }
+
+    g_mod_h264 = module_load(OpenH264DLL);
+    if (g_mod_h264 == nullptr) { return false; }
+
+#define imp(name) (void*&)name##_imp = module_getsymbol(g_mod_h264, #name);
+    imp(WelsCreateSVCEncoder)
+    imp(WelsDestroySVCEncoder)
+#undef imp
+    return true;
 }
 
+} // namespace
 
+
+
+bool fcH264Encoder::loadModule()
+{
+    return LoadOpenH264Module();
+}
 
 fcH264Encoder::fcH264Encoder(int width, int height, float frame_rate, int target_bitrate)
     : m_encoder(nullptr)
     , m_width(width)
     , m_height(height)
 {
-    LoadOpenH264Module();
-    if (g_WelsCreateSVCEncoder) {
-        g_WelsCreateSVCEncoder(&m_encoder);
+    loadModule();
+    if (g_mod_h264 == nullptr) { return; }
 
-        SEncParamBase param;
-        memset(&param, 0, sizeof(SEncParamBase));
-        param.iUsageType = CAMERA_VIDEO_REAL_TIME;
-        param.fMaxFrameRate = frame_rate;
-        param.iPicWidth = m_width;
-        param.iPicHeight = m_height;
-        param.iTargetBitrate = target_bitrate;
-        param.iRCMode = RC_BITRATE_MODE;
-        int ret = m_encoder->Initialize(&param);
-    }
+    WelsCreateSVCEncoder_imp(&m_encoder);
+
+    SEncParamBase param;
+    memset(&param, 0, sizeof(SEncParamBase));
+    param.iUsageType = CAMERA_VIDEO_REAL_TIME;
+    param.fMaxFrameRate = frame_rate;
+    param.iPicWidth = m_width;
+    param.iPicHeight = m_height;
+    param.iTargetBitrate = target_bitrate;
+    param.iRCMode = RC_BITRATE_MODE;
+    int ret = m_encoder->Initialize(&param);
 }
 
 fcH264Encoder::~fcH264Encoder()
 {
-    if (g_WelsDestroySVCEncoder)
-    {
-        g_WelsDestroySVCEncoder(m_encoder);
-    }
+    if (g_mod_h264 == nullptr) { return; }
+
+    WelsDestroySVCEncoder_imp(m_encoder);
 }
 
 fcH264Encoder::operator bool() const

@@ -6,8 +6,6 @@
 class fcMP4Muxer
 {
 public:
-    static bool loadModule();
-
     fcMP4Muxer();
     ~fcMP4Muxer();
 

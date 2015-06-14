@@ -9,11 +9,23 @@
 //#define fcSupportD3D9
 //#define fcSupportD3D11
 //#define fcWithTBB
+#define fcSplitModule
 
 
-#ifdef _WIN32
+#if defined(_WIN32)
     #define fcWindows
-#endif // _WIN32
+#elif defined(__APPLE__)
+    #ifdef TARGET_OS_IPHONE
+        #define fciOS
+    #else
+        #define fcMac
+    #endif
+#elif defined(__ANDROID__)
+    #define fcAndroid
+#elif defined(__linux__)
+    #define fcLinux
+#endif
+
 #ifdef _MSC_VER
     #define fcMSVC
 #endif 
