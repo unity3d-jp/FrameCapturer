@@ -11,23 +11,28 @@
 
 
 #ifdef fcWindows
+    #include <windows.h>
 
-#include <windows.h>
+    typedef HMODULE module_t;
+    inline module_t module_load(const char *path) { return ::LoadLibraryA(path); }
+    inline void module_close(module_t mod) { ::FreeLibrary(mod); }
+    inline void* module_getsymbol(module_t mod, const char *name) { return ::GetProcAddress(mod, name); }
 
-typedef HMODULE module_t;
-inline module_t module_load(const char *path) { return ::LoadLibraryA(path); }
-inline void module_close(module_t mod) { ::FreeLibrary(mod); }
-inline void* module_getsymbol(module_t mod, const char *name) { return ::GetProcAddress(mod, name); }
+    #define fcModuleExt ".dll"
 
 #else 
+    #include <dlfcn.h>
 
-#include <dlfcn.h>
+    typedef void* module_t;
+    inline module_t module_load(const char *path) { return ::dlopen(path, RTLD_GLOBAL); }
+    inline void module_close(module_t mod) { ::dlclose(mod); }
+    inline void* module_getsymbol(module_t mod, const char *name) { return ::dlsym(mod, name); }
 
-typedef void* module_t;
-inline module_t module_load(const char *path) { return ::dlopen(path, RTLD_GLOBAL); }
-inline void module_close(module_t mod) { ::dlclose(mod); }
-inline void* module_getsymbol(module_t mod, const char *name) { return ::dlsym(mod, name); }
-
+    #ifdef fcMac
+        #define fcModuleExt ".dylib"
+    #else
+        #define fcModuleExt ".so"
+    #endif
 #endif
 
 

@@ -8,7 +8,6 @@
 
 #ifdef fcWindows
     #pragma comment(lib, "liblsmash.lib")
-    #define LSMASHDLL "liblsmash.dll"
 #else 
 #endif
 

@@ -19,19 +19,7 @@
     <ClCompile Include="Encoder\fcGifFile.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcMP4File.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
     <ClCompile Include="Encoder\fcExrFile.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="Encoder\fcColorSpace.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="Encoder\fcH264Encoder.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="Encoder\fcMP4Muxer.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
   </ItemGroup>
@@ -48,19 +36,7 @@
     <ClInclude Include="Encoder\fcGifFile.h">
       <Filter>Encoder</Filter>
     </ClInclude>
-    <ClInclude Include="Encoder\fcMP4File.h">
-      <Filter>Encoder</Filter>
-    </ClInclude>
     <ClInclude Include="fcFoundation.h" />
-    <ClInclude Include="Encoder\fcMP4Muxer.h">
-      <Filter>Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="Encoder\fcColorSpace.h">
-      <Filter>Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="Encoder\fcH264Encoder.h">
-      <Filter>Encoder</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="GraphisDevice">

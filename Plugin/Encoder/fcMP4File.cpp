@@ -11,24 +11,6 @@
 #include "fcMP4Muxer.h"
 
 
-class fcDummyMP4Context : public fcIMP4Context
-{
-public:
-    void release() override { delete this; }
-
-    bool addFrameTexture(void *tex) override { return false; }
-    bool addFramePixels(void *pixels, fcEColorSpace cs) override { return false; }
-    void clearFrame() override {}
-    bool writeFile(const char *path, int begin_frame, int end_frame) override { return false; }
-    int  writeMemory(void *buf, int begin_frame, int end_frame) override { return 0; }
-
-    int getFrameCount() override { return 0; }
-    void getFrameData(void *tex, int frame) override {}
-    int getExpectedDataSize(int begin_frame, int end_frame) override { return 0; }
-    void eraseFrame(int begin_frame, int end_frame) override {}
-};
-
-
 class fcMP4Context : public fcIMP4Context
 {
 public:
@@ -88,12 +70,6 @@ private:
     std::deque<std::function<void()>> m_tasks;
     bool m_stop;
 };
-
-
-fcIMP4Context* fcCreateMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
-{
-    return new fcMP4Context(conf, dev);
-}
 
 
 fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
@@ -403,6 +379,15 @@ void fcMP4Context::eraseFrame(int begin_frame, int end_frame)
     std::advance(end, end_frame);
     m_h264_buffers.erase(begin, end);
     // todo: remake IDR frame if needed
+}
+
+
+fcCLinkage fcExport fcIMP4Context* fcCreateMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
+{
+    if (fcH264Encoder::loadModule()) {
+        return new fcMP4Context(conf, dev);
+    }
+    return nullptr;
 }
 
 
