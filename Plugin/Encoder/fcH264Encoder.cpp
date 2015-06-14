@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
-#include "openh264/codec_api.h"
+#include <openh264/codec_api.h>
+#include <libyuv/libyuv.h>
 #include "fcFoundation.h"
 #include "fcH264Encoder.h"
 
@@ -82,16 +83,21 @@ fcH264Encoder::operator bool() const
     return m_encoder != nullptr;
 }
 
-fcH264Encoder::Result fcH264Encoder::encodeRGBA(const bRGBA *src)
+fcH264Encoder::Result fcH264Encoder::encodeRGBA(const uint8_t *rgba)
 {
     if (!m_encoder) { return Result(); }
 
     m_buf.resize(roundup<2>(m_width) * roundup<2>(m_height) * 3 / 2);
-    uint8_t *pic_y = (uint8_t*)&m_buf[0];
-    uint8_t *pic_u = pic_y + (m_width * m_height);
-    uint8_t *pic_v = pic_u + ((m_width * m_height) >> 2);
-    RGBA_to_I420(pic_y, pic_u, pic_v, src, m_width, m_height);
-    return encodeI420(pic_y, pic_u, pic_v);
+    uint8 *y = (uint8*)&m_buf[0];
+    uint8 *u = y + (m_width * m_height);
+    uint8 *v = u + ((m_width * m_height) >> 2);
+    libyuv::ABGRToI420(
+        rgba, m_width * 4,
+        y, m_width,
+        u, m_width >> 1,
+        v, m_width >> 1,
+        m_width, m_height);
+    return encodeI420(y, u, v);
 }
 
 fcH264Encoder::Result fcH264Encoder::encodeI420(const void *src_y, const void *src_u, const void *src_v)

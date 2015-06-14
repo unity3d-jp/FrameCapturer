@@ -2,7 +2,6 @@
 #define fcMP4Encoder_h
 
 #include <string>
-#include "fcColorSpace.h"
 
 class ISVCEncoder;
 
@@ -33,7 +32,7 @@ public:
     fcH264Encoder(int width, int height, float frame_rate, int target_bitrate);
     ~fcH264Encoder();
     operator bool() const;
-    Result encodeRGBA(const bRGBA *src);
+    Result encodeRGBA(const uint8_t *rgba);
     Result encodeI420(const void *src_y, const void *src_u, const void *src_v);
 
 private:
