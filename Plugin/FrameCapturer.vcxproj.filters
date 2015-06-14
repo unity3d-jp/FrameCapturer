@@ -19,9 +19,6 @@
     <ClCompile Include="Encoder\fcGifFile.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcExrFile.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fcThreadPool.h" />
@@ -29,9 +26,6 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="GraphicsDevice\fcGraphicsDevice.h">
       <Filter>GraphisDevice</Filter>
-    </ClInclude>
-    <ClInclude Include="Encoder\fcExrFile.h">
-      <Filter>Encoder</Filter>
     </ClInclude>
     <ClInclude Include="Encoder\fcGifFile.h">
       <Filter>Encoder</Filter>

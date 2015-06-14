@@ -46,13 +46,14 @@ public class MP4Capturer : MovieCapturer
 
     public override bool WriteFile(string path = "", int begin_frame = 0, int end_frame = -1)
     {
+        bool ret = false;
         if (m_ctx.ptr != IntPtr.Zero)
         {
             if (path.Length==0)
             {
                 path = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
             }
-            return FrameCapturer.fcMP4WriteFile(m_ctx, path, begin_frame, end_frame);
+            ret = FrameCapturer.fcMP4WriteFile(m_ctx, path, begin_frame, end_frame);
             Debug.Log("MP4Capturer.WriteFile() : " + path);
         }
         return false;

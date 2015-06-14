@@ -46,16 +46,17 @@ public class GifCapturer : MovieCapturer
 
     public override bool WriteFile(string path = "", int begin_frame = 0, int end_frame = -1)
     {
+        bool ret = false;
         if (m_gif != IntPtr.Zero)
         {
             if (path.Length==0)
             {
                 path = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
             }
-            return FrameCapturer.fcGifWriteFile(m_gif, path, begin_frame, end_frame);
+            ret = FrameCapturer.fcGifWriteFile(m_gif, path, begin_frame, end_frame);
             Debug.Log("GifCapturer.WriteFile() : " + path);
         }
-        return false;
+        return ret;
     }
 
     public override int WriteMemory(System.IntPtr dst_buf, int begin_frame = 0, int end_frame = -1)
