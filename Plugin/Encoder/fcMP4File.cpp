@@ -304,8 +304,9 @@ void fcMP4Context::write(std::ostream &os, int begin_frame, int end_frame)
 
     char tmp_h264_filename[256];
     char tmp_mp4_filename[256];
-    sprintf(tmp_h264_filename, "%llu.h264", (uint64_t)::time(nullptr));
-    sprintf(tmp_mp4_filename, "%llu.mp4", (uint64_t)::time(nullptr));
+    uint64_t now = (uint64_t)::time(nullptr);
+    sprintf(tmp_h264_filename, "%llu.h264", now);
+    sprintf(tmp_mp4_filename, "%llu.mp4", now);
     {
         std::ofstream tmp_h264(tmp_h264_filename, std::ios::binary);
         for (auto i = begin; i != end; ++i) {
@@ -323,8 +324,10 @@ void fcMP4Context::write(std::ostream &os, int begin_frame, int end_frame)
             os.write(buf, tmp_mp4.gcount());
         }
     }
+#ifdef fcMaster
     std::remove(tmp_h264_filename);
     std::remove(tmp_mp4_filename);
+#endif // fcMaster
 }
 
 bool fcMP4Context::writeFile(const char *path, int begin_frame, int end_frame)
@@ -399,6 +402,7 @@ void fcMP4Context::eraseFrame(int begin_frame, int end_frame)
     std::advance(begin, begin_frame);
     std::advance(end, end_frame);
     m_h264_buffers.erase(begin, end);
+    // todo: remake IDR frame if needed
 }
 
 
