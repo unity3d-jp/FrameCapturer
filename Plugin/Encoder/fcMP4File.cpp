@@ -2,13 +2,16 @@
 #include "FrameCapturer.h"
 
 #ifdef fcSupportMP4
+#include <libyuv/libyuv.h>
 #include "fcFoundation.h"
 #include "fcThreadPool.h"
 #include "GraphicsDevice/fcGraphicsDevice.h"
 #include "fcMP4File.h"
-#include "fcColorSpace.h"
 #include "fcH264Encoder.h"
 #include "fcMP4Muxer.h"
+#ifdef fcWindows
+#pragma comment(lib, "yuv.lib")
+#endif
 
 
 class fcMP4Context : public fcIMP4Context
@@ -161,12 +164,18 @@ void fcMP4Context::scrape(bool updating)
 void fcMP4Context::addFrameTask(H264FrameData &o_fdata, RawFrameData &raw, bool rgba2i420)
 {
     // 必要であれば RGBA -> I420 変換
+    int width = m_conf.width;
     int frame_size = m_conf.width * m_conf.height;
-    uint8_t *y = (uint8_t*)&raw.i420[0];
-    uint8_t *u = y + frame_size;
-    uint8_t *v = u + (frame_size >> 2);
+    uint8 *y = (uint8*)&raw.i420[0];
+    uint8 *u = y + frame_size;
+    uint8 *v = u + (frame_size >> 2);
     if (rgba2i420) {
-        RGBA_to_I420(y, u, v, (bRGBA*)&raw.rgba[0], m_conf.width, m_conf.height);
+        libyuv::ABGRToI420(
+            (uint8*)&raw.rgba[0], width * 4,
+            y, width,
+            u, width >> 1,
+            v, width >> 1,
+            m_conf.width, m_conf.height );
     }
 
     // I420 のピクセルデータを H264 へエンコード

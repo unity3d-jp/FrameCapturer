@@ -27,7 +27,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Encoder\fcColorSpace.cpp" />
     <ClCompile Include="Encoder\fcH264Encoder.cpp" />
     <ClCompile Include="Encoder\fcMP4File.cpp" />
     <ClCompile Include="Encoder\fcMP4Muxer.cpp" />
@@ -41,7 +40,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Encoder\fcColorSpace.h" />
     <ClInclude Include="Encoder\fcH264Encoder.h" />
     <ClInclude Include="Encoder\fcMP4File.h" />
     <ClInclude Include="Encoder\fcMP4Muxer.h" />
@@ -86,37 +84,37 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>external;external\glew-1.12.0\include;external\ilmbase-2.2.0\Imath;external\ilmbase-2.2.0\IlmThread;external\ilmbase-2.2.0\IexMath;external\ilmbase-2.2.0\Iex;external\ilmbase-2.2.0\Half;external\ilmbase-2.2.0\config;external\openexr-2.2.0\IlmImf;external\openexr-2.2.0\config;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>external\libyuv;external;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\x86_64;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>external;external\glew-1.12.0\include;external\ilmbase-2.2.0\Imath;external\ilmbase-2.2.0\IlmThread;external\ilmbase-2.2.0\IexMath;external\ilmbase-2.2.0\Iex;external\ilmbase-2.2.0\Half;external\ilmbase-2.2.0\config;external\openexr-2.2.0\IlmImf;external\openexr-2.2.0\config;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>external\libyuv;external;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\x86;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>external;external\glew-1.12.0\include;external\ilmbase-2.2.0\Imath;external\ilmbase-2.2.0\IlmThread;external\ilmbase-2.2.0\IexMath;external\ilmbase-2.2.0\Iex;external\ilmbase-2.2.0\Half;external\ilmbase-2.2.0\config;external\openexr-2.2.0\IlmImf;external\openexr-2.2.0\config;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>external\libyuv;external;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\x86_64;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>external;external\glew-1.12.0\include;external\ilmbase-2.2.0\Imath;external\ilmbase-2.2.0\IlmThread;external\ilmbase-2.2.0\IexMath;external\ilmbase-2.2.0\Iex;external\ilmbase-2.2.0\Half;external\ilmbase-2.2.0\config;external\openexr-2.2.0\IlmImf;external\openexr-2.2.0\config;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>external\libyuv;external;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\x86;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|x64'">
-    <IncludePath>external;external\glew-1.12.0\include;external\ilmbase-2.2.0\Imath;external\ilmbase-2.2.0\IlmThread;external\ilmbase-2.2.0\IexMath;external\ilmbase-2.2.0\Iex;external\ilmbase-2.2.0\Half;external\ilmbase-2.2.0\config;external\openexr-2.2.0\IlmImf;external\openexr-2.2.0\config;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>external\libyuv;external;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\x86_64;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">
-    <IncludePath>external;external\glew-1.12.0\include;external\ilmbase-2.2.0\Imath;external\ilmbase-2.2.0\IlmThread;external\ilmbase-2.2.0\IexMath;external\ilmbase-2.2.0\Iex;external\ilmbase-2.2.0\Half;external\ilmbase-2.2.0\config;external\openexr-2.2.0\IlmImf;external\openexr-2.2.0\config;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>external\libyuv;external;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\x86;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
