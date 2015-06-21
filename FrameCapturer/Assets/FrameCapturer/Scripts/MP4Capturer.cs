@@ -13,12 +13,15 @@ using UnityEditor;
 [RequireComponent(typeof(Camera))]
 public class MP4Capturer : MovieCapturer
 {
+    public bool m_video = true;
+    public bool m_audio = false;
     public int m_resolution_width = 300;
     public int m_capture_every_n_frames = 2;
     public int m_frame_rate = 30;
-    public int m_bit_rate = 264000;
     public int m_max_frame = 1800;
     public int m_keyframe = 60;
+    public int m_video_bitrate = 264000;
+    public int m_audio_bitrate = 64000;
     public int m_max_data_size = 0;
     public int m_max_active_tasks = 0;
     public Shader m_sh_copy;
@@ -31,6 +34,8 @@ public class MP4Capturer : MovieCapturer
     Camera m_cam;
     int m_frame;
     bool m_recode = false;
+
+
 
     MP4Capturer()
     {
@@ -89,18 +94,24 @@ public class MP4Capturer : MovieCapturer
         m_scratch_buffer.Create();
 
         m_frame = 0;
-        if (m_max_active_tasks <= 0)
+        FrameCapturer.fcMP4Config conf = default(FrameCapturer.fcMP4Config);
+        conf.setDefaults();
+        conf.video = m_video;
+        conf.audio = m_audio;
+        conf.video_width = m_scratch_buffer.width;
+        conf.video_height = m_scratch_buffer.height;
+        conf.video_framerate = m_frame_rate;
+        conf.video_bitrate = m_video_bitrate;
+        conf.video_max_frame = m_max_frame;
+        conf.video_max_data_size = m_max_data_size;
+        conf.audio_bitrate = m_audio_bitrate;
+        conf.audio_sampling_rate = AudioSettings.outputSampleRate;
+        switch (AudioSettings.speakerMode)
         {
-            m_max_active_tasks = SystemInfo.processorCount;
+            case AudioSpeakerMode.Mono: conf.audio_num_channels = 1; break;
+            case AudioSpeakerMode.Stereo: conf.audio_num_channels = 2; break;
+            // todo: maybe need more case
         }
-        FrameCapturer.fcMP4Config conf;
-        conf.width = m_scratch_buffer.width;
-        conf.height = m_scratch_buffer.height;
-        conf.framerate = m_frame_rate;
-        conf.bitrate = m_bit_rate;
-        conf.max_frame = m_max_frame;
-        conf.max_data_size = m_max_data_size;
-        conf.max_active_tasks = m_max_active_tasks;
         m_ctx = FrameCapturer.fcMP4CreateContext(ref conf);
     }
 
@@ -181,8 +192,16 @@ public class MP4Capturer : MovieCapturer
                 Graphics.SetRenderTarget(m_scratch_buffer);
                 Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                 Graphics.SetRenderTarget(null);
-                FrameCapturer.fcMP4AddFrameTexture(m_ctx, m_scratch_buffer.GetNativeTexturePtr());
+                FrameCapturer.fcMP4AddVideoFrameTexture(m_ctx, m_scratch_buffer.GetNativeTexturePtr());
             }
+        }
+    }
+
+    void OnAudioFilterRead(float[] samples, int num_samples)
+    {
+        if (m_audio)
+        {
+            FrameCapturer.fcMP4AddAudioSamples(m_ctx, samples, num_samples);
         }
     }
 }

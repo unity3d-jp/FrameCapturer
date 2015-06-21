@@ -11,6 +11,9 @@
     <ClCompile Include="Encoder\fcMP4Muxer.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
+    <ClCompile Include="Encoder\fcAACEncoder.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FrameCapturer.h" />
@@ -23,6 +26,9 @@
       <Filter>Encoder</Filter>
     </ClInclude>
     <ClInclude Include="Encoder\fcH264Encoder.h">
+      <Filter>Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder\fcAACEncoder.h">
       <Filter>Encoder</Filter>
     </ClInclude>
   </ItemGroup>
