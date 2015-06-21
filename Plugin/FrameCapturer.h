@@ -140,23 +140,32 @@ fcCLinkage fcExport void            fcGifEraseFrame(fcIGifContext *ctx, int begi
 
 struct fcMP4Config
 {
-    int width;
-    int height;
-    int bitrate;
-    int framerate;
-    int max_buffers;
-    int max_frame;
-    int max_data_size;
+    bool video;
+    bool audio;
+    int video_width;
+    int video_height;
+    int video_bitrate;
+    int video_framerate;
+    int video_max_buffers;
+    int video_max_frame;
+    int video_max_data_size;
+    int audio_sampling_rate;
+    int audio_num_channels;
+    int audio_bitrate;
 
     fcMP4Config()
-        : width(320), height(240)
-        , bitrate(256000), framerate(30)
-        , max_buffers(8), max_frame(0), max_data_size(0) {}
+        : video(true), audio(false)
+        , video_width(320), video_height(240)
+        , video_bitrate(256000), video_framerate(30)
+        , video_max_buffers(8), video_max_frame(0), video_max_data_size(0)
+        , audio_sampling_rate(48000), audio_num_channels(2), audio_bitrate(64000)
+    {}
 };
 fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
 fcCLinkage fcExport void            fcMP4DestroyContext(fcIMP4Context *ctx);
-fcCLinkage fcExport bool            fcMP4AddFrameTexture(fcIMP4Context *ctx, void *tex);
-fcCLinkage fcExport bool            fcMP4AddFramePixels(fcIMP4Context *ctx, void *pixels, fcEColorSpace cs=fcE_RGBA);
+fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex);
+fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixels, fcEColorSpace cs = fcE_RGBA);
+fcCLinkage fcExport bool            fcMP4AddAudioSamples(fcIMP4Context *ctx, const float *samples, int num_samples);
 fcCLinkage fcExport void            fcMP4ClearFrame(fcIMP4Context *ctx);
 fcCLinkage fcExport bool            fcMP4WriteFile(fcIMP4Context *ctx, const char *path, int begin_frame, int end_frame);
 fcCLinkage fcExport int             fcMP4WriteMemory(fcIMP4Context *ctx, void *buf, int begin_frame, int end_frame);

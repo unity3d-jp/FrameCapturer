@@ -52,13 +52,28 @@ public static class FrameCapturer
     }
     public struct fcMP4Config
     {
-        public int width;
-        public int height;
-        public int bitrate;
-        public int framerate;
-        public int max_active_tasks;
-        public int max_frame;
-        public int max_data_size;
+        public bool video;
+        public bool audio;
+        public int video_width;
+        public int video_height;
+        public int video_bitrate;
+        public int video_framerate;
+        public int video_max_buffers;
+        public int video_max_frame;
+        public int video_max_data_size;
+        public int audio_sampling_rate;
+        public int audio_num_channels;
+        public int audio_bitrate;
+
+        public void setDefaults()
+        {
+            video = true;
+            audio = false;
+            video_width = 320; video_height = 240;
+            video_bitrate = 256000; video_framerate = 30;
+            video_max_buffers = 8; video_max_frame = 0; video_max_data_size = 0;
+            audio_sampling_rate = 48000; audio_num_channels = 2; audio_bitrate = 64000;
+        }
     };
     public struct fcMP4Context
     {
@@ -66,8 +81,9 @@ public static class FrameCapturer
     }
     [DllImport ("FrameCapturer")] public static extern fcMP4Context fcMP4CreateContext(ref fcMP4Config conf);
     [DllImport ("FrameCapturer")] public static extern void         fcMP4DestroyContext(fcMP4Context ctx);
-    [DllImport ("FrameCapturer")] public static extern bool         fcMP4AddFrameTexture(fcMP4Context ctx, IntPtr tex);
-    [DllImport ("FrameCapturer")] public static extern bool         fcMP4AddFramePixels(fcMP4Context ctx, IntPtr pixels, fcEColorSpace cs=fcEColorSpace.RGBA);
+    [DllImport ("FrameCapturer")] public static extern bool         fcMP4AddVideoFrameTexture(fcMP4Context ctx, IntPtr tex);
+    [DllImport ("FrameCapturer")] public static extern bool         fcMP4AddVideoFramePixels(fcMP4Context ctx, IntPtr pixels, fcEColorSpace cs=fcEColorSpace.RGBA);
+    [DllImport ("FrameCapturer")] public static extern bool         fcMP4AddAudioSamples(fcMP4Context ctx, float[] samples, int num_samples);
     [DllImport ("FrameCapturer")] public static extern void         fcMP4ClearFrame(fcMP4Context ctx);
     [DllImport ("FrameCapturer")] public static extern bool         fcMP4WriteFile(fcMP4Context ctx, string path, int begin_frame, int end_frame);
     [DllImport ("FrameCapturer")] public static extern int          fcMP4WriteMemory(fcMP4Context ctx, IntPtr dst, int begin_frame, int end_frame);

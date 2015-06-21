@@ -177,16 +177,22 @@ fcCLinkage fcExport void fcMP4DestroyContext(fcIMP4Context *ctx)
     ctx->release();
 }
 
-fcCLinkage fcExport bool fcMP4AddFrameTexture(fcIMP4Context *ctx, void *tex)
+fcCLinkage fcExport bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex)
 {
     if (!ctx) { return false; }
-    return ctx->addFrameTexture(tex);
+    return ctx->addVideoFrameTexture(tex);
 }
 
-fcCLinkage fcExport bool fcMP4AddFramePixels(fcIMP4Context *ctx, void *pixels, fcEColorSpace cs)
+fcCLinkage fcExport bool fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixels, fcEColorSpace cs)
 {
     if (!ctx) { return false; }
-    return ctx->addFramePixels(pixels, cs);
+    return ctx->addVideoFramePixels(pixels, cs);
+}
+
+fcCLinkage fcExport bool fcMP4AddAudioSamples(fcIMP4Context *ctx, const float *samples, int num_samples)
+{
+    if (!ctx) { return false; }
+    return ctx->addAudioSamples(samples, num_samples);
 }
 
 fcCLinkage fcExport void fcMP4ClearFrame(fcIMP4Context *ctx)
