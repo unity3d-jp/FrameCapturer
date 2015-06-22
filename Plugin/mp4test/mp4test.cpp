@@ -38,7 +38,7 @@ void CreateTestVideoData(RGBA *rgba, int width, int height, int scroll)
 void CreateTestAudioData(float *samples, int num_samples, int scroll)
 {
     for (int i = 0; i < num_samples; ++i) {
-        samples[i] = std::sin(float(i + scroll*0)*(3.14159f / 180.0f)) * 32767.0f;
+        samples[i] = std::sin((float(i) * 2.5f) * (3.14159f / 180.0f)) * 32767.0f;
     }
 }
 
@@ -47,6 +47,7 @@ void CreateTestAudioData(float *samples, int num_samples, int scroll)
 int main(int argc, char** argv)
 {
     fcMP4Config conf;
+    conf.video = true;
     conf.video_width = Width;
     conf.video_height = Height;
     conf.video_bitrate = 256000;
@@ -54,15 +55,18 @@ int main(int argc, char** argv)
     conf.audio = true;
     conf.audio_sampling_rate = SamplingRate;
     conf.audio_num_channels = 1;
+    conf.audio_bitrate = 64000;
     fcIMP4Context *ctx = fcMP4CreateContext(&conf);
 
-    std::vector<RGBA> video_rgba(Width * Height);
-    std::vector<float> audio(SamplingRate/30);
-    for (int i = 0; i < 120; ++i) {
-        CreateTestVideoData(&video_rgba[0], Width, Height, i);
-        CreateTestAudioData(&audio[0], audio.size(), i);
-        fcMP4AddVideoFramePixels(ctx, &video_rgba[0]);
-        fcMP4AddAudioSamples(ctx, &audio[0], audio.size());
+    std::vector<RGBA> video_frame(Width * Height);
+    std::vector<float> audio_sample(SamplingRate);
+    for (int i = 0; i < 300; ++i) {
+        CreateTestVideoData(&video_frame[0], Width, Height, i);
+        fcMP4AddVideoFramePixels(ctx, &video_frame[0]);
+    }
+    for (int i = 0; i < 600; ++i) {
+        CreateTestAudioData(&audio_sample[0], audio_sample.size(), 0);
+        fcMP4AddAudioSamples(ctx, &audio_sample[0], audio_sample.size());
     }
     fcMP4WriteFile(ctx, "out.mp4", 0, -1);
 

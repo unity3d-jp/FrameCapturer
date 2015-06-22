@@ -140,8 +140,8 @@ fcCLinkage fcExport void            fcGifEraseFrame(fcIGifContext *ctx, int begi
 
 struct fcMP4Config
 {
-    bool video;
-    bool audio;
+    int video;
+    int audio;
     int video_width;
     int video_height;
     int video_bitrate;

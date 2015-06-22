@@ -88,7 +88,7 @@ public class MP4Capturer : MovieCapturer
         }
 
         int capture_width = m_resolution_width;
-        int capture_height = (int)(m_resolution_width / ((float)m_cam.pixelWidth / (float)m_cam.pixelHeight));
+        int capture_height = (int)((float)m_resolution_width / ((float)m_cam.pixelWidth / (float)m_cam.pixelHeight));
         m_scratch_buffer = new RenderTexture(capture_width, capture_height, 0, RenderTextureFormat.ARGB32);
         m_scratch_buffer.wrapMode = TextureWrapMode.Repeat;
         m_scratch_buffer.Create();
@@ -96,8 +96,8 @@ public class MP4Capturer : MovieCapturer
         m_frame = 0;
         FrameCapturer.fcMP4Config conf = default(FrameCapturer.fcMP4Config);
         conf.setDefaults();
-        conf.video = m_video;
-        conf.audio = m_audio;
+        conf.video = m_video ? 1 : 0;
+        conf.audio = m_audio ? 1 : 0;
         conf.video_width = m_scratch_buffer.width;
         conf.video_height = m_scratch_buffer.height;
         conf.video_framerate = m_frame_rate;
