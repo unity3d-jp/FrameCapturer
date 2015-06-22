@@ -26,7 +26,31 @@ public:
     struct RawFrameData
     {
         std::string rgba;
-        std::string i420;
+        uint8_t *i420_y;
+        uint8_t *i420_u;
+        uint8_t *i420_v;
+
+        RawFrameData() : i420_y(nullptr), i420_u(nullptr), i420_v(nullptr) {}
+        ~RawFrameData() { deallocate(); }
+
+        void allocate(int width, int height)
+        {
+            deallocate();
+
+            rgba.resize(width * height * 4);
+            int af = roundup<2>(width) * roundup<2>(height);
+            i420_y = (uint8_t*)aligned_alloc(af, 32);
+            i420_u = (uint8_t*)aligned_alloc(af >> 2, 32);
+            i420_v = (uint8_t*)aligned_alloc(af >> 2, 32);
+        }
+
+        void deallocate()
+        {
+            rgba.clear();
+            aligned_free(i420_y);
+            aligned_free(i420_u);
+            aligned_free(i420_v);
+        }
     };
 
 public:
@@ -109,8 +133,7 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         m_raw_video_buffers.resize(m_conf.video_max_buffers);
         for (auto& rf : m_raw_video_buffers)
         {
-            rf.rgba.resize(m_conf.video_width * m_conf.video_height * 4);
-            rf.i420.resize(roundup<2>(m_conf.video_width) * roundup<2>(m_conf.video_height) * 3 / 2);
+            rf.allocate(m_conf.video_width, m_conf.video_height);
         }
     }
     if (m_conf.audio) {
@@ -133,11 +156,14 @@ fcMP4Context::~fcMP4Context()
 {
     // stop working thread
     m_stop = true;
-    m_video_condition.notify_all();
-    m_audio_condition.notify_all();
-    m_video_worker.join();
-    m_audio_worker.join();
-
+    if (m_conf.video) {
+        m_video_condition.notify_all();
+        m_video_worker.join();
+    }
+    if (m_conf.audio) {
+        m_audio_condition.notify_all();
+        m_audio_worker.join();
+    }
     m_magic = fcE_Deleted;
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
@@ -235,9 +261,9 @@ void fcMP4Context::addVideoFrameTask(H264FrameData &o_fdata, RawFrameData &raw, 
     // 必要であれば RGBA -> I420 変換
     int width = m_conf.video_width;
     int frame_size = m_conf.video_width * m_conf.video_height;
-    uint8 *y = (uint8*)&raw.i420[0];
-    uint8 *u = y + frame_size;
-    uint8 *v = u + (frame_size >> 2);
+    uint8 *y = raw.i420_y;
+    uint8 *u = raw.i420_u;
+    uint8 *v = raw.i420_v;
     if (rgba2i420) {
         libyuv::ABGRToI420(
             (uint8*)&raw.rgba[0], width * 4,
@@ -310,7 +336,14 @@ bool fcMP4Context::addVideoFramePixels(void *pixels, fcEColorSpace cs)
     }
     else if (cs == fcE_I420) {
         rgba2i420 = false;
-        raw.i420.assign((char*)pixels, m_conf.video_width*m_conf.video_height*3/2);
+
+        int frame_size = m_conf.video_width * m_conf.video_height;
+        const uint8_t *src_y = (const uint8_t*)pixels;
+        const uint8_t *src_u = src_y + frame_size;
+        const uint8_t *src_v = src_u + (frame_size >> 2);
+        memcpy(raw.i420_y, src_y, frame_size);
+        memcpy(raw.i420_u, src_u, frame_size >> 2);
+        memcpy(raw.i420_v, src_v, frame_size >> 2);
     }
 
     // h264 データを生成
@@ -374,6 +407,7 @@ static inline void adjust_frame(int &begin_frame, int &end_frame, int max_frame)
 
 void fcMP4Context::write(std::ostream &os, int begin_frame, int end_frame)
 {
+    addAudioSamples(nullptr, 0); // flush
     wait();
     scrape(false);
 
@@ -405,8 +439,7 @@ void fcMP4Context::write(std::ostream &os, int begin_frame, int end_frame)
     if (m_conf.audio) {
         params.in_aac_path = tmp_aac_filename;
         std::ofstream tmp_aac(tmp_aac_filename, std::ios::binary);
-        const std::string &aac_header = m_aac_encoder->getHeader();
-        tmp_aac.write(&aac_header[0], aac_header.size());
+
         for (const auto& aac : m_aac_buffers) {
             tmp_aac.write(&aac[0], aac.size());
         }
@@ -468,8 +501,7 @@ void fcMP4Context::getFrameData(void *tex, int frame)
     }
 
     RawFrameData raw;
-    raw.rgba.resize(m_conf.video_width * m_conf.video_height * 4);
-    raw.i420.resize(roundup<2>(m_conf.video_width) * roundup<2>(m_conf.video_height) * 3 / 2);
+    raw.allocate(m_conf.video_width, m_conf.video_height);
     // todo: decode
     m_dev->writeTexture(tex, m_conf.video_width, m_conf.video_height, fcE_ARGB32, &raw.rgba[0], raw.rgba.size());
 }

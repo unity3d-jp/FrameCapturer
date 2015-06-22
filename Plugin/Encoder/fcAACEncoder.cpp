@@ -115,11 +115,11 @@ fcAACEncoder::Result fcAACEncoder::encode(const float *samples, int num_samples)
     m_aac_buf.clear();
     m_aac_tmp_buf.resize(m_output_size);
     for (;;) {
-        int size_encoded = faacEncEncode_imp(m_handle, (int32_t*)samples, m_num_read_samples, (unsigned char*)&m_aac_tmp_buf[0], m_output_size);
-        if (size_encoded <= 0) { break; }
+        int process_size = std::min<int>(m_num_read_samples, num_samples);
+        int size_encoded = faacEncEncode_imp(m_handle, (int32_t*)samples, process_size, (unsigned char*)&m_aac_tmp_buf[0], m_output_size);
         m_aac_buf.append(&m_aac_tmp_buf[0], size_encoded);
-        samples += m_num_read_samples;
-        num_samples -= m_num_read_samples;
+        samples += process_size;
+        num_samples -= process_size;
         if (num_samples <= 0) { break; }
     }
     return Result(&m_aac_buf[0], m_aac_buf.size());

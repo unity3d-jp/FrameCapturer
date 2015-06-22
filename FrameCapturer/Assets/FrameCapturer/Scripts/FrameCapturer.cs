@@ -52,8 +52,8 @@ public static class FrameCapturer
     }
     public struct fcMP4Config
     {
-        public bool video;
-        public bool audio;
+        public int video;
+        public int audio;
         public int video_width;
         public int video_height;
         public int video_bitrate;
@@ -67,8 +67,8 @@ public static class FrameCapturer
 
         public void setDefaults()
         {
-            video = true;
-            audio = false;
+            video = 1;
+            audio = 0;
             video_width = 320; video_height = 240;
             video_bitrate = 256000; video_framerate = 30;
             video_max_buffers = 8; video_max_frame = 0; video_max_data_size = 0;

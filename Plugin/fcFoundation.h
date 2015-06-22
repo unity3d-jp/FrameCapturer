@@ -36,6 +36,27 @@
 #endif
 
 
+inline void* aligned_alloc(size_t size, size_t align)
+{
+#ifdef _MSC_VER
+    return _aligned_malloc(size, align);
+#elif defined(__APPLE__)
+    return malloc(size);
+#else  // _MSC_VER
+    return memalign(align, size);
+#endif // _MSC_VER
+}
+
+inline void aligned_free(void *p)
+{
+#ifdef _MSC_VER
+    _aligned_free(p);
+#else  // _MSC_VER
+    free(p);
+#endif // _MSC_VER
+    }
+
+
 template<int N, class IntType>
 inline IntType roundup(IntType v)
 {
