@@ -4,10 +4,15 @@
 
 #ifdef fcSupportOpenGL
 
+#ifndef fcDontForceStaticGLEW
 #define GLEW_STATIC
+#endif
 #include <GL/glew.h>
+
+#if defined(fcWindows) && !defined(fcNoAutoLink)
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glew32s.lib")
+#endif
 
 
 class fcGraphicsDeviceOpenGL : public fcIGraphicsDevice
@@ -62,10 +67,12 @@ static void fcGetInternalFormatOpenGL(fcETextureFormat format, GLenum &o_fmt, GL
     case fcE_ARGBInt:   o_fmt = GL_RGBA_INTEGER; o_type = GL_INT; return;
     case fcE_RGInt:     o_fmt = GL_RG_INTEGER; o_type = GL_INT; return;
     case fcE_RInt:      o_fmt = GL_RED_INTEGER; o_type = GL_INT; return;
+    default:
+        break;
     }
 }
 
-bool fcGraphicsDeviceOpenGL::readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcETextureFormat format)
+bool fcGraphicsDeviceOpenGL::readTexture(void *o_buf, size_t, void *tex, int, int, fcETextureFormat format)
 {
     GLenum internal_format = 0;
     GLenum internal_type = 0;
@@ -81,7 +88,7 @@ bool fcGraphicsDeviceOpenGL::readTexture(void *o_buf, size_t bufsize, void *tex,
     return true;
 }
 
-bool fcGraphicsDeviceOpenGL::writeTexture(void *o_tex, int width, int height, fcETextureFormat format, const void *buf, size_t bufsize)
+bool fcGraphicsDeviceOpenGL::writeTexture(void *o_tex, int width, int height, fcETextureFormat format, const void *buf, size_t)
 {
     GLenum internal_format = 0;
     GLenum internal_type = 0;
