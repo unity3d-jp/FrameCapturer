@@ -47,7 +47,7 @@ public class ExrCapturer : MonoBehaviour
 #if UNITY_EDITOR
     void Reset()
     {
-        m_sh_copy = AssetDatabase.LoadAssetAtPath("Assets/FrameCapturer/Shaders/CopyFrameBuffer.shader", typeof(Shader)) as Shader;
+        m_sh_copy = FrameCapturerUtils.GetFrameBufferCopyShader();
     }
 #endif // UNITY_EDITOR
 

@@ -128,7 +128,7 @@ public class GifCapturer : MovieCapturer
 #if UNITY_EDITOR
     void Reset()
     {
-        m_sh_copy = AssetDatabase.LoadAssetAtPath("Assets/FrameCapturer/Shaders/CopyFrameBuffer.shader", typeof(Shader)) as Shader;
+        m_sh_copy = FrameCapturerUtils.GetFrameBufferCopyShader();
     }
 
     void OnValidate()
