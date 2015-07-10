@@ -37,10 +37,10 @@ fcCLinkage fcExport bool fcExrBeginFrame(fcIExrContext *ctx, const char *path, i
     return ctx->beginFrame(path, width, height);
 }
 
-fcCLinkage fcExport bool fcExrAddLayer(fcIExrContext *ctx, void *tex, fcETextureFormat fmt, int ch, const char *name)
+fcCLinkage fcExport bool fcExrAddLayer(fcIExrContext *ctx, void *tex, fcETextureFormat fmt, int ch, const char *name, bool flipY)
 {
     fcTypeCheck(ctx);
-    return ctx->addLayer(tex, fmt, ch, name);
+    return ctx->addLayer(tex, fmt, ch, name, flipY);
 }
 
 fcCLinkage fcExport bool fcExrEndFrame(fcIExrContext *ctx)

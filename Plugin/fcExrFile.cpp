@@ -30,13 +30,24 @@ struct fcExrFrameData
 {
     std::string path;
     int width, height;
-    std::list<std::string> raw_frames;
+    std::list<void*> rawFrames;
     Imf::Header header;
-    Imf::FrameBuffer frame_buffer;
+    Imf::FrameBuffer frameBuffer;
 
     fcExrFrameData(const char *p, int w, int h)
         : path(p), width(w), height(h), header(w, h)
-    {}
+    {
+        header.compression() = Imf::ZIPS_COMPRESSION;
+    }
+
+    ~fcExrFrameData()
+    {
+        for (std::list<void*>::iterator it=rawFrames.begin(); it!=rawFrames.end(); ++it)
+        {
+            free(*it);
+        }
+        rawFrames.clear();
+    }
 };
 
 class fcExrContext : public fcIExrContext
@@ -44,23 +55,19 @@ class fcExrContext : public fcIExrContext
 public:
     fcExrContext(fcExrConfig &conf, fcIGraphicsDevice *dev);
     ~fcExrContext();
+
     void release() override;
     bool beginFrame(const char *path, int width, int height) override;
-    bool addLayer(void *tex, fcETextureFormat fmt, int channel, const char *name) override;
+    bool addLayer(void *tex, fcETextureFormat fmt, int channel, const char *name, bool flipY) override;
     bool endFrame() override;
-
-private:
-    void endFrameTask(fcExrFrameData *exr);
 
 private:
     fcEMagic m_magic; //  for debug
     fcExrConfig m_conf;
     fcIGraphicsDevice *m_dev;
     fcExrFrameData *m_exr;
-    fcTaskGroup m_tasks;
-    std::atomic<int> m_active_task_count;
 
-    void *m_tex_prev;
+    void *m_lastTex;
 };
 
 
@@ -75,15 +82,18 @@ fcExrContext::fcExrContext(fcExrConfig &conf, fcIGraphicsDevice *dev)
     , m_conf(conf)
     , m_dev(dev)
     , m_exr(nullptr)
-    , m_active_task_count(0)
-    , m_tex_prev(nullptr)
+    , m_lastTex(nullptr)
 {
 }
 
 fcExrContext::~fcExrContext()
 {
-    m_tasks.wait();
     m_magic = fcE_Deleted;
+
+    if (m_exr != nullptr)
+    {
+        delete m_exr;
+    }
 }
 
 
@@ -95,95 +105,120 @@ void fcExrContext::release()
 
 bool fcExrContext::beginFrame(const char *path, int width, int height)
 {
-    if (m_exr != nullptr) { return false; } // beginFrame() されたまま endFrame() されてない
-
-    // 実行中のタスクの数が上限に達している場合適当に待つ
-    if (m_active_task_count >= m_conf.max_active_tasks)
+    if (m_exr != nullptr)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        if (m_active_task_count >= m_conf.max_active_tasks)
-        {
-            m_tasks.wait();
-        }
-    }
+        // beginFrame() されたまま endFrame() されてない
+        return false;
+    } 
 
     m_exr = new fcExrFrameData(path, width, height);
+
     return true;
 }
 
-bool fcExrContext::addLayer(void *tex, fcETextureFormat fmt, int channel, const char *name)
+bool fcExrContext::addLayer(void *tex, fcETextureFormat fmt, int channel, const char *name, bool flipY)
 {
-    std::string *raw_frame = nullptr;
+    Imf::PixelType pixelType = Imf::HALF;
+    int tsize = 2;
+    int psize = 0;
+    int channels = 0;
+    void *rawFrame = nullptr;
+
+    switch (fmt)
+    {
+    case fcE_ARGBFloat:
+        pixelType = Imf::FLOAT;
+        tsize = 4;
+    case fcE_ARGBHalf:
+        channels = 4;
+        break;
+    case fcE_RGFloat:
+        pixelType = Imf::FLOAT;
+        tsize = 4;
+    case fcE_RGHalf:
+        channels = 2;
+        break;
+    case fcE_RFloat:
+        pixelType = Imf::FLOAT;
+        tsize = 4;
+    case fcE_RHalf:
+        channels = 1;
+        break;
+    default:
+        return false;
+    }
+
+    psize = tsize * channels;
 
     // フレームバッファの内容取得
-    if (tex == m_tex_prev)
+    if (tex == m_lastTex)
     {
         // 前回取得した結果を使い回す
-        raw_frame = &m_exr->raw_frames.back();
+        rawFrame = m_exr->rawFrames.back();
     }
     else
     {
-        m_tex_prev = tex;
-        m_exr->raw_frames.push_back(std::string());
-        raw_frame = &m_exr->raw_frames.back();
-        raw_frame->resize(m_exr->width * m_exr->height * fcGetPixelSize(fmt));
-        if (!m_dev->readTexture(&(*raw_frame)[0], raw_frame->size(), tex, m_exr->width, m_exr->height, fmt))
+        m_lastTex = tex;
+
+        size_t bufSize = m_exr->width * m_exr->height * psize;
+        
+        rawFrame = malloc(bufSize);
+        
+        m_exr->rawFrames.push_back(rawFrame);
+
+        if (!m_dev->readTexture(rawFrame, bufSize, tex, m_exr->width, m_exr->height, fmt))
         {
-            m_exr->raw_frames.pop_back();
+            free(rawFrame);
+            m_exr->rawFrames.pop_back();
             return false;
+        }
+        else if (flipY)
+        {
+            size_t lineSize = m_exr->width * psize;
+            char *tmp = (char*) malloc(lineSize);
+            int hh = m_exr->height / 2;
+            char *line0 = (char*)rawFrame;
+            char *line1 = line0 + (m_exr->height - 1) * lineSize;
+
+            for (int h=0; h<hh; ++h)
+            {
+                memcpy(tmp, line0, lineSize);
+                memcpy(line0, line1, lineSize);
+                memcpy(line1, tmp, lineSize);
+                line0 += lineSize;
+                line1 -= lineSize;
+            }
+
+            free(tmp);
         }
     }
 
-    {
-        char *raw_data = &(*raw_frame)[0];
-        Imf::PixelType pixel_type = Imf::HALF;
-        int channels = 0;
-        int tsize = 0;
-        switch (fmt)
-        {
-        case fcE_ARGBHalf:  pixel_type = Imf::HALF; channels = 4; tsize = 2; break;
-        case fcE_RGHalf:    pixel_type = Imf::HALF; channels = 2; tsize = 2; break;
-        case fcE_RHalf:     pixel_type = Imf::HALF; channels = 1; tsize = 2; break;
-        case fcE_ARGBFloat: pixel_type = Imf::FLOAT; channels = 4; tsize = 4; break;
-        case fcE_RGFloat:   pixel_type = Imf::FLOAT; channels = 2; tsize = 4; break;
-        case fcE_RFloat:    pixel_type = Imf::FLOAT; channels = 1; tsize = 4; break;
-        case fcE_ARGBInt:   pixel_type = Imf::UINT; channels = 4; tsize = 4; break;
-        case fcE_RGInt:     pixel_type = Imf::UINT; channels = 2; tsize = 4; break;
-        case fcE_RInt:      pixel_type = Imf::UINT; channels = 1; tsize = 4; break;
-        default:
-        {
-            m_exr->raw_frames.pop_back();
-            return false;
-        }
-        }
-        int psize = tsize * channels;
-
-        m_exr->header.channels().insert(name, Imf::Channel(pixel_type));
-        m_exr->frame_buffer.insert(name, Imf::Slice(pixel_type, raw_data + (tsize * channel), psize, psize * m_exr->width));
-    }
+    m_exr->header.channels().insert(name, Imf::Channel(pixelType));
+    m_exr->frameBuffer.insert(name, Imf::Slice(pixelType, (char*)rawFrame + (tsize * channel), psize, psize * m_exr->width));
+    
     return true;
 }
 
 bool fcExrContext::endFrame()
 {
-    if (m_exr == nullptr) { return false; } // beginFrame() されてない
-    m_tex_prev = nullptr;
+    if (m_exr == nullptr)
+    {
+        // beginFrame() されてない
+        return false;
+    }
 
-    fcExrFrameData *exr = m_exr;
+    Imf::OutputFile fout(m_exr->path.c_str(), m_exr->header);
+    
+    fout.setFrameBuffer(m_exr->frameBuffer);
+    fout.writePixels(m_exr->height);
+
+    delete m_exr;
+    
+    m_lastTex = nullptr;
     m_exr = nullptr;
-    ++m_active_task_count;
-    m_tasks.run([this, exr](){
-        endFrameTask(exr);
-        --m_active_task_count;
-    });
+
     return true;
 }
 
-void fcExrContext::endFrameTask(fcExrFrameData *exr)
-{
-    Imf::OutputFile fout(exr->path.c_str(), exr->header);
-    fout.setFrameBuffer(exr->frame_buffer);
-    fout.writePixels(exr->height);
-    delete exr;
-}
 #endif // fcSupportEXR
+
