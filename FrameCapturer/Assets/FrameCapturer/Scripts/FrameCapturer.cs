@@ -29,7 +29,7 @@ public static class FrameCapturer
     [DllImport ("FrameCapturer")] public static extern IntPtr   fcExrCreateContext(ref fcExrConfig conf);
     [DllImport ("FrameCapturer")] public static extern void     fcExrDestroyContext(IntPtr ctx);
     [DllImport ("FrameCapturer")] public static extern bool     fcExrBeginFrame(IntPtr ctx, string path, int width, int height);
-    [DllImport ("FrameCapturer")] public static extern bool     fcExrAddLayer(IntPtr ctx, IntPtr tex, RenderTextureFormat f, int ch, string name, bool flipY);
+    [DllImport ("FrameCapturer")] public static extern bool     fcExrAddLayer(IntPtr ctx, IntPtr tex, RenderTextureFormat f, int ch, string name, bool flipY, bool asPixels);
     [DllImport ("FrameCapturer")] public static extern bool     fcExrEndFrame(IntPtr ctx);
 
     [DllImport ("FrameCapturer")] public static extern IntPtr   fcGifCreateContext(ref fcGifConfig conf);

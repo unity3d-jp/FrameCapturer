@@ -58,7 +58,7 @@ public:
 
     void release() override;
     bool beginFrame(const char *path, int width, int height) override;
-    bool addLayer(void *tex, fcETextureFormat fmt, int channel, const char *name, bool flipY) override;
+    bool addLayer(void *tex, fcETextureFormat fmt, int channel, const char *name, bool flipY, bool asPixels) override;
     bool endFrame() override;
 
 private:
@@ -116,7 +116,7 @@ bool fcExrContext::beginFrame(const char *path, int width, int height)
     return true;
 }
 
-bool fcExrContext::addLayer(void *tex, fcETextureFormat fmt, int channel, const char *name, bool flipY)
+bool fcExrContext::addLayer(void *tex, fcETextureFormat fmt, int channel, const char *name, bool flipY, bool asPixels)
 {
     Imf::PixelType pixelType = Imf::HALF;
     int tsize = 2;
@@ -159,27 +159,35 @@ bool fcExrContext::addLayer(void *tex, fcETextureFormat fmt, int channel, const 
     else
     {
         m_lastTex = tex;
-
+        
         size_t bufSize = m_exr->width * m_exr->height * psize;
         
         rawFrame = malloc(bufSize);
         
         m_exr->rawFrames.push_back(rawFrame);
-
-        if (!m_dev->readTexture(rawFrame, bufSize, tex, m_exr->width, m_exr->height, fmt))
+        
+        if (!asPixels)
         {
-            free(rawFrame);
-            m_exr->rawFrames.pop_back();
-            return false;
+            if (!m_dev->readTexture(rawFrame, bufSize, tex, m_exr->width, m_exr->height, fmt))
+            {
+                free(rawFrame);
+                m_exr->rawFrames.pop_back();
+                return false;
+            }
         }
-        else if (flipY)
+        else
+        {
+            memcpy(rawFrame, tex, bufSize);
+        }
+        
+        if (flipY)
         {
             size_t lineSize = m_exr->width * psize;
             char *tmp = (char*) malloc(lineSize);
             int hh = m_exr->height / 2;
             char *line0 = (char*)rawFrame;
             char *line1 = line0 + (m_exr->height - 1) * lineSize;
-
+            
             for (int h=0; h<hh; ++h)
             {
                 memcpy(tmp, line0, lineSize);
@@ -188,11 +196,11 @@ bool fcExrContext::addLayer(void *tex, fcETextureFormat fmt, int channel, const 
                 line0 += lineSize;
                 line1 -= lineSize;
             }
-
+            
             free(tmp);
         }
     }
-
+    
     m_exr->header.channels().insert(name, Imf::Channel(pixelType));
     m_exr->frameBuffer.insert(name, Imf::Slice(pixelType, (char*)rawFrame + (tsize * channel), psize, psize * m_exr->width));
     

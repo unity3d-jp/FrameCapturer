@@ -46,7 +46,7 @@ struct fcExrConfig
 fcCLinkage fcExport fcIExrContext*  fcExrCreateContext(fcExrConfig *conf);
 fcCLinkage fcExport void            fcExrDestroyContext(fcIExrContext *ctx);
 fcCLinkage fcExport bool            fcExrBeginFrame(fcIExrContext *ctx, const char *path, int width, int height);
-fcCLinkage fcExport bool            fcExrAddLayer(fcIExrContext *ctx, void *tex, fcETextureFormat fmt, int ch, const char *name, bool flipY);
+fcCLinkage fcExport bool            fcExrAddLayer(fcIExrContext *ctx, void *tex, fcETextureFormat fmt, int ch, const char *name, bool flipY, bool asPixels);
 fcCLinkage fcExport bool            fcExrEndFrame(fcIExrContext *ctx);
 
 #endif // fcSupportEXR
