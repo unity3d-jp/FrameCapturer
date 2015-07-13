@@ -30,7 +30,7 @@ struct fcExrFrameData
 {
     std::string path;
     int width, height;
-    std::list<void*> rawFrames;
+    std::map<std::string, void*> rawFrames;
     Imf::Header header;
     Imf::FrameBuffer frameBuffer;
 
@@ -42,9 +42,9 @@ struct fcExrFrameData
 
     ~fcExrFrameData()
     {
-        for (std::list<void*>::iterator it=rawFrames.begin(); it!=rawFrames.end(); ++it)
+        for (std::map<std::string, void*>::iterator it=rawFrames.begin(); it!=rawFrames.end(); ++it)
         {
-            free(*it);
+            free(it->second);
         }
         rawFrames.clear();
     }
@@ -66,8 +66,6 @@ private:
     fcExrConfig m_conf;
     fcIGraphicsDevice *m_dev;
     fcExrFrameData *m_exr;
-
-    void *m_lastTex;
 };
 
 
@@ -82,7 +80,6 @@ fcExrContext::fcExrContext(fcExrConfig &conf, fcIGraphicsDevice *dev)
     , m_conf(conf)
     , m_dev(dev)
     , m_exr(nullptr)
-    , m_lastTex(nullptr)
 {
 }
 
@@ -150,28 +147,23 @@ bool fcExrContext::addLayer(void *tex, fcETextureFormat fmt, int channel, const 
 
     psize = tsize * channels;
 
-    // フレームバッファの内容取得
-    if (tex == m_lastTex)
+    std::map<std::string, void*>::iterator it = m_exr->rawFrames.find(name);
+
+    if (it != m_exr->rawFrames.end())
     {
-        // 前回取得した結果を使い回す
-        rawFrame = m_exr->rawFrames.back();
+        rawFrame = it->second;
     }
     else
     {
-        m_lastTex = tex;
-        
         size_t bufSize = m_exr->width * m_exr->height * psize;
         
         rawFrame = malloc(bufSize);
-        
-        m_exr->rawFrames.push_back(rawFrame);
         
         if (!asPixels)
         {
             if (!m_dev->readTexture(rawFrame, bufSize, tex, m_exr->width, m_exr->height, fmt))
             {
                 free(rawFrame);
-                m_exr->rawFrames.pop_back();
                 return false;
             }
         }
@@ -179,6 +171,8 @@ bool fcExrContext::addLayer(void *tex, fcETextureFormat fmt, int channel, const 
         {
             memcpy(rawFrame, tex, bufSize);
         }
+
+        m_exr->rawFrames[name] = rawFrame;
         
         if (flipY)
         {
@@ -222,7 +216,6 @@ bool fcExrContext::endFrame()
 
     delete m_exr;
     
-    m_lastTex = nullptr;
     m_exr = nullptr;
 
     return true;
