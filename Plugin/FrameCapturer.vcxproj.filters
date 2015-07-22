@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="fcThreadPool.cpp" />
+    <ClCompile Include="FrameCapturer.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="GraphicsDevice\fcGraphicsDeviceD3D9.cpp">
+      <Filter>GraphisDevice</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsDevice\fcGraphicsDeviceD3D11.cpp">
+      <Filter>GraphisDevice</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsDevice\fcGraphicsDeviceOpenGL.cpp">
+      <Filter>GraphisDevice</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsDevice\fcGraphicsDevice.cpp">
+      <Filter>GraphisDevice</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcGifFile.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="fcThreadPool.h" />
+    <ClInclude Include="FrameCapturer.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="GraphicsDevice\fcGraphicsDevice.h">
+      <Filter>GraphisDevice</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder\fcGifFile.h">
+      <Filter>Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="fcFoundation.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="GraphisDevice">
+      <UniqueIdentifier>{5cc610eb-d8bf-49c9-a636-9d3473a07dce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Encoder">
+      <UniqueIdentifier>{48802eb2-d965-4472-acfa-f45fccdf33ac}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

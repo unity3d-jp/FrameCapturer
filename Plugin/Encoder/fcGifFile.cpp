@@ -1,9 +1,10 @@
 ﻿#include "pch.h"
+#include "FrameCapturer.h"
 
 #ifdef fcSupportGIF
-#include "FrameCapturer.h"
+#include "fcFoundation.h"
 #include "fcThreadPool.h"
-#include "fcGraphicsDevice.h"
+#include "GraphicsDevice/fcGraphicsDevice.h"
 #include "fcGifFile.h"
 #include "external/jo_gif.cpp"
 
@@ -42,12 +43,6 @@ private:
     fcTaskGroup m_tasks;
     std::atomic<int> m_active_task_count;
 };
-
-
-fcIGifContext* fcCreateGifContext(fcGifConfig &conf, fcIGraphicsDevice *dev)
-{
-    return new fcGifContext(conf, dev);
-}
 
 
 fcGifContext::fcGifContext(fcGifConfig &conf, fcIGraphicsDevice *dev)
@@ -315,5 +310,8 @@ void fcGifContext::eraseFrame(int begin_frame, int end_frame)
 }
 
 
-
+fcCLinkage fcExport fcIGifContext* fcGifCreateContextImpl(fcGifConfig &conf, fcIGraphicsDevice *dev)
+{
+    return new fcGifContext(conf, dev);
+}
 #endif // fcSupportGIF

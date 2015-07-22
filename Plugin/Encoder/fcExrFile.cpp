@@ -1,7 +1,5 @@
 ﻿#include "pch.h"
 #include "FrameCapturer.h"
-#include "fcThreadPool.h"
-#include "fcGraphicsDevice.h"
 
 #ifdef fcSupportEXR
 #include <half.h>
@@ -12,8 +10,12 @@
 #include <ImfStringAttribute.h>
 #include <ImfMatrixAttribute.h>
 #include <ImfArray.h>
+#include "fcFoundation.h"
+#include "fcThreadPool.h"
+#include "GraphicsDevice/fcGraphicsDevice.h"
+#include "fcExrFile.h"
 
-#if defined(fcWindows) && !defined(fcNoAutoLink)
+#ifdef fcWindows
 #pragma comment(lib, "Half.lib")
 #pragma comment(lib, "Iex-2_2.lib")
 #pragma comment(lib, "IexMath-2_2.lib")
@@ -21,8 +23,6 @@
 #pragma comment(lib, "IlmImf-2_2.lib")
 #pragma comment(lib, "zlibstatic.lib")
 #endif
-
-#include "fcExrFile.h"
 
 
 
@@ -62,12 +62,6 @@ private:
 
     void *m_tex_prev;
 };
-
-
-fcIExrContext* fcCreateExrContext(fcExrConfig &conf, fcIGraphicsDevice *dev)
-{
-    return new fcExrContext(conf, dev);
-}
 
 
 fcExrContext::fcExrContext(fcExrConfig &conf, fcIGraphicsDevice *dev)
@@ -185,5 +179,11 @@ void fcExrContext::endFrameTask(fcExrFrameData *exr)
     fout.setFrameBuffer(exr->frame_buffer);
     fout.writePixels(exr->height);
     delete exr;
+}
+
+
+fcCLinkage fcExport fcIExrContext* fcExrCreateContextImpl(fcExrConfig &conf, fcIGraphicsDevice *dev)
+{
+    return new fcExrContext(conf, dev);
 }
 #endif // fcSupportEXR

@@ -37,11 +37,3 @@ public:
     virtual bool writeTexture(void *o_tex, int width, int height, fcETextureFormat format, const void *buf, size_t bufsize) = 0;
 };
 fcCLinkage fcExport fcIGraphicsDevice* fcGetGraphicsDevice();
-int fcGetPixelSize(fcETextureFormat format);
-
-
-template<class IntType>
-inline IntType ceildiv(IntType a, IntType b)
-{
-    return a / b + (a%b == 0 ? 0 : 1);
-}

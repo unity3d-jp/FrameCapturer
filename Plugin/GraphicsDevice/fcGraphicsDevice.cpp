@@ -1,31 +1,8 @@
 ﻿#include "pch.h"
 #include "FrameCapturer.h"
+#include "../fcFoundation.h"
 #include "fcGraphicsDevice.h"
 
-
-int fcGetPixelSize(fcETextureFormat format)
-{
-    switch (format)
-    {
-    case fcE_ARGB32:    return 4;
-
-    case fcE_ARGBHalf:  return 8;
-    case fcE_RGHalf:    return 4;
-    case fcE_RHalf:     return 2;
-
-    case fcE_ARGBFloat: return 16;
-    case fcE_RGFloat:   return 8;
-    case fcE_RFloat:    return 4;
-
-    case fcE_ARGBInt:   return 16;
-    case fcE_RGInt:     return 8;
-    case fcE_RInt:      return 4;
-    
-    default:
-         break;
-    }
-    return 0;
-}
 
 
 fcIGraphicsDevice* fcCreateGraphicsDeviceOpenGL(void *device);
