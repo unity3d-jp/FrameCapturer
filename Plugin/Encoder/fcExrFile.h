@@ -10,6 +10,6 @@ public:
 protected:
     virtual ~fcIExrContext() {}
 };
-typedef fcIExrContext* (*fcCreateExrContextT)(fcExrConfig &conf, fcIGraphicsDevice*);
+typedef fcIExrContext* (*fcExrCreateContextImplT)(fcExrConfig &conf, fcIGraphicsDevice*);
 
 #endif // fcSupportEXR

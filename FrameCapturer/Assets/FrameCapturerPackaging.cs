@@ -10,41 +10,16 @@ using UnityEditor;
 
 public class FrameCapturerPackaging
 {
-    [MenuItem("Assets/FrameCapturer/MakePackage (GIF)")]
-    public static void MakePackage_GIF()
+    [MenuItem("Assets/FrameCapturer/MakePackage")]
+    public static void MakePackage()
     {
         string[] files = new string[]
         {
-"Assets/FrameCapturer/Example/Animation/Camera.anim",
-"Assets/FrameCapturer/Example/Animation/CameraRig.controller",
-"Assets/FrameCapturer/Example/Textures/TestRenderTarget.renderTexture",
-"Assets/FrameCapturer/Prefabs/GifCapturerHUD.prefab",
-"Assets/FrameCapturer/Scripts/FrameCapturer.cs",
-"Assets/FrameCapturer/Scripts/MovieCapturer.cs",
-"Assets/FrameCapturer/Scripts/MovieCapturerHUD.cs",
-"Assets/FrameCapturer/Shaders/CopyFrameBuffer.shader",
-
-"Assets/Plugins/x86_64/FrameCapturer.dll",
-"Assets/Plugins/x86/FrameCapturer.dll",
-
-"Assets/FrameCapturer/Example/GifCapturerExample.unity",
-"Assets/FrameCapturer/Example/GifOffscreenCapturerExample.unity",
-"Assets/FrameCapturer/Scripts/GifCapturer.cs",
-"Assets/FrameCapturer/Scripts/GifOffscreenCapturer.cs",
-
-// TweetMedia
-"Assets/TweetMedia/Examples/Example.unity",
-"Assets/TweetMedia/Prefabs/TweetMedia.prefab",
-"Assets/TweetMedia/Scripts/TweetMedia.cs",
-"Assets/TweetMedia/Scripts/TweetMediaGUI.cs",
-"Assets/TweetMedia/Scripts/TweetMediaPlugin.cs",
-"Assets/Plugins/x86_64/TweetMedia.dll",
-"Assets/Plugins/x86/TweetMedia.dll",
-// TweetMedia Ext
-"Assets/TweetMedia/Prefabs/TweetScreenshot.prefab",
-"Assets/TweetMedia/Scripts/TMExtAttachScreenshot.cs",
+"Assets/FrameCapturer",
+"Assets/TweetMedia",
+"Assets/Plugins",
         };
-        AssetDatabase.ExportPackage(files, "FrameCapturer.unitypackage");
+        AssetDatabase.ExportPackage(files, "FrameCapturer.unitypackage", ExportPackageOptions.Recurse);
     }
 
 

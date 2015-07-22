@@ -45,7 +45,7 @@ public class GifOffscreenCapturer : MovieCapturer
         set { m_recode = value; }
     }
 
-    public override void WriteFile(string path = "", int begin_frame = 0, int end_frame = -1)
+    public override bool WriteFile(string path = "", int begin_frame = 0, int end_frame = -1)
     {
         if (m_gif != IntPtr.Zero)
         {
@@ -53,18 +53,21 @@ public class GifOffscreenCapturer : MovieCapturer
             {
                 path = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
             }
-            FrameCapturer.fcGifWriteFile(m_gif, path, begin_frame, end_frame);
+            return FrameCapturer.fcGifWriteFile(m_gif, path, begin_frame, end_frame);
             print("GifOffscreenCapturer.WriteFile() : " + path);
         }
+        return false;
     }
 
-    public override void WriteMemory(System.IntPtr dst_buf, int begin_frame = 0, int end_frame = -1)
+    public override int WriteMemory(System.IntPtr dst_buf, int begin_frame = 0, int end_frame = -1)
     {
+        int ret = 0;
         if (m_gif != IntPtr.Zero)
         {
-            FrameCapturer.fcGifWriteMemory(m_gif, dst_buf, begin_frame, end_frame);
+            ret = FrameCapturer.fcGifWriteMemory(m_gif, dst_buf, begin_frame, end_frame);
             print("GifOffscreenCapturer.WriteMemry()");
         }
+        return ret;
     }
 
     public override RenderTexture GetScratchBuffer() { return m_scratch_buffer; }

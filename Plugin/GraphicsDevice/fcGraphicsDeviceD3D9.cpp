@@ -1,8 +1,9 @@
 ﻿#include "pch.h"
 #include "FrameCapturer.h"
-#include "fcGraphicsDevice.h"
 
 #ifdef fcSupportD3D9
+#include "fcFoundation.h"
+#include "fcGraphicsDevice.h"
 #include <d3d9.h>
 const int fcD3D9MaxStagingTextures = 32;
 

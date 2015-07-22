@@ -1,8 +1,9 @@
 ﻿#include "pch.h"
 #include "FrameCapturer.h"
-#include "fcGraphicsDevice.h"
 
 #ifdef fcSupportOpenGL
+#include "fcFoundation.h"
+#include "fcGraphicsDevice.h"
 
 #ifndef fcDontForceStaticGLEW
 #define GLEW_STATIC

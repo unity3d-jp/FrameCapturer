@@ -19,6 +19,10 @@ public class TMExtAttachScreenshot : MonoBehaviour
         {
             return TweetMediaPlugin.tmEMediaType.GIF;
         }
+        else if (capturer.GetType() == typeof(MP4Capturer))
+        {
+            return TweetMediaPlugin.tmEMediaType.MP4;
+        }
         return TweetMediaPlugin.tmEMediaType.Unknown;
     }
 
@@ -35,10 +39,10 @@ public class TMExtAttachScreenshot : MonoBehaviour
             {
                 int begin = m_capturer_hud.begin_frame;
                 int end = m_capturer_hud.end_frame;
-                int data_size = capturer.GetExpectedFileSize(begin, end);
-                IntPtr data = Marshal.AllocHGlobal(data_size);
-                capturer.WriteMemory(data, begin, end);
-                m_tweet_media.AddMedia(data, data_size, mtype);
+                int expected_data_size = capturer.GetExpectedFileSize(begin, end);
+                IntPtr data = Marshal.AllocHGlobal(expected_data_size);
+                int actual_data_size = capturer.WriteMemory(data, begin, end);
+                m_tweet_media.AddMedia(data, actual_data_size, mtype);
                 Marshal.FreeHGlobal(data);
             }
         }
