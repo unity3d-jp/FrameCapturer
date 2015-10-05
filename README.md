@@ -1,5 +1,5 @@
+[English](https://translate.google.com/translate?sl=ja&tl=en&u=https://github.com/unity3d-jp/FrameCapturer/) (by Google Translate)
 # FrameCapturer
-[English](README_EN.md)  
 
 フレームバッファの内容をキャプチャして画像や動画に出力する Unity 用のプラグインです。現在アニメ gif と exr への出力に対応しています。
 
@@ -30,6 +30,24 @@ GifCapturerHUD.prefab は機能はともかく見た目は必要最小限のた�
 
 Twitter への投稿機能は、[TweetMedia](https://github.com/unity3d-jp/TweetMedia) によって実現されています。詳しくはそちらをご参照ください。  
 TweetScreenshot.prefab はこちらのパッケージにしかない prefab で、録画した gif を添付する機能が追加された Tweet 用 GUI になっています。
+
+
+## MP4 Capturer
+ゲーム画面をキャプチャして mp4 動画で出力します。  現在実験段階であり、録音、編集、シークなどは未対応です。単純に動画としてキャプチャしてファイルに書き出すことのみできます。  
+使い方は Gif Capturer とほぼ同じで、UI も GifCapturerHUD.prefab をそのまま使えます。  
+
+MP4Capturer を使用する場合、事前に OpenH264 の dll を別途入手してプラグインフォルダ (FrameCapturer.dll と同じフォルダ) に置く必要があります。https://github.com/cisco/openh264/releases/tag/v1.4.0  
+パッケージに同梱していないのはライセンス的な理由があります。
+MP4 の使用には通常ライセンス料が課せられます。しかし、OpenH264 は特定の条件を満たしていればこのライセンス料を免除できるようになっています。その条件は以下のものです。
+
+1. OpenH264 のバイナリはソフトウェア本体とは別にダウンロードするようになっている
+2. ユーザーは OpenH264 を使用するか否かをコントロールできるようになっている
+3. OpenH264 の使用をコントロールする場所に次の一文を明記してある: "OpenH264 Video Codec provided by Cisco Systems, Inc."
+4. これらの条件のライセンスの条文 ( http://www.openh264.org/BINARY_LICENSE.txt 下部) が参照可能になっている
+
+より正確には原文の方を参照ください: http://www.openh264.org/faq.html  
+mp4 キャプチャ機能を備えたゲームをリリースしたい場合も、上記条件を満たさないとライセンス料を課せられる可能性が生じます。  
+いずれ OpenH264 のダウンローダを用意して上記条件を満たしつつユーザーに簡単にインストールできるようにしようと思っています。  
 
 
 ## Exr Capturer  
@@ -110,6 +128,8 @@ Channel は何番目のチャンネルかを指定するもので、0,1,2,3 が�
   https://github.com/unity3d-jp/TweetMedia
 
 ## License
+MIT License:
+
   Copyright (C) 2015 Unity Technologies Japan, G.K.
 
   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
