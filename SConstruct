@@ -27,9 +27,12 @@ inc_dirs = []
 lib_dirs = []
 libs = []
 customs = []
-install_files = {"unity/FrameCapturer/Scripts": glob.glob("FrameCapturer/Assets/FrameCapturer/Scripts/*.cs"),
-                 "unity/FrameCapturer/Prefabs": glob.glob("FrameCapturer/Assets/FrameCapturer/Prefabs/*.prefab"),
-                 "unity/FrameCapturer/Shaders": glob.glob("FrameCapturer/Assets/FrameCapturer/Shaders/*.shader")}
+install_files = {"unity/FrameCapturer": filter(lambda x: os.path.basename(x) != "Example.meta", glob.glob("FrameCapturer/Assets/FrameCapturer/*.meta")),
+                 "unity/FrameCapturer/Plugins": glob.glob("FrameCapturer/Assets/FrameCapturer/Plugins/*.meta"),
+                 "unity/FrameCapturer/Plugins/x86_64": glob.glob("FrameCapturer/Assets/FrameCapturer/Plugins/x86_64*.meta"),
+                 "unity/FrameCapturer/Scripts": glob.glob("FrameCapturer/Assets/FrameCapturer/Scripts/*.cs*"),
+                 "unity/FrameCapturer/Prefabs": glob.glob("FrameCapturer/Assets/FrameCapturer/Prefabs/*.prefab*"),
+                 "unity/FrameCapturer/Shaders": glob.glob("FrameCapturer/Assets/FrameCapturer/Shaders/*.shader*")}
 sources = filter(lambda x: os.path.basename(x) not in ["pch.cpp", "AddLibraryPath.cpp"], glob.glob("Plugin/*.cpp"))
 
 if excons.GetArgument("debug", 0, int):
