@@ -18,6 +18,8 @@ if use_externals:
   # 'mscver' has to be set before excons.MakeBaseEnv is called for the toolchain to be properly setup by SCons
   excons.SetArgument("mscver", "12.0")
 
+cpp11 = excons.GetArgument("c++11", 0, int)
+
 env = excons.MakeBaseEnv()
 
 # I don't know whst this whole PatchLibrary is. Looks like a hack that we don't
@@ -100,8 +102,12 @@ else:
 if sys.platform == "darwin":
   import platform
   vers = map(int, platform.mac_ver()[0].split("."))
-  if vers[0] > 10 or vers[1] >= 9:
+  if cpp11 or (vers[0] > 10 or (vers[0] == 10 and vers[1] >= 9)):
     env.Append(CPPFLAGS=" -std=c++11 -Wno-deprecated-register")
+
+elif sys.platform.startswith("linux"):
+  if cpp11:
+    env.Append(CPPFLAGS=" -std=c++11")
 
 capturer = {"name": "FrameCapturer",
             "type": "dynamicmodule",
