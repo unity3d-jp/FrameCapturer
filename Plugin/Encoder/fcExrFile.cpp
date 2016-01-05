@@ -108,6 +108,22 @@ bool fcExrContext::beginFrame(const char *path, int width, int height)
     return true;
 }
 
+
+// pitch: width * pixel size
+static void fcImageFlipY(void *image_, int width, int height, int pitch)
+{
+    std::vector<char> buf_(pitch);
+    char *image = (char*)image_;
+    char *buf = &buf_[0];
+
+    for (int y = 0; y < height / 2; ++y) {
+        int iy = height - y - 1;
+        memcpy(buf, image + (pitch*y), pitch);
+        memcpy(image + (pitch*y), image + (pitch*iy), pitch);
+        memcpy(image + (pitch*iy), buf, pitch);
+    }
+}
+
 bool fcExrContext::addLayerTexture(void *tex, fcTextureFormat fmt, int channel, const char *name, bool flipY)
 {
     std::string *raw_frame = nullptr;
@@ -129,10 +145,12 @@ bool fcExrContext::addLayerTexture(void *tex, fcTextureFormat fmt, int channel, 
             m_exr->raw_frames.pop_back();
             return false;
         }
+        if (flipY) {
+            fcImageFlipY(&(*raw_frame)[0], m_exr->width, m_exr->height, m_exr->width * fcGetPixelSize(fmt));
+        }
     }
 
     {
-        char *raw_data = &(*raw_frame)[0];
         Imf::PixelType pixel_type = Imf::HALF;
         int channels = 0;
         int tsize = 0;
@@ -148,13 +166,12 @@ bool fcExrContext::addLayerTexture(void *tex, fcTextureFormat fmt, int channel, 
         case fcTextureFormat_RGInt:     pixel_type = Imf::UINT; channels = 2; tsize = 4; break;
         case fcTextureFormat_RInt:      pixel_type = Imf::UINT; channels = 1; tsize = 4; break;
         default:
-        {
             m_exr->raw_frames.pop_back();
             return false;
         }
-        }
         int psize = tsize * channels;
 
+        char *raw_data = &(*raw_frame)[0];
         m_exr->header.channels().insert(name, Imf::Channel(pixel_type));
         m_exr->frame_buffer.insert(name, Imf::Slice(pixel_type, raw_data + (tsize * channel), psize, psize * m_exr->width));
     }
@@ -178,10 +195,12 @@ bool fcExrContext::addLayerPixels(const void *pixels, fcPixelFormat fmt, int cha
         raw_frame = &m_exr->raw_frames.back();
         raw_frame->resize(m_exr->width * m_exr->height * fcGetPixelSize(fmt));
         memcpy(&(*raw_frame)[0], pixels, raw_frame->size());
+        if (flipY) {
+            fcImageFlipY(&(*raw_frame)[0], m_exr->width, m_exr->height, m_exr->width * fcGetPixelSize(fmt));
+        }
     }
 
     {
-        char *raw_data = &(*raw_frame)[0];
         Imf::PixelType pixel_type = Imf::HALF;
         int channels = 0;
         int tsize = 0;
@@ -200,13 +219,12 @@ bool fcExrContext::addLayerPixels(const void *pixels, fcPixelFormat fmt, int cha
         case fcPixelFormat_RGInt:     pixel_type = Imf::UINT; channels = 2; tsize = 4; break;
         case fcPixelFormat_RInt:      pixel_type = Imf::UINT; channels = 1; tsize = 4; break;
         default:
-        {
             m_exr->raw_frames.pop_back();
             return false;
         }
-        }
         int psize = tsize * channels;
 
+        char *raw_data = &(*raw_frame)[0];
         m_exr->header.channels().insert(name, Imf::Channel(pixel_type));
         m_exr->frame_buffer.insert(name, Imf::Slice(pixel_type, raw_data + (tsize * channel), psize, psize * m_exr->width));
     }
