@@ -3,13 +3,12 @@ using System.Collections;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public static class FrameCapturer
 {
-#if UNITY_STANDALONE_WIN
-    [DllImport ("AddLibraryPath")] public static extern void    AddLibraryPath();
-#endif
-
     public struct fcExrConfig
     {
         public int max_active_tasks;
@@ -18,7 +17,7 @@ public static class FrameCapturer
     [DllImport ("FrameCapturer")] public static extern IntPtr   fcExrCreateContext(ref fcExrConfig conf);
     [DllImport ("FrameCapturer")] public static extern void     fcExrDestroyContext(IntPtr ctx);
     [DllImport ("FrameCapturer")] public static extern bool     fcExrBeginFrame(IntPtr ctx, string path, int width, int height);
-    [DllImport ("FrameCapturer")] public static extern bool     fcExrAddLayer(IntPtr ctx, IntPtr tex, RenderTextureFormat f, int ch, string name);
+    [DllImport ("FrameCapturer")] public static extern bool     fcExrAddLayer(IntPtr ctx, IntPtr tex, RenderTextureFormat f, int ch, string name, bool flipY, bool asPixels);
     [DllImport ("FrameCapturer")] public static extern bool     fcExrEndFrame(IntPtr ctx);
 
 
@@ -115,4 +114,36 @@ public static class FrameCapturerUtils
         r.triangles = indices;
         return r;
     }
+
+#if UNITY_EDITOR
+    public static Shader GetFrameBufferCopyShader()
+    {
+        string[] guids = AssetDatabase.FindAssets("CopyFrameBuffer t:shader");
+
+        if (guids.Length >= 1)
+        {
+            if (guids.Length > 1)
+            {
+                foreach (string guid in guids)
+                {
+                    string path = AssetDatabase.GUIDToAssetPath(guid);
+                    
+                    if (path.EndsWith("FrameCapturer/Shaders/CopyFrameBuffer.shader"))
+                    {
+                        return AssetDatabase.LoadAssetAtPath(path, typeof(Shader)) as Shader;
+                    }
+                }
+
+                Debug.LogWarning("Found several shaders named 'CopyFrameBuffer'. Use first found.");
+            }
+            
+            return AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(guids[0]), typeof(Shader)) as Shader;
+        }
+        else
+        {
+            Debug.LogWarning("Could not find 'CopyFrameBuffer' shader");
+            return null;
+        }
+    }
+#endif
 }

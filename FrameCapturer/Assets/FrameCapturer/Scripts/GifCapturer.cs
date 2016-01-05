@@ -32,14 +32,6 @@ public class GifCapturer : MovieCapturer
     int m_frame;
     bool m_recode = false;
 
-    GifCapturer()
-    {
-#if UNITY_STANDALONE_WIN
-        // Plugins/* を dll サーチパスに追加
-        try { FrameCapturer.AddLibraryPath(); } catch { }
-#endif
-    }
-
     public override bool recode
     {
         get { return m_recode; }
@@ -132,7 +124,7 @@ public class GifCapturer : MovieCapturer
 #if UNITY_EDITOR
     void Reset()
     {
-        m_sh_copy = AssetDatabase.LoadAssetAtPath("Assets/FrameCapturer/Shaders/CopyFrameBuffer.shader", typeof(Shader)) as Shader;
+        m_sh_copy = FrameCapturerUtils.GetFrameBufferCopyShader();
     }
 
     void OnValidate()

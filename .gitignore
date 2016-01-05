@@ -30,3 +30,10 @@ obj/
 openh264-*
 FrameCapturer/*.csproj
 FrameCapturer/*.sln
+
+.build/
+release/
+debug/
+dependencies/
+*.dblite
+excons.cache
