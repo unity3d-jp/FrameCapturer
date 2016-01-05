@@ -45,7 +45,7 @@ public class ExrOffscreenCapturer : MonoBehaviour
 #if UNITY_EDITOR
     void Reset()
     {
-        m_sh_copy = AssetDatabase.LoadAssetAtPath("Assets/FrameCapturer/Shaders/CopyFrameBuffer.shader", typeof(Shader)) as Shader;
+        m_sh_copy = FrameCapturerUtils.GetFrameBufferCopyShader();
     }
 #endif // UNITY_EDITOR
 
@@ -114,6 +114,6 @@ public class ExrOffscreenCapturer : MonoBehaviour
     }
     void AddLayer(RenderTexture rt, int ch, string name)
     {
-        FrameCapturer.fcExrAddLayer(m_exr, rt.GetNativeTexturePtr(), rt.format, ch, name);
+        FrameCapturer.fcExrAddLayer(m_exr, rt.GetNativeTexturePtr(), rt.format, ch, name, false, false);
     }
 }

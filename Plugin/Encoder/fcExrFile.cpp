@@ -15,7 +15,7 @@
 #include "GraphicsDevice/fcGraphicsDevice.h"
 #include "fcExrFile.h"
 
-#ifdef fcWindows
+#if defined(fcWindows) && !defined(fcNoAutoLink)
 #pragma comment(lib, "Half.lib")
 #pragma comment(lib, "Iex-2_2.lib")
 #pragma comment(lib, "IexMath-2_2.lib")
@@ -36,7 +36,9 @@ struct fcExrFrameData
 
     fcExrFrameData(const char *p, int w, int h)
         : path(p), width(w), height(h), header(w, h)
-    {}
+    {
+        header.compression() = Imf::ZIPS_COMPRESSION;
+    }
 };
 
 class fcExrContext : public fcIExrContext
@@ -46,7 +48,7 @@ public:
     ~fcExrContext();
     void release() override;
     bool beginFrame(const char *path, int width, int height) override;
-    bool addLayer(void *tex, fcETextureFormat fmt, int channel, const char *name) override;
+    bool addLayer(void *tex, fcETextureFormat fmt, int channel, const char *name, bool flipY, bool asPixels) override;
     bool endFrame() override;
 
 private:
@@ -105,7 +107,7 @@ bool fcExrContext::beginFrame(const char *path, int width, int height)
     return true;
 }
 
-bool fcExrContext::addLayer(void *tex, fcETextureFormat fmt, int channel, const char *name)
+bool fcExrContext::addLayer(void *tex, fcETextureFormat fmt, int channel, const char *name, bool flipY, bool asPixels)
 {
     std::string *raw_frame = nullptr;
 
