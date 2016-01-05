@@ -59,7 +59,7 @@ public:
     void release() override;
 
     bool addVideoFrameTexture(void *tex) override;
-    bool addVideoFramePixels(void *pixels, fcEColorSpace cs) override;
+    bool addVideoFramePixels(void *pixels, fcColorSpace cs) override;
     bool addAudioSamples(const float *samples, int num_samples) override;
     void clearFrame() override;
     bool writeFile(const char *path, int begin_frame, int end_frame) override;
@@ -84,7 +84,7 @@ private:
     void write(std::ostream &os, int begin_frame, int end_frame);
 
 private:
-    fcEMagic m_magic; //  for debug
+    fcMagic m_magic; //  for debug
     fcMP4Config m_conf;
     fcIGraphicsDevice *m_dev;
     std::vector<RawFrameData> m_raw_video_buffers;
@@ -115,7 +115,7 @@ private:
 
 
 fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
-    : m_magic(fcE_MP4Context)
+    : m_magic(fcMagic_MP4Context)
     , m_conf(conf)
     , m_dev(dev)
     , m_video_frame(0)
@@ -164,7 +164,7 @@ fcMP4Context::~fcMP4Context()
         m_audio_condition.notify_all();
         m_audio_worker.join();
     }
-    m_magic = fcE_Deleted;
+    m_magic = fcMagic_Deleted;
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
@@ -304,7 +304,7 @@ bool fcMP4Context::addVideoFrameTexture(void *tex)
     RawFrameData& raw = m_raw_video_buffers[frame % m_conf.video_max_buffers];
 
     // フレームバッファの内容取得
-    if (!m_dev->readTexture(&raw.rgba[0], raw.rgba.size(), tex, m_conf.video_width, m_conf.video_height, fcE_ARGB32))
+    if (!m_dev->readTexture(&raw.rgba[0], raw.rgba.size(), tex, m_conf.video_width, m_conf.video_height, fcTextureFormat_ARGB32))
     {
         --frame;
         return false;
@@ -323,7 +323,7 @@ bool fcMP4Context::addVideoFrameTexture(void *tex)
     return true;
 }
 
-bool fcMP4Context::addVideoFramePixels(void *pixels, fcEColorSpace cs)
+bool fcMP4Context::addVideoFramePixels(void *pixels, fcColorSpace cs)
 {
     if (!m_h264_encoder) { return false; }
     waitOne();
@@ -331,10 +331,10 @@ bool fcMP4Context::addVideoFramePixels(void *pixels, fcEColorSpace cs)
     RawFrameData& raw = m_raw_video_buffers[frame % m_conf.video_max_buffers];
 
     bool rgba2i420 = true;
-    if (cs == fcE_RGBA) {
+    if (cs == fcColorSpace_RGBA) {
         raw.rgba.assign((char*)pixels, raw.rgba.size());
     }
-    else if (cs == fcE_I420) {
+    else if (cs == fcColorSpace_I420) {
         rgba2i420 = false;
 
         int frame_size = m_conf.video_width * m_conf.video_height;
@@ -503,7 +503,7 @@ void fcMP4Context::getFrameData(void *tex, int frame)
     RawFrameData raw;
     raw.allocate(m_conf.video_width, m_conf.video_height);
     // todo: decode
-    m_dev->writeTexture(tex, m_conf.video_width, m_conf.video_height, fcE_ARGB32, &raw.rgba[0], raw.rgba.size());
+    m_dev->writeTexture(tex, m_conf.video_width, m_conf.video_height, fcTextureFormat_ARGB32, &raw.rgba[0], raw.rgba.size());
 }
 
 

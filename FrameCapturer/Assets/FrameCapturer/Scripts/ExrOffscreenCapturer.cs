@@ -114,6 +114,6 @@ public class ExrOffscreenCapturer : MonoBehaviour
     }
     void AddLayer(RenderTexture rt, int ch, string name)
     {
-        FrameCapturer.fcExrAddLayer(m_exr, rt.GetNativeTexturePtr(), rt.format, ch, name, false, false);
+        FrameCapturer.fcExrAddLayerTexture(m_exr, rt.GetNativeTexturePtr(), rt.format, ch, name, false);
     }
 }

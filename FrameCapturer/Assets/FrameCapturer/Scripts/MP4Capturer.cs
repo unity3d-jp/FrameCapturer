@@ -36,13 +36,6 @@ public class MP4Capturer : MovieCapturer
     bool m_recode = false;
 
 
-
-    MP4Capturer()
-    {
-        // Plugins/* を dll サーチパスに追加
-        try { FrameCapturer.AddLibraryPath(); } catch { }
-    }
-
     public override bool recode
     {
         get { return m_recode; }
@@ -61,7 +54,7 @@ public class MP4Capturer : MovieCapturer
             ret = FrameCapturer.fcMP4WriteFile(m_ctx, path, begin_frame, end_frame);
             Debug.Log("MP4Capturer.WriteFile() : " + path);
         }
-        return false;
+        return ret;
     }
 
     public override int WriteMemory(System.IntPtr dst_buf, int begin_frame = 0, int end_frame = -1)

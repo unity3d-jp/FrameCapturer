@@ -63,41 +63,62 @@ class fcIExrContext;
 class fcIGifContext;
 class fcIMP4Context;
 
-enum fcEMagic
+enum fcMagic
 {
-    fcE_Deleted    = 0xDEADBEEF,
-    fcE_ExrContext = 0x10101010,
-    fcE_GifContext = 0x20202020,
-    fcE_MP4Context = 0x30303030,
+    fcMagic_Deleted    = 0xDEADBEEF,
+    fcMagic_ExrContext = 0x10101010,
+    fcMagic_GifContext = 0x20202020,
+    fcMagic_MP4Context = 0x30303030,
 };
 
-enum fcEColorSpace
+enum fcColorSpace
 {
-    fcE_RGBA,
-    fcE_I420,
+    fcColorSpace_RGBA,
+    fcColorSpace_I420,
 };
 
-enum fcETextureFormat
+enum fcPixelFormat
 {
-    fcE_ARGB32 = 0,
-    fcE_Depth = 1,
-    fcE_ARGBHalf = 2,
-    fcE_Shadowmap = 3,
-    fcE_RGB565 = 4,
-    fcE_ARGB4444 = 5,
-    fcE_ARGB1555 = 6,
-    fcE_Default = 7,
-    fcE_ARGB2101010 = 8,
-    fcE_DefaultHDR = 9,
-    fcE_ARGBFloat = 11,
-    fcE_RGFloat = 12,
-    fcE_RGHalf = 13,
-    fcE_RFloat = 14,
-    fcE_RHalf = 15,
-    fcE_R8 = 16,
-    fcE_ARGBInt = 17,
-    fcE_RGInt = 18,
-    fcE_RInt = 19,
+    fcPixelFormat_Unknown,
+    fcPixelFormat_RGBA8,
+    fcPixelFormat_RGB8,
+    fcPixelFormat_RG8,
+    fcPixelFormat_R8,
+    fcPixelFormat_RGBAHalf,
+    fcPixelFormat_RGBHalf,
+    fcPixelFormat_RGHalf,
+    fcPixelFormat_RHalf,
+    fcPixelFormat_RGBAFloat,
+    fcPixelFormat_RGBFloat,
+    fcPixelFormat_RGFloat,
+    fcPixelFormat_RFloat,
+    fcPixelFormat_RGBAInt,
+    fcPixelFormat_RGBInt,
+    fcPixelFormat_RGInt,
+    fcPixelFormat_RInt,
+};
+
+enum fcTextureFormat
+{
+    fcTextureFormat_ARGB32 = 0,
+    fcTextureFormat_Depth = 1,
+    fcTextureFormat_ARGBHalf = 2,
+    fcTextureFormat_Shadowmap = 3,
+    fcTextureFormat_RGB565 = 4,
+    fcTextureFormat_ARGB4444 = 5,
+    fcTextureFormat_ARGB1555 = 6,
+    fcTextureFormat_Default = 7,
+    fcTextureFormat_ARGB2101010 = 8,
+    fcTextureFormat_DefaultHDR = 9,
+    fcTextureFormat_ARGBFloat = 11,
+    fcTextureFormat_RGFloat = 12,
+    fcTextureFormat_RGHalf = 13,
+    fcTextureFormat_RFloat = 14,
+    fcTextureFormat_RHalf = 15,
+    fcTextureFormat_R8 = 16,
+    fcTextureFormat_ARGBInt = 17,
+    fcTextureFormat_RGInt = 18,
+    fcTextureFormat_RInt = 19,
 };
 
 
@@ -109,7 +130,8 @@ struct fcExrConfig
 fcCLinkage fcExport fcIExrContext*  fcExrCreateContext(fcExrConfig *conf);
 fcCLinkage fcExport void            fcExrDestroyContext(fcIExrContext *ctx);
 fcCLinkage fcExport bool            fcExrBeginFrame(fcIExrContext *ctx, const char *path, int width, int height);
-fcCLinkage fcExport bool            fcExrAddLayer(fcIExrContext *ctx, void *tex, fcETextureFormat fmt, int ch, const char *name, bool flipY, bool asPixels);
+fcCLinkage fcExport bool            fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcTextureFormat fmt, int ch, const char *name, bool flipY);
+fcCLinkage fcExport bool            fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name, bool flipY);
 fcCLinkage fcExport bool            fcExrEndFrame(fcIExrContext *ctx);
 
 
@@ -164,7 +186,7 @@ struct fcMP4Config
 fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
 fcCLinkage fcExport void            fcMP4DestroyContext(fcIMP4Context *ctx);
 fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex);
-fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixels, fcEColorSpace cs = fcE_RGBA);
+fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixels, fcColorSpace cs = fcColorSpace_RGBA);
 fcCLinkage fcExport bool            fcMP4AddAudioSamples(fcIMP4Context *ctx, const float *samples, int num_samples);
 fcCLinkage fcExport void            fcMP4ClearFrame(fcIMP4Context *ctx);
 fcCLinkage fcExport bool            fcMP4WriteFile(fcIMP4Context *ctx, const char *path, int begin_frame, int end_frame);

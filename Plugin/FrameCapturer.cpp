@@ -44,10 +44,16 @@ fcCLinkage fcExport bool fcExrBeginFrame(fcIExrContext *ctx, const char *path, i
     return ctx->beginFrame(path, width, height);
 }
 
-fcCLinkage fcExport bool fcExrAddLayer(fcIExrContext *ctx, void *tex, fcETextureFormat fmt, int ch, const char *name)
+fcCLinkage fcExport bool fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcTextureFormat fmt, int ch, const char *name, bool flipY)
 {
     if (!ctx) { return false; }
-    return ctx->addLayer(tex, fmt, ch, name);
+    return ctx->addLayerTexture(tex, fmt, ch, name, flipY);
+}
+
+fcCLinkage fcExport bool fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name, bool flipY)
+{
+    if (!ctx) { return false; }
+    return ctx->addLayerPixels(pixels, fmt, ch, name, flipY);
 }
 
 fcCLinkage fcExport bool fcExrEndFrame(fcIExrContext *ctx)
@@ -183,7 +189,7 @@ fcCLinkage fcExport bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex
     return ctx->addVideoFrameTexture(tex);
 }
 
-fcCLinkage fcExport bool fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixels, fcEColorSpace cs)
+fcCLinkage fcExport bool fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixels, fcColorSpace cs)
 {
     if (!ctx) { return false; }
     return ctx->addVideoFramePixels(pixels, cs);

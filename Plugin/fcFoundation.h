@@ -70,23 +70,50 @@ inline IntType ceildiv(IntType a, IntType b)
 }
 
 
-inline int fcGetPixelSize(fcETextureFormat format)
+inline int fcGetPixelSize(fcTextureFormat format)
 {
     switch (format)
     {
-    case fcE_ARGB32:    return 4;
+    case fcTextureFormat_ARGB32:    return 4;
 
-    case fcE_ARGBHalf:  return 8;
-    case fcE_RGHalf:    return 4;
-    case fcE_RHalf:     return 2;
+    case fcTextureFormat_ARGBHalf:  return 8;
+    case fcTextureFormat_RGHalf:    return 4;
+    case fcTextureFormat_RHalf:     return 2;
 
-    case fcE_ARGBFloat: return 16;
-    case fcE_RGFloat:   return 8;
-    case fcE_RFloat:    return 4;
+    case fcTextureFormat_ARGBFloat: return 16;
+    case fcTextureFormat_RGFloat:   return 8;
+    case fcTextureFormat_RFloat:    return 4;
 
-    case fcE_ARGBInt:   return 16;
-    case fcE_RGInt:     return 8;
-    case fcE_RInt:      return 4;
+    case fcTextureFormat_ARGBInt:   return 16;
+    case fcTextureFormat_RGInt:     return 8;
+    case fcTextureFormat_RInt:      return 4;
+    }
+    return 0;
+}
+
+inline int fcGetPixelSize(fcPixelFormat format)
+{
+    switch (format)
+    {
+    case fcPixelFormat_RGBA8:       return 4;
+    case fcPixelFormat_RGB8:        return 3;
+    case fcPixelFormat_RG8:         return 2;
+    case fcPixelFormat_R8:          return 1;
+
+    case fcPixelFormat_RGBAHalf:    return 8;
+    case fcPixelFormat_RGBHalf:     return 6;
+    case fcPixelFormat_RGHalf:      return 4;
+    case fcPixelFormat_RHalf:       return 2;
+
+    case fcPixelFormat_RGBAFloat:   return 16;
+    case fcPixelFormat_RGBFloat:    return 12;
+    case fcPixelFormat_RGFloat:     return 8;
+    case fcPixelFormat_RFloat:      return 4;
+
+    case fcPixelFormat_RGBAInt:     return 16;
+    case fcPixelFormat_RGBInt:      return 12;
+    case fcPixelFormat_RGInt:       return 8;
+    case fcPixelFormat_RInt:        return 4;
     }
     return 0;
 }
