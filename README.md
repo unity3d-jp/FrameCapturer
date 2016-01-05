@@ -1,7 +1,12 @@
-[English](https://translate.google.com/translate?sl=ja&tl=en&u=https://github.com/unity3d-jp/FrameCapturer/) (by Google Translate)
-# FrameCapturer
 
-フレームバッファの内容をキャプチャして画像や動画に出力する Unity 用のプラグインです。現在アニメ gif と exr への出力に対応しています。
+# FrameCapturer
+[English](https://translate.google.com/translate?sl=ja&tl=en&u=https://github.com/unity3d-jp/FrameCapturer/) (by Google Translate)
+
+フレームバッファの内容をキャプチャして画像や動画に出力する Unity 用のプラグインです。現在アニメ gif, mp4, exr への出力に対応しています。
+- [Gif Capturer](#gif-capturer)
+- [MP4 Capturer](#mp4-capturer)
+- [Exr Capturer](#exr-capturer)
+
 
 ## Gif Capturer
 ゲーム画面をキャプチャしてアニメ gif としてエクスポートします。
@@ -36,7 +41,7 @@ TweetScreenshot.prefab はこちらのパッケージにしかない prefab で�
 ゲーム画面をキャプチャして mp4 動画で出力します。  現在実験段階であり、録音、編集、シークなどは未対応です。単純に動画としてキャプチャしてファイルに書き出すことのみできます。  
 実験段階のためパッケージは用意していませんが、このリポジトリにプラグインが含まれています。使い方は Gif Capturer とほぼ同じで、UI も GifCapturerHUD.prefab をそのまま使えます。  
 
-MP4Capturer を使用する場合、事前に OpenH264 の dll を別途入手してプラグインフォルダ (FrameCapturer.dll と同じフォルダ) に置く必要があります。https://github.com/cisco/openh264/releases/tag/v1.4.0  
+MP4Capturer を使用する場合、事前に OpenH264 の dll を別途入手してプラグインフォルダ (FrameCapturer.dll と同じフォルダ) に置く必要があります。https://github.com/cisco/openh264/releases/tag/v1.5.0  
 リポジトリに含めていないのにはライセンス的な理由があります。
 MP4 の使用には通常ライセンス料が課せられます。しかし、OpenH264 は特定の条件を満たしていればこのライセンス料を免除できるようになっています。その条件は以下のものです。
 
