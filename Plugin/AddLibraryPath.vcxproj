@@ -72,7 +72,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>external;external\alembic-1_05_08\lib;external\ilmbase-2.2.0\Imath;external\ilmbase-2.2.0\IlmThread;external\ilmbase-2.2.0\IexMath;external\ilmbase-2.2.0\Iex;external\ilmbase-2.2.0\Half;external\ilmbase-2.2.0\config;external\hdf5-1.8.14\hl\src;external\hdf5-1.8.14\src;external\hdf5-1.8.14;$(IncludePath)</IncludePath>
-    <LibraryPath>external\libs\x86_64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>external\libs\x86;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -84,7 +84,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>external;external\alembic-1_05_08\lib;external\ilmbase-2.2.0\Imath;external\ilmbase-2.2.0\IlmThread;external\ilmbase-2.2.0\IexMath;external\ilmbase-2.2.0\Iex;external\ilmbase-2.2.0\Half;external\ilmbase-2.2.0\config;external\hdf5-1.8.14\hl\src;external\hdf5-1.8.14\src;external\hdf5-1.8.14;$(IncludePath)</IncludePath>
-    <LibraryPath>external\libs\x86_64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>external\libs\x86;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -96,7 +96,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">
     <IncludePath>external;external\alembic-1_05_08\lib;external\ilmbase-2.2.0\Imath;external\ilmbase-2.2.0\IlmThread;external\ilmbase-2.2.0\IexMath;external\ilmbase-2.2.0\Iex;external\ilmbase-2.2.0\Half;external\ilmbase-2.2.0\config;external\hdf5-1.8.14\hl\src;external\hdf5-1.8.14\src;external\hdf5-1.8.14;$(IncludePath)</IncludePath>
-    <LibraryPath>external\libs\x86_64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>external\libs\x86;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>

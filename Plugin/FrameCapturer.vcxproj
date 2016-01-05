@@ -9,14 +9,6 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="GifOnlyMT|Win32">
-      <Configuration>GifOnlyMT</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="GifOnlyMT|x64">
-      <Configuration>GifOnlyMT</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Master|Win32">
       <Configuration>Master</Configuration>
       <Platform>Win32</Platform>
@@ -48,9 +40,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Master|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|Win32'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -88,17 +78,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|x64'" Label="Configuration">
-    <PlatformToolset>v140</PlatformToolset>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'" Label="Configuration">
-    <PlatformToolset>v140</PlatformToolset>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|Win32'" Label="Configuration">
     <PlatformToolset>v140</PlatformToolset>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -137,27 +117,15 @@
     <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|x64'">
-    <IncludePath>external;external\glew;$(ProjectDir);$(IncludePath)</IncludePath>
-    <LibraryPath>external\libs\x86_64mt;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">
     <IncludePath>external;external\glew;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\x86;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|Win32'">
-    <IncludePath>external;external\glew;$(ProjectDir);$(IncludePath)</IncludePath>
-    <LibraryPath>external\libs\x86mt;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
-  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86_64\
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\FrameCapturer\Plugins\x86_64\
 $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /patch:$(TargetPath)</Command>
     </PostBuildEvent>
     <ClCompile>
@@ -177,7 +145,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86\</Command>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\FrameCapturer\Plugins\x86\</Command>
     </PostBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -196,7 +164,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86_64\
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\FrameCapturer\Plugins\x86_64\
 $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /patch:$(TargetPath)</Command>
     </PostBuildEvent>
     <ClCompile>
@@ -216,7 +184,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86\</Command>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\FrameCapturer\Plugins\x86\</Command>
     </PostBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -235,7 +203,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Master|x64'">
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86_64\</Command>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\FrameCapturer\Plugins\x86_64\</Command>
     </PostBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -259,30 +227,9 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
       <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|x64'">
-    <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86_64\</Command>
-    </PostBuildEvent>
-    <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>fcSupportGIF;fcSupportMP4;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcMaster;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-    </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86\</Command>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\FrameCapturer\Plugins\x86\</Command>
     </PostBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -297,27 +244,6 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-    </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|Win32'">
-    <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86\</Command>
-    </PostBuildEvent>
-    <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>fcSupportGIF;fcSupportMP4;fcSupportMP4;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcMaster;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

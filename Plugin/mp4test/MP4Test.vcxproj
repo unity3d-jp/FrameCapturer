@@ -9,14 +9,6 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="GifOnlyMT|Win32">
-      <Configuration>GifOnlyMT</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="GifOnlyMT|x64">
-      <Configuration>GifOnlyMT</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Master|Win32">
       <Configuration>Master</Configuration>
       <Platform>Win32</Platform>
@@ -69,17 +61,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|x64'" Label="Configuration">
-    <PlatformToolset>v140</PlatformToolset>
-    <ConfigurationType>Application</ConfigurationType>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'" Label="Configuration">
-    <PlatformToolset>v140</PlatformToolset>
-    <ConfigurationType>Application</ConfigurationType>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|Win32'" Label="Configuration">
     <PlatformToolset>v140</PlatformToolset>
     <ConfigurationType>Application</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -118,19 +100,7 @@
     <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|x64'">
-    <IncludePath>$(SolutionDir)external;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)external\libs\x86_64mt;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">
-    <IncludePath>$(SolutionDir)external;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)external\libs\x86mt;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|Win32'">
     <IncludePath>$(SolutionDir)external;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)external\libs\x86mt;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
@@ -231,24 +201,6 @@
       <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|x64'">
-    <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>fcSupportGIF;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcMaster;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-    </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -263,24 +215,6 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-    </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='GifOnlyMT|Win32'">
-    <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>fcSupportGIF;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcMaster;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
