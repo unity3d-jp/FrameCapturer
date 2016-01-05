@@ -33,7 +33,7 @@ private:
     void write(std::ostream &os, int begin_frame, int end_frame);
 
 private:
-    fcEMagic m_magic; //  for debug
+    fcMagic m_magic; //  for debug
     fcGifConfig m_conf;
     fcIGraphicsDevice *m_dev;
     std::vector<std::string> m_raw_buffers;
@@ -46,7 +46,7 @@ private:
 
 
 fcGifContext::fcGifContext(fcGifConfig &conf, fcIGraphicsDevice *dev)
-    : m_magic(fcE_GifContext)
+    : m_magic(fcMagic_GifContext)
     , m_conf(conf)
     , m_dev(dev)
     , m_frame(0)
@@ -56,7 +56,7 @@ fcGifContext::fcGifContext(fcGifConfig &conf, fcIGraphicsDevice *dev)
     m_raw_buffers.resize(m_conf.max_active_tasks);
     for (auto& rf : m_raw_buffers)
     {
-        rf.resize(m_conf.width * m_conf.height * fcGetPixelSize(fcE_ARGB32));
+        rf.resize(m_conf.width * m_conf.height * fcGetPixelSize(fcTextureFormat_ARGB32));
     }
 }
 
@@ -64,7 +64,7 @@ fcGifContext::~fcGifContext()
 {
     m_tasks.wait();
     jo_gif_end(&m_gif);
-    m_magic = fcE_Deleted;
+    m_magic = fcMagic_Deleted;
 }
 
 
@@ -143,7 +143,7 @@ bool fcGifContext::addFrame(void *tex)
 
     // フレームバッファの内容取得
     std::string& raw_buffer = m_raw_buffers[frame % m_conf.max_active_tasks];
-    if (!m_dev->readTexture(&raw_buffer[0], raw_buffer.size(), tex, m_conf.width, m_conf.height, fcE_ARGB32))
+    if (!m_dev->readTexture(&raw_buffer[0], raw_buffer.size(), tex, m_conf.width, m_conf.height, fcTextureFormat_ARGB32))
     {
         --frame;
         return false;
@@ -264,7 +264,7 @@ void fcGifContext::getFrameData(void *tex, int frame)
     std::string raw_pixels;
     raw_pixels.resize(m_conf.width * m_conf.height * 4);
     jo_gif_decode(&raw_pixels[0], fdata, palette);
-    m_dev->writeTexture(tex, m_gif.width, m_gif.height, fcE_ARGB32, &raw_pixels[0], raw_pixels.size());
+    m_dev->writeTexture(tex, m_gif.width, m_gif.height, fcTextureFormat_ARGB32, &raw_pixels[0], raw_pixels.size());
 }
 
 

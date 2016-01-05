@@ -6,7 +6,7 @@ public:
     virtual void release() = 0;
 
     virtual bool addVideoFrameTexture(void *tex) = 0;
-    virtual bool addVideoFramePixels(void *pixels, fcEColorSpace cs) = 0;
+    virtual bool addVideoFramePixels(void *pixels, fcColorSpace cs) = 0;
     virtual bool addAudioSamples(const float *samples, int num_samples) = 0;
     virtual void clearFrame() = 0;
     virtual bool writeFile(const char *path, int begin_frame, int end_frame) = 0;

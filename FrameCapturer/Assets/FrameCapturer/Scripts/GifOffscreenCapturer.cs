@@ -46,7 +46,6 @@ public class GifOffscreenCapturer : MovieCapturer
                 path = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
             }
             return FrameCapturer.fcGifWriteFile(m_gif, path, begin_frame, end_frame);
-            print("GifOffscreenCapturer.WriteFile() : " + path);
         }
         return false;
     }
