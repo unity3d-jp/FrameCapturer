@@ -7,12 +7,12 @@
 
 #ifdef fcWindows
     #if defined(_M_AMD64)
-        #define OpenH264DLL "openh264-1.4.0-win64msvc.dll"
+        #define OpenH264DLL "openh264-1.5.0-win64msvc.dll"
     #elif defined(_M_IX86)
-        #define OpenH264DLL "openh264-1.4.0-win32msvc.dll"
+        #define OpenH264DLL "openh264-1.5.0-win32msvc.dll"
     #endif
 #else 
-#define "libopenh264-1.4.0-osx64.dylib"
+#define "libopenh264-1.5.0-osx64.dylib"
 #endif
 
 namespace {

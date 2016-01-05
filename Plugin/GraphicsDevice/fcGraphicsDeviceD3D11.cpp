@@ -105,7 +105,7 @@ ID3D11Texture2D* fcGraphicsDeviceD3D11::findOrCreateStagingTexture(int width, in
     }
 
     D3D11_TEXTURE2D_DESC desc = {
-        width, height, 1, 1, internal_format, { 1, 0 },
+        (UINT)width, (UINT)height, 1, 1, internal_format, { 1, 0 },
         D3D11_USAGE_STAGING, 0, D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE, 0
     };
     ID3D11Texture2D *ret = nullptr;
