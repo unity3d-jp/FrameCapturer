@@ -238,3 +238,52 @@ fcCLinkage fcExport void fcMP4EraseFrame(fcIMP4Context *ctx, int begin_frame, in
 }
 
 #endif // fcSupportMP4
+
+
+#ifdef fcWindows
+
+BOOL WINAPI DllMain(HINSTANCE module_handle, DWORD reason_for_call, LPVOID reserved)
+{
+    if (reason_for_call == DLL_PROCESS_ATTACH)
+    {
+        static bool s_is_first = true;
+        if (s_is_first) {
+            s_is_first = false;
+
+            // add dll search path to load additional modules (FrameCapturer_MP4.dll etc).
+            // get path of this module and add it to PATH environment variable
+            std::string path;
+            path.resize(1024 * 64);
+
+            DWORD ret = ::GetEnvironmentVariableA("PATH", &path[0], path.size());
+            path.resize(ret);
+            {
+                char path_to_this_module[MAX_PATH];
+                HMODULE mod = 0;
+                ::GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCSTR)&DllMain, &mod);
+                DWORD size = ::GetModuleFileNameA(mod, path_to_this_module, sizeof(path_to_this_module));
+                for (int i = size - 1; i >= 0; --i) {
+                    if (path_to_this_module[i] == '\\') {
+                        path_to_this_module[i] = '\0';
+                        break;
+                    }
+                }
+                path += ";";
+                path += path_to_this_module;
+            }
+            ::SetEnvironmentVariableA("PATH", path.c_str());
+        }
+    }
+    else if (reason_for_call == DLL_PROCESS_DETACH)
+    {
+    }
+    return TRUE;
+}
+
+// prevent "DllMain already defined in MSVCRT.lib"
+#ifdef _X86_
+extern "C" { int _afxForceUSRDLL; }
+#else
+extern "C" { int __afxForceUSRDLL; }
+#endif
+#endif // fcWindows
