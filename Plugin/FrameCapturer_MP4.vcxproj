@@ -123,7 +123,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86_64\
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\FrameCapturer\Plugins\x86_64\
 $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /patch:$(TargetPath)</Command>
     </PostBuildEvent>
     <ClCompile>
@@ -143,7 +143,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86\</Command>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\FrameCapturer\Plugins\x86\</Command>
     </PostBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -162,7 +162,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86_64\
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\FrameCapturer\Plugins\x86_64\
 $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /patch:$(TargetPath)</Command>
     </PostBuildEvent>
     <ClCompile>
@@ -182,7 +182,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86\</Command>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\FrameCapturer\Plugins\x86\</Command>
     </PostBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -201,7 +201,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Master|x64'">
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86_64\</Command>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\FrameCapturer\Plugins\x86_64\</Command>
     </PostBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -227,7 +227,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\Plugins\x86\</Command>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\FrameCapturer\Plugins\x86\</Command>
     </PostBuildEvent>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
