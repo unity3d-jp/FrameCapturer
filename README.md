@@ -2,7 +2,9 @@
 # FrameCapturer
 [English](https://translate.google.com/translate?sl=ja&tl=en&u=https://github.com/unity3d-jp/FrameCapturer/) (by Google Translate)
 
-フレームバッファの内容をキャプチャして画像や動画に出力する Unity 用のプラグインです。現在アニメ gif, mp4, exr への出力に対応しています。
+フレームバッファの内容をキャプチャして画像や動画に出力する Unity 用のプラグインです。アニメ gif, mp4, exr への出力に対応しています。現在は Windows 専用となっています。(ソースレベルでは Mac や Linux でもビルドできて動くはずですが、未確認です)  
+使用するにはまずこのパッケージをプロジェクトにインポートしてください: [FrameCapturer.unitypackage](https://github.com/unity3d-jp/FrameCapturer/blob/master/Packages/FrameCapturer.unitypackage?raw=true)  
+以下は各コンポーネントの説明になります。
 - [Gif Capturer](#gif-capturer)
 - [MP4 Capturer](#mp4-capturer)
 - [Exr Capturer](#exr-capturer)
@@ -10,7 +12,7 @@
 
 ## Gif Capturer
 ゲーム画面をキャプチャしてアニメ gif としてエクスポートします。
-常時録画して後で面白いカットを切り出してファイルに出力する、というような使い方を想定しています。録画解像度はかなり小さめ (横 300 pixel 程度) を推奨しています。解像度に比例してすごい勢いで処理が重くなり、等倍での録画ともなるとリアルタイム処理は絶望的です。
+常時録画して後で面白いカットを切り出してファイルに出力する、というような使い方を想定しています。録画解像度はかなり小さめ (横 300 pixel 程度) を推奨しています。解像度に比例してすごい勢いで処理が重くなるため、等倍での録画をリアルタイムで行うのは絶望的です。
 
 以下のような機能を備えています。
 - 直近 N フレームをメモリに残し、後で指定部分だけをファイルに出力 (=ShadowPlay や PS4 と似た録画方法)
@@ -26,11 +28,10 @@
 ![gif_example1](Screenshots/gif_example1.gif)  
 
 ### 使い方
-1. [このパッケージ](https://github.com/unity3d-jp/FrameCapturer/blob/master/Packages/FrameCapturer.unitypackage?raw=true)をインポート
-2. 録画したいカメラに GifCapturer コンポーネントを追加
-3. uGUI オブジェクト GifCapturerHUD.prefab をどこかに配置し、それの capturer に 2 で追加したコンポーネントを設定
+1. 録画したいカメラに GifCapturer コンポーネントを追加
+2. uGUI オブジェクト GifCapturerHUD.prefab をどこかに配置し、それの capturer に 2 で追加したコンポーネントを設定
 
-3 は必須ではありませんが、GifCapturer には録画の on/off 切り替えやファイルへの書き出しなどをコントロールするための GUI やスクリプトが必要になります。
+2 は必須ではありませんが、GifCapturer には録画の on/off 切り替えやファイルへの書き出しなどをコントロールするための GUI やスクリプトが必要になります。
 GifCapturerHUD.prefab は機能はともかく見た目は必要最小限のため、これを使う場合も独自に改良した方がいいでしょう。
 
 Twitter への投稿機能は、[TweetMedia](https://github.com/unity3d-jp/TweetMedia) によって実現されています。詳しくはそちらをご参照ください。  
@@ -39,11 +40,11 @@ TweetScreenshot.prefab はこちらのパッケージにしかない prefab で�
 
 ## MP4 Capturer
 ゲーム画面をキャプチャして mp4 動画で出力します。  現在実験段階であり、録音、編集、シークなどは未対応です。単純に動画としてキャプチャしてファイルに書き出すことのみできます。  
-実験段階のためパッケージは用意していませんが、このリポジトリにプラグインが含まれています。使い方は Gif Capturer とほぼ同じで、UI も GifCapturerHUD.prefab をそのまま使えます。  
+使い方は Gif Capturer とほぼ同じ (コンポーネントが MP4Capturer に変わっただけ) で、UI も GifCapturerHUD.prefab をそのまま使えます。  
 
-MP4Capturer を使用する場合、事前に OpenH264 の dll を別途入手してプラグインフォルダ (FrameCapturer.dll と同じフォルダ) に置く必要があります。https://github.com/cisco/openh264/releases/tag/v1.5.0  
-リポジトリに含めていないのにはライセンス的な理由があります。
-MP4 の使用には通常ライセンス料が課せられます。しかし、OpenH264 は特定の条件を満たしていればこのライセンス料を免除できるようになっています。その条件は以下のものです。
+**MP4Capturer を使用する場合、事前に OpenH264 の dll を別途入手してプラグインフォルダ (FrameCapturer.dll と同じフォルダ) に置く必要があります**。https://github.com/cisco/openh264/releases/tag/v1.5.0 このページから openh264-1.5.0-win32msvc.dll.bz2 openh264-1.5.0-win64msvc.dll.bz2 を入手、解凍してプラグインフォルダに置いてください。   
+パッケージに含めていないのにはライセンス的な理由があります。
+MP4 の使用には通常ライセンス料が課せられます。しかし、OpenH264 は特定の条件を満たしていればこのライセンス料を免除できるようになっています。その条件は以下のようなものです。
 
 1. OpenH264 のバイナリはソフトウェア本体とは別にダウンロードするようになっている
 2. ユーザーは OpenH264 を使用するか否かをコントロールできるようになっている

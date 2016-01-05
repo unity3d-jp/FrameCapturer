@@ -8,14 +8,13 @@
 *.suo
 *.sdf
 *.opensdf
+*.opendb
 *.user
 *.log
 *.tlog
 *.mp4
 *.h264
 *.exr
-
-openh264-*
 
 _out/
 _tmp/
@@ -24,4 +23,10 @@ Temp/
 Build/
 Hidden/
 Hidden.meta
+_Hidden/
+_Hidden.meta
 obj/
+
+openh264-*
+FrameCapturer/*.csproj
+FrameCapturer/*.sln
