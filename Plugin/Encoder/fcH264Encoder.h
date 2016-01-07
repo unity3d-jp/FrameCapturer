@@ -1,8 +1,6 @@
 ﻿#ifndef fcMP4Encoder_h
 #define fcMP4Encoder_h
 
-#include <string>
-
 class ISVCEncoder;
 
 class fcH264Encoder
@@ -40,5 +38,8 @@ private:
     int m_height;
 };
 
+
+typedef void(*fcDownloadCallback)(bool is_complete, const char *status);
+typedef bool (*fcMP4DownloadCodecImplT)(fcDownloadCallback cb);
 
 #endif // fcMP4Encoder_h

@@ -39,7 +39,13 @@ public class MP4Capturer : MovieCapturer
     public override bool recode
     {
         get { return m_recode; }
-        set { m_recode = value; }
+        set {
+            m_recode = value;
+            if(m_recode && m_ctx.ptr == IntPtr.Zero)
+            {
+                ResetRecordingState();
+            }
+        }
     }
 
     public override bool WriteFile(string path = "", int begin_frame = 0, int end_frame = -1)
@@ -128,7 +134,7 @@ public class MP4Capturer : MovieCapturer
         FrameCapturer.fcMP4GetFrameData(m_ctx, rt.GetNativeTexturePtr(), frame);
     }
 
-    public FrameCapturer.fcMP4Context GetGifContext() { return m_ctx; }
+    public FrameCapturer.fcMP4Context GetMP4Context() { return m_ctx; }
 
 #if UNITY_EDITOR
     void Reset()
@@ -136,6 +142,11 @@ public class MP4Capturer : MovieCapturer
         m_sh_copy = AssetDatabase.LoadAssetAtPath("Assets/FrameCapturer/Shaders/CopyFrameBuffer.shader", typeof(Shader)) as Shader;
     }
 #endif // UNITY_EDITOR
+
+    void Start()
+    {
+        FrameCapturer.fcMP4DownloadCodec(null);
+    }
 
     void OnEnable()
     {

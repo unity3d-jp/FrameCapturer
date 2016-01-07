@@ -103,6 +103,8 @@ public static class FrameCapturer
     {
         public IntPtr ptr;
     }
+    public delegate void fcDownloadCallback(bool is_complete, IntPtr message);
+    [DllImport ("FrameCapturer")] public static extern bool         fcMP4DownloadCodec(fcDownloadCallback cb);
     [DllImport ("FrameCapturer")] public static extern fcMP4Context fcMP4CreateContext(ref fcMP4Config conf);
     [DllImport ("FrameCapturer")] public static extern void         fcMP4DestroyContext(fcMP4Context ctx);
     [DllImport ("FrameCapturer")] public static extern bool         fcMP4AddVideoFrameTexture(fcMP4Context ctx, IntPtr tex);

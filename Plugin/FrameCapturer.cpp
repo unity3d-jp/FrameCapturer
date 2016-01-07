@@ -151,29 +151,50 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
 
 
 #ifdef fcSupportMP4
+#include "Encoder/fcH264Encoder.h"
 #include "Encoder/fcMP4File.h"
 
 #ifdef fcMP4SplitModule
     #define fcMP4ModuleName  "FrameCapturer_MP4" fcModuleExt
     static module_t fcMP4Module;
+    static fcMP4DownloadCodecImplT fcMP4DownloadCodecImpl;
     static fcMP4CreateContextImplT fcMP4CreateContextImpl;
 #else
+    fcCLinkage fcExport bool fcMP4DownloadCodecImpl(fcDownloadCallback cb)
     fcCLinkage fcExport fcIMP4Context* fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev);
 #endif
+
+#ifdef fcMP4SplitModule
+static void fcMP4InitializeModule()
+{
+    if (!fcMP4Module) {
+        fcMP4Module = module_load(fcMP4ModuleName);
+        if (fcMP4Module) {
+            (void*&)fcMP4DownloadCodecImpl = module_getsymbol(fcMP4Module, "fcMP4DownloadCodecImpl");
+            (void*&)fcMP4CreateContextImpl = module_getsymbol(fcMP4Module, "fcMP4CreateContextImpl");
+        }
+    }
+}
+#endif // fcMP4SplitModule
+
+fcCLinkage fcExport bool fcMP4DownloadCodec(fcDownloadCallback cb)
+{
+#ifdef fcMP4SplitModule
+    fcMP4InitializeModule();
+    return fcMP4DownloadCodecImpl ? fcMP4DownloadCodecImpl(cb) : false;
+#else
+    return fcMP4DownloadCodecImpl(cb);
+#endif
+}
 
 
 fcCLinkage fcExport fcIMP4Context* fcMP4CreateContext(fcMP4Config *conf)
 {
 #ifdef fcMP4SplitModule
-    if (!fcMP4Module) {
-        fcMP4Module = module_load(fcMP4ModuleName);
-        if (fcMP4Module) {
-            (void*&)fcMP4CreateContextImpl = module_getsymbol(fcMP4Module, "fcMP4CreateContextImpl");
-        }
-    }
+    fcMP4InitializeModule();
     return fcMP4CreateContextImpl ? fcMP4CreateContextImpl(*conf, fcGetGraphicsDevice()) : nullptr;
 #else
-    fcMP4CreateContextImpl(*conf, fcGetGraphicsDevice());
+    return fcMP4CreateContextImpl(*conf, fcGetGraphicsDevice());
 #endif
 }
 

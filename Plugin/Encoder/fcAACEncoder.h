@@ -1,8 +1,6 @@
 ﻿#ifndef fcAACEncoder_h
 #define fcAACEncoder_h
 
-#include <string>
-
 
 class fcAACEncoder
 {

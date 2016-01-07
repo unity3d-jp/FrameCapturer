@@ -11,7 +11,7 @@
 #include "fcAACEncoder.h"
 #include "fcMP4Muxer.h"
 #ifdef fcWindows
-#pragma comment(lib, "yuv.lib")
+    #pragma comment(lib, "yuv.lib")
 #endif
 
 
