@@ -183,6 +183,9 @@ struct fcMP4Config
         , audio_sampling_rate(48000), audio_num_channels(2), audio_bitrate(64000)
     {}
 };
+typedef void(*fcDownloadCallback)(bool is_complete, const char *status);
+fcCLinkage fcExport bool            fcMP4DownloadCodec(fcDownloadCallback cb);
+
 fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
 fcCLinkage fcExport void            fcMP4DestroyContext(fcIMP4Context *ctx);
 fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex);
