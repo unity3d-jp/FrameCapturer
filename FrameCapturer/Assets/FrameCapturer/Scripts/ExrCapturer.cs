@@ -77,6 +77,7 @@ public class ExrCapturer : MonoBehaviour
             m_frame_buffer.Create();
         }
 
+#if UNITY_EDITOR
         if (m_capture_gbuffer &&
             m_cam.renderingPath != RenderingPath.DeferredShading &&
             (m_cam.renderingPath == RenderingPath.UsePlayerSettings && PlayerSettings.renderingPath != RenderingPath.DeferredShading))
@@ -84,7 +85,9 @@ public class ExrCapturer : MonoBehaviour
             Debug.Log("ExrCapturer: Rendering path must be deferred to use capture_gbuffer mode.");
             m_capture_gbuffer = false;
         }
-        if(m_capture_gbuffer)
+#endif // UNITY_EDITOR
+
+        if (m_capture_gbuffer)
         {
             m_gbuffer = new RenderTexture[4];
             m_rt_gbuffer = new RenderBuffer[4];
