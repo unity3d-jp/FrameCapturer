@@ -20,7 +20,7 @@ public class MP4Capturer : MovieCapturer
     public int m_frame_rate = 30;
     public int m_max_frame = 1800;
     public int m_keyframe = 60;
-    public int m_video_bitrate = 264000;
+    public int m_video_bitrate = 1024000;
     public int m_audio_bitrate = 64000;
     public int m_max_data_size = 0;
     public int m_max_active_tasks = 0;
