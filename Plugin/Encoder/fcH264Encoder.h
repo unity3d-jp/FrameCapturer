@@ -15,14 +15,13 @@ public:
         FrameType_Skip,       ///< skip the frame based encoder kernel
         FrameType_IPMixed     ///< a frame where I and P slices are mixing, not supported yet
     };
-    struct Result
+    struct FrameData
     {
-        void *data;
-        int size;
+        DataRef buf;
         FrameType type;
 
-        Result(void *d = nullptr, int s = 0, FrameType t = FrameType_Invalid)
-            : data(d), size(s), type(t) {}
+        FrameData(void *d = nullptr, int s = 0, FrameType t = FrameType_Invalid)
+            : buf(d, s), type(t) {}
     };
 
     static bool loadModule();
@@ -30,7 +29,7 @@ public:
     fcH264Encoder(int width, int height, float frame_rate, int target_bitrate);
     ~fcH264Encoder();
     operator bool() const;
-    Result encodeI420(const void *src_y, const void *src_u, const void *src_v);
+    FrameData encodeI420(const void *src_y, const void *src_u, const void *src_v);
 
 private:
     ISVCEncoder *m_encoder;

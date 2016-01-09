@@ -108,9 +108,9 @@ fcAACEncoder::operator bool() const
     return loadModule();
 }
 
-fcAACEncoder::Result fcAACEncoder::encode(const float *samples, int num_samples)
+Buffer fcAACEncoder::encode(const float *samples, int num_samples)
 {
-    if (!loadModule()) { return Result(); }
+    if (!loadModule()) { return Buffer(); }
 
     m_aac_buf.clear();
     m_aac_tmp_buf.resize(m_output_size);
@@ -122,7 +122,7 @@ fcAACEncoder::Result fcAACEncoder::encode(const float *samples, int num_samples)
         num_samples -= process_size;
         if (num_samples <= 0) { break; }
     }
-    return Result(&m_aac_buf[0], m_aac_buf.size());
+    return Buffer(&m_aac_buf[0], m_aac_buf.size());
 }
 
 const std::string& fcAACEncoder::getHeader()

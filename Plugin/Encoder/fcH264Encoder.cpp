@@ -212,9 +212,9 @@ fcH264Encoder::operator bool() const
 }
 
 
-fcH264Encoder::Result fcH264Encoder::encodeI420(const void *src_y, const void *src_u, const void *src_v)
+fcH264Encoder::FrameData fcH264Encoder::encodeI420(const void *src_y, const void *src_u, const void *src_v)
 {
-    if (!m_encoder) { return Result(); }
+    if (!m_encoder) { return FrameData(); }
 
     SSourcePicture src;
     memset(&src, 0, sizeof(src));
@@ -233,10 +233,10 @@ fcH264Encoder::Result fcH264Encoder::encodeI420(const void *src_y, const void *s
 
     int ret = m_encoder->EncodeFrame(&src, &dst);
     if (ret == 0) {
-        return Result(
+        return FrameData(
             dst.sLayerInfo[0].pBsBuf,
             dst.iFrameSizeInBytes,
             (FrameType)dst.eFrameType);
     }
-    return Result();
+    return FrameData();
 }

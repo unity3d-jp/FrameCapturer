@@ -20,5 +20,8 @@
     <Filter Include="Encoder">
       <UniqueIdentifier>{48802eb2-d965-4472-acfa-f45fccdf33ac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Foundation">
+      <UniqueIdentifier>{7855f090-05c2-4b32-bf28-25c6b4919c35}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

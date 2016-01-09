@@ -39,5 +39,8 @@
     <Filter Include="Encoder">
       <UniqueIdentifier>{48802eb2-d965-4472-acfa-f45fccdf33ac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Foundation">
+      <UniqueIdentifier>{c863ed7a-e964-489f-9599-5197cdbbe7f4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
