@@ -14,6 +14,9 @@
     <ClCompile Include="Encoder\fcAACEncoder.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
+    <ClCompile Include="Encoder\fcMP4FileStream.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FrameCapturer.h" />
@@ -21,7 +24,6 @@
     <ClInclude Include="Encoder\fcMP4File.h">
       <Filter>Encoder</Filter>
     </ClInclude>
-    <ClInclude Include="fcFoundation.h" />
     <ClInclude Include="Encoder\fcMP4Muxer.h">
       <Filter>Encoder</Filter>
     </ClInclude>
@@ -31,10 +33,22 @@
     <ClInclude Include="Encoder\fcAACEncoder.h">
       <Filter>Encoder</Filter>
     </ClInclude>
+    <ClInclude Include="Foundation\Misc.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="Foundation\Buffer.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="Foundation\fcFoundation.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Encoder">
       <UniqueIdentifier>{48802eb2-d965-4472-acfa-f45fccdf33ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Foundation">
+      <UniqueIdentifier>{4892a6a3-8561-4571-93db-60975b283444}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

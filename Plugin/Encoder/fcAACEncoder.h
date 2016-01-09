@@ -5,21 +5,12 @@
 class fcAACEncoder
 {
 public:
-    struct Result
-    {
-        void *data;
-        int size;
-
-        Result(void *d = nullptr, int s = 0)
-            : data(d), size(s) {}
-    };
-
     static bool loadModule();
 
     fcAACEncoder(int sampling_rate, int num_channels, int bitrate);
     ~fcAACEncoder();
     operator bool() const;
-    Result encode(const float *samples, int num_samples);
+    Buffer encode(const float *samples, int num_samples);
     const std::string& getHeader();
 
 private:
