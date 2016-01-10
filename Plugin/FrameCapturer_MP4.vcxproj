@@ -45,6 +45,7 @@
     <ClInclude Include="Encoder\fcAACEncoder.h" />
     <ClInclude Include="Encoder\fcH264Encoder.h" />
     <ClInclude Include="Encoder\fcMP4File.h" />
+    <ClInclude Include="Encoder\fcMP4Internal.h" />
     <ClInclude Include="Encoder\fcMP4Muxer.h" />
     <ClInclude Include="Foundation\Buffer.h" />
     <ClInclude Include="Foundation\fcFoundation.h" />
