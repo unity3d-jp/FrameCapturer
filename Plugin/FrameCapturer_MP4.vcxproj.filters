@@ -42,6 +42,9 @@
     <ClInclude Include="Foundation\fcFoundation.h">
       <Filter>Foundation</Filter>
     </ClInclude>
+    <ClInclude Include="Encoder\fcMP4Internal.h">
+      <Filter>Encoder</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Encoder">

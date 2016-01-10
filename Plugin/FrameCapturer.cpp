@@ -219,7 +219,7 @@ fcCLinkage fcExport bool fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixe
 fcCLinkage fcExport bool fcMP4AddAudioSamples(fcIMP4Context *ctx, const float *samples, int num_samples)
 {
     if (!ctx) { return false; }
-    return ctx->addAudioSamples(samples, num_samples);
+    return ctx->addAudioFrame(samples, num_samples);
 }
 
 fcCLinkage fcExport void fcMP4ClearFrame(fcIMP4Context *ctx)

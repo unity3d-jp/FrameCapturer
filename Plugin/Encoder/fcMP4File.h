@@ -1,21 +1,30 @@
 ﻿#ifdef fcSupportMP4
 
+
 class fcIMP4Context
 {
 public:
     virtual void release() = 0;
 
-    virtual bool addVideoFrameTexture(void *tex) = 0; // assume texture format is RGBA8
-    virtual bool addVideoFramePixels(void *pixels, fcColorSpace cs) = 0; // assume pixel format is RGBA8 or I420
-    virtual bool addAudioSamples(const float *samples, int num_samples) = 0;
-    virtual void clearFrame() = 0;
-    virtual bool writeFile(const char *path, int begin_frame, int end_frame) = 0;
-    virtual int  writeMemory(void *buf, int begin_frame, int end_frame) = 0;
+    // assume texture format is RGBA8.
+    // timestamp=0 is treated as current time.
+    virtual bool    addVideoFrameTexture(void *tex, uint64_t timestamp =0) = 0;
 
-    virtual int getFrameCount() = 0;
-    virtual void getFrameData(void *tex, int frame) = 0;
-    virtual int getExpectedDataSize(int begin_frame, int end_frame) = 0;
-    virtual void eraseFrame(int begin_frame, int end_frame) = 0;
+    // assume pixel format is RGBA8 or I420
+    // timestamp=0 is treated as current time.
+    virtual bool    addVideoFramePixels(void *pixels, fcColorSpace cs, uint64_t timestamp = 0) = 0;
+
+    // timestamp=0 is treated as current time.
+    virtual bool    addAudioFrame(const float *samples, int num_samples, uint64_t timestamp = 0) = 0;
+
+    virtual void    clearFrame() = 0;
+    virtual bool    writeFile(const char *path, int begin_frame, int end_frame) = 0;
+    virtual int     writeMemory(void *buf, int begin_frame, int end_frame) = 0;
+
+    virtual int     getFrameCount() = 0;
+    virtual void    getFrameData(void *tex, int frame) = 0;
+    virtual int     getExpectedDataSize(int begin_frame, int end_frame) = 0;
+    virtual void    eraseFrame(int begin_frame, int end_frame) = 0;
 
 protected:
     virtual ~fcIMP4Context() {}
