@@ -101,13 +101,15 @@ class BinaryStream
 {
 public:
     virtual ~BinaryStream() {}
-    virtual size_t  tellg() const = 0;
+    virtual size_t  tellg() = 0;
     virtual void    seekg(size_t pos) = 0;
-    virtual size_t  tellp() const = 0;
-    virtual void    seekp(size_t pos) = 0;
     virtual size_t  read(void *dst, size_t len) = 0;
+
+    virtual size_t  tellp() = 0;
+    virtual void    seekp(size_t pos) = 0;
     virtual size_t  write(const void *data, size_t len) = 0;
 };
+
 inline BinaryStream& operator<<(BinaryStream &o, const int8_t&   v) { o.write(&v, 1); return o; }
 inline BinaryStream& operator<<(BinaryStream &o, const int16_t&  v) { o.write(&v, 2); return o; }
 inline BinaryStream& operator<<(BinaryStream &o, const int32_t&  v) { o.write(&v, 4); return o; }
@@ -119,16 +121,32 @@ inline BinaryStream& operator<<(BinaryStream &o, const uint64_t& v) { o.write(&v
 inline BinaryStream& operator<<(BinaryStream &o, const float&    v) { o.write(&v, 4); return o; }
 inline BinaryStream& operator<<(BinaryStream &o, const double&   v) { o.write(&v, 8); return o; }
 
+inline BinaryStream& operator>>(BinaryStream &o, int8_t&   v) { o.read(&v, 1); return o; }
+inline BinaryStream& operator>>(BinaryStream &o, int16_t&  v) { o.read(&v, 2); return o; }
+inline BinaryStream& operator>>(BinaryStream &o, int32_t&  v) { o.read(&v, 4); return o; }
+inline BinaryStream& operator>>(BinaryStream &o, int64_t&  v) { o.read(&v, 8); return o; }
+inline BinaryStream& operator>>(BinaryStream &o, uint8_t&  v) { o.read(&v, 1); return o; }
+inline BinaryStream& operator>>(BinaryStream &o, uint16_t& v) { o.read(&v, 2); return o; }
+inline BinaryStream& operator>>(BinaryStream &o, uint32_t& v) { o.read(&v, 4); return o; }
+inline BinaryStream& operator>>(BinaryStream &o, uint64_t& v) { o.read(&v, 8); return o; }
+inline BinaryStream& operator>>(BinaryStream &o, float&    v) { o.read(&v, 4); return o; }
+inline BinaryStream& operator>>(BinaryStream &o, double&   v) { o.read(&v, 8); return o; }
+
 
 class BufferStream : public BinaryStream
 {
 public:
     BufferStream(Buffer &buf) : m_buf(buf) {}
 
-    size_t  tellg() const override       { return m_rpos; }
-    void    seekg(size_t pos) override   { m_rpos = std::min<size_t>(pos, m_buf.size()); }
-    size_t  tellp() const override       { return m_wpos; }
-    void    seekp(size_t pos) override   { m_wpos = std::min<size_t>(pos, m_buf.size()); }
+    size_t tellg() override
+    {
+        return m_rpos;
+    }
+
+    void seekg(size_t pos) override
+    {
+        m_rpos = std::min<size_t>(pos, m_buf.size());
+    }
 
     size_t read(void *dst, size_t len) override
     {
@@ -137,6 +155,17 @@ public:
         memcpy(dst, &m_buf[m_rpos], len);
         m_rpos += len;
         return len;
+    }
+
+
+    size_t tellp() override
+    {
+        return m_wpos;
+    }
+
+    void seekp(size_t pos) override
+    {
+        m_wpos = std::min<size_t>(pos, m_buf.size());
     }
 
     size_t write(const void *data, size_t len) override
@@ -162,14 +191,19 @@ class StdOStream : public BinaryStream
 public:
     StdOStream(std::ostream& os) : m_os(os) {}
 
-    size_t  tellg() const override      { return 0; }
-    void    seekg(size_t pos) override  {}
-    size_t  tellp() const override      { return m_os.tellp(); }
-    void    seekp(size_t pos) override  { m_os.seekp(pos); }
+    // dummy
+    size_t  tellg() override { return 0; }
+    void    seekg(size_t pos) override {}
+    size_t  read(void *dst, size_t len) override { return 0; }
 
-    size_t read(void *dst, size_t len) override
+    size_t tellp() override
     {
-        return 0;
+        return m_os.tellp();
+    }
+
+    void seekp(size_t pos) override
+    {
+        m_os.seekp(pos);
     }
 
     size_t write(const void *data, size_t len) override
@@ -188,10 +222,15 @@ class StdIStream : public BinaryStream
 public:
     StdIStream(std::istream& is) : m_is(is) {}
 
-    size_t  tellg() const override      { return m_is.tellg(); }
-    void    seekg(size_t pos) override  { m_is.seekg(pos); }
-    size_t  tellp() const override      { return 0; }
-    void    seekp(size_t pos) override  {}
+    size_t tellg() override
+    {
+        return m_is.tellg();
+    }
+
+    void seekg(size_t pos) override
+    {
+        m_is.seekg(pos);
+    }
 
     size_t read(void *dst, size_t len) override
     {
@@ -199,10 +238,10 @@ public:
         return m_is.gcount();
     }
 
-    size_t write(const void *data, size_t len) override
-    {
-        return 0;
-    }
+    // dummy
+    size_t  tellp() override { return 0; }
+    void    seekp(size_t pos) override {}
+    size_t  write(const void *data, size_t len) override { return 0; }
 
 protected:
     std::istream& m_is;
@@ -214,15 +253,31 @@ class StdIOStream : public BinaryStream
 public:
     StdIOStream(std::iostream& os) : m_ios(os) {}
 
-    size_t  tellg() const override      { return m_ios.tellg(); }
-    void    seekg(size_t pos) override  { m_ios.seekg(pos); }
-    size_t  tellp() const override      { return m_ios.tellp(); }
-    void    seekp(size_t pos) override  { m_ios.seekp(pos); }
+    size_t tellg() override
+    {
+        return m_ios.tellg();
+    }
+
+    void seekg(size_t pos) override
+    {
+        m_ios.seekg(pos);
+    }
 
     size_t read(void *dst, size_t len) override
     {
         m_ios.read((char*)dst, len);
         return m_ios.gcount();
+    }
+
+
+    size_t tellp() override
+    {
+        return m_ios.tellp();
+    }
+
+    void seekp(size_t pos) override
+    {
+        m_ios.seekp(pos);
     }
 
     size_t write(const void *data, size_t len) override

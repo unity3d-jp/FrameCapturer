@@ -73,14 +73,12 @@ struct fcAACFrame : public fcFrameData
 
 struct fcVideoTrackSummary
 {
-    u32 duration;
     u32 width;
     u32 height;
 };
 
 struct fcAudioTrackSummary
 {
-    u32 duration;
     u32 unit_duration;
     u32 sample_rate;
     u32 bit_rate;
@@ -91,8 +89,15 @@ struct fcFrameInfo
     const char *data;
     size_t size;
     u64 file_offset;
+    u64 timestamp;
     u32 delay;
+    u32 index;
+    u32 index_track;
     fcFrameType type;
+
+    fcFrameInfo()
+        : data(), size(), file_offset(), timestamp(), delay(), index(), index_track(), type()
+    {}
 };
 
 struct fcOffsetValue
