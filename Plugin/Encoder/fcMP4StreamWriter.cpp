@@ -2,11 +2,11 @@
 #include "fcMP4Internal.h"
 
 
-class fcMP4Stream
+class fcMP4StreamWriter
 {
 public:
-    fcMP4Stream(BinaryStream &stream, const fcMP4Config &conf);
-    virtual ~fcMP4Stream();
+    fcMP4StreamWriter(BinaryStream &stream, const fcMP4Config &conf);
+    virtual ~fcMP4StreamWriter();
     void addFrame(const fcFrameData& buf);
 
 private:
@@ -57,14 +57,14 @@ private:
     size_t m_mdat_begin;
 };
 
-fcMP4Stream::fcMP4Stream(BinaryStream& stream, const fcMP4Config &conf)
+fcMP4StreamWriter::fcMP4StreamWriter(BinaryStream& stream, const fcMP4Config &conf)
     : m_stream(stream)
     , m_conf(conf)
 {
     mp4Begin();
 }
 
-fcMP4Stream::~fcMP4Stream()
+fcMP4StreamWriter::~fcMP4StreamWriter()
 {
     mp4End();
 }
@@ -102,7 +102,7 @@ time_t GetMacTime()
 
 
 
-void fcMP4Stream::mp4Begin()
+void fcMP4StreamWriter::mp4Begin()
 {
     m_frame_info.reserve(60 * 60);
 
@@ -125,7 +125,7 @@ void fcMP4Stream::mp4Begin()
         << u64(0); // reserve mdat size space
 }
 
-void fcMP4Stream::addFrame(const fcFrameData& frame)
+void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
 {
     BinaryStream& os = m_stream;
 
@@ -168,7 +168,7 @@ void fcMP4Stream::addFrame(const fcFrameData& frame)
     m_frame_info.emplace_back(info);
 }
 
-void fcMP4Stream::mp4End()
+void fcMP4StreamWriter::mp4End()
 {
     if (m_frame_info.empty()) {
         fcDebugLog("fcMP4Stream::mp4End() no frame data.");
