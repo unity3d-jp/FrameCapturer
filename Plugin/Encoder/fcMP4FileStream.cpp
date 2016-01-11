@@ -14,14 +14,38 @@ private:
     void mp4Begin();
     void mp4End();
 
+    template<class F>
+    void eachFrame(const F &body)
+    {
+        for (auto& v : m_frame_info) {
+            body(v);
+        }
+    }
+
+    template<class F>
+    void eachVideoFrame(const F &body)
+    {
+        for (auto& v : m_frame_info) {
+            if(v.type == fcFrameType_H264) body(v);
+        }
+    }
+
+    template<class F>
+    void eachAudioFrame(const F &body)
+    {
+        for (auto& v : m_frame_info) {
+            if (v.type == fcFrameType_AAC) body(v);
+        }
+    }
+
 private:
     std::iostream& m_stream;
     fcVideoTrackSummary m_vts;
     fcAudioTrackSummary m_ats;
-    std::list<fcFrameData> m_frames;
+    std::vector<fcFrameInfo> m_frame_info;
+    fcFrameData m_video_header;
+    fcFrameData m_audio_header;
 
-    std::vector<fcFrameData*> m_video_frames;
-    std::vector<fcFrameData*> m_audio_frames;
     std::vector<fcSampleToChunk> m_video_samples_to_chunk;
     std::vector<fcSampleToChunk> m_audio_sample_to_chunk;
     std::vector<fcOffsetValue> m_video_decode_times;
@@ -72,7 +96,7 @@ private:
 };
 
 
-time_t fcGetMacTime()
+time_t GetMacTime()
 {
     return time(0) + 2082844800;
 }
@@ -85,96 +109,106 @@ void fcMP4Stream::mp4Begin()
         fcDebugLog("fcMP4Stream::mp4Begin() invalid stream.");
         return;
     }
-}
 
-void fcMP4Stream::addFrame(const fcFrameData& frame)
-{
-    m_frames.emplace_back(frame);
-}
-
-void fcMP4Stream::mp4End()
-{
-    if (!m_stream) {
-        fcDebugLog("fcMP4Stream::mp4End() invalid stream.");
-        return;
-    }
-    if (m_frames.empty()) {
-        fcDebugLog("fcMP4Stream::mp4End() no frame data.");
-        return;
-    }
-
-
-    u64 first_timestamp = m_frames.front().timestamp;
-    for (auto& v : m_frames) {
-        if (v.type == fcFrameType_H264) {
-            m_video_frames.push_back(&v);
-        }
-        else if (v.type == fcFrameType_AAC) {
-            m_audio_frames.push_back(&v);
-        }
-    }
-
-    std::vector<size_t> offsets;
-    {
-        size_t last_size = 0;
-        size_t last_offset = 0;
-        for (auto& v : m_frames) {
-            offsets.push_back(last_offset + last_size);
-            last_offset += last_size;
-            last_size = v.data.size();
-        }
-    }
-
-
-
-    if (m_video_frames.empty()) {
-        fcDebugLog("fcMP4Stream::flush() no video frames.");
-        return;
-    }
-    bool has_audio = !m_audio_frames.empty();
-
-    size_t mdat_begin = 0;
-    size_t mdat_end = 0;
     StdIOStream os = StdIOStream(m_stream);
-
     os  << u32_be(0x20)
         << u32_be('ftyp')
         << u32_be('isom')
         << u32_be(0x200)
         << u32_be('isom')
         << u32_be('iso2')
-        << u32_be('avc1') 
+        << u32_be('avc1')
         << u32_be('mp41')
         << u32_be(0x8)
         << u32_be('free');
 
-    mdat_begin = os.tellp();
+    m_mdat_begin = os.tellp();
 
     os  << u32_be(0x1)
         << u32_be('mdat')
         << u64(0); // reserve mdat size space
+}
 
-    // write all frame data
-    for (auto& v : m_frames) {
-        // todo: 
-        //os.write(v.data.ptr(), v.data.size());
-        if (v.type == fcFrameType_H264) {
-        }
-        else if (v.type == fcFrameType_AAC) {
-        }
+void fcMP4Stream::addFrame(const fcFrameData& frame)
+{
+    if (!m_stream) { return; }
+
+    // todo: axtract info and write to stream
+}
+
+void fcMP4Stream::mp4End()
+{
+    if (m_frame_info.empty()) {
+        fcDebugLog("fcMP4Stream::mp4End() no frame data.");
+        return;
     }
 
-    mdat_end = os.tellp();
+    const std::string version_string = "MP4 Capturer by Unity Technologies Japan";
+    const std::string audio_track_name = "Sound Media Handler";
+    const std::string video_track_name = "Video Media Handler";
+    const std::string video_compression_name = "AVC Coding";
+    u32 mac_time = (u32)GetMacTime();
+
+    size_t num_video_frames = 0;
+    size_t num_audio_frames = 0;
+    u64 video_duration = 0;
+    u64 audio_duration = 0;
+
+    {
+        size_t last_size = 0;
+        size_t last_offset = 0;
+        u32 i = 0;
+        eachFrame([&](fcFrameInfo& v) {
+            v.index = i++;
+            v.file_offset = last_offset + last_size;
+            last_offset += last_size;
+            last_size = v.size;
+        });
+    }
+    {
+        u64 first_timestamp = u64(-1);
+        u64 last_timestamp = 0;
+        u32 i = 0;
+
+        auto f = [&](fcFrameInfo& v) {
+            v.index_track = i++;
+            if (first_timestamp == u64(-1)) {
+                first_timestamp = last_timestamp = v.timestamp;
+            }
+            v.delay = v.timestamp - last_timestamp;
+            last_timestamp = v.timestamp;
+        };
+
+        eachVideoFrame(f);
+        num_video_frames = i;
+        video_duration = last_timestamp - first_timestamp;
+
+        first_timestamp = u64(-1);
+        last_timestamp = 0;
+        i = 0;
+
+        eachAudioFrame(f);
+        num_audio_frames = i;
+        audio_duration = last_timestamp - first_timestamp;
+    }
+
+
+    if (num_video_frames == 0) {
+        fcDebugLog("fcMP4Stream::flush() no video frames.");
+        return;
+    }
+    bool has_audio = num_video_frames != 0;
+
+
+    StdIOStream os = StdIOStream(m_stream);
+    size_t mdat_end = os.tellp();
 
 
 
 
     Buffer dd_buf; // decoder descriptor
     BufferStream dd(dd_buf);
-    if (!m_audio_frames.empty()) {
-        const auto &audio_header = *m_audio_frames.front();
-        ;   // todo
-
+    if (has_audio) {
         Buffer add_buf; //  audio decoder descriptor
         BufferStream add(add_buf); // audio decoder descriptor
         add << u8(64)
@@ -184,8 +218,8 @@ void fcMP4Stream::mp4End()
             << u32_be(m_ats.bit_rate) // max bit rate (cue bill 'o reily meme for these two)
             << u32_be(m_ats.bit_rate) // avg bit rate
             << u8(0x5)          //decoder specific descriptor type
-            << u8(audio_header.data.size() - 2);
-        add.write(&audio_header.data[2], audio_header.data.size() - 2);
+            << u8(m_audio_header.data.size() - 2);
+        add.write(&m_audio_header.data[2], m_audio_header.data.size() - 2);
 
         dd << u16(0);   // es id
         dd << u8(0);    // stream priority
@@ -202,21 +236,15 @@ void fcMP4Stream::mp4End()
     //-------------------------------------------
 
     Buffer track_info;
-    track_info.reserve( (m_video_frames.size() + m_audio_frames.size()) * 20 + 131072);
+    track_info.reserve( (num_video_frames + num_audio_frames) * 20 + 131072);
     BufferStream bs(track_info);
     Box box = Box(bs);
 
-    const std::string version_string = "MP4 Capturer by Unity Technologies Japan";
-    const std::string audio_track_name = "Sound Media Handler";
-    const std::string video_track_name = "Video Media Handler";
-    const char video_compression_name[32] = "AVC Coding";
-    // todo: fill these
-    u32 mac_time = (u32)fcGetMacTime();
 
 
     std::vector<u8> sps, pps;
     {
-        u8 *header = (u8*)&m_video_frames.front()->data[11];
+        u8 *header = (u8*)&m_video_header.data[11];
         size_t len = u16_be(*(u16*)header);
         sps.assign(header + 2, header + 2 + len);
 
@@ -229,12 +257,13 @@ void fcMP4Stream::mp4End()
 
         //------------------------------------------------------
         // header
+        //------------------------------------------------------
         box(u32_be('mvhd'), [&]() {
             bs << u32(0);               // version and flags (none)
             bs << u32(mac_time);        // creation time
             bs << u32(mac_time);        // modified time
             bs << u32_be(1000);         // time base (milliseconds, so 1000)
-            bs << u32(m_vts.duration);  // duration (in time base units)
+            bs << u32(video_duration);  // duration (in time base units)
             bs << u32_be(0x00010000);   // fixed point playback speed 1.0
             bs << u16_be(0x0100);       // fixed point vol 1.0
             bs << u64(0);               // reserved (10 bytes)
@@ -253,6 +282,7 @@ void fcMP4Stream::mp4End()
 
         //------------------------------------------------------
         // audio track
+        //------------------------------------------------------
         if (has_audio) {
             box(u32_be('trak'), [&]() {
                 box(u32_be('tkhd'), [&]() {
@@ -261,7 +291,7 @@ void fcMP4Stream::mp4End()
                     bs << u32(mac_time);      // modified time
                     bs << u32_be(1);          // track ID
                     bs << u32(0);             // reserved
-                    bs << u32(m_ats.duration);// duration (in time base units)
+                    bs << u32(audio_duration);// duration (in time base units)
                     bs << u64(0);             // reserved
                     bs << u16(0);             // video layer (0)
                     bs << u16_be(0);          // quicktime alternate track id
@@ -349,10 +379,10 @@ void fcMP4Stream::mp4End()
                             box(u32_be('stsz'), [&]() {
                                 bs << u32(0);   // version and flags (none)
                                 bs << u32(0);   // block size for all (0 if differing sizes)
-                                bs << u32_be(m_audio_frames.size());
-                                for (auto &v : m_audio_frames) {
-                                    bs << u32_be(v->data.size());
-                                }
+                                bs << u32_be(num_audio_frames);
+                                eachAudioFrame([&](fcFrameInfo& v) {
+                                    bs << u32_be(v.size);
+                                });
                             });
 
                             if (!m_audio_chunks.empty() && m_audio_chunks.back() > 0xFFFFFFFFLL)
@@ -383,6 +413,7 @@ void fcMP4Stream::mp4End()
 
         //------------------------------------------------------
         // video track
+        //------------------------------------------------------
         box(u32_be('trak'), [&]() {
             box(u32_be('tkhd'), [&]() {
                 bs << u32(u32_be(0x00000007));  // version (0) and flags (0x7)
@@ -390,7 +421,7 @@ void fcMP4Stream::mp4End()
                 bs << u32(mac_time);            // modified time
                 bs << u32(u32_be(2));           // track ID
                 bs << u32(0);                   // reserved
-                bs << u32(m_vts.duration);        // duration (in time base units)
+                bs << u32(video_duration);      // duration (in time base units)
                 bs << u64(0);                   // reserved
                 bs << u16(0);                   // video layer (0)
                 bs << u16(0);                   // quicktime alternate track id (0)
@@ -409,7 +440,7 @@ void fcMP4Stream::mp4End()
                     bs << u32(mac_time);    // creation time
                     bs << u32(mac_time);    // modified time
                     bs << u32_be(1000);     // time scale
-                    bs << u32(m_vts.duration);
+                    bs << u32(video_duration);
                     bs << u32_be(0x55c40000);
                 }); // mdhd
                 box(u32_be('hdlr'), [&]() {
@@ -458,8 +489,8 @@ void fcMP4Stream::mp4End()
                                 bs << u32_be(0x00480000);   // fixed point video_height pixel resolution (72.0)
                                 bs << u32(0);               // quicktime video data size 
                                 bs << u16_be(1);            // frame count(?)
-                                bs << u8(strlen(video_compression_name)); // compression name length
-                                bs.write(video_compression_name, sizeof(video_compression_name)); // 31 bytes for the name
+                                bs << u8(video_compression_name.size()); // compression name length
+                                bs.write(video_compression_name.c_str(), video_compression_name.size()); // 31 bytes for the name
                                 bs << u16(u16_be(24));      // bit depth
                                 bs << u16(0xFFFF);          // quicktime video color table id (none = -1)
                                 box(u32_be('avcC'), [&]() {
@@ -522,10 +553,10 @@ void fcMP4Stream::mp4End()
                         box(u32_be('stsz'), [&]() {
                             bs << u32(0); // version and flags (none)
                             bs << u32(0); // block size for all (0 if differing sizes)
-                            bs << u32_be(m_video_frames.size());
-                            for (auto& v : m_video_frames) {
-                                bs << u32_be(v->data.size());
-                            }
+                            bs << u32_be(num_video_frames);
+                            eachVideoFrame([&](fcFrameInfo& v) {
+                                bs << u32_be(v.size);
+                            });
                         }); // stsz
 
                         if (!m_video_chunks.empty() && m_video_chunks.back() > 0xFFFFFFFFLL)
@@ -548,8 +579,6 @@ void fcMP4Stream::mp4End()
                                 }
                             }); // stco
                         }
-
-
                     }); // stbl
                 }); // minf
             }); // mdia
@@ -558,6 +587,8 @@ void fcMP4Stream::mp4End()
         
         //------------------------------------------------------
         // info
+        //------------------------------------------------------
+        // todo: remove this if possible
         box(u32_be('udta'), [&]() {
             box(u32_be('meta'), [&]() {
                 bs << u32(0);       // version and flags (none)
@@ -586,11 +617,11 @@ void fcMP4Stream::mp4End()
     }); // moov
 
 
-    u64 mdat_size = u64_be(mdat_end - mdat_begin);
+    u64 mdat_size = u64_be(mdat_end - m_mdat_begin);
 
     os.write(track_info.ptr(), track_info.size());
-    os.seekp(mdat_begin);
-    os.write((char*)&mdat_size, sizeof(u64));
+    os.seekp(m_mdat_begin);
+    os.write(&mdat_size, sizeof(u64));
 
     fcDebugLog("fcMP4Stream::mp4End() done.");
 }
