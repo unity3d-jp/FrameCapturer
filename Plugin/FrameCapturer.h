@@ -167,11 +167,11 @@ struct fcMP4Config
     int video_width;
     int video_height;
     int video_bitrate;
-    int video_framerate;
+    int video_framerate; // todo: this can be removed
     int video_max_buffers;
     int video_max_frame;
     int video_max_data_size;
-    int audio_sampling_rate;
+    int audio_sample_rate;
     int audio_num_channels;
     int audio_bitrate;
 
@@ -180,7 +180,7 @@ struct fcMP4Config
         , video_width(320), video_height(240)
         , video_bitrate(256000), video_framerate(30)
         , video_max_buffers(8), video_max_frame(0), video_max_data_size(0)
-        , audio_sampling_rate(48000), audio_num_channels(2), audio_bitrate(64000)
+        , audio_sample_rate(48000), audio_num_channels(2), audio_bitrate(64000)
     {}
 };
 typedef void(*fcDownloadCallback)(bool is_complete, const char *status);

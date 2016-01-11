@@ -71,9 +71,9 @@ public:
     pointer         ptr()           { return m_data.empty() ? nullptr : &m_data[0]; }
     const_pointer   ptr() const     { return m_data.empty() ? nullptr : &m_data[0]; }
 
-    void assign(const_pointer src, size_t len)
+    void assign(const void *src, size_t len)
     {
-        m_data.assign(src, src + len);
+        m_data.assign((const_pointer)src, (const_pointer)src + len);
     }
 
     void resize(size_t newsize)

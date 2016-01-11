@@ -30,6 +30,9 @@ protected:
     virtual ~fcIMP4Context() {}
 };
 
+typedef void(*fcDownloadCallback)(bool is_complete, const char *status);
+typedef bool(*fcMP4DownloadCodecImplT)(fcDownloadCallback cb);
+
 typedef fcIMP4Context* (*fcMP4CreateContextImplT)(fcMP4Config &conf, fcIGraphicsDevice*);
 
 #endif // fcSupportMP4
