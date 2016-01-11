@@ -17,6 +17,12 @@
     <ClCompile Include="Encoder\fcMP4FileStream.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
+    <ClCompile Include="Foundation\Network.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="Foundation\Compression.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FrameCapturer.h" />

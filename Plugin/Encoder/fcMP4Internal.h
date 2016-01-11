@@ -46,17 +46,30 @@ struct fcAudioFrame
     fcAudioFrame() : timestamp() {}
 };
 
-struct fcMP4FrameData
+enum fcFrameType
 {
-    u64 timestamp;
-    u64 offset;
-    Buffer data;
-
-    fcMP4FrameData() : timestamp(0), offset(0){}
+    fcFrameType_Unknown,
+    fcFrameType_H264,
+    fcFrameType_AAC,
 };
 
-typedef fcMP4FrameData fcH264Frame;
-typedef fcMP4FrameData fcAACFrame;
+struct fcFrameData
+{
+    fcFrameType type;
+    u64 timestamp;
+    Buffer data;
+
+    fcFrameData() : type(fcFrameType_Unknown), timestamp(0){}
+};
+struct fcH264Frame : public fcFrameData
+{
+    fcH264Frame() { type = fcFrameType_H264; }
+};
+struct fcAACFrame : public fcFrameData
+{
+    fcAACFrame() { type = fcFrameType_AAC; }
+};
+
 
 struct fcVideoTrackSummary
 {
@@ -73,6 +86,14 @@ struct fcAudioTrackSummary
     u32 bit_rate;
 };
 
+struct fcFrameInfo
+{
+    const char *data;
+    size_t size;
+    u64 file_offset;
+    u32 delay;
+    fcFrameType type;
+};
 
 struct fcOffsetValue
 {
