@@ -57,8 +57,8 @@ private:
     fcIGraphicsDevice *m_dev;
     std::vector<fcVideoFrame> m_raw_video_frames; // temporary buffers to encode.
     std::vector<fcAudioFrame> m_raw_audio_frames; // 
-    std::list<fcH264Frame> m_h264_frames;
-    std::list<fcAACFrame> m_aac_frames;
+    std::list<fcH264Frame>  m_h264_frames;
+    std::list<fcAACFrame>   m_aac_frames;
     int m_num_video_frame;
     int m_num_audio_frame;
 
@@ -173,7 +173,7 @@ void fcMP4Context::resetEncoders()
 
     m_aac_encoder.reset();
     if (m_conf.audio) {
-        m_aac_encoder.reset(new fcAACEncoder(m_conf.audio_sampling_rate, m_conf.audio_num_channels, m_conf.audio_bitrate));
+        m_aac_encoder.reset(new fcAACEncoder(m_conf.audio_sample_rate, m_conf.audio_num_channels, m_conf.audio_bitrate));
     }
 }
 
@@ -268,8 +268,7 @@ void fcMP4Context::addVideoFrameTask(fcH264Frame &h264, fcVideoFrame &raw, bool 
     }
 
     // I420 のピクセルデータを H264 へエンコード
-    auto ret = m_h264_encoder->encodeI420(y, u, v);
-    h264.data = ret.buf;
+    h264 = m_h264_encoder->encodeI420(y, u, v);
     h264.timestamp = raw.timestamp;
 }
 

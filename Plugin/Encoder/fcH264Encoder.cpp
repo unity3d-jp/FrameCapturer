@@ -2,6 +2,7 @@
 #include <openh264/codec_api.h>
 #include <libyuv/libyuv.h>
 #include "fcFoundation.h"
+#include "fcMP4Internal.h"
 #include "fcH264Encoder.h"
 
 #define OpenH264Version "1.5.0"
@@ -165,9 +166,9 @@ fcH264Encoder::operator bool() const
 }
 
 
-fcH264Encoder::FrameData fcH264Encoder::encodeI420(const void *src_y, const void *src_u, const void *src_v)
+fcH264Frame fcH264Encoder::encodeI420(const void *src_y, const void *src_u, const void *src_v)
 {
-    if (!m_encoder) { return FrameData(); }
+    if (!m_encoder) { return fcH264Frame(); }
 
     SSourcePicture src;
     memset(&src, 0, sizeof(src));
@@ -184,12 +185,11 @@ fcH264Encoder::FrameData fcH264Encoder::encodeI420(const void *src_y, const void
     SFrameBSInfo dst;
     memset(&dst, 0, sizeof(dst));
 
-    int ret = m_encoder->EncodeFrame(&src, &dst);
-    if (ret == 0) {
-        return FrameData(
-            dst.sLayerInfo[0].pBsBuf,
-            dst.iFrameSizeInBytes,
-            (FrameType)dst.eFrameType);
+    fcH264Frame ret;
+    int result = m_encoder->EncodeFrame(&src, &dst);
+    if (result == 0) {
+        ret.data.assign(dst.sLayerInfo[0].pBsBuf, dst.iFrameSizeInBytes);
+        ret.h264_type = (fcH264FrameType)dst.eFrameType;
     }
-    return FrameData();
+    return ret;
 }

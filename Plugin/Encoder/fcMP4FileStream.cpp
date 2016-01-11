@@ -5,10 +5,9 @@
 class fcMP4Stream
 {
 public:
-    fcMP4Stream(std::iostream &stream, const fcVideoTrackSummary &vts, const fcAudioTrackSummary &ats);
+    fcMP4Stream(BinaryStream &stream, const fcMP4Config &conf);
     virtual ~fcMP4Stream();
     void addFrame(const fcFrameData& buf);
-    void flush();
 
 private:
     void mp4Begin();
@@ -39,12 +38,13 @@ private:
     }
 
 private:
-    std::iostream& m_stream;
-    fcVideoTrackSummary m_vts;
-    fcAudioTrackSummary m_ats;
+    BinaryStream& m_stream;
+    fcMP4Config m_conf;
     std::vector<fcFrameInfo> m_frame_info;
     fcFrameData m_video_header;
     fcFrameData m_audio_header;
+    std::vector<u8> m_pps;
+    std::vector<u8> m_sps;
 
     std::vector<fcSampleToChunk> m_video_samples_to_chunk;
     std::vector<fcSampleToChunk> m_audio_sample_to_chunk;
@@ -57,10 +57,9 @@ private:
     size_t m_mdat_begin;
 };
 
-fcMP4Stream::fcMP4Stream(std::iostream& stream, const fcVideoTrackSummary &vts, const fcAudioTrackSummary &ats)
+fcMP4Stream::fcMP4Stream(BinaryStream& stream, const fcMP4Config &conf)
     : m_stream(stream)
-    , m_vts(vts)
-    , m_ats(ats)
+    , m_conf(conf)
 {
     mp4Begin();
 }
@@ -105,12 +104,9 @@ time_t GetMacTime()
 
 void fcMP4Stream::mp4Begin()
 {
-    if (!m_stream) {
-        fcDebugLog("fcMP4Stream::mp4Begin() invalid stream.");
-        return;
-    }
+    m_frame_info.reserve(60 * 60);
 
-    StdIOStream os = StdIOStream(m_stream);
+    BinaryStream& os = m_stream;
     os  << u32_be(0x20)
         << u32_be('ftyp')
         << u32_be('isom')
@@ -131,9 +127,45 @@ void fcMP4Stream::mp4Begin()
 
 void fcMP4Stream::addFrame(const fcFrameData& frame)
 {
-    if (!m_stream) { return; }
+    BinaryStream& os = m_stream;
 
-    // todo: axtract info and write to stream
+    fcFrameInfo info;
+    if (frame.type == fcFrameType_H264) {
+        const auto& h264 = (const fcH264Frame&)frame;
+
+        if (h264.data[0] == 0x17 && h264.data[1] == 0) { //if SPS/PPS
+            u8 *pos = (u8*)&h264.data[11];
+            int sps_size = u16_be(*(u16*)pos);
+
+            m_sps.assign(pos + 2, pos + 2 + sps_size);
+            os << u16(0);
+            os.write(pos, sps_size+2);
+
+            pos += m_sps.size() + 3;
+            int pps_size = u16_be(*(u16*)pos);
+
+            m_pps.assign(pos + 2, pos + 2 + pps_size);
+            os << u16(0);
+            os.write(pos, pps_size + 2);
+
+            info.size = sps_size + pps_size + 8;
+        }
+        else {
+            // todo: handling SEI
+
+            info.size += h264.data.size() - 5;
+            os.write(&h264.data[5], info.size);
+        }
+    }
+    else if (frame.type == fcFrameType_AAC) {
+
+        info.size = frame.data.size() - 2;
+        info.data = &frame.data[2];
+        os.write(info.data, info.size);
+    }
+
+
+    m_frame_info.emplace_back(info);
 }
 
 void fcMP4Stream::mp4End()
@@ -151,56 +183,68 @@ void fcMP4Stream::mp4End()
 
     size_t num_video_frames = 0;
     size_t num_audio_frames = 0;
+    u32 video_unit_duration = 1000;
+    u32 audio_unit_duration = 1000;
     u64 video_duration = 0;
     u64 audio_duration = 0;
+    fcMP4Config& c = m_conf;
 
+    // compute file offset
     {
-        size_t last_size = 0;
-        size_t last_offset = 0;
+        const u64 mp4_header_size = 54;
+        u64 last_size = 0;
+        u64 last_offset = 0;
         u32 i = 0;
         eachFrame([&](fcFrameInfo& v) {
             v.index = i++;
-            v.file_offset = last_offset + last_size;
+            v.file_offset = last_offset + last_size + mp4_header_size;
             last_offset += last_size;
             last_size = v.size;
         });
     }
+
+    // compute duration
     {
-        u64 first_timestamp = u64(-1);
-        u64 last_timestamp = 0;
+        fcFrameInfo *first_frame = nullptr;
+        fcFrameInfo *last_frame = nullptr;
         u32 i = 0;
 
-        auto f = [&](fcFrameInfo& v) {
+        auto proc = [&](fcFrameInfo& v) {
             v.index_track = i++;
-            if (first_timestamp == u64(-1)) {
-                first_timestamp = last_timestamp = v.timestamp;
+            if (first_frame == nullptr) {
+                first_frame = &v;
             }
-            v.delay = v.timestamp - last_timestamp;
-            last_timestamp = v.timestamp;
+            else if(last_frame != nullptr) {
+                last_frame->duration = v.timestamp - last_frame->timestamp;
+            }
+            last_frame = &v;
         };
 
-        eachVideoFrame(f);
+        eachVideoFrame(proc);
         num_video_frames = i;
-        video_duration = last_timestamp - first_timestamp;
+        if(i > 0) video_duration = first_frame->timestamp - last_frame->timestamp;
 
-        first_timestamp = u64(-1);
-        last_timestamp = 0;
+        first_frame = last_frame = nullptr;
         i = 0;
 
-        eachAudioFrame(f);
+        eachAudioFrame(proc);
         num_audio_frames = i;
-        audio_duration = last_timestamp - first_timestamp;
+        if (i > 0) audio_duration = first_frame->timestamp - last_frame->timestamp;
     }
 
 
-    if (num_video_frames == 0) {
+    bool has_video = num_video_frames != 0;
+    bool has_audio = num_audio_frames != 0;
+
+    if (!has_video) {
         fcDebugLog("fcMP4Stream::flush() no video frames.");
         return;
     }
-    bool has_audio = num_video_frames != 0;
 
 
-    StdIOStream os = StdIOStream(m_stream);
+
+
+    BinaryStream& os = m_stream;
     size_t mdat_end = os.tellp();
 
 
@@ -215,8 +259,8 @@ void fcMP4Stream::mp4End()
             << u8(0x15)         // stream/type flags.  always 0x15 for my purposes.
             << u8(0)            // buffer size, just set it to 1536 for both mp3 and aac
             << u16_be(0x600)
-            << u32_be(m_ats.bit_rate) // max bit rate (cue bill 'o reily meme for these two)
-            << u32_be(m_ats.bit_rate) // avg bit rate
+            << u32_be(c.audio_bitrate) // max bit rate (cue bill 'o reily meme for these two)
+            << u32_be(c.audio_bitrate) // avg bit rate
             << u8(0x5)          //decoder specific descriptor type
             << u8(m_audio_header.data.size() - 2);
         add.write(&m_audio_header.data[2], m_audio_header.data.size() - 2);
@@ -242,31 +286,20 @@ void fcMP4Stream::mp4End()
 
 
 
-    std::vector<u8> sps, pps;
-    {
-        u8 *header = (u8*)&m_video_header.data[11];
-        size_t len = u16_be(*(u16*)header);
-        sps.assign(header + 2, header + 2 + len);
-
-        header += sps.size() + 3;
-        len = u16_be(*(u16*)header);
-        pps.assign(header + 2, header + 2 + len);
-    }
-
     box(u32_be('moov'), [&]() {
 
         //------------------------------------------------------
         // header
         //------------------------------------------------------
         box(u32_be('mvhd'), [&]() {
-            bs << u32(0);               // version and flags (none)
-            bs << u32(mac_time);        // creation time
-            bs << u32(mac_time);        // modified time
-            bs << u32_be(1000);         // time base (milliseconds, so 1000)
-            bs << u32(video_duration);  // duration (in time base units)
-            bs << u32_be(0x00010000);   // fixed point playback speed 1.0
-            bs << u16_be(0x0100);       // fixed point vol 1.0
-            bs << u64(0);               // reserved (10 bytes)
+            bs << u32(0);                       // version and flags (none)
+            bs << u32_be(mac_time);             // creation time
+            bs << u32_be(mac_time);             // modified time
+            bs << u32_be(video_unit_duration);  // time base (milliseconds = 1000)
+            bs << u32_be(video_duration);       // duration (in time base units)
+            bs << u32_be(0x00010000);           // fixed point playback speed 1.0
+            bs << u16_be(0x0100);               // fixed point vol 1.0
+            bs << u64(0);                       // reserved (10 bytes)
             bs << u16(0);
             bs << u32_be(0x00010000) << u32_be(0x00000000) << u32_be(0x00000000); // window matrix row 1 (1.0, 0.0, 0.0)
             bs << u32_be(0x00000000) << u32_be(0x00010000) << u32_be(0x00000000); // window matrix row 2 (0.0, 1.0, 0.0)
@@ -286,30 +319,30 @@ void fcMP4Stream::mp4End()
         if (has_audio) {
             box(u32_be('trak'), [&]() {
                 box(u32_be('tkhd'), [&]() {
-                    bs << u32_be(0x00000007); // version (0) and flags (0xF)
-                    bs << u32(mac_time);      // creation time
-                    bs << u32(mac_time);      // modified time
-                    bs << u32_be(1);          // track ID
-                    bs << u32(0);             // reserved
-                    bs << u32(audio_duration);// duration (in time base units)
-                    bs << u64(0);             // reserved
-                    bs << u16(0);             // video layer (0)
-                    bs << u16_be(0);          // quicktime alternate track id
-                    bs << u16_be(0x0100);     // volume
-                    bs << u16(0);             // reserved
+                    bs << u32_be(0x00000007);   // version (0) and flags (0xF)
+                    bs << u32_be(mac_time);     // creation time
+                    bs << u32_be(mac_time);     // modified time
+                    bs << u32_be(1);            // track ID
+                    bs << u32(0);               // reserved
+                    bs << u32_be(audio_duration);// duration (in time base units)
+                    bs << u64(0);               // reserved
+                    bs << u16(0);               // video layer (0)
+                    bs << u16_be(0);            // quicktime alternate track id
+                    bs << u16_be(0x0100);       // volume
+                    bs << u16(0);               // reserved
                     bs << u32_be(0x00010000) << u32_be(0x00000000) << u32_be(0x00000000); // window matrix row 1 (1.0, 0.0, 0.0)
                     bs << u32_be(0x00000000) << u32_be(0x00010000) << u32_be(0x00000000); // window matrix row 2 (0.0, 1.0, 0.0)
                     bs << u32_be(0x00000000) << u32_be(0x00000000) << u32_be(0x40000000); // window matrix row 3 (0.0, 0.0, 16384.0)
-                    bs << u32(0);             // video width (fixed point)
-                    bs << u32(0);             // video height (fixed point)
+                    bs << u32(0);               // video width (fixed point)
+                    bs << u32(0);               // video height (fixed point)
                 });
                 box(u32_be('mdia'), [&]() {
                     box(u32_be('mdhd'), [&]() {
-                        bs << u32(0);                   // version and flags (none)
-                        bs << u32(mac_time);            // creation time
-                        bs << u32(mac_time);            // modified time
-                        bs << u32_be(m_ats.sample_rate);// time scale
-                        bs << u32(m_ats.unit_duration);
+                        bs << u32(0);                       // version and flags (none)
+                        bs << u32_be(mac_time);             // creation time
+                        bs << u32_be(mac_time);             // modified time
+                        bs << u32_be(c.audio_sample_rate);  // time scale
+                        bs << u32_be(audio_unit_duration);
                         bs << u32_be(0x15c70000);
                     }); // mdhd
                     box(u32_be('hdlr'), [&]() {
@@ -350,7 +383,7 @@ void fcMP4Stream::mp4End()
                                     bs << u16_be(16);   // sample size
                                     bs << u16(0);       // quicktime audio compression id
                                     bs << u16(0);       // quicktime audio packet size
-                                    bs << u32_be(m_ats.sample_rate << 16); // sample rate (fixed point)
+                                    bs << u32_be(c.audio_sample_rate << 16); // sample rate (fixed point)
                                     box(u32_be('esds'), [&]() {
                                         bs << u32(0);   // version and flags (none)
                                         bs << u8(3);    // ES descriptor type
@@ -416,12 +449,12 @@ void fcMP4Stream::mp4End()
         //------------------------------------------------------
         box(u32_be('trak'), [&]() {
             box(u32_be('tkhd'), [&]() {
-                bs << u32(u32_be(0x00000007));  // version (0) and flags (0x7)
-                bs << u32(mac_time);            // creation time
-                bs << u32(mac_time);            // modified time
-                bs << u32(u32_be(2));           // track ID
+                bs << u32_be(0x00000007);  // version (0) and flags (0x7)
+                bs << u32_be(mac_time);            // creation time
+                bs << u32_be(mac_time);            // modified time
+                bs << u32_be(2);           // track ID
                 bs << u32(0);                   // reserved
-                bs << u32(video_duration);      // duration (in time base units)
+                bs << u32_be(video_duration);      // duration (in time base units)
                 bs << u64(0);                   // reserved
                 bs << u16(0);                   // video layer (0)
                 bs << u16(0);                   // quicktime alternate track id (0)
@@ -430,17 +463,17 @@ void fcMP4Stream::mp4End()
                 bs << u32_be(0x00010000) << u32_be(0x00000000) << u32_be(0x00000000); //window matrix row 1 (1.0, 0.0, 0.0)
                 bs << u32_be(0x00000000) << u32_be(0x00010000) << u32_be(0x00000000); //window matrix row 2 (0.0, 1.0, 0.0)
                 bs << u32_be(0x00000000) << u32_be(0x00000000) << u32_be(0x40000000); //window matrix row 3 (0.0, 0.0, 16384.0)
-                bs << u32_be(m_vts.width << 16);  // video width (fixed point)
-                bs << u32_be(m_vts.height << 16); // video height (fixed point)
+                bs << u32_be(c.video_width << 16);  // video width (fixed point)
+                bs << u32_be(c.video_height << 16); // video height (fixed point)
             }); // tkhd
 
             box(u32_be('mdia'), [&]() {
                 box(u32_be('mdhd'), [&]() {
                     bs << u32(0);           // version and flags (none)
-                    bs << u32(mac_time);    // creation time
-                    bs << u32(mac_time);    // modified time
-                    bs << u32_be(1000);     // time scale
-                    bs << u32(video_duration);
+                    bs << u32_be(mac_time);    // creation time
+                    bs << u32_be(mac_time);    // modified time
+                    bs << u32_be(video_unit_duration);     // time scale
+                    bs << u32_be(video_duration);
                     bs << u32_be(0x55c40000);
                 }); // mdhd
                 box(u32_be('hdlr'), [&]() {
@@ -483,8 +516,8 @@ void fcMP4Stream::mp4End()
                                 bs << u32(0);               // encoding vendor
                                 bs << u32(0);               // temporal quality
                                 bs << u32(0);               // spatial quality
-                                bs << u16_be(m_vts.width);    // video_width
-                                bs << u16_be(m_vts.height);   // video_height
+                                bs << u16_be(c.video_width);    // video_width
+                                bs << u16_be(c.video_height);   // video_height
                                 bs << u32_be(0x00480000);   // fixed point video_width pixel resolution (72.0)
                                 bs << u32_be(0x00480000);   // fixed point video_height pixel resolution (72.0)
                                 bs << u32(0);               // quicktime video data size 
@@ -500,11 +533,11 @@ void fcMP4Stream::mp4End()
                                     bs << u8(0x1f);         // h264 level
                                     bs << u8(0xff);         // reserved
                                     bs << u8(0xe1);         // first half-byte = no clue. second half = sps count
-                                    bs << u16_be(sps.size()); // sps size
-                                    bs.write(&sps[0], sps.size()); // sps data
+                                    bs << u16_be(m_sps.size()); // sps size
+                                    bs.write(&m_sps[0], m_sps.size()); // sps data
                                     bs << u8(1); // pps count
-                                    bs << u16_be(pps.size()); // pps size
-                                    bs.write(&pps[0], pps.size()); // pps data
+                                    bs << u16_be(m_pps.size()); // pps size
+                                    bs.write(&m_pps[0], m_pps.size()); // pps data
                                 }); // 
                             }); // avc1
                         }); // stsd

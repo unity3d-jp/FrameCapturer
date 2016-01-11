@@ -151,7 +151,6 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
 
 
 #ifdef fcSupportMP4
-#include "Encoder/fcH264Encoder.h"
 #include "Encoder/fcMP4File.h"
 
 #ifdef fcMP4SplitModule

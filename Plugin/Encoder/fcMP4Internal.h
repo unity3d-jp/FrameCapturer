@@ -53,6 +53,16 @@ enum fcFrameType
     fcFrameType_AAC,
 };
 
+enum fcH264FrameType
+{
+    fcH264FrameType_Invalid,    ///< encoder not ready or parameters are invalidate
+    fcH264FrameType_IDR,        ///< IDR frame in H.264
+    fcH264FrameType_I,          ///< I frame type
+    fcH264FrameType_P,          ///< P frame type
+    fcH264FrameType_Skip,       ///< skip the frame based encoder kernel
+    fcH264FrameType_IPMixed     ///< a frame where I and P slices are mixing, not supported yet
+};
+
 struct fcFrameData
 {
     fcFrameType type;
@@ -61,28 +71,19 @@ struct fcFrameData
 
     fcFrameData() : type(fcFrameType_Unknown), timestamp(0){}
 };
+
 struct fcH264Frame : public fcFrameData
 {
-    fcH264Frame() { type = fcFrameType_H264; }
+    fcH264FrameType h264_type;
+
+    fcH264Frame() : h264_type(fcH264FrameType_Invalid) { type = fcFrameType_H264; }
 };
+
 struct fcAACFrame : public fcFrameData
 {
     fcAACFrame() { type = fcFrameType_AAC; }
 };
 
-
-struct fcVideoTrackSummary
-{
-    u32 width;
-    u32 height;
-};
-
-struct fcAudioTrackSummary
-{
-    u32 unit_duration;
-    u32 sample_rate;
-    u32 bit_rate;
-};
 
 struct fcFrameInfo
 {
@@ -90,13 +91,13 @@ struct fcFrameInfo
     size_t size;
     u64 file_offset;
     u64 timestamp;
-    u32 delay;
+    u32 duration;
     u32 index;
     u32 index_track;
     fcFrameType type;
 
     fcFrameInfo()
-        : data(), size(), file_offset(), timestamp(), delay(), index(), index_track(), type()
+        : data(), size(), file_offset(), timestamp(), duration(), index(), index_track(), type()
     {}
 };
 

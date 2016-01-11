@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     conf.video_bitrate = 256000;
     conf.video_framerate = 30;
     conf.audio = true;
-    conf.audio_sampling_rate = SamplingRate;
+    conf.audio_sample_rate = SamplingRate;
     conf.audio_num_channels = 1;
     conf.audio_bitrate = 64000;
     fcIMP4Context *ctx = fcMP4CreateContext(&conf);
