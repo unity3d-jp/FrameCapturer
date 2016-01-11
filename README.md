@@ -124,14 +124,20 @@ Channel は何番目のチャンネルかを指定するもので、0,1,2,3 が�
 ![ExrOffscreenCapturer](Screenshots/ExrOffscreenCapturer.png)  
 
 
-## 謝辞
-- gif エンコードに Jon Olick 氏の GIF Writer に手を加えたものを使用しています。オリジナルからの主な変更点は、出力先をファイルからメモリに変えたことです。  
-  オリジナル: http://www.jonolick.com/home/gif-writer  
-  fork 版: https://github.com/unity3d-jp/FrameCapturer/blob/master/Plugin/external/jo_gif.cpp
-- exr の書き出しに OpenEXR を使用しています。  
-  http://www.openexr.com/  
+## Thanks
+- gif エクスポートに Jon Olick 氏の GIF Writer に手を加えたものを使用しています。オリジナルからの主な変更点は、出力先をファイルからメモリに変えたことです。  
+  - オリジナル: http://www.jonolick.com/home/gif-writer  
+  - fork: https://github.com/unity3d-jp/FrameCapturer/blob/master/Plugin/external/jo_gif.cpp
+- mp4 エクスポートに以下のライブラリ群を使用しています。
+  - OpenH264 http://www.openh264.org/
+  - libyuv https://code.google.com/p/libyuv/
+  - FAAC http://www.audiocoding.com/faac.html  
+  - libcurl (OpenH264 ダウンローダに使用) http://curl.haxx.se/libcurl/
+  - bzip2 (OpenH264 ダウンローダに使用) http://www.bzip.org/
+- exr エクスポートに OpenEXR を使用しています。  
+  - http://www.openexr.com/  
 - Twitter への投稿に TweetMedia を使用しています。  
-  https://github.com/unity3d-jp/TweetMedia
+  - https://github.com/unity3d-jp/TweetMedia
 
 ## License
 MIT License:

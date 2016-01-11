@@ -147,4 +147,27 @@ inline int fcGetPixelSize(fcPixelFormat format)
 }
 
 
+
+// -------------------------------------------------------------
+// Compression
+// -------------------------------------------------------------
+
+// if dst.size() == 0, resize to 1024*1024 first.
+// while decompress failed because dst.size() is not enough, double it and retry.
+bool BZ2Decompress(std::vector<char> &dst, const void *src, size_t src_len);
+
+// return decompressed size if succeeded. 0 if failed.
+size_t BZ2DecompressToFile(const char *dst_path, const void *src, size_t src_len);
+
+
+// -------------------------------------------------------------
+// Network
+// -------------------------------------------------------------
+
+// abort session if returned false
+typedef std::function<bool (const char* data, size_t size)> HTTPCallback;
+
+bool HTTPGet(const std::string &url, std::string &response);
+bool HTTPGet(const std::string &url, const HTTPCallback& callback);
+
 #endif // fcMisc_h

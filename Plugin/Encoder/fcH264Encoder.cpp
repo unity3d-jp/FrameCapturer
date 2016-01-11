@@ -1,9 +1,6 @@
 ﻿#include "pch.h"
-#define CURL_STATICLIB
-#include <curl/curl.h>
 #include <openh264/codec_api.h>
 #include <libyuv/libyuv.h>
-#include <bzip2/bzlib.h>
 #include "fcFoundation.h"
 #include "fcH264Encoder.h"
 
@@ -54,50 +51,6 @@ static const std::string& fcGetPathOfThisModule()
 
 
 
-static bool fcBZ2MemoryToFile(const char *src, size_t src_len, const char *dst_path)
-{
-    std::vector<char> buf(1024 * 1024);
-
-    unsigned int dst_len = buf.size();
-    int ret = BZ2_bzBuffToBuffDecompress(&buf[0], &dst_len, (char*)src, src_len, 0, 0);
-    if (ret == BZ_OK) {
-        FILE *fout = fopen(dst_path, "wb");
-        if (fout == nullptr) { return false; }
-        fwrite(&buf[0], 1, dst_len, fout);
-        fclose(fout);
-        return true;
-    }
-    return false;
-}
-
-static int fcHTTPCalback(char* data, size_t size, size_t nmemb, std::string *response)
-{
-    size_t len = size * nmemb;
-    response->append(data, len);
-    return (int)len;
-
-}
-
-static bool fcHTTPGet(const char *url, std::string &response)
-{
-    CURL *curl = curl_easy_init();
-    if (curl == nullptr) { return false; }
-
-    curl_easy_setopt(curl, CURLOPT_URL, url);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, fcHTTPCalback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-
-    bool ret = true;
-    CURLcode res = curl_easy_perform(curl);
-    if (res != CURLE_OK) {
-        ret = false;
-        response = curl_easy_strerror(res);
-    }
-    curl_easy_cleanup(curl);
-    return ret;
-}
-
-
 static std::thread *g_download_thread;
 
 static void fcDummyDownloadCB(bool, const char*)
@@ -110,9 +63,9 @@ static void fcMP4DownloadCodecBody(fcDownloadCallback cb)
 
     std::string path_to_dll = fcGetPathOfThisModule() + "/" OpenH264DLL;
     std::string response;
-    if (fcHTTPGet(OpenH264URL, response)) {
+    if (HTTPGet(OpenH264URL, response)) {
         cb(false, "HTTP Get completed");
-        if (fcBZ2MemoryToFile(&response[0], response.size(), path_to_dll.c_str())) {
+        if (BZ2DecompressToFile(path_to_dll.c_str(), &response[0], response.size())) {
             cb(true, "BZ2 Decompress completed");
         }
         else {

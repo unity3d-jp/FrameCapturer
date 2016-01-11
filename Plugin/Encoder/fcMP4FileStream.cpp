@@ -5,72 +5,70 @@
 class fcMP4Stream
 {
 public:
-    fcMP4Stream();
+    fcMP4Stream(std::iostream &stream, const fcVideoTrackSummary &vts, const fcAudioTrackSummary &ats);
     virtual ~fcMP4Stream();
-    void setStream(std::ostream *os);
-    void addVideoFrame(const fcH264Frame& buf);
-    void addAudioFrame(const fcAACFrame& buf);
+    void addFrame(const fcFrameData& buf);
     void flush();
 
 private:
+    void mp4Begin();
+    void mp4End();
+
+private:
+    std::iostream& m_stream;
     fcVideoTrackSummary m_vts;
     fcAudioTrackSummary m_ats;
-    std::list<fcMP4FrameData> m_frames;
-    std::vector<fcH264Frame*> m_video_frames;
-    std::vector<fcAACFrame*>  m_audio_frames;
-    std::unique_ptr<std::ostream> m_os;
+    std::list<fcFrameData> m_frames;
+
+    std::vector<fcFrameData*> m_video_frames;
+    std::vector<fcFrameData*> m_audio_frames;
+    std::vector<fcSampleToChunk> m_video_samples_to_chunk;
+    std::vector<fcSampleToChunk> m_audio_sample_to_chunk;
+    std::vector<fcOffsetValue> m_video_decode_times;
+    std::vector<fcOffsetValue> m_audio_decode_times;
+    std::vector<fcOffsetValue> m_composition_offsets;
+    std::vector<u64> m_video_chunks;
+    std::vector<u64> m_audio_chunks;
+    std::vector<u32> m_iframe_ids;
+    size_t m_mdat_begin;
 };
 
-fcMP4Stream::fcMP4Stream()
+fcMP4Stream::fcMP4Stream(std::iostream& stream, const fcVideoTrackSummary &vts, const fcAudioTrackSummary &ats)
+    : m_stream(stream)
+    , m_vts(vts)
+    , m_ats(ats)
 {
-
+    mp4Begin();
 }
 
 fcMP4Stream::~fcMP4Stream()
 {
-    flush();
-}
-
-void fcMP4Stream::setStream(std::ostream *os)
-{
-    m_os.reset(os);
-}
-
-void fcMP4Stream::addVideoFrame(const fcH264Frame& frame)
-{
-    m_frames.emplace_back(frame);
-    m_video_frames.push_back(&m_frames.back());
-}
-
-void fcMP4Stream::addAudioFrame(const fcAACFrame& frame)
-{
-    m_frames.emplace_back(frame);
-    m_audio_frames.push_back(&m_frames.back());
+    mp4End();
 }
 
 
 class Box
 {
 public:
-    Box(BufferStream& stream) : m_stream(stream) {}
+    Box(BinaryStream& stream) : m_stream(stream) {}
 
     template<class F>
     void operator()(u32 name, const F &f)
     {
-        size_t offset = m_stream.getWPosition();
+        size_t offset = m_stream.tellp();
         m_stream << u32(0) << name; // reserve
 
         f();
 
-        size_t pos = m_stream.getWPosition();
+        size_t pos = m_stream.tellp();
         u32 box_size = (u32)(pos - offset);
-        m_stream.setWPosition(offset);
+        m_stream.seekp(offset);
         m_stream << u32_be(box_size);
-        m_stream.setWPosition(pos);
+        m_stream.seekp(pos);
     }
 
 private:
-    BufferStream& m_stream;
+    BinaryStream& m_stream;
 };
 
 
@@ -80,13 +78,64 @@ time_t fcGetMacTime()
 }
 
 
-void fcMP4Stream::flush()
+
+void fcMP4Stream::mp4Begin()
 {
-    if (!m_os || !m_video_frames.empty()) { return; }
+    if (!m_stream) {
+        fcDebugLog("fcMP4Stream::mp4Begin() invalid stream.");
+        return;
+    }
+}
+
+void fcMP4Stream::addFrame(const fcFrameData& frame)
+{
+    m_frames.emplace_back(frame);
+}
+
+void fcMP4Stream::mp4End()
+{
+    if (!m_stream) {
+        fcDebugLog("fcMP4Stream::mp4End() invalid stream.");
+        return;
+    }
+    if (m_frames.empty()) {
+        fcDebugLog("fcMP4Stream::mp4End() no frame data.");
+        return;
+    }
+
+
+    u64 first_timestamp = m_frames.front().timestamp;
+    for (auto& v : m_frames) {
+        if (v.type == fcFrameType_H264) {
+            m_video_frames.push_back(&v);
+        }
+        else if (v.type == fcFrameType_AAC) {
+            m_audio_frames.push_back(&v);
+        }
+    }
+
+    std::vector<size_t> offsets;
+    {
+        size_t last_size = 0;
+        size_t last_offset = 0;
+        for (auto& v : m_frames) {
+            offsets.push_back(last_offset + last_size);
+            last_offset += last_size;
+            last_size = v.data.size();
+        }
+    }
+
+
+
+    if (m_video_frames.empty()) {
+        fcDebugLog("fcMP4Stream::flush() no video frames.");
+        return;
+    }
     bool has_audio = !m_audio_frames.empty();
 
-
-    StdOStream os = StdOStream (*m_os);
+    size_t mdat_begin = 0;
+    size_t mdat_end = 0;
+    StdIOStream os = StdIOStream(m_stream);
 
     os  << u32_be(0x20)
         << u32_be('ftyp')
@@ -99,26 +148,25 @@ void fcMP4Stream::flush()
         << u32_be(0x8)
         << u32_be('free');
 
-    size_t mdat_begin = os.getWPosition();
+    mdat_begin = os.tellp();
 
     os  << u32_be(0x1)
         << u32_be('mdat')
         << u64(0); // reserve mdat size space
 
+    // write all frame data
+    for (auto& v : m_frames) {
+        // todo: 
+        //os.write(v.data.ptr(), v.data.size());
+        if (v.type == fcFrameType_H264) {
+        }
+        else if (v.type == fcFrameType_AAC) {
+        }
+    }
 
-    // todo: write frame data
-
-    size_t mdat_end = os.getWPosition();
+    mdat_end = os.tellp();
 
 
-    std::vector<fcSampleToChunk> m_video_samples_to_chunk;
-    std::vector<fcSampleToChunk> m_audio_sample_to_chunk;
-    std::vector<fcOffsetValue> m_video_decode_times;
-    std::vector<fcOffsetValue> m_audio_decode_times;
-    std::vector<fcOffsetValue> m_composition_offsets;
-    std::vector<u64> m_video_chunks;
-    std::vector<u64> m_audio_chunks;
-    std::vector<u32> m_iframe_ids;
 
 
     Buffer dd_buf; // decoder descriptor
@@ -541,6 +589,8 @@ void fcMP4Stream::flush()
     u64 mdat_size = u64_be(mdat_end - mdat_begin);
 
     os.write(track_info.ptr(), track_info.size());
-    os.setWPosition(mdat_begin);
+    os.seekp(mdat_begin);
     os.write((char*)&mdat_size, sizeof(u64));
+
+    fcDebugLog("fcMP4Stream::mp4End() done.");
 }
