@@ -7,6 +7,7 @@
 struct HTTPContext
 {
     const HTTPCallback& callback;
+    int *status_code;
 };
 
 static int HTTPCalback_Impl(char* data, size_t size, size_t nmemb, HTTPContext *ctx)
@@ -31,9 +32,9 @@ static bool HTTPGet_Impl(const std::string &url, HTTPContext &ctx)
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ctx);
 
     bool ret = false;
+    long http_code = 0;
     auto curl_code = curl_easy_perform(curl);
     if (curl_code == CURLE_OK) {
-        long http_code = 0;
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
         ret = http_code == 200;
     }
@@ -41,21 +42,25 @@ static bool HTTPGet_Impl(const std::string &url, HTTPContext &ctx)
         // curl_easy_strerror(curl_code);
     }
     curl_easy_cleanup(curl);
+
+    if (ctx.status_code != nullptr) {
+        *ctx.status_code = http_code;
+    }
     return ret;
 }
 
-bool HTTPGet(const std::string &url, std::string &response)
+bool HTTPGet(const std::string &url, std::string &response, int *status_code)
 {
     HTTPCallback callback = [&](const char* data, size_t size) {
         response.append(data, size);
         return true;
     };
-    HTTPContext ctx = { callback };
+    HTTPContext ctx = { callback, status_code };
     return HTTPGet_Impl(url, ctx);
 }
 
-bool HTTPGet(const std::string &url, const HTTPCallback& callback)
+bool HTTPGet(const std::string &url, const HTTPCallback& callback, int *status_code)
 {
-    HTTPContext ctx = { callback };
+    HTTPContext ctx = { callback, status_code };
     return HTTPGet_Impl(url, ctx);
 }

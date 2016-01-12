@@ -8,24 +8,17 @@
 // Foundation
 // -------------------------------------------------------------
 
-static std::vector<std::string> g_dll_search_paths;
-static std::vector<const char*> g_dll_search_paths_ptr;
+static std::string g_module_path;
 
-fcCLinkage fcExport void fcAddDLLSearchPath(const char *path)
+fcCLinkage fcExport void fcSetModulePath(const char *path)
 {
-    g_dll_search_paths.emplace_back(std::string(path));
-
-    g_dll_search_paths_ptr.clear();
-    for (auto &v : g_dll_search_paths) {
-        g_dll_search_paths_ptr.push_back(v.c_str());
-    }
-    g_dll_search_paths_ptr.push_back(nullptr);
+    g_module_path = path;
+    DLLAddSearchPath(path);
 }
 
-fcCLinkage fcExport const char** fcGetDLLSearchPaths()
+fcCLinkage fcExport const char* fcGetModulePath()
 {
-    if (g_dll_search_paths_ptr.empty()) { g_dll_search_paths_ptr.push_back(nullptr); }
-    return &g_dll_search_paths_ptr[0];
+    return !g_module_path.empty() ? g_module_path.c_str() : DLLGetDirectoryOfCurrentModule();
 }
 
 
@@ -202,11 +195,13 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
 #ifdef fcMP4SplitModule
     #define fcMP4ModuleName  "FrameCapturer_MP4" fcDLLExt
     static module_t fcMP4Module;
+    static fcMP4SetModulePathImplT fcMP4SetModulePathImpl;
     static fcMP4DownloadCodecImplT fcMP4DownloadCodecImpl;
     static fcMP4CreateContextImplT fcMP4CreateContextImpl;
 #else
-    fcCLinkage fcExport bool fcMP4DownloadCodecImpl(fcDownloadCallback cb)
-    fcCLinkage fcExport fcIMP4Context* fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev);
+    fcCLinkage fcExport void            fcMP4SetModulePathImpl(const char *path)
+    fcCLinkage fcExport bool            fcMP4DownloadCodecImpl(fcDownloadCallback cb)
+    fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev);
 #endif
 
 #ifdef fcMP4SplitModule
@@ -215,6 +210,7 @@ static void fcMP4InitializeModule()
     if (!fcMP4Module) {
         fcMP4Module = DLLLoad(fcMP4ModuleName);
         if (fcMP4Module) {
+            (void*&)fcMP4SetModulePathImpl = DLLGetSymbol(fcMP4Module, "fcMP4SetModulePathImpl");
             (void*&)fcMP4DownloadCodecImpl = DLLGetSymbol(fcMP4Module, "fcMP4DownloadCodecImpl");
             (void*&)fcMP4CreateContextImpl = DLLGetSymbol(fcMP4Module, "fcMP4CreateContextImpl");
         }
@@ -226,7 +222,11 @@ fcCLinkage fcExport bool fcMP4DownloadCodec(fcDownloadCallback cb)
 {
 #ifdef fcMP4SplitModule
     fcMP4InitializeModule();
-    return fcMP4DownloadCodecImpl ? fcMP4DownloadCodecImpl(cb) : false;
+    if (fcMP4SetModulePathImpl && fcMP4DownloadCodecImpl) {
+        fcMP4SetModulePathImpl(fcGetModulePath());
+        return fcMP4DownloadCodecImpl(cb);
+    }
+    return false;
 #else
     return fcMP4DownloadCodecImpl(cb);
 #endif
@@ -237,7 +237,10 @@ fcCLinkage fcExport fcIMP4Context* fcMP4CreateContext(fcMP4Config *conf)
 {
 #ifdef fcMP4SplitModule
     fcMP4InitializeModule();
-    return fcMP4CreateContextImpl ? fcMP4CreateContextImpl(*conf, fcGetGraphicsDevice()) : nullptr;
+    if (fcMP4CreateContextImpl) {
+        return fcMP4CreateContextImpl(*conf, fcGetGraphicsDevice());
+    }
+    return nullptr;
 #else
     return fcMP4CreateContextImpl(*conf, fcGetGraphicsDevice());
 #endif
@@ -320,36 +323,8 @@ BOOL WINAPI DllMain(HINSTANCE module_handle, DWORD reason_for_call, LPVOID reser
 {
     if (reason_for_call == DLL_PROCESS_ATTACH)
     {
-        static bool s_is_first = true;
-        if (s_is_first) {
-            s_is_first = false;
-
-            // add dll search path to load additional modules (FrameCapturer_MP4.dll etc).
-            // get path of this module and add it to PATH environment variable
-            std::string path;
-            path.resize(1024 * 64);
-
-            DWORD ret = ::GetEnvironmentVariableA("PATH", &path[0], path.size());
-            path.resize(ret);
-            {
-                char path_to_this_module[MAX_PATH];
-                HMODULE mod = 0;
-                ::GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCSTR)&DllMain, &mod);
-                DWORD size = ::GetModuleFileNameA(mod, path_to_this_module, sizeof(path_to_this_module));
-                for (int i = size - 1; i >= 0; --i) {
-                    if (path_to_this_module[i] == '\\') {
-                        path_to_this_module[i] = '\0';
-                        break;
-                    }
-                }
-                path += ";";
-                path += path_to_this_module;
-            }
-            ::SetEnvironmentVariableA("PATH", path.c_str());
-        }
-    }
-    else if (reason_for_call == DLL_PROCESS_DETACH)
-    {
+        // add dll search path to load additional modules (FrameCapturer_MP4.dll etc).
+        DLLAddSearchPath(DLLGetDirectoryOfCurrentModule());
     }
     return TRUE;
 }

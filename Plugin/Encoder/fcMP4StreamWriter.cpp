@@ -2,6 +2,11 @@
 #include "fcMP4Internal.h"
 #include "fcMP4StreamWriter.h"
 
+#ifdef fcDebugLog
+    #undef fcDebugLog
+    #define fcDebugLog(...)
+#endif
+
 namespace {
 
 class Box

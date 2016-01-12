@@ -23,13 +23,14 @@ typedef void* module_t;
 module_t    DLLLoad(const char *path);
 void        DLLUnload(module_t mod);
 void*       DLLGetSymbol(module_t mod, const char *name);
+void        DLLAddSearchPath(const char *path);
+const char* DLLGetDirectoryOfCurrentModule();
 
 void*       AlignedAlloc(size_t size, size_t align);
 void        AlignedFree(void *p);
 
 uint64_t    GetCurrentTimeNanosec();
 
-const std::string&  GetPathOfThisModule();
 
 
 // -------------------------------------------------------------
@@ -38,10 +39,10 @@ const std::string&  GetPathOfThisModule();
 
 // if dst.size() == 0, resize to 1024*1024 first.
 // while decompress failed because dst.size() is not enough, double it and retry.
-bool BZ2Decompress(std::vector<char> &dst, const void *src, size_t src_len);
+bool    BZ2Decompress(std::vector<char> &dst, const void *src, size_t src_len);
 
-// return decompressed size if succeeded. 0 if failed.
-size_t BZ2DecompressToFile(const char *dst_path, const void *src, size_t src_len);
+// return decompressed size if successfully decompressed and written to file. otherwise 0.
+size_t  BZ2DecompressToFile(const char *dst_path, const void *src, size_t src_len);
 
 
 // -------------------------------------------------------------
@@ -51,8 +52,9 @@ size_t BZ2DecompressToFile(const char *dst_path, const void *src, size_t src_len
 // abort session if returned false
 typedef std::function<bool(const char* data, size_t size)> HTTPCallback;
 
-bool HTTPGet(const std::string &url, std::string &response);
-bool HTTPGet(const std::string &url, const HTTPCallback& callback);
+// return true if successfully get content and HTTP status code is 200 (OK). otherwise false.
+bool HTTPGet(const std::string &url, std::string &response, int *status_code = nullptr);
+bool HTTPGet(const std::string &url, const HTTPCallback& callback, int *status_code = nullptr);
 
 
 // -------------------------------------------------------------
@@ -87,12 +89,20 @@ inline u64 u64_be(Int v_)
         (((v >> 24) & 0xFF) << 32) | (((v >> 16) & 0xFF) << 40) | (((v >> 8) & 0xFF) << 48) | ((v & 0xFF) << 56);
 }
 
+// i.e:
+//  roundup<16>(31) : 32
+//  roundup<16>(32) : 32
+//  roundup<16>(33) : 48
 template<int N, class IntType>
 inline IntType roundup(IntType v)
 {
     return v + (N - v % N);
 }
 
+// i.e: 
+//  ceildiv(31, 16) : 2
+//  ceildiv(32, 16) : 2
+//  ceildiv(33, 16) : 3
 template<class IntType>
 inline IntType ceildiv(IntType a, IntType b)
 {
@@ -102,18 +112,5 @@ inline IntType ceildiv(IntType a, IntType b)
 
 int fcGetPixelSize(fcTextureFormat format);
 int fcGetPixelSize(fcPixelFormat format);
-
-
-// F: [](const char *path){} -> void
-template<class F>
-inline void EachDLLSearchPath(const F& body)
-{
-    const char** paths = fcGetDLLSearchPaths();
-    for (int i = 0; ; ++i) {
-        const char *path = paths[i];
-        if (path == nullptr) break;
-        body(path);
-    }
-}
 
 #endif // fcMisc_h

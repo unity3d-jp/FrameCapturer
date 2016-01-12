@@ -136,7 +136,10 @@ inline BinaryStream& operator>>(BinaryStream &o, double&   v) { o.read(&v, 8); r
 class BufferStream : public BinaryStream
 {
 public:
-    BufferStream(Buffer &buf) : m_buf(buf) {}
+    BufferStream(Buffer &buf)
+        : m_buf(buf), m_wpos(buf.size()), m_rpos()
+    {
+    }
 
     size_t tellg() override
     {

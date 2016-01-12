@@ -26,7 +26,7 @@ public class MP4Capturer : MovieCapturer
     public int m_max_active_tasks = 0;
     public Shader m_sh_copy;
 
-    FrameCapturer.fcMP4Context m_ctx;
+    fcAPI.fcMP4Context m_ctx;
     Material m_mat_copy;
     Mesh m_quad;
     CommandBuffer m_cb;
@@ -57,7 +57,7 @@ public class MP4Capturer : MovieCapturer
             {
                 path = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
             }
-            ret = FrameCapturer.fcMP4WriteFile(m_ctx, path, begin_frame, end_frame);
+            ret = fcAPI.fcMP4WriteFile(m_ctx, path, begin_frame, end_frame);
             Debug.Log("MP4Capturer.WriteFile() : " + path);
         }
         return ret;
@@ -68,7 +68,7 @@ public class MP4Capturer : MovieCapturer
         int ret = 0;
         if (m_ctx.ptr != IntPtr.Zero)
         {
-            ret = FrameCapturer.fcMP4WriteMemory(m_ctx, dst_buf, begin_frame, end_frame);
+            ret = fcAPI.fcMP4WriteMemory(m_ctx, dst_buf, begin_frame, end_frame);
             Debug.Log("MP4Capturer.WriteMemry()");
         }
         return ret;
@@ -78,7 +78,7 @@ public class MP4Capturer : MovieCapturer
 
     public override void ResetRecordingState()
     {
-        FrameCapturer.fcMP4DestroyContext(m_ctx);
+        fcAPI.fcMP4DestroyContext(m_ctx);
         m_ctx.ptr = IntPtr.Zero;
         if(m_scratch_buffer != null)
         {
@@ -93,7 +93,7 @@ public class MP4Capturer : MovieCapturer
         m_scratch_buffer.Create();
 
         m_frame = 0;
-        FrameCapturer.fcMP4Config conf = default(FrameCapturer.fcMP4Config);
+        fcAPI.fcMP4Config conf = default(fcAPI.fcMP4Config);
         conf.setDefaults();
         conf.video = m_video ? 1 : 0;
         conf.audio = m_audio ? 1 : 0;
@@ -111,30 +111,30 @@ public class MP4Capturer : MovieCapturer
             case AudioSpeakerMode.Stereo: conf.audio_num_channels = 2; break;
             // todo: maybe need more case
         }
-        m_ctx = FrameCapturer.fcMP4CreateContext(ref conf);
+        m_ctx = fcAPI.fcMP4CreateContext(ref conf);
     }
 
     public override void EraseFrame(int begin_frame, int end_frame)
     {
-        FrameCapturer.fcMP4EraseFrame(m_ctx, begin_frame, end_frame);
+        fcAPI.fcMP4EraseFrame(m_ctx, begin_frame, end_frame);
     }
 
     public override int GetExpectedFileSize(int begin_frame = 0, int end_frame = -1)
     {
-        return FrameCapturer.fcMP4GetExpectedDataSize(m_ctx, begin_frame, end_frame);
+        return fcAPI.fcMP4GetExpectedDataSize(m_ctx, begin_frame, end_frame);
     }
 
     public override int GetFrameCount()
     {
-        return FrameCapturer.fcMP4GetFrameCount(m_ctx);
+        return fcAPI.fcMP4GetFrameCount(m_ctx);
     }
 
     public override void GetFrameData(RenderTexture rt, int frame)
     {
-        FrameCapturer.fcMP4GetFrameData(m_ctx, rt.GetNativeTexturePtr(), frame);
+        fcAPI.fcMP4GetFrameData(m_ctx, rt.GetNativeTexturePtr(), frame);
     }
 
-    public FrameCapturer.fcMP4Context GetMP4Context() { return m_ctx; }
+    public fcAPI.fcMP4Context GetMP4Context() { return m_ctx; }
 
 #if UNITY_EDITOR
     void Reset()
@@ -145,7 +145,11 @@ public class MP4Capturer : MovieCapturer
 
     void Start()
     {
-        FrameCapturer.fcMP4DownloadCodec(null);
+#if UNITY_EDITOR
+#else
+        fcAPI.fcSetModulePath(Application.persistentDataPath);
+#endif
+        fcAPI.fcMP4DownloadCodec(null);
     }
 
     void OnEnable()
@@ -172,7 +176,7 @@ public class MP4Capturer : MovieCapturer
 
     void OnDisable()
     {
-        FrameCapturer.fcMP4DestroyContext(m_ctx);
+        fcAPI.fcMP4DestroyContext(m_ctx);
         m_ctx.ptr = IntPtr.Zero;
 
         m_cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb);
@@ -196,7 +200,7 @@ public class MP4Capturer : MovieCapturer
                 Graphics.SetRenderTarget(m_scratch_buffer);
                 Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                 Graphics.SetRenderTarget(null);
-                FrameCapturer.fcMP4AddVideoFrameTexture(m_ctx, m_scratch_buffer.GetNativeTexturePtr());
+                fcAPI.fcMP4AddVideoFrameTexture(m_ctx, m_scratch_buffer.GetNativeTexturePtr());
             }
         }
     }
@@ -205,7 +209,7 @@ public class MP4Capturer : MovieCapturer
     {
         if (m_audio)
         {
-            FrameCapturer.fcMP4AddAudioSamples(m_ctx, samples, num_samples);
+            fcAPI.fcMP4AddAudioSamples(m_ctx, samples, num_samples);
         }
     }
 }

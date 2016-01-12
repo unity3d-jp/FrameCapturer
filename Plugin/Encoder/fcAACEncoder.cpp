@@ -4,14 +4,6 @@
 #include "fcAACEncoder.h"
 
 
-#if defined(fcWindows)
-    #define FAACDLL "libfaac.dll"
-#elif defined(fcMac)
-    #define FAACDLL "libfaac.dylib"
-#elif
-    #define FAACDLL "libfaac.so"
-#endif
-
 namespace {
 
     typedef faacEncConfigurationPtr

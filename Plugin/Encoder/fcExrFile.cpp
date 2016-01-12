@@ -56,7 +56,6 @@ private:
     void endFrameTask(fcExrFrameData *exr);
 
 private:
-    fcMagic m_magic; //  for debug
     fcExrConfig m_conf;
     fcIGraphicsDevice *m_dev;
     fcExrFrameData *m_exr;
@@ -68,8 +67,7 @@ private:
 
 
 fcExrContext::fcExrContext(fcExrConfig &conf, fcIGraphicsDevice *dev)
-    : m_magic(fcMagic_ExrContext)
-    , m_conf(conf)
+    : m_conf(conf)
     , m_dev(dev)
     , m_exr(nullptr)
     , m_active_task_count(0)
@@ -80,7 +78,6 @@ fcExrContext::fcExrContext(fcExrConfig &conf, fcIGraphicsDevice *dev)
 fcExrContext::~fcExrContext()
 {
     m_tasks.wait();
-    m_magic = fcMagic_Deleted;
 }
 
 

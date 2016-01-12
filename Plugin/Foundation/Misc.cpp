@@ -22,6 +22,50 @@ void* DLLGetSymbol(module_t mod, const char *name) { return ::dlsym(mod, name); 
 
 #endif
 
+void DLLAddSearchPath(const char *path_to_add)
+{
+#ifdef fcWindows
+    std::string path;
+    path.resize(1024 * 64);
+
+    DWORD ret = ::GetEnvironmentVariableA("PATH", &path[0], path.size());
+    path.resize(ret);
+    path += ";";
+    path += path_to_add;
+    ::SetEnvironmentVariableA("PATH", path.c_str());
+
+#else 
+    std::string path = getenv("LD_LIBRARY_PATH");
+    path += ";";
+    path += path_to_add;
+    setenv("LD_LIBRARY_PATH", path.c_str(), 1);
+#endif
+}
+
+const char* DLLGetDirectoryOfCurrentModule()
+{
+    static std::string s_path;
+#ifdef fcWindows
+    if (s_path.empty()) {
+        char buf[MAX_PATH];
+        HMODULE mod = 0;
+        ::GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCSTR)&DLLGetDirectoryOfCurrentModule, &mod);
+        DWORD size = ::GetModuleFileNameA(mod, buf, sizeof(buf));
+        for (int i = size - 1; i >= 0; --i) {
+            if (buf[i] == '\\') {
+                buf[i] = '\0';
+                s_path = buf;
+                break;
+            }
+        }
+    }
+#else 
+    // todo:
+#endif
+    return s_path.c_str();
+}
+
+
 
 void* AlignedAlloc(size_t size, size_t align)
 {
@@ -61,31 +105,6 @@ uint64_t GetCurrentTimeNanosec()
 #endif
 }
 
-
-const std::string& GetPathOfThisModule()
-{
-#ifdef fcWindows
-    static std::string s_path;;
-    if (s_path.empty()) {
-        char buf[MAX_PATH];
-        HMODULE mod = 0;
-        ::GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCSTR)&GetPathOfThisModule, &mod);
-        DWORD size = ::GetModuleFileNameA(mod, buf, sizeof(buf));
-        for (int i = size - 1; i >= 0; --i) {
-            if (buf[i] == '\\') {
-                buf[i] = '\0';
-                s_path = buf;
-                break;
-            }
-        }
-    }
-    return s_path;
-#else 
-    // todo:
-    static std::string s_path;
-    return s_path;
-#endif
-}
 
 
 int fcGetPixelSize(fcTextureFormat format)

@@ -24,7 +24,7 @@ public class GifOffscreenCapturer : MovieCapturer
     public int m_keyframe = 0;
     public Shader m_sh_copy;
 
-    IntPtr m_gif;
+    fcAPI.fcGIFContext m_gif;
     Material m_mat_copy;
     Mesh m_quad;
     RenderTexture m_scratch_buffer;
@@ -39,13 +39,13 @@ public class GifOffscreenCapturer : MovieCapturer
 
     public override bool WriteFile(string path = "", int begin_frame = 0, int end_frame = -1)
     {
-        if (m_gif != IntPtr.Zero)
+        if (m_gif.ptr != IntPtr.Zero)
         {
             if (path.Length==0)
             {
                 path = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
             }
-            return FrameCapturer.fcGifWriteFile(m_gif, path, begin_frame, end_frame);
+            return fcAPI.fcGifWriteFile(m_gif, path, begin_frame, end_frame);
         }
         return false;
     }
@@ -53,9 +53,9 @@ public class GifOffscreenCapturer : MovieCapturer
     public override int WriteMemory(System.IntPtr dst_buf, int begin_frame = 0, int end_frame = -1)
     {
         int ret = 0;
-        if (m_gif != IntPtr.Zero)
+        if (m_gif.ptr != IntPtr.Zero)
         {
-            ret = FrameCapturer.fcGifWriteMemory(m_gif, dst_buf, begin_frame, end_frame);
+            ret = fcAPI.fcGifWriteMemory(m_gif, dst_buf, begin_frame, end_frame);
             print("GifOffscreenCapturer.WriteMemry()");
         }
         return ret;
@@ -65,8 +65,8 @@ public class GifOffscreenCapturer : MovieCapturer
 
     public override void ResetRecordingState()
     {
-        FrameCapturer.fcGifDestroyContext(m_gif);
-        m_gif = IntPtr.Zero;
+        fcAPI.fcGifDestroyContext(m_gif);
+        m_gif.ptr = IntPtr.Zero;
         if(m_scratch_buffer != null)
         {
             m_scratch_buffer.Release();
@@ -84,7 +84,7 @@ public class GifOffscreenCapturer : MovieCapturer
         {
             m_max_active_tasks = SystemInfo.processorCount;
         }
-        FrameCapturer.fcGifConfig conf;
+        fcAPI.fcGifConfig conf;
         conf.width = m_scratch_buffer.width;
         conf.height = m_scratch_buffer.height;
         conf.num_colors = m_num_colors;
@@ -93,30 +93,30 @@ public class GifOffscreenCapturer : MovieCapturer
         conf.max_frame = m_max_frame;
         conf.max_data_size = m_max_data_size;
         conf.max_active_tasks = m_max_active_tasks;
-        m_gif = FrameCapturer.fcGifCreateContext(ref conf);
+        m_gif = fcAPI.fcGifCreateContext(ref conf);
     }
 
     public override void EraseFrame(int begin_frame, int end_frame)
     {
-        FrameCapturer.fcGifEraseFrame(m_gif, begin_frame, end_frame);
+        fcAPI.fcGifEraseFrame(m_gif, begin_frame, end_frame);
     }
 
     public override int GetExpectedFileSize(int begin_frame = 0, int end_frame = -1)
     {
-        return FrameCapturer.fcGifGetExpectedDataSize(m_gif, begin_frame, end_frame);
+        return fcAPI.fcGifGetExpectedDataSize(m_gif, begin_frame, end_frame);
     }
 
     public override int GetFrameCount()
     {
-        return FrameCapturer.fcGifGetFrameCount(m_gif);
+        return fcAPI.fcGifGetFrameCount(m_gif);
     }
 
     public override void GetFrameData(RenderTexture rt, int frame)
     {
-        FrameCapturer.fcGifGetFrameData(m_gif, rt.GetNativeTexturePtr(), frame);
+        fcAPI.fcGifGetFrameData(m_gif, rt.GetNativeTexturePtr(), frame);
     }
 
-    public IntPtr GetGifContext() { return m_gif; }
+    public fcAPI.fcGIFContext GetGifContext() { return m_gif; }
 
 
 #if UNITY_EDITOR
@@ -141,8 +141,8 @@ public class GifOffscreenCapturer : MovieCapturer
 
     void OnDisable()
     {
-        FrameCapturer.fcGifDestroyContext(m_gif);
-        m_gif = IntPtr.Zero;
+        fcAPI.fcGifDestroyContext(m_gif);
+        m_gif.ptr = IntPtr.Zero;
 
         m_scratch_buffer.Release();
         m_scratch_buffer = null;
@@ -162,7 +162,7 @@ public class GifOffscreenCapturer : MovieCapturer
                 Graphics.SetRenderTarget(m_scratch_buffer);
                 Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                 Graphics.SetRenderTarget(null);
-                FrameCapturer.fcGifAddFrame(m_gif, m_scratch_buffer.GetNativeTexturePtr());
+                fcAPI.fcGifAddFrame(m_gif, m_scratch_buffer.GetNativeTexturePtr());
             }
         }
     }

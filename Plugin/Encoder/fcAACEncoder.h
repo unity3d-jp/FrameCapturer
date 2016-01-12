@@ -1,6 +1,7 @@
 ﻿#ifndef fcAACEncoder_h
 #define fcAACEncoder_h
 
+#define FAACDLL "libfaac" fcDLLExt
 
 class fcAACEncoder
 {

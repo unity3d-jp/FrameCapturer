@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-public static class FrameCapturer
+public static class fcAPI
 {
     public enum fcPixelFormat
     {
@@ -30,18 +30,36 @@ public static class FrameCapturer
         RInt,
     };
 
+    // -------------------------------------------------------------
+    // Foundation
+    // -------------------------------------------------------------
+
+    [DllImport ("FrameCapturer")] public static extern void     fcSetModulePath(string path);
+    [DllImport ("FrameCapturer")] public static extern ulong    fcMakeTimestamp();
+    [DllImport ("FrameCapturer")] public static extern ulong    fcSecondsToTimestamp(double sec);
+
+
+    // -------------------------------------------------------------
+    // EXR Exporter
+    // -------------------------------------------------------------
+
     public struct fcExrConfig
     {
         public int max_active_tasks;
     };
+    public struct fcEXRContext { public IntPtr ptr; }
 
-    [DllImport ("FrameCapturer")] public static extern IntPtr   fcExrCreateContext(ref fcExrConfig conf);
-    [DllImport ("FrameCapturer")] public static extern void     fcExrDestroyContext(IntPtr ctx);
-    [DllImport ("FrameCapturer")] public static extern bool     fcExrBeginFrame(IntPtr ctx, string path, int width, int height);
-    [DllImport ("FrameCapturer")] public static extern bool     fcExrAddLayerTexture(IntPtr ctx, IntPtr tex, RenderTextureFormat f, int ch, string name, bool flipY);
-    [DllImport ("FrameCapturer")] public static extern bool     fcExrAddLayerPixels(IntPtr ctx, IntPtr pixels, fcPixelFormat f, int ch, string name, bool flipY);
-    [DllImport ("FrameCapturer")] public static extern bool     fcExrEndFrame(IntPtr ctx);
+    [DllImport ("FrameCapturer")] public static extern fcEXRContext fcExrCreateContext(ref fcExrConfig conf);
+    [DllImport ("FrameCapturer")] public static extern void         fcExrDestroyContext(fcEXRContext ctx);
+    [DllImport ("FrameCapturer")] public static extern bool         fcExrBeginFrame(fcEXRContext ctx, string path, int width, int height);
+    [DllImport ("FrameCapturer")] public static extern bool         fcExrAddLayerTexture(fcEXRContext ctx, IntPtr tex, RenderTextureFormat f, int ch, string name, bool flipY);
+    [DllImport ("FrameCapturer")] public static extern bool         fcExrAddLayerPixels(fcEXRContext ctx, IntPtr pixels, fcPixelFormat f, int ch, string name, bool flipY);
+    [DllImport ("FrameCapturer")] public static extern bool         fcExrEndFrame(fcEXRContext ctx);
 
+
+    // -------------------------------------------------------------
+    // GIF Exporter
+    // -------------------------------------------------------------
 
     public struct fcGifConfig
     {
@@ -54,20 +72,23 @@ public static class FrameCapturer
         public int max_frame;
         public int max_data_size;
     };
+    public struct fcGIFContext { public IntPtr ptr; }
+
+    [DllImport ("FrameCapturer")] public static extern fcGIFContext fcGifCreateContext(ref fcGifConfig conf);
+    [DllImport ("FrameCapturer")] public static extern void         fcGifDestroyContext(fcGIFContext ctx);
+    [DllImport ("FrameCapturer")] public static extern void         fcGifAddFrame(fcGIFContext ctx, IntPtr tex);
+    [DllImport ("FrameCapturer")] public static extern void         fcGifClearFrame(fcGIFContext ctx);
+    [DllImport ("FrameCapturer")] public static extern bool         fcGifWriteFile(fcGIFContext ctx, string path, int begin_frame=0, int end_frame=-1);
+    [DllImport ("FrameCapturer")] public static extern int          fcGifWriteMemory(fcGIFContext ctx, IntPtr out_buf, int begin_frame=0, int end_frame=-1);
+    [DllImport ("FrameCapturer")] public static extern int          fcGifGetFrameCount(fcGIFContext ctx);
+    [DllImport ("FrameCapturer")] public static extern void         fcGifGetFrameData(fcGIFContext ctx, IntPtr tex, int frame);
+    [DllImport ("FrameCapturer")] public static extern int          fcGifGetExpectedDataSize(fcGIFContext ctx, int begin_frame, int end_frame);
+    [DllImport ("FrameCapturer")] public static extern void         fcGifEraseFrame(fcGIFContext ctx, int begin_frame, int end_frame);
 
 
-
-    [DllImport ("FrameCapturer")] public static extern IntPtr   fcGifCreateContext(ref fcGifConfig conf);
-    [DllImport ("FrameCapturer")] public static extern void     fcGifDestroyContext(IntPtr ctx);
-    [DllImport ("FrameCapturer")] public static extern void     fcGifAddFrame(IntPtr ctx, IntPtr tex);
-    [DllImport ("FrameCapturer")] public static extern void     fcGifClearFrame(IntPtr ctx);
-    [DllImport ("FrameCapturer")] public static extern bool     fcGifWriteFile(IntPtr ctx, string path, int begin_frame=0, int end_frame=-1);
-    [DllImport ("FrameCapturer")] public static extern int      fcGifWriteMemory(IntPtr ctx, IntPtr out_buf, int begin_frame=0, int end_frame=-1);
-    [DllImport ("FrameCapturer")] public static extern int      fcGifGetFrameCount(IntPtr ctx);
-    [DllImport ("FrameCapturer")] public static extern void     fcGifGetFrameData(IntPtr ctx, IntPtr tex, int frame);
-    [DllImport ("FrameCapturer")] public static extern int      fcGifGetExpectedDataSize(IntPtr ctx, int begin_frame, int end_frame);
-    [DllImport ("FrameCapturer")] public static extern void     fcGifEraseFrame(IntPtr ctx, int begin_frame, int end_frame);
-
+    // -------------------------------------------------------------
+    // MP4 Exporter
+    // -------------------------------------------------------------
 
     public enum fcEColorSpace
     {
@@ -99,11 +120,9 @@ public static class FrameCapturer
             audio_sampling_rate = 48000; audio_num_channels = 2; audio_bitrate = 64000;
         }
     };
-    public struct fcMP4Context
-    {
-        public IntPtr ptr;
-    }
+    public struct fcMP4Context { public IntPtr ptr; }
     public delegate void fcDownloadCallback(bool is_complete, IntPtr message);
+
     [DllImport ("FrameCapturer")] public static extern bool         fcMP4DownloadCodec(fcDownloadCallback cb);
     [DllImport ("FrameCapturer")] public static extern fcMP4Context fcMP4CreateContext(ref fcMP4Config conf);
     [DllImport ("FrameCapturer")] public static extern void         fcMP4DestroyContext(fcMP4Context ctx);
