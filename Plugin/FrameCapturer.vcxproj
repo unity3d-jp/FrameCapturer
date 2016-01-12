@@ -29,6 +29,7 @@
   <ItemGroup>
     <ClCompile Include="Encoder\fcGifFile.cpp" />
     <ClCompile Include="fcThreadPool.cpp" />
+    <ClCompile Include="Foundation\Misc.cpp" />
     <ClCompile Include="FrameCapturer.cpp" />
     <ClCompile Include="GraphicsDevice\fcGraphicsDevice.cpp" />
     <ClCompile Include="GraphicsDevice\fcGraphicsDeviceD3D11.cpp" />
@@ -47,6 +48,8 @@
     <ClInclude Include="Encoder\fcGifFile.h" />
     <ClInclude Include="fcFoundation.h" />
     <ClInclude Include="fcThreadPool.h" />
+    <ClInclude Include="Foundation\fcFoundation.h" />
+    <ClInclude Include="Foundation\Misc.h" />
     <ClInclude Include="FrameCapturer.h" />
     <ClInclude Include="GraphicsDevice\fcGraphicsDevice.h" />
     <ClInclude Include="pch.h" />

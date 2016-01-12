@@ -53,10 +53,10 @@ static bool LoadFAACModule()
 {
     if (g_mod_faac != nullptr) { return true; }
 
-    g_mod_faac = module_load(FAACDLL);
+    g_mod_faac = DLLLoad(FAACDLL);
     if (g_mod_faac == nullptr) { return false; }
 
-#define imp(name) (void*&)name##_imp = module_getsymbol(g_mod_faac, #name);
+#define imp(name) (void*&)name##_imp = DLLGetSymbol(g_mod_faac, #name);
 imp(faacEncGetCurrentConfiguration)
 imp(faacEncSetConfiguration)
 imp(faacEncOpen)

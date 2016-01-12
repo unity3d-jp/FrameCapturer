@@ -8,11 +8,11 @@ public:
 
     // assume texture format is RGBA8.
     // timestamp=0 is treated as current time.
-    virtual bool    addVideoFrameTexture(void *tex, uint64_t timestamp =0) = 0;
+    virtual bool    addVideoFrameTexture(void *tex, uint64_t timestamp = 0) = 0;
 
-    // assume pixel format is RGBA8 or I420
+    // assume pixel format is RGBA8 or I420 (color_space indicates)
     // timestamp=0 is treated as current time.
-    virtual bool    addVideoFramePixels(void *pixels, fcColorSpace cs, uint64_t timestamp = 0) = 0;
+    virtual bool    addVideoFramePixels(void *pixels, fcColorSpace color_space, uint64_t timestamp = 0) = 0;
 
     // timestamp=0 is treated as current time.
     virtual bool    addAudioFrame(const float *samples, int num_samples, uint64_t timestamp = 0) = 0;

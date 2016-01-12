@@ -4,12 +4,52 @@
 #include "GraphicsDevice/fcGraphicsDevice.h"
 
 
+// -------------------------------------------------------------
+// Foundation
+// -------------------------------------------------------------
+
+static std::vector<std::string> g_dll_search_paths;
+static std::vector<const char*> g_dll_search_paths_ptr;
+
+fcCLinkage fcExport void fcAddDLLSearchPath(const char *path)
+{
+    g_dll_search_paths.emplace_back(std::string(path));
+
+    g_dll_search_paths_ptr.clear();
+    for (auto &v : g_dll_search_paths) {
+        g_dll_search_paths_ptr.push_back(v.c_str());
+    }
+    g_dll_search_paths_ptr.push_back(nullptr);
+}
+
+fcCLinkage fcExport const char** fcGetDLLSearchPaths()
+{
+    if (g_dll_search_paths_ptr.empty()) { g_dll_search_paths_ptr.push_back(nullptr); }
+    return &g_dll_search_paths_ptr[0];
+}
+
+
+fcCLinkage fcExport uint64_t fcMakeTimestamp()
+{
+    return GetCurrentTimeNanosec();
+}
+
+fcCLinkage fcExport uint64_t fcSecondsToTimestamp(double sec)
+{
+    // timestamp is nanoseconds
+    return uint64_t(sec * 1e+9);
+}
+
+
+// -------------------------------------------------------------
+// EXR Exporter
+// -------------------------------------------------------------
 
 #ifdef fcSupportEXR
 #include "Encoder/fcExrFile.h"
 
 #ifdef fcEXRSplitModule
-    #define fcEXRModuleName  "FrameCapturer_EXR" fcModuleExt
+    #define fcEXRModuleName  "FrameCapturer_EXR" fcDLLExt
     static module_t fcExrModule;
     fcExrCreateContextImplT fcExrCreateContextImpl;
 #else
@@ -21,9 +61,9 @@ fcCLinkage fcExport fcIExrContext* fcExrCreateContext(fcExrConfig *conf)
 {
 #ifdef fcEXRSplitModule
     if (!fcExrModule) {
-        fcExrModule = module_load(fcEXRModuleName);
+        fcExrModule = DLLLoad(fcEXRModuleName);
         if (fcExrModule) {
-            (void*&)fcExrCreateContextImpl = module_getsymbol(fcExrModule, "fcExrCreateContextImpl");
+            (void*&)fcExrCreateContextImpl = DLLGetSymbol(fcExrModule, "fcExrCreateContextImpl");
         }
     }
     return fcExrCreateContextImpl ? fcExrCreateContextImpl(*conf, fcGetGraphicsDevice()) : nullptr;
@@ -64,12 +104,15 @@ fcCLinkage fcExport bool fcExrEndFrame(fcIExrContext *ctx)
 #endif // fcSupportEXR
 
 
+// -------------------------------------------------------------
+// GIF Exporter
+// -------------------------------------------------------------
 
 #ifdef fcSupportGIF
 #include "Encoder/fcGifFile.h"
 
 #ifdef fcGIFSplitModule
-    #define fcGIFModuleName  "FrameCapturer_GIF" fcModuleExt
+    #define fcGIFModuleName  "FrameCapturer_GIF" fcDLLExt
     static module_t fcGifModule;
     fcGifCreateContextImplT fcGifCreateContextImpl;
 #else
@@ -81,9 +124,9 @@ fcCLinkage fcExport fcIGifContext* fcGifCreateContext(fcGifConfig *conf)
 {
 #ifdef fcGIFSplitModule
     if (!fcGifModule) {
-        fcGifModule = module_load(fcGIFModuleName);
+        fcGifModule = DLLLoad(fcGIFModuleName);
         if (fcGifModule) {
-            (void*&)fcExrCreateContextImpl = module_getsymbol(fcGifModule, "fcGifCreateContextImpl");
+            (void*&)fcExrCreateContextImpl = DLLGetSymbol(fcGifModule, "fcGifCreateContextImpl");
         }
     }
     return fcExrCreateContextImpl ? fcExrCreateContextImpl(*conf, fcGetGraphicsDevice()) : nullptr;
@@ -149,12 +192,15 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
 
 
 
+// -------------------------------------------------------------
+// MP4 Exporter
+// -------------------------------------------------------------
 
 #ifdef fcSupportMP4
 #include "Encoder/fcMP4File.h"
 
 #ifdef fcMP4SplitModule
-    #define fcMP4ModuleName  "FrameCapturer_MP4" fcModuleExt
+    #define fcMP4ModuleName  "FrameCapturer_MP4" fcDLLExt
     static module_t fcMP4Module;
     static fcMP4DownloadCodecImplT fcMP4DownloadCodecImpl;
     static fcMP4CreateContextImplT fcMP4CreateContextImpl;
@@ -167,10 +213,10 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
 static void fcMP4InitializeModule()
 {
     if (!fcMP4Module) {
-        fcMP4Module = module_load(fcMP4ModuleName);
+        fcMP4Module = DLLLoad(fcMP4ModuleName);
         if (fcMP4Module) {
-            (void*&)fcMP4DownloadCodecImpl = module_getsymbol(fcMP4Module, "fcMP4DownloadCodecImpl");
-            (void*&)fcMP4CreateContextImpl = module_getsymbol(fcMP4Module, "fcMP4CreateContextImpl");
+            (void*&)fcMP4DownloadCodecImpl = DLLGetSymbol(fcMP4Module, "fcMP4DownloadCodecImpl");
+            (void*&)fcMP4CreateContextImpl = DLLGetSymbol(fcMP4Module, "fcMP4CreateContextImpl");
         }
     }
 }
@@ -267,6 +313,8 @@ fcCLinkage fcExport void fcMP4EraseFrame(fcIMP4Context *ctx, int begin_frame, in
 
 
 #ifdef fcWindows
+
+#include <windows.h>
 
 BOOL WINAPI DllMain(HINSTANCE module_handle, DWORD reason_for_call, LPVOID reserved)
 {
