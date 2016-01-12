@@ -33,6 +33,9 @@
     <ProjectReference Include="..\FrameCapturer.vcxproj">
       <Project>{08361722-5520-47ac-a0c2-31e8a062b73f}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\FrameCapturer_MP4.vcxproj">
+      <Project>{067fa9e2-32cd-4c66-be1b-959edf510cc8}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7676585B-7ABD-4372-9E6A-05539D637E5A}</ProjectGuid>

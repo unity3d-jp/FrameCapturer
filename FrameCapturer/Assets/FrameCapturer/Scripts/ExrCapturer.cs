@@ -32,7 +32,7 @@ public class ExrCapturer : MonoBehaviour
     public int m_max_active_tasks = 1;
     public Shader m_sh_copy;
 
-    IntPtr m_exr;
+    fcAPI.fcEXRContext m_exr;
     int m_frame;
     Material m_mat_copy;
     Mesh m_quad;
@@ -106,9 +106,9 @@ public class ExrCapturer : MonoBehaviour
             }
         }
 
-        FrameCapturer.fcExrConfig conf;
+        fcAPI.fcExrConfig conf;
         conf.max_active_tasks = m_max_active_tasks;
-        m_exr = FrameCapturer.fcExrCreateContext(ref conf);
+        m_exr = fcAPI.fcExrCreateContext(ref conf);
     }
 
     void OnDisable()
@@ -136,7 +136,7 @@ public class ExrCapturer : MonoBehaviour
             m_rt_gbuffer = null;
         }
 
-        FrameCapturer.fcExrDestroyContext(m_exr);
+        fcAPI.fcExrDestroyContext(m_exr);
     }
 
     IEnumerator OnPostRender()
@@ -158,7 +158,7 @@ public class ExrCapturer : MonoBehaviour
                 Graphics.SetRenderTarget(null);
 
                 string path = m_output_directory + "/" + m_filename_gbuffer + "_" + frame.ToString("0000") + ".exr";
-                FrameCapturer.fcExrBeginFrame(m_exr, path, m_gbuffer[0].width, m_gbuffer[0].height);
+                fcAPI.fcExrBeginFrame(m_exr, path, m_gbuffer[0].width, m_gbuffer[0].height);
                 AddLayer(m_gbuffer[0], 0, "Albedo.R");
                 AddLayer(m_gbuffer[0], 1, "Albedo.G");
                 AddLayer(m_gbuffer[0], 2, "Albedo.B");
@@ -174,7 +174,7 @@ public class ExrCapturer : MonoBehaviour
                 AddLayer(m_gbuffer[3], 1, "Emission.G");
                 AddLayer(m_gbuffer[3], 2, "Emission.B");
                 AddLayer(m_depth, 0, "Depth");
-                FrameCapturer.fcExrEndFrame(m_exr);
+                fcAPI.fcExrEndFrame(m_exr);
             }
 
             yield return new WaitForEndOfFrame();
@@ -186,18 +186,18 @@ public class ExrCapturer : MonoBehaviour
                 Graphics.SetRenderTarget(null);
 
                 string path = m_output_directory + "/" + m_filename_framebuffer + "_" + frame.ToString("0000") + ".exr";
-                FrameCapturer.fcExrBeginFrame(m_exr, path, m_frame_buffer.width, m_frame_buffer.height);
+                fcAPI.fcExrBeginFrame(m_exr, path, m_frame_buffer.width, m_frame_buffer.height);
                 AddLayer(m_frame_buffer, 0, "R");
                 AddLayer(m_frame_buffer, 1, "G");
                 AddLayer(m_frame_buffer, 2, "B");
                 //AddLayer(m_frame_buffer, 3, "A");
-                FrameCapturer.fcExrEndFrame(m_exr);
+                fcAPI.fcExrEndFrame(m_exr);
             }
         }
     }
 
     void AddLayer(RenderTexture rt, int ch, string name)
     {
-        FrameCapturer.fcExrAddLayerTexture(m_exr, rt.GetNativeTexturePtr(), rt.format, ch, name, false);
+        fcAPI.fcExrAddLayerTexture(m_exr, rt.GetNativeTexturePtr(), rt.format, ch, name, false);
     }
 }

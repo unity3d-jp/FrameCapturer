@@ -113,6 +113,4 @@ struct fcSampleToChunk
     uint32_t samples_per_chunk;
 };
 
-const std::string& GetPathOfThisModule();
-
 #endif // fcMP4Internal_h

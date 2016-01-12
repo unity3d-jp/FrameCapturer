@@ -20,9 +20,6 @@
 class fcMP4Context : public fcIMP4Context
 {
 public:
-
-
-public:
     fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev);
     ~fcMP4Context();
     void release() override;
@@ -53,7 +50,6 @@ private:
     void write(std::ostream &os, int begin_frame, int end_frame);
 
 private:
-    fcMagic m_magic; //  for debug
     fcMP4Config m_conf;
     fcIGraphicsDevice *m_dev;
     std::vector<fcVideoFrame> m_raw_video_frames; // temporary buffers to encode.
@@ -85,8 +81,7 @@ private:
 
 
 fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
-    : m_magic(fcMagic_MP4Context)
-    , m_conf(conf)
+    : m_conf(conf)
     , m_dev(dev)
     , m_num_video_frame(0)
     , m_num_audio_frame(0)
@@ -134,7 +129,6 @@ fcMP4Context::~fcMP4Context()
         m_audio_condition.notify_all();
         m_audio_worker.join();
     }
-    m_magic = fcMagic_Deleted;
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
@@ -519,4 +513,76 @@ fcCLinkage fcExport fcIMP4Context* fcMP4CreateContextImpl(fcMP4Config &conf, fcI
     return nullptr;
 }
 
+
+
+
+// -------------------------------------------------------------
+// OpenH264 downloader
+// -------------------------------------------------------------
+
+namespace {
+
+    std::thread *g_download_thread;
+    std::string g_module_path;
+
+    std::string fcGetOpenH264ModulePath()
+    {
+        std::string ret = !g_module_path.empty() ? g_module_path : DLLGetDirectoryOfCurrentModule();
+        if (!ret.empty() && (ret.back() != '/' && ret.back() != '\\')) {
+            ret += "/";
+        }
+        ret += OpenH264DLL;
+        return ret;
+    }
+
+    void fcDownloadCB_Dummy(bool, const char*)
+    {
+    }
+
+    void fcMP4DownloadCodecBody(fcDownloadCallback cb)
+    {
+        std::string response;
+        if (HTTPGet(OpenH264URL, response)) {
+            cb(false, "HTTP Get completed");
+            if (BZ2DecompressToFile(fcGetOpenH264ModulePath().c_str(), &response[0], response.size()))
+            {
+                cb(true, "BZ2 Decompress completed");
+            }
+            else {
+                cb(true, "BZ2 Decompress failed");
+            }
+        }
+        else {
+            cb(true, "HTTP Get failed");
+        }
+
+        g_download_thread->detach();
+        delete g_download_thread;
+        g_download_thread = nullptr;
+    }
+
+} // namespace
+
+
+fcCLinkage fcExport void fcMP4SetModulePathImpl(const char *path)
+{
+    g_module_path = path;
+}
+
+fcCLinkage fcExport bool fcMP4DownloadCodecImpl(fcDownloadCallback cb)
+{
+    if (cb == nullptr) { cb = &fcDownloadCB_Dummy; }
+
+    if (fcH264Encoder::loadModule()) {
+        fcAACEncoder::loadModule();
+        cb(true, "module already exists");
+        return true;
+    }
+
+    // download thread is already running
+    if (g_download_thread != nullptr) { return false; }
+
+    g_download_thread = new std::thread([=]() { fcMP4DownloadCodecBody(cb); });
+    return true;
+}
 #endif // fcSupportMP4

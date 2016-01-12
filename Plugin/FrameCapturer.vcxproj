@@ -54,6 +54,14 @@
     <ClInclude Include="GraphicsDevice\fcGraphicsDevice.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="FrameCapturer_EXR.vcxproj">
+      <Project>{3a7d5cb3-3a06-418e-b457-86456a4eb2f0}</Project>
+    </ProjectReference>
+    <ProjectReference Include="FrameCapturer_MP4.vcxproj">
+      <Project>{067fa9e2-32cd-4c66-be1b-959edf510cc8}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{08361722-5520-47AC-A0C2-31E8A062B73F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

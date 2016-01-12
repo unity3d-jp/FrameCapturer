@@ -33,7 +33,6 @@ private:
     void write(std::ostream &os, int begin_frame, int end_frame);
 
 private:
-    fcMagic m_magic; //  for debug
     fcGifConfig m_conf;
     fcIGraphicsDevice *m_dev;
     std::vector<std::string> m_raw_buffers;
@@ -46,8 +45,7 @@ private:
 
 
 fcGifContext::fcGifContext(fcGifConfig &conf, fcIGraphicsDevice *dev)
-    : m_magic(fcMagic_GifContext)
-    , m_conf(conf)
+    : m_conf(conf)
     , m_dev(dev)
     , m_frame(0)
     , m_active_task_count(0)
@@ -64,7 +62,6 @@ fcGifContext::~fcGifContext()
 {
     m_tasks.wait();
     jo_gif_end(&m_gif);
-    m_magic = fcMagic_Deleted;
 }
 
 

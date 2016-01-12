@@ -35,7 +35,7 @@ public class ExrOffscreenCapturer : MonoBehaviour
     public int m_max_active_tasks = 1;
     public Shader m_sh_copy;
 
-    IntPtr m_exr;
+    fcAPI.fcEXRContext m_exr;
     int m_frame;
     Material m_mat_copy;
     Mesh m_quad;
@@ -62,14 +62,14 @@ public class ExrOffscreenCapturer : MonoBehaviour
             m_scratch_buffers[i] = new RenderTexture(rt.width, rt.height, 0, rt.format);
         }
 
-        FrameCapturer.fcExrConfig conf;
+        fcAPI.fcExrConfig conf;
         conf.max_active_tasks = m_max_active_tasks;
-        m_exr = FrameCapturer.fcExrCreateContext(ref conf);
+        m_exr = fcAPI.fcExrCreateContext(ref conf);
     }
 
     void OnDisable()
     {
-        FrameCapturer.fcExrDestroyContext(m_exr);
+        fcAPI.fcExrDestroyContext(m_exr);
     }
 
 
@@ -98,7 +98,7 @@ public class ExrOffscreenCapturer : MonoBehaviour
             }
 
             // 描画結果を CPU 側に移してファイル書き出し
-            FrameCapturer.fcExrBeginFrame(m_exr, path, rt.width, rt.height);
+            fcAPI.fcExrBeginFrame(m_exr, path, rt.width, rt.height);
             for (int ti = 0; ti < m_targets.Length; ++ti)
             {
                 var target = m_targets[ti];
@@ -109,11 +109,11 @@ public class ExrOffscreenCapturer : MonoBehaviour
                     AddLayer(scratch, ch.channel, ch.name);
                 }
             }
-            FrameCapturer.fcExrEndFrame(m_exr);
+            fcAPI.fcExrEndFrame(m_exr);
         }
     }
     void AddLayer(RenderTexture rt, int ch, string name)
     {
-        FrameCapturer.fcExrAddLayerTexture(m_exr, rt.GetNativeTexturePtr(), rt.format, ch, name, false);
+        fcAPI.fcExrAddLayerTexture(m_exr, rt.GetNativeTexturePtr(), rt.format, ch, name, false);
     }
 }

@@ -13,50 +13,6 @@
 
 
 
-static std::thread *g_download_thread;
-
-static void fcDownloadCB_Dummy(bool, const char*)
-{
-}
-
-static void fcMP4DownloadCodecBody(fcDownloadCallback cb)
-{
-    if (cb == nullptr) { cb = &fcDownloadCB_Dummy; }
-
-    std::string path_to_dll = GetPathOfThisModule() + "/" OpenH264DLL;
-    std::string response;
-    if (HTTPGet(OpenH264URL, response)) {
-        cb(false, "HTTP Get completed");
-        if (BZ2DecompressToFile(path_to_dll.c_str(), &response[0], response.size())) {
-            cb(true, "BZ2 Decompress completed");
-        }
-        else {
-            cb(true, "BZ2 Decompress failed");
-        }
-    }
-    else {
-        cb(true, "HTTP Get failed");
-    }
-
-    g_download_thread->detach();
-    delete g_download_thread;
-    g_download_thread = nullptr;
-}
-
-fcCLinkage fcExport bool fcMP4DownloadCodecImpl(fcDownloadCallback cb)
-{
-    if (g_download_thread != nullptr) { return false; }
-
-    std::string path_to_dll = GetPathOfThisModule() + "/" OpenH264DLL;
-    if (FILE *file = fopen(path_to_dll.c_str(), "r")) {
-        fclose(file);
-        return false;
-    }
-
-    g_download_thread = new std::thread([=]() { fcMP4DownloadCodecBody(cb); });
-    return true;
-}
-
 
 namespace {
 
