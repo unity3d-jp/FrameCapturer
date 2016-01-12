@@ -14,13 +14,16 @@
     <ClCompile Include="Encoder\fcAACEncoder.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcMP4FileStream.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
     <ClCompile Include="Foundation\Network.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
     <ClCompile Include="Foundation\Compression.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcMP4StreamWriter.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Foundation\Misc.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
   </ItemGroup>
@@ -49,6 +52,9 @@
       <Filter>Foundation</Filter>
     </ClInclude>
     <ClInclude Include="Encoder\fcMP4Internal.h">
+      <Filter>Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder\fcMP4StreamWriter.h">
       <Filter>Encoder</Filter>
     </ClInclude>
   </ItemGroup>

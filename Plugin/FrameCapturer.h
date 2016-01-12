@@ -122,19 +122,36 @@ enum fcTextureFormat
 };
 
 
+// -------------------------------------------------------------
+// Foundation
+// -------------------------------------------------------------
+
+fcCLinkage fcExport void           fcAddDLLSearchPath(const char *path);
+fcCLinkage fcExport const char**   fcGetDLLSearchPaths(); // null-terminated path list. i.e. {"hoge", "hage", nullptr}
+
+fcCLinkage fcExport uint64_t       fcMakeTimestamp();
+fcCLinkage fcExport uint64_t       fcSecondsToTimestamp(double sec);
+
+
+// -------------------------------------------------------------
+// EXR Exporter
+// -------------------------------------------------------------
 
 struct fcExrConfig
 {
     int max_active_tasks;
 };
-fcCLinkage fcExport fcIExrContext*  fcExrCreateContext(fcExrConfig *conf);
-fcCLinkage fcExport void            fcExrDestroyContext(fcIExrContext *ctx);
-fcCLinkage fcExport bool            fcExrBeginFrame(fcIExrContext *ctx, const char *path, int width, int height);
-fcCLinkage fcExport bool            fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcTextureFormat fmt, int ch, const char *name, bool flipY);
-fcCLinkage fcExport bool            fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name, bool flipY);
-fcCLinkage fcExport bool            fcExrEndFrame(fcIExrContext *ctx);
+fcCLinkage fcExport fcIExrContext* fcExrCreateContext(fcExrConfig *conf);
+fcCLinkage fcExport void           fcExrDestroyContext(fcIExrContext *ctx);
+fcCLinkage fcExport bool           fcExrBeginFrame(fcIExrContext *ctx, const char *path, int width, int height);
+fcCLinkage fcExport bool           fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcTextureFormat fmt, int ch, const char *name, bool flipY);
+fcCLinkage fcExport bool           fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name, bool flipY);
+fcCLinkage fcExport bool           fcExrEndFrame(fcIExrContext *ctx);
 
 
+// -------------------------------------------------------------
+// GIF Exporter
+// -------------------------------------------------------------
 
 struct fcGifConfig
 {
@@ -147,18 +164,21 @@ struct fcGifConfig
     int max_frame;
     int max_data_size;
 };
-fcCLinkage fcExport fcIGifContext*  fcGifCreateContext(fcGifConfig *conf);
-fcCLinkage fcExport void            fcGifDestroyContext(fcIGifContext *ctx);
-fcCLinkage fcExport bool            fcGifAddFrame(fcIGifContext *ctx, void *tex);
-fcCLinkage fcExport void            fcGifClearFrame(fcIGifContext *ctx);
-fcCLinkage fcExport bool            fcGifWriteFile(fcIGifContext *ctx, const char *path, int begin_frame, int end_frame);
-fcCLinkage fcExport int             fcGifWriteMemory(fcIGifContext *ctx, void *buf, int begin_frame, int end_frame);
-fcCLinkage fcExport int             fcGifGetFrameCount(fcIGifContext *ctx);
-fcCLinkage fcExport void            fcGifGetFrameData(fcIGifContext *ctx, void *tex, int frame);
-fcCLinkage fcExport int             fcGifGetExpectedDataSize(fcIGifContext *ctx, int begin_frame, int end_frame);
-fcCLinkage fcExport void            fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, int end_frame);
+fcCLinkage fcExport fcIGifContext* fcGifCreateContext(fcGifConfig *conf);
+fcCLinkage fcExport void           fcGifDestroyContext(fcIGifContext *ctx);
+fcCLinkage fcExport bool           fcGifAddFrame(fcIGifContext *ctx, void *tex);
+fcCLinkage fcExport void           fcGifClearFrame(fcIGifContext *ctx);
+fcCLinkage fcExport bool           fcGifWriteFile(fcIGifContext *ctx, const char *path, int begin_frame, int end_frame);
+fcCLinkage fcExport int            fcGifWriteMemory(fcIGifContext *ctx, void *buf, int begin_frame, int end_frame);
+fcCLinkage fcExport int            fcGifGetFrameCount(fcIGifContext *ctx);
+fcCLinkage fcExport void           fcGifGetFrameData(fcIGifContext *ctx, void *tex, int frame);
+fcCLinkage fcExport int            fcGifGetExpectedDataSize(fcIGifContext *ctx, int begin_frame, int end_frame);
+fcCLinkage fcExport void           fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, int end_frame);
 
 
+// -------------------------------------------------------------
+// MP4 Exporter
+// -------------------------------------------------------------
 
 struct fcMP4Config
 {
@@ -167,7 +187,7 @@ struct fcMP4Config
     int video_width;
     int video_height;
     int video_bitrate;
-    int video_framerate; // todo: this can be removed
+    int video_framerate; // todo: this should be removed
     int video_max_buffers;
     int video_max_frame;
     int video_max_data_size;
@@ -184,19 +204,19 @@ struct fcMP4Config
     {}
 };
 typedef void(*fcDownloadCallback)(bool is_complete, const char *status);
-fcCLinkage fcExport bool            fcMP4DownloadCodec(fcDownloadCallback cb);
+fcCLinkage fcExport bool           fcMP4DownloadCodec(fcDownloadCallback cb);
 
-fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
-fcCLinkage fcExport void            fcMP4DestroyContext(fcIMP4Context *ctx);
-fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex);
-fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixels, fcColorSpace cs = fcColorSpace_RGBA);
-fcCLinkage fcExport bool            fcMP4AddAudioSamples(fcIMP4Context *ctx, const float *samples, int num_samples);
-fcCLinkage fcExport void            fcMP4ClearFrame(fcIMP4Context *ctx);
-fcCLinkage fcExport bool            fcMP4WriteFile(fcIMP4Context *ctx, const char *path, int begin_frame, int end_frame);
-fcCLinkage fcExport int             fcMP4WriteMemory(fcIMP4Context *ctx, void *buf, int begin_frame, int end_frame);
-fcCLinkage fcExport int             fcMP4GetFrameCount(fcIMP4Context *ctx);
-fcCLinkage fcExport void            fcMP4GetFrameData(fcIMP4Context *ctx, void *tex, int frame);
-fcCLinkage fcExport int             fcMP4GetExpectedDataSize(fcIMP4Context *ctx, int begin_frame, int end_frame);
-fcCLinkage fcExport void            fcMP4EraseFrame(fcIMP4Context *ctx, int begin_frame, int end_frame);
+fcCLinkage fcExport fcIMP4Context* fcMP4CreateContext(fcMP4Config *conf);
+fcCLinkage fcExport void           fcMP4DestroyContext(fcIMP4Context *ctx);
+fcCLinkage fcExport bool           fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex);
+fcCLinkage fcExport bool           fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixels, fcColorSpace cs = fcColorSpace_RGBA);
+fcCLinkage fcExport bool           fcMP4AddAudioSamples(fcIMP4Context *ctx, const float *samples, int num_samples);
+fcCLinkage fcExport void           fcMP4ClearFrame(fcIMP4Context *ctx);
+fcCLinkage fcExport bool           fcMP4WriteFile(fcIMP4Context *ctx, const char *path, int begin_frame, int end_frame);
+fcCLinkage fcExport int            fcMP4WriteMemory(fcIMP4Context *ctx, void *buf, int begin_frame, int end_frame);
+fcCLinkage fcExport int            fcMP4GetFrameCount(fcIMP4Context *ctx);
+fcCLinkage fcExport void           fcMP4GetFrameData(fcIMP4Context *ctx, void *tex, int frame);
+fcCLinkage fcExport int            fcMP4GetExpectedDataSize(fcIMP4Context *ctx, int begin_frame, int end_frame);
+fcCLinkage fcExport void           fcMP4EraseFrame(fcIMP4Context *ctx, int begin_frame, int end_frame);
 
 #endif // FrameCapturer_h

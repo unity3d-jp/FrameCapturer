@@ -11,6 +11,7 @@
 #include "fcH264Encoder.h"
 #include "fcAACEncoder.h"
 #include "fcMP4Muxer.h"
+#include "fcMP4StreamWriter.h"
 #ifdef fcWindows
     #pragma comment(lib, "yuv.lib")
 #endif
@@ -81,31 +82,6 @@ private:
     bool m_stop;
 };
 
-
-#ifdef fcWindows
-
-u64 fcGetCurrentTimeNanosec()
-{
-    static LARGE_INTEGER g_freq = { 0, 0 };
-    if ((u64&)g_freq == 0) {
-        ::QueryPerformanceFrequency(&g_freq);
-    }
-
-    LARGE_INTEGER t;
-    ::QueryPerformanceCounter(&t);
-    return u64(double(t.QuadPart) / double(g_freq.QuadPart) * 1000000000.0);
-}
-
-#else
-
-u64 fcGetCurrentTimeNanosec()
-{
-    timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
-    return ts.tv_nsec;
-}
-
-#endif
 
 
 fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
@@ -296,7 +272,7 @@ bool fcMP4Context::addVideoFrameTexture(void *tex, uint64_t timestamp)
     waitOne();
     int frame = m_num_video_frame++;
     fcVideoFrame& raw = m_raw_video_frames[frame % m_conf.video_max_buffers];
-    raw.timestamp = timestamp!=0 ? timestamp : fcGetCurrentTimeNanosec();
+    raw.timestamp = timestamp!=0 ? timestamp : GetCurrentTimeNanosec();
 
     // フレームバッファの内容取得
     if (!m_dev->readTexture(&raw.rgba[0], raw.rgba.size(), tex, m_conf.video_width, m_conf.video_height, fcTextureFormat_ARGB32))
@@ -324,7 +300,7 @@ bool fcMP4Context::addVideoFramePixels(void *pixels, fcColorSpace cs, uint64_t t
     waitOne();
     int frame = m_num_video_frame++;
     fcVideoFrame& raw = m_raw_video_frames[frame % m_conf.video_max_buffers];
-    raw.timestamp = timestamp != 0 ? timestamp : fcGetCurrentTimeNanosec();
+    raw.timestamp = timestamp != 0 ? timestamp : GetCurrentTimeNanosec();
 
     bool rgba2i420 = true;
     if (cs == fcColorSpace_RGBA) {
@@ -362,7 +338,7 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, uint64_t
 
     int frame = m_num_audio_frame++;
     auto& raw = m_raw_audio_frames[frame % m_conf.video_max_buffers];
-    raw.timestamp = timestamp != 0 ? timestamp : fcGetCurrentTimeNanosec();
+    raw.timestamp = timestamp != 0 ? timestamp : GetCurrentTimeNanosec();
     raw.data = Buffer(samples, sizeof(float)*num_samples);
 
     m_aac_frames.push_back(fcAACFrame());
@@ -542,6 +518,5 @@ fcCLinkage fcExport fcIMP4Context* fcMP4CreateContextImpl(fcMP4Config &conf, fcI
     }
     return nullptr;
 }
-
 
 #endif // fcSupportMP4

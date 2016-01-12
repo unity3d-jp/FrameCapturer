@@ -19,6 +19,9 @@
     <ClCompile Include="Encoder\fcGifFile.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
+    <ClCompile Include="Foundation\Misc.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fcThreadPool.h" />
@@ -31,6 +34,12 @@
       <Filter>Encoder</Filter>
     </ClInclude>
     <ClInclude Include="fcFoundation.h" />
+    <ClInclude Include="Foundation\Misc.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="Foundation\fcFoundation.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="GraphisDevice">

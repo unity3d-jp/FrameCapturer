@@ -23,17 +23,17 @@ struct fcVideoFrame
 
         rgba.resize(width * height * 4);
         int af = roundup<2>(width) * roundup<2>(height);
-        i420_y = (uint8_t*)aligned_alloc(af, 32);
-        i420_u = (uint8_t*)aligned_alloc(af >> 2, 32);
-        i420_v = (uint8_t*)aligned_alloc(af >> 2, 32);
+        i420_y = (uint8_t*)AlignedAlloc(af, 32);
+        i420_u = (uint8_t*)AlignedAlloc(af >> 2, 32);
+        i420_v = (uint8_t*)AlignedAlloc(af >> 2, 32);
     }
 
     void deallocate()
     {
         rgba.clear();
-        aligned_free(i420_y);
-        aligned_free(i420_u);
-        aligned_free(i420_v);
+        AlignedFree(i420_y);
+        AlignedFree(i420_u);
+        AlignedFree(i420_v);
     }
 };
 
@@ -66,7 +66,7 @@ enum fcH264FrameType
 struct fcFrameData
 {
     fcFrameType type;
-    u64 timestamp;
+    uint64_t timestamp;
     Buffer data;
 
     fcFrameData() : type(fcFrameType_Unknown), timestamp(0){}
@@ -89,11 +89,11 @@ struct fcFrameInfo
 {
     const char *data;
     size_t size;
-    u64 file_offset;
-    u64 timestamp;
-    u32 duration;
-    u32 index;
-    u32 index_track;
+    uint64_t file_offset;
+    uint64_t timestamp;
+    uint32_t duration;
+    uint32_t index;
+    uint32_t index_track;
     fcFrameType type;
 
     fcFrameInfo()
@@ -103,16 +103,16 @@ struct fcFrameInfo
 
 struct fcOffsetValue
 {
-    u32 count;
-    u32 value;
+    uint32_t count;
+    uint32_t value;
 };
 
 struct fcSampleToChunk
 {
-    u32 first_chunk_ID;
-    u32 samples_per_chunk;
+    uint32_t first_chunk_ID;
+    uint32_t samples_per_chunk;
 };
 
-u64 fcGetCurrentTimeNanosec();
+const std::string& GetPathOfThisModule();
 
 #endif // fcMP4Internal_h
