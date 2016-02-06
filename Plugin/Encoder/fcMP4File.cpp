@@ -508,6 +508,7 @@ void fcMP4Context::eraseFrame(int begin_frame, int end_frame)
 fcCLinkage fcExport fcIMP4Context* fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev)
 {
     if (fcH264Encoder::loadModule()) {
+        fcAACEncoder::loadModule();
         return new fcMP4Context(conf, dev);
     }
     return nullptr;
@@ -574,7 +575,6 @@ fcCLinkage fcExport bool fcMP4DownloadCodecImpl(fcDownloadCallback cb)
     if (cb == nullptr) { cb = &fcDownloadCB_Dummy; }
 
     if (fcH264Encoder::loadModule()) {
-        fcAACEncoder::loadModule();
         cb(true, "module already exists");
         return true;
     }
