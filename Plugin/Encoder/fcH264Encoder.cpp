@@ -61,7 +61,7 @@ fcH264Encoder::fcH264Encoder(int width, int height, float frame_rate, int target
 
     SEncParamBase param;
     memset(&param, 0, sizeof(SEncParamBase));
-    param.iUsageType = CAMERA_VIDEO_REAL_TIME;
+    param.iUsageType = SCREEN_CONTENT_REAL_TIME;
     param.fMaxFrameRate = frame_rate;
     param.iPicWidth = m_width;
     param.iPicHeight = m_height;
@@ -83,9 +83,9 @@ fcH264Encoder::operator bool() const
 }
 
 
-fcH264Frame fcH264Encoder::encodeI420(const void *src_y, const void *src_u, const void *src_v)
+bool fcH264Encoder::encodeI420(fcH264Frame& dst, const void *src_y, const void *src_u, const void *src_v, uint64_t timestamp)
 {
-    if (!m_encoder) { return fcH264Frame(); }
+    if (!m_encoder) { return false; }
 
     SSourcePicture src;
     memset(&src, 0, sizeof(src));
@@ -98,15 +98,29 @@ fcH264Frame fcH264Encoder::encodeI420(const void *src_y, const void *src_u, cons
     src.iStride[0] = m_width;
     src.iStride[1] = m_width >> 1;
     src.iStride[2] = m_width >> 1;
+    src.uiTimeStamp = timestamp / 1000000; // nanosec to millisec
 
-    SFrameBSInfo dst;
-    memset(&dst, 0, sizeof(dst));
+    SFrameBSInfo frame;
+    memset(&frame, 0, sizeof(frame));
 
-    fcH264Frame ret;
-    int result = m_encoder->EncodeFrame(&src, &dst);
-    if (result == 0) {
-        ret.data.assign(dst.sLayerInfo[0].pBsBuf, dst.iFrameSizeInBytes);
-        ret.h264_type = (fcH264FrameType)dst.eFrameType;
+    if (m_encoder->EncodeFrame(&src, &frame) != 0) {
+        return false;
     }
-    return ret;
+
+    dst.nal_sizes.clear();
+    dst.data.clear();
+    dst.h264_type = (fcH264FrameType)frame.eFrameType;
+
+    for (int li = 0; li < frame.iLayerNum; ++li) {
+        auto& layer = frame.sLayerInfo[li];
+        dst.nal_sizes.assign(layer.pNalLengthInByte, layer.pNalLengthInByte + layer.iNalCount);
+
+        int total = 0;
+        for (int ni = 0; ni < layer.iNalCount; ++ni) {
+            total += layer.pNalLengthInByte[ni];
+        }
+        dst.data.append(layer.pBsBuf, total);
+    }
+
+    return true;
 }

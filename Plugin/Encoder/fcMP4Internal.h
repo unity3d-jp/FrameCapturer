@@ -75,8 +75,20 @@ struct fcFrameData
 struct fcH264Frame : public fcFrameData
 {
     fcH264FrameType h264_type;
+    std::vector<int> nal_sizes;
 
     fcH264Frame() : h264_type(fcH264FrameType_Invalid) { type = fcFrameType_H264; }
+
+    // Body: [](const char *nal_data, int nal_size) -> void
+    template<class Body>
+    void eachNALs(const Body& body)
+    {
+        int total = 0;
+        for (int size : nal_sizes) {
+            body(&data[total], size);
+            total += size;
+        }
+    }
 };
 
 struct fcAACFrame : public fcFrameData

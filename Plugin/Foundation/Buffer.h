@@ -76,6 +76,11 @@ public:
         m_data.assign((const_pointer)src, (const_pointer)src + len);
     }
 
+    void append(const void *src, size_t len)
+    {
+        m_data.insert(m_data.end(), (const_pointer)src, (const_pointer)src + len);
+    }
+
     void resize(size_t newsize)
     {
         m_data.resize(newsize);
