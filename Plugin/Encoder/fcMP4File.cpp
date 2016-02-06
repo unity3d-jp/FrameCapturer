@@ -46,8 +46,8 @@ private:
     void scrape(bool is_tasks_running);
     void wait();
     void waitOne();
-    void addVideoFrameTask(fcH264Frame &o_fdata, fcVideoFrame &raw_buffer, bool rgba2i420);
-    void write(std::ostream &os, int begin_frame, int end_frame);
+    void addVideoFrameTask(fcH264Frame& o_fdata, fcVideoFrame &raw_buffer, bool rgba2i420);
+    void write(std::ostream& os, int begin_frame, int end_frame);
 
 private:
     fcMP4Config m_conf;
@@ -220,7 +220,7 @@ void fcMP4Context::scrape(bool updating)
     // todo
 }
 
-void fcMP4Context::addVideoFrameTask(fcH264Frame &h264, fcVideoFrame &raw, bool rgba2i420)
+void fcMP4Context::addVideoFrameTask(fcH264Frame& h264, fcVideoFrame &raw, bool rgba2i420)
 {
     // 必要であれば RGBA -> I420 変換
     int width = m_conf.video_width;
@@ -238,7 +238,7 @@ void fcMP4Context::addVideoFrameTask(fcH264Frame &h264, fcVideoFrame &raw, bool 
     }
 
     // I420 のピクセルデータを H264 へエンコード
-    h264 = m_h264_encoder->encodeI420(y, u, v);
+    m_h264_encoder->encodeI420(h264, y, u, v, raw.timestamp);
     h264.timestamp = raw.timestamp;
 }
 

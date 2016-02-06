@@ -26,7 +26,7 @@ public:
     fcH264Encoder(int width, int height, float frame_rate, int target_bitrate);
     ~fcH264Encoder();
     operator bool() const;
-    fcH264Frame encodeI420(const void *src_y, const void *src_u, const void *src_v);
+    bool encodeI420(fcH264Frame& dst, const void *src_y, const void *src_u, const void *src_v, uint64_t timestamp);
 
 private:
     ISVCEncoder *m_encoder;
