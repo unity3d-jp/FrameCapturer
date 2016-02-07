@@ -113,10 +113,12 @@ bool fcH264Encoder::encodeI420(fcH264Frame& dst, const void *src_y, const void *
 
     for (int li = 0; li < frame.iLayerNum; ++li) {
         auto& layer = frame.sLayerInfo[li];
-        dst.nal_sizes.assign(layer.pNalLengthInByte, layer.pNalLengthInByte + layer.iNalCount);
+        dst.nal_sizes.insert(dst.nal_sizes.end(), layer.pNalLengthInByte, layer.pNalLengthInByte + layer.iNalCount);
 
         int total = 0;
+        fcH264NALHeader header;
         for (int ni = 0; ni < layer.iNalCount; ++ni) {
+            header = fcH264NALHeader(layer.pBsBuf[total + 4]);
             total += layer.pNalLengthInByte[ni];
         }
         dst.data.append(layer.pBsBuf, total);
