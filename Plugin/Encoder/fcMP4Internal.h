@@ -63,6 +63,20 @@ enum fcH264FrameType
     fcH264FrameType_IPMixed     ///< a frame where I and P slices are mixing, not supported yet
 };
 
+struct fcH264NALHeader
+{
+    uint8_t forbidden_zero_bit  : 1;
+    uint8_t nal_ref_idc         : 2;
+    uint8_t nal_unit_type       : 5; // ENalUnitType
+
+    fcH264NALHeader() {}
+    fcH264NALHeader(char c) {
+        forbidden_zero_bit  = (c >> 7) & 0x01;
+        nal_ref_idc         = (c >> 5) & 0x03;
+        nal_unit_type       = c & 0x1f;
+    }
+};
+
 struct fcFrameData
 {
     fcFrameType type;
