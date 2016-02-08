@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <openh264/codec_api.h>
 #include "fcMP4Internal.h"
 #include "fcMP4StreamWriter.h"
 
@@ -82,40 +83,34 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
     BinaryStream& os = m_stream;
 
     fcFrameInfo info;
+    info.type = frame.type;
+    info.file_offset = os.tellp();
+    info.timestamp = frame.timestamp;
+    info.index = m_frame_info.size();
+
     if (frame.type == fcFrameType_H264) {
         const auto& h264 = (const fcH264Frame&)frame;
 
-        if (h264.data[0] == 0x17 && h264.data[1] == 0) { //if SPS/PPS
-            u8 *pos = (u8*)&h264.data[11];
-            int sps_size = u16_be(*(u16*)pos);
+        h264.eachNALs([&](const char *data, int size) {
+            const int offset = 5; // 0x00000001 + header
 
-            m_sps.assign(pos + 2, pos + 2 + sps_size);
-            os << u16(0);
-            os.write(pos, sps_size+2);
+            fcH264NALHeader nalh(data[4]);
+            if (nalh.nal_unit_type == NAL_SPS) {
+                m_sps.assign(&data[offset], &data[offset] + (size - offset));
+            }
+            else if (nalh.nal_unit_type == NAL_PPS) {
+                m_pps.assign(&data[offset], &data[offset] + (size - offset));
+            }
 
-            pos += m_sps.size() + 3;
-            int pps_size = u16_be(*(u16*)pos);
-
-            m_pps.assign(pos + 2, pos + 2 + pps_size);
-            os << u16(0);
-            os.write(pos, pps_size + 2);
-
-            info.size = sps_size + pps_size + 8;
-        }
-        else {
-            // todo: handling SEI
-
-            info.size += h264.data.size() - 5;
-            os.write(&h264.data[5], info.size);
-        }
+            os.write(&data[offset], size - offset);
+            info.size += size - offset;
+        });
     }
     else if (frame.type == fcFrameType_AAC) {
-
-        info.size = frame.data.size() - 2;
-        info.data = &frame.data[2];
-        os.write(info.data, info.size);
+        const int offset = 2;
+        info.size = frame.data.size() - offset;
+        os.write(&frame.data[offset], info.size);
     }
-
 
     m_frame_info.emplace_back(info);
 }
@@ -605,7 +600,7 @@ void fcMP4StreamWriter::mp4End()
     u64 mdat_size = u64_be(mdat_end - m_mdat_begin);
 
     os.write(track_info.ptr(), track_info.size());
-    os.seekp(m_mdat_begin);
+    os.seekp(m_mdat_begin + 8);
     os.write(&mdat_size, sizeof(u64));
 
     fcDebugLog("fcMP4Stream::mp4End() done.");
