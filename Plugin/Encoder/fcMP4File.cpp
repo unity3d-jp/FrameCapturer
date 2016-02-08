@@ -76,6 +76,10 @@ private:
     std::deque<std::function<void()>> m_audio_tasks;
 
     bool m_stop;
+
+    std::fstream m_ofile;
+    StdOStream m_stream;
+    std::unique_ptr<fcMP4StreamWriter> m_writer;
 };
 
 
@@ -88,6 +92,7 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
     , m_video_active_task_count(0)
     , m_audio_active_task_count(0)
     , m_stop(false)
+    , m_stream(m_ofile)
 {
     if (m_conf.video_max_buffers == 0) {
         m_conf.video_max_buffers = 4;
@@ -115,6 +120,9 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
     if (m_conf.audio) {
         m_audio_worker = std::thread([this](){ processAudioTasks(); });
     }
+
+    m_ofile.open("test.mp4", std::ios::out | std::ios::binary);
+    m_writer.reset(new fcMP4StreamWriter(m_stream, m_conf));
 }
 
 fcMP4Context::~fcMP4Context()
@@ -130,6 +138,8 @@ fcMP4Context::~fcMP4Context()
         m_audio_worker.join();
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    m_writer.reset();
 }
 
 void fcMP4Context::resetEncoders()
@@ -240,6 +250,10 @@ void fcMP4Context::addVideoFrameTask(fcH264Frame& h264, fcVideoFrame &raw, bool 
     // I420 のピクセルデータを H264 へエンコード
     m_h264_encoder->encodeI420(h264, y, u, v, raw.timestamp);
     h264.timestamp = raw.timestamp;
+
+    if (m_writer) {
+        m_writer->addFrame(h264);
+    }
 }
 
 void fcMP4Context::wait()
@@ -344,6 +358,11 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, uint64_t
         auto ret = m_aac_encoder->encode((float*)raw.data.ptr(), raw.data.size() / sizeof(float));
         aac.timestamp = raw.timestamp;
         aac.data.assign((char*)ret.ptr(), ret.size());
+
+        if (m_writer) {
+            m_writer->addFrame(aac);
+        }
+
         --m_audio_active_task_count;
     });
 

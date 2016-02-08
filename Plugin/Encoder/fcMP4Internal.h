@@ -95,7 +95,7 @@ struct fcH264Frame : public fcFrameData
 
     // Body: [](const char *nal_data, int nal_size) -> void
     template<class Body>
-    void eachNALs(const Body& body)
+    void eachNALs(const Body& body) const
     {
         int total = 0;
         for (int size : nal_sizes) {
@@ -113,17 +113,16 @@ struct fcAACFrame : public fcFrameData
 
 struct fcFrameInfo
 {
-    const char *data;
+    fcFrameType type;
     size_t size;
     uint64_t file_offset;
     uint64_t timestamp;
     uint32_t duration;
     uint32_t index;
     uint32_t index_track;
-    fcFrameType type;
 
     fcFrameInfo()
-        : data(), size(), file_offset(), timestamp(), duration(), index(), index_track(), type()
+        : type(), size(), file_offset(), timestamp(), duration(), index(), index_track()
     {}
 };
 
