@@ -10,13 +10,12 @@ using UnityEditor;
 
 public class FrameCapturerPackaging
 {
-    [MenuItem("Assets/FrameCapturer/MakePackage")]
+    [MenuItem("Assets/UTJ/FrameCapturer/MakePackage")]
     public static void MakePackage()
     {
         string[] files = new string[]
         {
-"Assets/FrameCapturer",
-"Assets/TweetMedia",
+"Assets/UTJ",
         };
         AssetDatabase.ExportPackage(files, "FrameCapturer.unitypackage", ExportPackageOptions.Recurse);
     }

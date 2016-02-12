@@ -1,15 +1,6 @@
 ﻿#ifndef FrameCapturer_h
 #define FrameCapturer_h
 
-//options:
-//#define fcSupportGIF
-//#define fcSupportEXR
-//#define fcSupportMP4
-//#define fcSupportOpenGL
-//#define fcSupportD3D9
-//#define fcSupportD3D11
-//#define fcWithTBB
-
 //#define fcGIFSplitModule
 #define fcEXRSplitModule
 #define fcMP4SplitModule
@@ -162,8 +153,9 @@ fcCLinkage fcExport void            fcGifEraseFrame(fcIGifContext *ctx, int begi
 
 struct fcMP4Config
 {
-    int video;
-    int audio;
+    bool video;
+    bool audio;
+    bool video_use_hardware_encoder_if_possible;
     int video_width;
     int video_height;
     int video_bitrate;
@@ -177,6 +169,7 @@ struct fcMP4Config
 
     fcMP4Config()
         : video(true), audio(false)
+        , video_use_hardware_encoder_if_possible(true)
         , video_width(320), video_height(240)
         , video_bitrate(256000), video_framerate(30)
         , video_max_buffers(8), video_max_frame(0), video_max_data_size(0)

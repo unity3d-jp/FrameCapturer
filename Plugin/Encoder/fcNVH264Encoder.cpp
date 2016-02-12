@@ -7,9 +7,9 @@
 #ifdef fcSupportNVH264
 
 #ifdef _WIN32
-    #if _M_IX86
+    #if defined(_M_AMD64)
         #define NVEncoderDLL    "nvEncodeAPI64.dll"
-    #else
+    #elif defined(_M_IX86)
         #define NVEncoderDLL    "nvEncodeAPI.dll"
     #endif
 #else

@@ -1,4 +1,4 @@
-Shader "FrameCapturer/CopyFrameBuffer" {
+Shader "UTJ/FrameCapturer/CopyFrameBuffer" {
 
 Properties {
 }

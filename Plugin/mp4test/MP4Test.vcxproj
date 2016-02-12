@@ -17,14 +17,6 @@
       <Configuration>Master</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mp4test.cpp" />
@@ -51,14 +43,6 @@
     <PlatformToolset>v140</PlatformToolset>
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <PlatformToolset>v140</PlatformToolset>
-    <ConfigurationType>Application</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <PlatformToolset>v140</PlatformToolset>
-    <ConfigurationType>Application</ConfigurationType>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|x64'" Label="Configuration">
     <PlatformToolset>v140</PlatformToolset>
     <ConfigurationType>Application</ConfigurationType>
@@ -80,18 +64,6 @@
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)external;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)external\libs\x86mt;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)external;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)external\libs\x86_64mt;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(SolutionDir)external;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)external\libs\x86mt;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
@@ -136,42 +108,6 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>fcDebug;fcVerboseDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <WarningLevel>Level1</WarningLevel>
-    </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <PostBuildEvent>
-      <Command>
-      </Command>
-    </PostBuildEvent>
-    <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>fcDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <WarningLevel>Level1</WarningLevel>
-    </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>fcDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level1</WarningLevel>
