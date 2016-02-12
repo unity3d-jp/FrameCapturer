@@ -59,7 +59,7 @@ private:
     int m_num_video_frame;
     int m_num_audio_frame;
 
-    std::unique_ptr<fcH264Encoder> m_h264_encoder;
+    std::unique_ptr<fcIH264Encoder> m_h264_encoder;
     std::unique_ptr<fcAACEncoder> m_aac_encoder;
     std::unique_ptr<fcMP4Muxer> m_muxer;
 
@@ -148,7 +148,14 @@ void fcMP4Context::resetEncoders()
 
     m_h264_encoder.reset();
     if (m_conf.video) {
-        m_h264_encoder.reset(new fcH264Encoder(m_conf.video_width, m_conf.video_height, m_conf.video_framerate, m_conf.video_bitrate));
+        fcH264EncoderConfig h264conf;
+        h264conf.width = m_conf.video_width;
+        h264conf.height = m_conf.video_height;
+        h264conf.target_framerate = m_conf.video_framerate;
+        h264conf.target_bitrate = m_conf.video_bitrate;
+
+        fcIH264Encoder *enc = fcCreateOpenH264Encoder(h264conf);
+        m_h264_encoder.reset(enc);
     }
 
     m_aac_encoder.reset();
@@ -235,9 +242,9 @@ void fcMP4Context::addVideoFrameTask(fcH264Frame& h264, fcVideoFrame &raw, bool 
     // 必要であれば RGBA -> I420 変換
     int width = m_conf.video_width;
     int frame_size = m_conf.video_width * m_conf.video_height;
-    uint8 *y = raw.i420_y;
-    uint8 *u = raw.i420_u;
-    uint8 *v = raw.i420_v;
+    uint8 *y = (uint8*)raw.i420.y;
+    uint8 *u = (uint8*)raw.i420.u;
+    uint8 *v = (uint8*)raw.i420.v;
     if (rgba2i420) {
         libyuv::ABGRToI420(
             (uint8*)&raw.rgba[0], width * 4,
@@ -248,7 +255,7 @@ void fcMP4Context::addVideoFrameTask(fcH264Frame& h264, fcVideoFrame &raw, bool 
     }
 
     // I420 のピクセルデータを H264 へエンコード
-    m_h264_encoder->encodeI420(h264, y, u, v, raw.timestamp);
+    m_h264_encoder->encode(h264, raw.i420, raw.timestamp);
     h264.timestamp = raw.timestamp;
 
     if (m_writer) {
@@ -321,9 +328,9 @@ bool fcMP4Context::addVideoFramePixels(void *pixels, fcColorSpace cs, uint64_t t
         const uint8_t *src_y = (const uint8_t*)pixels;
         const uint8_t *src_u = src_y + frame_size;
         const uint8_t *src_v = src_u + (frame_size >> 2);
-        memcpy(raw.i420_y, src_y, frame_size);
-        memcpy(raw.i420_u, src_u, frame_size >> 2);
-        memcpy(raw.i420_v, src_v, frame_size >> 2);
+        memcpy(raw.i420.y, src_y, frame_size);
+        memcpy(raw.i420.u, src_u, frame_size >> 2);
+        memcpy(raw.i420.v, src_v, frame_size >> 2);
     }
 
     // h264 データを生成
@@ -526,7 +533,7 @@ void fcMP4Context::eraseFrame(int begin_frame, int end_frame)
 
 fcCLinkage fcExport fcIMP4Context* fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev)
 {
-    if (fcH264Encoder::loadModule()) {
+    if (fcLoadOpenH264Module()) {
         fcAACEncoder::loadModule();
         return new fcMP4Context(conf, dev);
     }
@@ -534,74 +541,16 @@ fcCLinkage fcExport fcIMP4Context* fcMP4CreateContextImpl(fcMP4Config &conf, fcI
 }
 
 
-
-
-// -------------------------------------------------------------
-// OpenH264 downloader
-// -------------------------------------------------------------
-
-namespace {
-
-    std::thread *g_download_thread;
-    std::string g_module_path;
-
-    std::string fcGetOpenH264ModulePath()
-    {
-        std::string ret = !g_module_path.empty() ? g_module_path : DLLGetDirectoryOfCurrentModule();
-        if (!ret.empty() && (ret.back() != '/' && ret.back() != '\\')) {
-            ret += "/";
-        }
-        ret += OpenH264DLL;
-        return ret;
-    }
-
-    void fcDownloadCB_Dummy(bool, const char*)
-    {
-    }
-
-    void fcMP4DownloadCodecBody(fcDownloadCallback cb)
-    {
-        std::string response;
-        if (HTTPGet(OpenH264URL, response)) {
-            cb(false, "HTTP Get completed");
-            if (BZ2DecompressToFile(fcGetOpenH264ModulePath().c_str(), &response[0], response.size()))
-            {
-                cb(true, "BZ2 Decompress completed");
-            }
-            else {
-                cb(true, "BZ2 Decompress failed");
-            }
-        }
-        else {
-            cb(true, "HTTP Get failed");
-        }
-
-        g_download_thread->detach();
-        delete g_download_thread;
-        g_download_thread = nullptr;
-    }
-
-} // namespace
-
+std::string g_fcModulePath;
 
 fcCLinkage fcExport void fcMP4SetModulePathImpl(const char *path)
 {
-    g_module_path = path;
+    g_fcModulePath = path;
 }
 
 fcCLinkage fcExport bool fcMP4DownloadCodecImpl(fcDownloadCallback cb)
 {
-    if (cb == nullptr) { cb = &fcDownloadCB_Dummy; }
-
-    if (fcH264Encoder::loadModule()) {
-        cb(true, "module already exists");
-        return true;
-    }
-
-    // download thread is already running
-    if (g_download_thread != nullptr) { return false; }
-
-    g_download_thread = new std::thread([=]() { fcMP4DownloadCodecBody(cb); });
-    return true;
+    return fcDownloadOpenH264(cb);
 }
+
 #endif // fcSupportMP4

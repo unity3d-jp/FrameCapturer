@@ -5,9 +5,6 @@
     <ClCompile Include="Encoder\fcMP4File.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcH264Encoder.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
     <ClCompile Include="Encoder\fcMP4Muxer.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
@@ -25,6 +22,12 @@
     </ClCompile>
     <ClCompile Include="Foundation\Misc.cpp">
       <Filter>Foundation</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcOpenH264Encoder.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcNVH264Encoder.cpp">
+      <Filter>Encoder</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

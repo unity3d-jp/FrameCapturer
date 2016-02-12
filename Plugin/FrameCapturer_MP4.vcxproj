@@ -28,10 +28,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Encoder\fcAACEncoder.cpp" />
-    <ClCompile Include="Encoder\fcH264Encoder.cpp" />
     <ClCompile Include="Encoder\fcMP4File.cpp" />
     <ClCompile Include="Encoder\fcMP4Muxer.cpp" />
     <ClCompile Include="Encoder\fcMP4StreamWriter.cpp" />
+    <ClCompile Include="Encoder\fcNVH264Encoder.cpp" />
+    <ClCompile Include="Encoder\fcOpenH264Encoder.cpp" />
     <ClCompile Include="Foundation\Compression.cpp" />
     <ClCompile Include="Foundation\Misc.cpp" />
     <ClCompile Include="Foundation\Network.cpp" />

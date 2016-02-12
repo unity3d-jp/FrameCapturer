@@ -1,37 +1,28 @@
 ﻿#ifndef fcMP4Encoder_h
 #define fcMP4Encoder_h
 
-#define OpenH264Version "1.5.0"
-#ifdef fcWindows
-    #if defined(_M_AMD64)
-        #define OpenH264URL "http://ciscobinary.openh264.org/openh264-" OpenH264Version "-win64msvc.dll.bz2"
-        #define OpenH264DLL "openh264-" OpenH264Version "-win64msvc.dll"
-    #elif defined(_M_IX86)
-        #define OpenH264URL "http://ciscobinary.openh264.org/openh264-" OpenH264Version "-win32msvc.dll.bz2"
-        #define OpenH264DLL "openh264-" OpenH264Version "-win32msvc.dll"
-    #endif
-#else 
-    // Mac
-    #define OpenH264URL "http://ciscobinary.openh264.org/libopenh264-" OpenH264Version "-osx64.dylib.bz2"
-    #define OpenH264DLL "libopenh264-" OpenH264Version "-osx64.dylib"
-#endif
 
-class ISVCEncoder;
+struct fcH264EncoderConfig
+{
+    int width;
+    int height;
+    int target_bitrate;
+    int target_framerate;
 
-class fcH264Encoder
+    fcH264EncoderConfig() : width(), height(), target_bitrate(), target_framerate() {}
+};
+
+class fcIH264Encoder
 {
 public:
-    static bool loadModule();
-
-    fcH264Encoder(int width, int height, float frame_rate, int target_bitrate);
-    ~fcH264Encoder();
-    operator bool() const;
-    bool encodeI420(fcH264Frame& dst, const void *src_y, const void *src_u, const void *src_v, uint64_t timestamp);
-
-private:
-    ISVCEncoder *m_encoder;
-    int m_width;
-    int m_height;
+    virtual ~fcIH264Encoder() {}
+    virtual bool encode(fcH264Frame& dst, const fcI420Image& image, uint64_t timestamp, bool force_keyframe = false) = 0;
 };
+
+bool fcDownloadOpenH264(fcDownloadCallback cb);
+bool fcLoadOpenH264Module();
+
+fcIH264Encoder* fcCreateOpenH264Encoder(const fcH264EncoderConfig& conf);
+fcIH264Encoder* fcCreateNVH264Encoder(const fcH264EncoderConfig& conf);
 
 #endif // fcMP4Encoder_h
