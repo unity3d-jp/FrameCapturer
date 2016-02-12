@@ -53,7 +53,10 @@ private:
     std::vector<u64> m_video_chunks;
     std::vector<u64> m_audio_chunks;
     std::vector<u32> m_iframe_ids;
+
     size_t m_mdat_begin;
+    size_t m_last_videoframe_index;
+    size_t m_last_audioframe_index;
 };
 
 #endif // fcMP4StreamWriter_h
