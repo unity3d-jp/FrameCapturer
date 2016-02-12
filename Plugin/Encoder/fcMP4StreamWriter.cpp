@@ -46,6 +46,8 @@ time_t GetMacTime()
 fcMP4StreamWriter::fcMP4StreamWriter(BinaryStream& stream, const fcMP4Config &conf)
     : m_stream(stream)
     , m_conf(conf)
+    , m_mdat_begin(0)
+    , m_last_videoframe_index(-1), m_last_audioframe_index(-1)
 {
     mp4Begin();
 }
@@ -105,11 +107,29 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
             os.write(&data[offset], size - offset);
             info.size += size - offset;
         });
+
+        uint64_t duration = 0;
+        if (m_last_videoframe_index != size_t(-1)) {
+            auto& prev = m_frame_info[m_last_videoframe_index];
+            duration = frame.timestamp - prev.timestamp;
+        }
+        info.duration = duration;
+
+        m_last_videoframe_index = m_frame_info.size();
     }
     else if (frame.type == fcFrameType_AAC) {
         const int offset = 2;
         info.size = frame.data.size() - offset;
         os.write(&frame.data[offset], info.size);
+
+        uint64_t duration = 0;
+        if (m_last_audioframe_index != size_t(-1)) {
+            auto& prev = m_frame_info[m_last_audioframe_index];
+            duration = frame.timestamp - prev.timestamp;
+        }
+        info.duration = duration;
+
+        m_last_audioframe_index = m_frame_info.size();
     }
 
     m_frame_info.emplace_back(info);
