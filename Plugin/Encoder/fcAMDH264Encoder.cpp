@@ -6,12 +6,12 @@
 
 #ifdef fcSupportAMDH264
 
-#if _M_IX86
-    #define AmfCoreDll      "amf-core-windesktop32.dll"
-    #define AmfComponentDll "amf-component-vce-windesktop32.dll"
-#else
-    #define AmfCoreDll      "amf-core-windesktop64.dll"
-    #define AmfComponentDll "amf-component-vce-windesktop64.dll"
+#if defined(_M_AMD64)
+    #define AmfCoreDll  "amf-core-windesktop64.dll"
+    #define AmfVCEDll   "amf-component-vce-windesktop64.dll"
+#elif defined(_M_IX86)
+    #define AmfCoreDll  "amf-core-windesktop32.dll"
+    #define AmfVCEDll   "amf-component-vce-windesktop32.dll"
 #endif
 
 
@@ -30,16 +30,16 @@ private:
 
 namespace {
     module_t g_amf_core;
-    module_t g_amf_component;
+    module_t g_amf_vce;
 } // namespace
 
 bool fcLoadAMDH264Module()
 {
-    if (g_amf_core && g_amf_component) { return true; }
+    if (g_amf_core && g_amf_vce) { return true; }
 
     g_amf_core = DLLLoad(AmfCoreDll);
-    g_amf_component = DLLLoad(AmfComponentDll);
-    return g_amf_core && g_amf_component;
+    g_amf_vce = DLLLoad(AmfVCEDll);
+    return g_amf_core && g_amf_vce;
 }
 
 

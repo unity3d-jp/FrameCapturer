@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UTJ;
 
 [RequireComponent(typeof(TweetMedia))]
 public class TMExtAttachScreenshot : MonoBehaviour
