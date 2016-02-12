@@ -4,17 +4,24 @@
 #include "Misc.h"
 #include "Buffer.h"
 
+struct fcI420Image
+{
+    char *y;
+    char *u;
+    char *v;
+
+    fcI420Image() : y(), u(), v() {}
+};
+
 
 // raw video sample
 struct fcVideoFrame
 {
     u64 timestamp;
     Buffer rgba;
-    uint8_t *i420_y;
-    uint8_t *i420_u;
-    uint8_t *i420_v;
+    fcI420Image i420;
 
-    fcVideoFrame() : timestamp(0), i420_y(nullptr), i420_u(nullptr), i420_v(nullptr) {}
+    fcVideoFrame() : timestamp(0) {}
     ~fcVideoFrame() { deallocate(); }
 
     void allocate(int width, int height)
@@ -23,17 +30,17 @@ struct fcVideoFrame
 
         rgba.resize(width * height * 4);
         int af = roundup<2>(width) * roundup<2>(height);
-        i420_y = (uint8_t*)AlignedAlloc(af, 32);
-        i420_u = (uint8_t*)AlignedAlloc(af >> 2, 32);
-        i420_v = (uint8_t*)AlignedAlloc(af >> 2, 32);
+        i420.y = (char*)AlignedAlloc(af, 32);
+        i420.u = (char*)AlignedAlloc(af >> 2, 32);
+        i420.v = (char*)AlignedAlloc(af >> 2, 32);
     }
 
     void deallocate()
     {
         rgba.clear();
-        AlignedFree(i420_y);
-        AlignedFree(i420_u);
-        AlignedFree(i420_v);
+        AlignedFree(i420.y);
+        AlignedFree(i420.u);
+        AlignedFree(i420.v);
     }
 };
 
