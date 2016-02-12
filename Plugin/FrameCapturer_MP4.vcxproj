@@ -28,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Encoder\fcAACEncoder.cpp" />
+    <ClCompile Include="Encoder\fcAMDH264Encoder.cpp" />
     <ClCompile Include="Encoder\fcMP4File.cpp" />
     <ClCompile Include="Encoder\fcMP4Muxer.cpp" />
     <ClCompile Include="Encoder\fcMP4StreamWriter.cpp" />

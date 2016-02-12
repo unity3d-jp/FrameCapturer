@@ -1,0 +1,70 @@
+#include "pch.h"
+#include <libyuv/libyuv.h>
+#include "fcFoundation.h"
+#include "fcMP4Internal.h"
+#include "fcH264Encoder.h"
+
+#ifdef fcSupportAMDH264
+
+#if _M_IX86
+    #define AmfCoreDll      "amf-core-windesktop32.dll"
+    #define AmfComponentDll "amf-component-vce-windesktop32.dll"
+#else
+    #define AmfCoreDll      "amf-core-windesktop64.dll"
+    #define AmfComponentDll "amf-component-vce-windesktop64.dll"
+#endif
+
+
+class fcAMDH264Encoder : public fcIH264Encoder
+{
+public:
+    fcAMDH264Encoder(const fcH264EncoderConfig& conf);
+    ~fcAMDH264Encoder();
+    bool encode(fcH264Frame& dst, const fcI420Image& image, uint64_t timestamp, bool force_keyframe) override;
+
+private:
+    fcH264EncoderConfig m_conf;
+};
+
+
+
+namespace {
+    module_t g_amf_core;
+    module_t g_amf_component;
+} // namespace
+
+bool fcLoadAMDH264Module()
+{
+    if (g_amf_core && g_amf_component) { return true; }
+
+    g_amf_core = DLLLoad(AmfCoreDll);
+    g_amf_component = DLLLoad(AmfComponentDll);
+    return g_amf_core && g_amf_component;
+}
+
+
+fcAMDH264Encoder::fcAMDH264Encoder(const fcH264EncoderConfig& conf)
+    : m_conf(conf)
+{
+}
+
+fcAMDH264Encoder::~fcAMDH264Encoder()
+{
+}
+
+bool fcAMDH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, uint64_t timestamp, bool force_keyframe)
+{
+    return false;
+}
+
+fcIH264Encoder* fcCreateAMDH264Encoder(const fcH264EncoderConfig& conf)
+{
+    if (!fcLoadAMDH264Module()) { return nullptr; }
+    return new fcAMDH264Encoder(conf);
+}
+
+#else  // fcSupportAMDH264
+
+fcIH264Encoder* fcCreateAMDH264Encoder(const fcH264EncoderConfig& conf) { return nullptr; }
+
+#endif // fcSupportAMDH264

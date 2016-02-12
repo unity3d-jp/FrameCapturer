@@ -5,11 +5,7 @@
 #include "fcMP4Internal.h"
 #include "fcH264Encoder.h"
 
-#ifdef fcWindows
-    #pragma comment(lib, "libbz2.lib")
-    #pragma comment(lib, "libcurl.lib")
-    #pragma comment(lib, "ws2_32.lib")
-#endif
+#ifdef fcSupportOpenH264
 
 #define OpenH264Version "1.5.0"
 #ifdef fcWindows
@@ -211,3 +207,11 @@ bool fcDownloadOpenH264(fcDownloadCallback cb)
     g_download_thread = new std::thread([=]() { fcMP4DownloadCodecBody(cb); });
     return true;
 }
+
+#else  // fcSupportOpenH264
+
+bool fcDownloadOpenH264(fcDownloadCallback cb) { return false; }
+bool fcLoadOpenH264Module() { return false; }
+fcIH264Encoder* fcCreateOpenH264Encoder(const fcH264EncoderConfig& conf) { return nullptr; }
+
+#endif // fcSupportOpenH264

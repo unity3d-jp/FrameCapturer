@@ -179,7 +179,7 @@ struct fcMP4Config
     int video_width;
     int video_height;
     int video_bitrate;
-    int video_framerate; // todo: this should be removed
+    int video_framerate;
     int video_max_buffers;
     int video_max_frame;
     int video_max_data_size;
