@@ -169,7 +169,7 @@ bool fcGraphicsDeviceD3D11::readTexture(void *o_buf, size_t bufsize, void *tex_,
             }
         }
 
-        m_context->Unmap(tex, 0);
+        m_context->Unmap(tmp, 0);
         return true;
     }
     return false;
