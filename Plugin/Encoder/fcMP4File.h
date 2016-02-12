@@ -1,5 +1,5 @@
-﻿#ifdef fcSupportMP4
-
+﻿#ifndef fcMP4File_h
+#define fcMP4File_h
 
 class fcIMP4Context
 {
@@ -36,4 +36,4 @@ typedef void            (*fcMP4SetModulePathImplT)(const char *path);
 typedef bool            (*fcMP4DownloadCodecImplT)(fcDownloadCallback cb);
 typedef fcIMP4Context*  (*fcMP4CreateContextImplT)(fcMP4Config &conf, fcIGraphicsDevice*);
 
-#endif // fcSupportMP4
+#endif // fcMP4File_h

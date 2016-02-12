@@ -1,7 +1,6 @@
 ﻿#include "pch.h"
 #include "FrameCapturer.h"
 
-#ifdef fcSupportMP4
 #include <libyuv/libyuv.h>
 #include "fcFoundation.h"
 #include "fcThreadPool.h"
@@ -552,5 +551,3 @@ fcCLinkage fcExport bool fcMP4DownloadCodecImpl(fcDownloadCallback cb)
 {
     return fcDownloadOpenH264(cb);
 }
-
-#endif // fcSupportMP4

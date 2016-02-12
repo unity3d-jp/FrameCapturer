@@ -1,4 +1,5 @@
-﻿#ifdef fcSupportEXR
+﻿#ifndef fcExrFile_h
+#define fcExrFile_h
 
 class fcIExrContext
 {
@@ -13,4 +14,4 @@ protected:
 };
 typedef fcIExrContext* (*fcExrCreateContextImplT)(fcExrConfig &conf, fcIGraphicsDevice*);
 
-#endif // fcSupportEXR
+#endif // fcExrFile_h
