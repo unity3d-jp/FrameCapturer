@@ -2,6 +2,10 @@
 #include <bzip2/bzlib.h>
 #include "Misc.h"
 
+#ifdef fcWindows
+    #pragma comment(lib, "libbz2.lib")
+#endif
+
 bool BZ2Decompress(std::vector<char> &dst, const void *src, size_t src_len)
 {
     const size_t initial_buffer_size = 1024 * 1024;

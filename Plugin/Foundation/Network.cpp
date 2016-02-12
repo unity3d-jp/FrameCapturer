@@ -3,6 +3,10 @@
 #include <curl/curl.h>
 #include "Misc.h"
 
+#ifdef fcWindows
+    #pragma comment(lib, "libcurl.lib")
+    #pragma comment(lib, "ws2_32.lib")
+#endif
 
 struct HTTPContext
 {
