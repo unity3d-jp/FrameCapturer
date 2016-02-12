@@ -3,12 +3,6 @@
 
 #include "FrameCapturer.h"
 
-#ifdef fcMSVC
-    #define fcThreadLocal __declspec(thread)
-#else
-    #define fcThreadLocal thread_local
-#endif
-
 #ifdef fcWindows
     #define fcDLLExt ".dll"
 #else 

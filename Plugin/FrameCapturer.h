@@ -29,33 +29,21 @@
     #define fcLinux
 #endif
 
-#ifdef _MSC_VER
-    #define fcMSVC
-#endif 
-
 
 #define fcCLinkage extern "C"
 #ifdef fcWindows
-    #define fcExport __declspec(dllexport)
-    #define fcBreak() DebugBreak()
+    #ifndef fcStaticLink
+        #ifdef fcImpl
+            #define fcExport __declspec(dllexport)
+        #else
+            #define fcExport __declspec(dllimport)
+        #endif
+    #else
+        #define fcExport
+    #endif
 #else // fcWindows
     #define fcExport
-    #define fcBreak() __builtin_trap()
 #endif // fcWindows
-
-#ifdef fcDebug
-    void fcDebugLogImpl(const char* fmt, ...);
-    #define fcDebugLog(...) fcDebugLogImpl(__VA_ARGS__)
-    #ifdef fcVerboseDebug
-        #define fcDebugLogVerbose(...) fcDebugLogImpl(__VA_ARGS__)
-    #else
-        #define fcDebugLogVerbose(...)
-    #endif
-#else
-    #define fcDebugLog(...)
-    #define fcDebugLogVerbose(...)
-#endif
-
 
 
 class fcIGraphicsDevice;

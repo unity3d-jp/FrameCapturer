@@ -1,7 +1,6 @@
 ﻿#include "pch.h"
 #include "FrameCapturer.h"
 
-#ifdef fcSupportEXR
 #include <half.h>
 #include <ImfRgbaFile.h>
 #include <ImfOutputFile.h>
@@ -256,4 +255,3 @@ fcCLinkage fcExport fcIExrContext* fcExrCreateContextImpl(fcExrConfig &conf, fcI
 {
     return new fcExrContext(conf, dev);
 }
-#endif // fcSupportEXR

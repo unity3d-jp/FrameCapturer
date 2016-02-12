@@ -26,8 +26,4 @@ fcIH264Encoder* fcCreateOpenH264Encoder(const fcH264EncoderConfig& conf);
 fcIH264Encoder* fcCreateNVH264Encoder(const fcH264EncoderConfig& conf);
 fcIH264Encoder* fcCreateAMDH264Encoder(const fcH264EncoderConfig& conf);
 
-#define fcSupportOpenH264
-#define fcSupportNVH264
-#define fcSupportAMDH264
-
 #endif // fcMP4Encoder_h

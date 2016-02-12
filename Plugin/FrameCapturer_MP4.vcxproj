@@ -9,12 +9,20 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Master|Win32">
-      <Configuration>Master</Configuration>
+    <ProjectConfiguration Include="MasterDLL|Win32">
+      <Configuration>MasterDLL</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Master|x64">
-      <Configuration>Master</Configuration>
+    <ProjectConfiguration Include="MasterDLL|x64">
+      <Configuration>MasterDLL</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MasterLib|Win32">
+      <Configuration>MasterLib</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MasterLib|x64">
+      <Configuration>MasterLib</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
@@ -42,8 +50,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Master|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='MasterDLL|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='MasterLib|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='MasterDLL|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='MasterLib|Win32'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -63,6 +73,7 @@
     <ProjectGuid>{067FA9E2-32CD-4C66-BE1B-959EDF510CC8}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <ProjectName>FrameCapturer_MP4</ProjectName>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -81,14 +92,24 @@
     <PlatformToolset>v140</PlatformToolset>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterDLL|x64'" Label="Configuration">
     <PlatformToolset>v140</PlatformToolset>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterLib|x64'" Label="Configuration">
     <PlatformToolset>v140</PlatformToolset>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterDLL|Win32'" Label="Configuration">
+    <PlatformToolset>v140</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterLib|Win32'" Label="Configuration">
+    <PlatformToolset>v140</PlatformToolset>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -119,13 +140,25 @@
     <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterDLL|x64'">
     <IncludePath>Foundation;external;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\x86_64;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterLib|x64'">
+    <IncludePath>Foundation;external;$(ProjectDir);$(IncludePath)</IncludePath>
+    <LibraryPath>external\libs\x86_64;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterDLL|Win32'">
+    <IncludePath>Foundation;external;$(ProjectDir);$(IncludePath)</IncludePath>
+    <LibraryPath>external\libs\x86;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterLib|Win32'">
     <IncludePath>Foundation;external;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\x86;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
@@ -140,7 +173,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>fcSupportGIF;fcSupportEXR;fcSupportMP4;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcDebug;fcVerboseDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>fcDebug;fcVerboseDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -159,7 +192,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>fcSupportGIF;fcSupportEXR;fcSupportMP4;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcDebug;fcVerboseDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>fcDebug;fcVerboseDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -180,7 +213,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>fcSupportGIF;fcSupportEXR;fcSupportMP4;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>fcDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level1</WarningLevel>
@@ -199,7 +232,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>fcSupportGIF;fcSupportEXR;fcSupportMP4;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>fcDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level1</WarningLevel>
@@ -209,7 +242,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
       <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Master|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MasterDLL|x64'">
     <PostBuildEvent>
       <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\FrameCapturer\Plugins\x86_64\</Command>
     </PostBuildEvent>
@@ -218,7 +251,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>fcSupportGIF;fcSupportEXR;fcSupportMP4;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcMaster;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>fcMaster;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Full</Optimization>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -235,7 +268,33 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
       <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MasterLib|x64'">
+    <PostBuildEvent>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\FrameCapturer\Plugins\x86_64\</Command>
+    </PostBuildEvent>
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>fcStaticLink;fcMaster;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Optimization>Full</Optimization>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WarningLevel>Level1</WarningLevel>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MasterDLL|Win32'">
     <PostBuildEvent>
       <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\FrameCapturer\Plugins\x86\</Command>
     </PostBuildEvent>
@@ -244,7 +303,32 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>fcSupportGIF;fcSupportEXR;fcSupportMP4;fcSupportOpenGL;fcSupportD3D9;fcSupportD3D11;fcMaster;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>fcMaster;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Optimization>Full</Optimization>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WarningLevel>Level1</WarningLevel>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MasterLib|Win32'">
+    <PostBuildEvent>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\FrameCapturer\Assets\FrameCapturer\Plugins\x86\</Command>
+    </PostBuildEvent>
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>fcStaticLink;fcMaster;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Full</Optimization>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
