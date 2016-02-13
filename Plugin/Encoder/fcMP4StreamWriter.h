@@ -13,33 +13,26 @@ private:
     void mp4End();
 
     template<class F>
-    void eachFrame(const F &body)
-    {
-        for (auto& v : m_frame_info) {
-            body(v);
-        }
-    }
-
-    template<class F>
     void eachVideoFrame(const F &body)
     {
-        for (auto& v : m_frame_info) {
-            if (v.type == fcFrameType_H264) body(v);
+        for (auto& v : m_video_frame_info) {
+            body(v);
         }
     }
 
     template<class F>
     void eachAudioFrame(const F &body)
     {
-        for (auto& v : m_frame_info) {
-            if (v.type == fcFrameType_AAC) body(v);
+        for (auto& v : m_audio_frame_info) {
+            body(v);
         }
     }
 
 private:
     BinaryStream& m_stream;
     fcMP4Config m_conf;
-    std::vector<fcFrameInfo> m_frame_info;
+    std::vector<fcFrameInfo> m_video_frame_info;
+    std::vector<fcFrameInfo> m_audio_frame_info;
     fcFrameData m_video_header;
     fcFrameData m_audio_header;
     std::vector<u8> m_pps;
@@ -55,8 +48,6 @@ private:
     std::vector<u32> m_iframe_ids;
 
     size_t m_mdat_begin;
-    size_t m_last_videoframe_index;
-    size_t m_last_audioframe_index;
 };
 
 #endif // fcMP4StreamWriter_h
