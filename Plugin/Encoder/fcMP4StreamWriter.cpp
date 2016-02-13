@@ -47,7 +47,6 @@ fcMP4StreamWriter::fcMP4StreamWriter(BinaryStream& stream, const fcMP4Config &co
     : m_stream(stream)
     , m_conf(conf)
     , m_mdat_begin(0)
-    , m_last_videoframe_index(-1), m_last_audioframe_index(-1)
 {
     mp4Begin();
 }
@@ -59,8 +58,6 @@ fcMP4StreamWriter::~fcMP4StreamWriter()
 
 void fcMP4StreamWriter::mp4Begin()
 {
-    m_frame_info.reserve(60 * 60);
-
     BinaryStream& os = m_stream;
     os  << u32_be(0x20)
         << u32_be('ftyp')
@@ -85,10 +82,8 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
     BinaryStream& os = m_stream;
 
     fcFrameInfo info;
-    info.type = frame.type;
     info.file_offset = os.tellp();
     info.timestamp = frame.timestamp;
-    info.index = m_frame_info.size();
 
     if (frame.type == fcFrameType_H264) {
         const auto& h264 = (const fcH264Frame&)frame;
@@ -108,36 +103,20 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
             info.size += size - offset;
         });
 
-        uint64_t duration = 0;
-        if (m_last_videoframe_index != size_t(-1)) {
-            auto& prev = m_frame_info[m_last_videoframe_index];
-            duration = frame.timestamp - prev.timestamp;
-        }
-        info.duration = duration;
-
-        m_last_videoframe_index = m_frame_info.size();
+        m_video_frame_info.emplace_back(info);
     }
     else if (frame.type == fcFrameType_AAC) {
         const int offset = 2;
         info.size = frame.data.size() - offset;
         os.write(&frame.data[offset], info.size);
 
-        uint64_t duration = 0;
-        if (m_last_audioframe_index != size_t(-1)) {
-            auto& prev = m_frame_info[m_last_audioframe_index];
-            duration = frame.timestamp - prev.timestamp;
-        }
-        info.duration = duration;
-
-        m_last_audioframe_index = m_frame_info.size();
+        m_audio_frame_info.emplace_back(info);
     }
-
-    m_frame_info.emplace_back(info);
 }
 
 void fcMP4StreamWriter::mp4End()
 {
-    if (m_frame_info.empty()) {
+    if (m_video_frame_info.empty()) {
         fcDebugLog("fcMP4Stream::mp4End() no frame data.");
         return;
     }
@@ -148,55 +127,47 @@ void fcMP4StreamWriter::mp4End()
     const std::string video_compression_name = "AVC Coding";
     u32 mac_time = (u32)GetMacTime();
 
-    size_t num_video_frames = 0;
-    size_t num_audio_frames = 0;
+    size_t num_video_frames = m_video_frame_info.size();
+    size_t num_audio_frames = m_audio_frame_info.size();
     u32 video_unit_duration = 1000;
     u32 audio_unit_duration = 1000;
     u64 video_duration = 0;
     u64 audio_duration = 0;
     fcMP4Config& c = m_conf;
 
-    // compute file offset
+    // compute decode times
     {
-        const u64 mp4_header_size = 54;
-        u64 last_size = 0;
-        u64 last_offset = 0;
-        u32 i = 0;
-        eachFrame([&](fcFrameInfo& v) {
-            v.index = i++;
-            v.file_offset = last_offset + last_size + mp4_header_size;
-            last_offset += last_size;
-            last_size = v.size;
-        });
-    }
+        for (size_t i = 1; i < m_video_frame_info.size(); ++i) {
+            auto& prev = m_video_frame_info[i-1];
+            auto& cur = m_video_frame_info[i];
+            uint32_t duration = (cur.timestamp - prev.timestamp) / 1000000; // nanosec to millisec
 
-    // compute duration
-    {
-        fcFrameInfo *first_frame = nullptr;
-        fcFrameInfo *last_frame = nullptr;
-        u32 i = 0;
-
-        auto proc = [&](fcFrameInfo& v) {
-            v.index_track = i++;
-            if (first_frame == nullptr) {
-                first_frame = &v;
+            if (!m_video_decode_times.empty() && m_video_decode_times.back().value == duration) {
+                m_video_decode_times.back().count++;
             }
-            else if(last_frame != nullptr) {
-                last_frame->duration = v.timestamp - last_frame->timestamp;
+            else {
+                fcOffsetValue ov;
+                ov.count = 1;
+                ov.value = duration;
+                m_video_decode_times.emplace_back(ov);
             }
-            last_frame = &v;
-        };
+        }
 
-        eachVideoFrame(proc);
-        num_video_frames = i;
-        if(i > 0) video_duration = first_frame->timestamp - last_frame->timestamp;
+        for (size_t i = 1; i < m_audio_frame_info.size(); ++i) {
+            auto& prev = m_audio_frame_info[i - 1];
+            auto& cur = m_audio_frame_info[i];
+            uint32_t duration = (cur.timestamp - prev.timestamp) / 1000000; // nanosec to millisec
 
-        first_frame = last_frame = nullptr;
-        i = 0;
-
-        eachAudioFrame(proc);
-        num_audio_frames = i;
-        if (i > 0) audio_duration = first_frame->timestamp - last_frame->timestamp;
+            if (!m_audio_decode_times.empty() && m_audio_decode_times.back().value == duration) {
+                m_audio_decode_times.back().count++;
+            }
+            else {
+                fcOffsetValue ov;
+                ov.count = 1;
+                ov.value = duration;
+                m_audio_decode_times.emplace_back(ov);
+            }
+        }
     }
 
 

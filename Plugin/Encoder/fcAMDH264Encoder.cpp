@@ -59,6 +59,8 @@ bool fcAMDH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, uint64
 
 fcIH264Encoder* fcCreateAMDH264Encoder(const fcH264EncoderConfig& conf)
 {
+    return nullptr; // until fcAMDH264Encoder is implemented properly
+
     if (!fcLoadAMDH264Module()) { return nullptr; }
     return new fcAMDH264Encoder(conf);
 }

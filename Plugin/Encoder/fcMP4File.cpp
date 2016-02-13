@@ -153,7 +153,18 @@ void fcMP4Context::resetEncoders()
         h264conf.target_framerate = m_conf.video_framerate;
         h264conf.target_bitrate = m_conf.video_bitrate;
 
-        fcIH264Encoder *enc = fcCreateOpenH264Encoder(h264conf);
+        fcIH264Encoder *enc = nullptr;
+        // try to create hardware encoder
+        if (m_conf.video_use_hardware_encoder_if_possible) {
+            enc = fcCreateNVH264Encoder(h264conf);
+            if (enc == nullptr) {
+                enc = fcCreateAMDH264Encoder(h264conf);
+            }
+        }
+        // fall back to software encoder (OpenH264)
+        if (enc == nullptr) {
+            enc = fcCreateOpenH264Encoder(h264conf);
+        }
         m_h264_encoder.reset(enc);
     }
 

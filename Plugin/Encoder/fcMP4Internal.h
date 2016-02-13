@@ -120,16 +120,12 @@ struct fcAACFrame : public fcFrameData
 
 struct fcFrameInfo
 {
-    fcFrameType type;
     size_t size;
     uint64_t file_offset;
     uint64_t timestamp;
-    uint32_t duration;
-    uint32_t index;
-    uint32_t index_track;
 
     fcFrameInfo()
-        : type(), size(), file_offset(), timestamp(), duration(), index(), index_track()
+        : size(), file_offset(), timestamp()
     {}
 };
 
