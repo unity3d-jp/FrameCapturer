@@ -12,22 +12,6 @@ private:
     void mp4Begin();
     void mp4End();
 
-    template<class F>
-    void eachVideoFrame(const F &body)
-    {
-        for (auto& v : m_video_frame_info) {
-            body(v);
-        }
-    }
-
-    template<class F>
-    void eachAudioFrame(const F &body)
-    {
-        for (auto& v : m_audio_frame_info) {
-            body(v);
-        }
-    }
-
 private:
     BinaryStream& m_stream;
     fcMP4Config m_conf;
@@ -42,7 +26,6 @@ private:
     std::vector<fcSampleToChunk> m_audio_samples_to_chunk;
     std::vector<fcOffsetValue> m_video_decode_times;
     std::vector<fcOffsetValue> m_audio_decode_times;
-    std::vector<fcOffsetValue> m_composition_offsets;
     std::vector<u64> m_video_chunks;
     std::vector<u64> m_audio_chunks;
     std::vector<u32> m_iframe_ids;

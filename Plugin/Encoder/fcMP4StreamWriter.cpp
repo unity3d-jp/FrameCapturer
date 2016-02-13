@@ -59,22 +59,19 @@ fcMP4StreamWriter::~fcMP4StreamWriter()
 void fcMP4StreamWriter::mp4Begin()
 {
     BinaryStream& os = m_stream;
-    os  << u32_be(0x20)
+    os  << u32_be(0x18)
         << u32_be('ftyp')
+        << u32_be('mp42')
+        << u32_be(0x00)
+        << u32_be('mp42')
         << u32_be('isom')
-        << u32_be(0x200)
-        << u32_be('isom')
-        << u32_be('iso2')
-        << u32_be('avc1')
-        << u32_be('mp41')
         << u32_be(0x8)
         << u32_be('free');
 
     m_mdat_begin = os.tellp();
 
-    os  << u32_be(0x1)
-        << u32_be('mdat')
-        << u64(0); // reserve mdat size space
+    os  << u32_be(0x0)
+        << u32_be('mdat');
 }
 
 void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
@@ -89,18 +86,18 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
         const auto& h264 = (const fcH264Frame&)frame;
 
         if (h264.h264_type == fcH264FrameType_I) {
-            m_iframe_ids.push_back(u32_be((uint32_t)m_video_frame_info.size() + 1));
+            m_iframe_ids.push_back((uint32_t)m_video_frame_info.size() + 1);
         }
 
         h264.eachNALs([&](const char *data, int size) {
-            const int offset = 4; // 0x00000001
+            const int offset = 5; // 0x00000001 + NAL header
 
             fcH264NALHeader nalh(data[4]);
             if (nalh.nal_unit_type == NAL_SPS) {
-                m_sps.assign(&data[offset], &data[offset] + (size - offset));
+                m_sps.assign(&data[4], &data[4] + (size - 4));
             }
             else if (nalh.nal_unit_type == NAL_PPS) {
-                m_pps.assign(&data[offset], &data[offset] + (size - offset));
+                m_pps.assign(&data[4], &data[4] + (size - 4));
             }
 
             os.write(&data[offset], size - offset);
@@ -136,7 +133,9 @@ void fcMP4StreamWriter::mp4End()
     u32 audio_duration = 0;
     fcMP4Config& c = m_conf;
 
-    m_iframe_ids.push_back((u32)m_video_frame_info.size());
+    if (m_iframe_ids.empty()) {
+        m_iframe_ids.push_back(1);
+    }
 
     // compute decode times
     auto compute_decode_times = [](
@@ -172,31 +171,22 @@ void fcMP4StreamWriter::mp4End()
         std::vector<u64>& chunks,
         std::vector<fcSampleToChunk>& samples_to_chunk)
     {
-        uint64_t current_offset = 0;
-        uint64_t total_offset = 0;
-        size_t num_samples = 0;
-
         for (size_t i = 0; i < frame_info.size(); ++i) {
-            auto& frame = frame_info[i];
+            auto* cur = &frame_info[i];
+            auto* prev = i > 0 ? &frame_info[i - 1] : nullptr;
 
-            if (i == 0) {
-                current_offset = frame.file_offset;
+            if (!prev || prev->file_offset + prev->size != cur->file_offset) {
+                chunks.push_back(cur->file_offset);
+
+                fcSampleToChunk stc;
+                stc.first_chunk_ID = (uint32_t)chunks.size();
+                stc.samples_per_chunk = 1;
+                stc.sample_description_ID = 1;
+                samples_to_chunk.emplace_back(stc);
             }
-            else if (current_offset != total_offset || i == frame_info.size() - 1) {
-                chunks.push_back(current_offset);
-                if (samples_to_chunk.empty() || samples_to_chunk.back().samples_per_chunk != num_samples) {
-                    fcSampleToChunk stc;
-                    stc.first_chunk_ID = (uint32_t)chunks.size();
-                    stc.samples_per_chunk = num_samples;
-                    samples_to_chunk.emplace_back(stc);
-                }
-
-                current_offset = frame.file_offset;
-                num_samples = 0;
+            else {
+                samples_to_chunk.back().samples_per_chunk++;
             }
-
-            num_samples++;
-            total_offset += frame.size;
         }
     };
     compute_chunk_data(m_video_frame_info, m_video_chunks, m_video_samples_to_chunk);
@@ -371,9 +361,9 @@ void fcMP4StreamWriter::mp4End()
                                 bs << u32(0);   // version and flags (none)
                                 bs << u32(0);   // block size for all (0 if differing sizes)
                                 bs << u32_be(num_audio_frames);
-                                eachAudioFrame([&](fcFrameInfo& v) {
+                                for (auto& v : m_audio_frame_info) {
                                     bs << u32_be(v.size);
-                                });
+                                }
                             });
 
                             if (!m_audio_chunks.empty() && m_audio_chunks.back() > 0xFFFFFFFFLL)
@@ -515,20 +505,11 @@ void fcMP4StreamWriter::mp4End()
                             box(u32_be('stss'), [&]() {
                                 bs << u32(0); // version and flags (none)
                                 bs << u32_be(m_iframe_ids.size());
-                                bs.write(&m_iframe_ids[0], m_iframe_ids.size()*sizeof(u32));
+                                for (u32 v : m_iframe_ids) {
+                                    bs << u32_be(v);
+                                }
                             }); // stss
                         }
-
-                        box(u32_be('ctts'), [&]() {
-                            bs << u32(0); // version (0) and flags (none)
-                                          // bs << u32(u32_be(0x01000000)); // version (1) and flags (none)
-                            bs << u32_be(m_composition_offsets.size());
-                            for (auto& v : m_composition_offsets)
-                            {
-                                bs << u32_be(v.count);
-                                bs << u32_be(v.value);
-                            }
-                        }); // ctts
 
                         box(u32_be('stsc'), [&]() {
                             bs << u32(0); // version and flags (none)
@@ -537,7 +518,7 @@ void fcMP4StreamWriter::mp4End()
                             {
                                 bs << u32_be(v.first_chunk_ID);
                                 bs << u32_be(v.samples_per_chunk);
-                                bs << u32_be(1);
+                                bs << u32_be(v.sample_description_ID);
                             }
                         }); // stsc
 
@@ -545,13 +526,12 @@ void fcMP4StreamWriter::mp4End()
                             bs << u32(0); // version and flags (none)
                             bs << u32(0); // block size for all (0 if differing sizes)
                             bs << u32_be(num_video_frames);
-                            eachVideoFrame([&](fcFrameInfo& v) {
+                            for (auto& v : m_video_frame_info) {
                                 bs << u32_be(v.size);
-                            });
+                            }
                         }); // stsz
 
-                        if (!m_video_chunks.empty() && m_video_chunks.back() > 0xFFFFFFFFLL)
-                        {
+                        if (!m_video_chunks.empty() && m_video_chunks.back() > 0xFFFFFFFFLL) {
                             box(u32_be('co64'), [&]() {
                                 bs << u32(0); // version and flags (none)
                                 bs << u32_be(m_video_chunks.size());
@@ -560,8 +540,7 @@ void fcMP4StreamWriter::mp4End()
                                 }
                             }); // co64
                         }
-                        else
-                        {
+                        else {
                             box(u32_be('stco'), [&]() {
                                 bs << u32(0); // version and flags (none)
                                 bs << u32_be(m_video_chunks.size());
@@ -578,11 +557,11 @@ void fcMP4StreamWriter::mp4End()
     }); // moov
 
 
-    u64 mdat_size = u64_be(mdat_end - m_mdat_begin);
+    u32 mdat_size = u32_be(mdat_end - m_mdat_begin);
 
     os.write(track_info.ptr(), track_info.size());
-    os.seekp(m_mdat_begin + 8);
-    os.write(&mdat_size, sizeof(u64));
+    os.seekp(m_mdat_begin);
+    os.write(&mdat_size, sizeof(mdat_size));
 
     fcDebugLog("fcMP4Stream::mp4End() done.");
 }

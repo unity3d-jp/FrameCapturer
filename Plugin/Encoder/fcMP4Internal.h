@@ -139,6 +139,7 @@ struct fcSampleToChunk
 {
     uint32_t first_chunk_ID;
     uint32_t samples_per_chunk;
+    uint32_t sample_description_ID;
 };
 
 #endif // fcMP4Internal_h
