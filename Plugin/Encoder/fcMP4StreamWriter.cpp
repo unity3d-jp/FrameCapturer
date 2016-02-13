@@ -88,8 +88,12 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
     if (frame.type == fcFrameType_H264) {
         const auto& h264 = (const fcH264Frame&)frame;
 
+        if (h264.h264_type == fcH264FrameType_I) {
+            m_iframe_ids.push_back(u32_be((uint32_t)m_video_frame_info.size() + 1));
+        }
+
         h264.eachNALs([&](const char *data, int size) {
-            const int offset = 5; // 0x00000001 + header
+            const int offset = 4; // 0x00000001
 
             fcH264NALHeader nalh(data[4]);
             if (nalh.nal_unit_type == NAL_SPS) {
@@ -116,11 +120,6 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
 
 void fcMP4StreamWriter::mp4End()
 {
-    if (m_video_frame_info.empty()) {
-        fcDebugLog("fcMP4Stream::mp4End() no frame data.");
-        return;
-    }
-
     const std::string version_string = "MP4 Capturer by Unity Technologies Japan";
     const std::string audio_track_name = "Sound Media Handler";
     const std::string video_track_name = "Video Media Handler";
@@ -129,64 +128,85 @@ void fcMP4StreamWriter::mp4End()
 
     size_t num_video_frames = m_video_frame_info.size();
     size_t num_audio_frames = m_audio_frame_info.size();
-    u32 video_unit_duration = 1000;
-    u32 audio_unit_duration = 1000;
-    u64 video_duration = 0;
-    u64 audio_duration = 0;
-    fcMP4Config& c = m_conf;
-
-    // compute decode times
-    {
-        for (size_t i = 1; i < m_video_frame_info.size(); ++i) {
-            auto& prev = m_video_frame_info[i-1];
-            auto& cur = m_video_frame_info[i];
-            uint32_t duration = (cur.timestamp - prev.timestamp) / 1000000; // nanosec to millisec
-
-            if (!m_video_decode_times.empty() && m_video_decode_times.back().value == duration) {
-                m_video_decode_times.back().count++;
-            }
-            else {
-                fcOffsetValue ov;
-                ov.count = 1;
-                ov.value = duration;
-                m_video_decode_times.emplace_back(ov);
-            }
-        }
-
-        for (size_t i = 1; i < m_audio_frame_info.size(); ++i) {
-            auto& prev = m_audio_frame_info[i - 1];
-            auto& cur = m_audio_frame_info[i];
-            uint32_t duration = (cur.timestamp - prev.timestamp) / 1000000; // nanosec to millisec
-
-            if (!m_audio_decode_times.empty() && m_audio_decode_times.back().value == duration) {
-                m_audio_decode_times.back().count++;
-            }
-            else {
-                fcOffsetValue ov;
-                ov.count = 1;
-                ov.value = duration;
-                m_audio_decode_times.emplace_back(ov);
-            }
-        }
-    }
-
-
     bool has_video = num_video_frames != 0;
     bool has_audio = num_audio_frames != 0;
+    u32 video_unit_duration = 1000;
+    u32 audio_unit_duration = 1000;
+    u32 video_duration = 0;
+    u32 audio_duration = 0;
+    fcMP4Config& c = m_conf;
 
-    if (!has_video) {
-        fcDebugLog("fcMP4Stream::flush() no video frames.");
-        return;
-    }
+    m_iframe_ids.push_back((u32)m_video_frame_info.size());
+
+    // compute decode times
+    auto compute_decode_times = [](
+        std::vector<fcFrameInfo>& frame_info,
+        std::vector<fcOffsetValue>& decode_times) -> u32
+    {
+        u32 total_duration_ms = 0;
+        for (size_t i = 1; i < frame_info.size(); ++i) {
+            auto& prev = frame_info[i - 1];
+            auto& cur = frame_info[i];
+            uint32_t duration = (cur.timestamp - prev.timestamp) / 1000000; // nanosec to millisec
+            total_duration_ms += duration;
+
+            if (!decode_times.empty() && decode_times.back().value == duration) {
+                decode_times.back().count++;
+            }
+            else {
+                fcOffsetValue ov;
+                ov.count = 1;
+                ov.value = duration;
+                decode_times.emplace_back(ov);
+            }
+        }
+        return total_duration_ms;
+    };
+    video_duration = compute_decode_times(m_video_frame_info, m_video_decode_times);
+    audio_duration = compute_decode_times(m_audio_frame_info, m_audio_decode_times);
+
+
+    // compute chunk data
+    auto compute_chunk_data = [](
+        std::vector<fcFrameInfo>& frame_info,
+        std::vector<u64>& chunks,
+        std::vector<fcSampleToChunk>& samples_to_chunk)
+    {
+        uint64_t current_offset = 0;
+        uint64_t total_offset = 0;
+        size_t num_samples = 0;
+
+        for (size_t i = 0; i < frame_info.size(); ++i) {
+            auto& frame = frame_info[i];
+
+            if (i == 0) {
+                current_offset = frame.file_offset;
+            }
+            else if (current_offset != total_offset || i == frame_info.size() - 1) {
+                chunks.push_back(current_offset);
+                if (samples_to_chunk.empty() || samples_to_chunk.back().samples_per_chunk != num_samples) {
+                    fcSampleToChunk stc;
+                    stc.first_chunk_ID = (uint32_t)chunks.size();
+                    stc.samples_per_chunk = num_samples;
+                    samples_to_chunk.emplace_back(stc);
+                }
+
+                current_offset = frame.file_offset;
+                num_samples = 0;
+            }
+
+            num_samples++;
+            total_offset += frame.size;
+        }
+    };
+    compute_chunk_data(m_video_frame_info, m_video_chunks, m_video_samples_to_chunk);
+    compute_chunk_data(m_audio_frame_info, m_audio_chunks, m_audio_samples_to_chunk);
 
 
 
 
     BinaryStream& os = m_stream;
     size_t mdat_end = os.tellp();
-
-
-
 
     Buffer dd_buf; // decoder descriptor
     BufferStream dd(dd_buf);
@@ -341,8 +361,8 @@ void fcMP4StreamWriter::mp4End()
 
                             box(u32_be('stsc'), [&]() {
                                 bs << u32(0);   // version and flags (none)
-                                bs << u32_be(m_audio_sample_to_chunk.size());
-                                for (auto& v : m_audio_sample_to_chunk) {
+                                bs << u32_be(m_audio_samples_to_chunk.size());
+                                for (auto& v : m_audio_samples_to_chunk) {
                                     bs << u32_be(v.first_chunk_ID) << u32_be(v.samples_per_chunk) << u32(u32_be(1));
                                 }
                             });
@@ -462,13 +482,13 @@ void fcMP4StreamWriter::mp4End()
                                 bs << u16_be(1);            // frame count(?)
                                 bs << u8(video_compression_name.size()); // compression name length
                                 bs.write(video_compression_name.c_str(), video_compression_name.size()); // 31 bytes for the name
-                                bs << u16(u16_be(24));      // bit depth
+                                bs << u16(0);               // 
                                 bs << u16(0xFFFF);          // quicktime video color table id (none = -1)
                                 box(u32_be('avcC'), [&]() {
                                     bs << u8(1);            // version
-                                    bs << u8(100);          // h264 profile ID
-                                    bs << u8(0);            // h264 compatible profiles
-                                    bs << u8(0x1f);         // h264 level
+                                    bs << u8(0x42);         // h264 profile ID
+                                    bs << u8(0xc0);         // h264 compatible profiles
+                                    bs << u8(0x14);         // h264 level
                                     bs << u8(0xff);         // reserved
                                     bs << u8(0xe1);         // first half-byte = no clue. second half = sps count
                                     bs << u16_be(m_sps.size()); // sps size
@@ -554,36 +574,6 @@ void fcMP4StreamWriter::mp4End()
                 }); // minf
             }); // mdia
         }); // trak
-
-        
-        //------------------------------------------------------
-        // info
-        //------------------------------------------------------
-        // todo: remove this if possible
-        box(u32_be('udta'), [&]() {
-            box(u32_be('meta'), [&]() {
-                bs << u32(0);       // version and flags (none)
-                box(u32_be('hdlr'), [&]() {
-                    bs << u32(0);           // version and flags (none)
-                    bs << u32(0);           // quicktime type
-                    bs << u32_be('mdir');   // metadata type
-                    bs << u32_be('appl');   // quicktime manufacturer reserved thingy
-                    bs << u32(0);           // quicktime component reserved flag
-                    bs << u32(0);           // quicktime component reserved flag mask
-                    bs << u8(0);            // null string
-                }); // hdlr
-
-                box(u32_be('ilst'), [&]() {
-                    box(u32_be('\xa9too'), [&]() {
-                        box(u32_be('data'), [&]() {
-                            bs << u32_be(1);    // version (1) + flags (0)
-                            bs << u32(0);       // reserved
-                            bs.write(version_string.c_str(), version_string.size());
-                        }); // data
-                    }); // @too
-                }); // ilst
-            }); // meta
-        }); // udta
 
     }); // moov
 
