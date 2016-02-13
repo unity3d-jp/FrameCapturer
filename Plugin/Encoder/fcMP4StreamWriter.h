@@ -39,7 +39,7 @@ private:
     std::vector<u8> m_sps;
 
     std::vector<fcSampleToChunk> m_video_samples_to_chunk;
-    std::vector<fcSampleToChunk> m_audio_sample_to_chunk;
+    std::vector<fcSampleToChunk> m_audio_samples_to_chunk;
     std::vector<fcOffsetValue> m_video_decode_times;
     std::vector<fcOffsetValue> m_audio_decode_times;
     std::vector<fcOffsetValue> m_composition_offsets;
