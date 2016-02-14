@@ -90,18 +90,21 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
         }
 
         h264.eachNALs([&](const char *data, int size) {
-            const int offset = 5; // 0x00000001 + NAL header
+            const int offset = 4; // 0x00000001
 
             fcH264NALHeader nalh(data[4]);
             if (nalh.nal_unit_type == NAL_SPS) {
-                m_sps.assign(&data[4], &data[4] + (size - 4));
+                m_sps.assign(&data[offset], &data[offset] + (size - offset));
             }
             else if (nalh.nal_unit_type == NAL_PPS) {
-                m_pps.assign(&data[4], &data[4] + (size - 4));
+                m_pps.assign(&data[offset], &data[offset] + (size - offset));
+            }
+            else {
+                os << u32_be(size - offset);
+                os.write(&data[offset], size - offset);
+                info.size += (size - offset) + 4;
             }
 
-            os.write(&data[offset], size - offset);
-            info.size += size - offset;
         });
 
         m_video_frame_info.emplace_back(info);
@@ -232,6 +235,7 @@ void fcMP4StreamWriter::mp4End()
     BufferStream bs(track_info);
     Box box = Box(bs);
 
+    u32 track_index = 0;
 
 
     box(u32_be('moov'), [&]() {
@@ -265,12 +269,13 @@ void fcMP4StreamWriter::mp4End()
         // audio track
         //------------------------------------------------------
         if (has_audio) {
+            ++track_index;
             box(u32_be('trak'), [&]() {
                 box(u32_be('tkhd'), [&]() {
                     bs << u32_be(0x00000007);   // version (0) and flags (0xF)
                     bs << u32_be(mac_time);     // creation time
                     bs << u32_be(mac_time);     // modified time
-                    bs << u32_be(1);            // track ID
+                    bs << u32_be(track_index);  // track ID
                     bs << u32(0);               // reserved
                     bs << u32_be(audio_duration);// duration (in time base units)
                     bs << u64(0);               // reserved
@@ -395,14 +400,15 @@ void fcMP4StreamWriter::mp4End()
         //------------------------------------------------------
         // video track
         //------------------------------------------------------
+        ++track_index;
         box(u32_be('trak'), [&]() {
             box(u32_be('tkhd'), [&]() {
-                bs << u32_be(0x00000007);  // version (0) and flags (0x7)
-                bs << u32_be(mac_time);            // creation time
-                bs << u32_be(mac_time);            // modified time
-                bs << u32_be(2);           // track ID
+                bs << u32_be(0x00000006);       // version (0) and flags (0x6)
+                bs << u32_be(mac_time);         // creation time
+                bs << u32_be(mac_time);         // modified time
+                bs << u32_be(track_index);      // track ID
                 bs << u32(0);                   // reserved
-                bs << u32_be(video_duration);      // duration (in time base units)
+                bs << u32_be(video_duration);   // duration (in time base units)
                 bs << u64(0);                   // reserved
                 bs << u16(0);                   // video layer (0)
                 bs << u16(0);                   // quicktime alternate track id (0)
