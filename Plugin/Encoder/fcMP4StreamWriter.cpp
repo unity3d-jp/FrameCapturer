@@ -83,6 +83,8 @@ void fcMP4StreamWriter::mp4Begin()
 
 void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
 {
+    if (frame.data.empty()) { return; }
+
     BinaryStream& os = m_stream;
 
     fcFrameInfo info;
@@ -123,7 +125,7 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
         const size_t size = frame.data.size();
 
         os << u32_be(size - offset);
-        os.write(&frame.data[offset], info.size - offset);
+        os.write(&frame.data[offset], size - offset);
         info.size = (size - offset) + 4;
 
         m_audio_frame_info.emplace_back(info);
