@@ -123,7 +123,7 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
         const size_t size = frame.data.size();
 
         os << u32_be(size - offset);
-        os.write(&frame.data[offset], info.size);
+        os.write(&frame.data[offset], info.size - offset);
         info.size = (size - offset) + 4;
 
         m_audio_frame_info.emplace_back(info);
@@ -287,7 +287,7 @@ void fcMP4StreamWriter::mp4End()
 
             box(u32_be('trak'), [&]() {
                 box(u32_be('tkhd'), [&]() {
-                    bs << u32_be(0x00000007);   // version (0) and flags (0xF)
+                    bs << u32_be(0x00000006);   // version (0) and flags (0xF)
                     bs << u32_be(ctime);        // creation time
                     bs << u32_be(ctime);        // modified time
                     bs << u32_be(track_index);  // track ID
@@ -311,7 +311,7 @@ void fcMP4StreamWriter::mp4End()
                         bs << u32_be(ctime);                // modified time
                         bs << u32_be(c.audio_sample_rate);  // time scale
                         bs << u32_be(audio_unit_duration);
-                        bs << u32_be(0x15c70000);
+                        bs << u32_be(0x55C40000);
                     }); // mdhd
                     box(u32_be('hdlr'), [&]() {
                         bs << u32(0);           // version and flags (none)
@@ -347,7 +347,7 @@ void fcMP4StreamWriter::mp4End()
                                     bs << u16(0);       // quicktime encoding version
                                     bs << u16(0);       // quicktime encoding revision
                                     bs << u32(0);       // quicktime audio encoding vendor
-                                    bs << u16(0);       // channels (ignored)
+                                    bs << u16(2);       // channels (ignored)
                                     bs << u16_be(16);   // sample size
                                     bs << u16(0);       // quicktime audio compression id
                                     bs << u16(0);       // quicktime audio packet size
