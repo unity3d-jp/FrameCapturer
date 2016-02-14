@@ -379,7 +379,7 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, uint64_t
 
     // aac encode
     ++m_audio_active_task_count;
-    enqueueTask([this, &aac, &raw, timestamp](){
+    enqueueTask([this, &aac, &raw](){
         m_aac_encoder->encode(aac, (float*)raw.data.ptr(), raw.data.size() / sizeof(float));
         aac.timestamp = raw.timestamp;
 
