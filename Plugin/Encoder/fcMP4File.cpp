@@ -36,7 +36,7 @@ public:
     void eraseFrame(int begin_frame, int end_frame) override;
 
 private:
-    void enqueueTask(const std::function<void()> &f);
+    void enqueueVideoTask(const std::function<void()> &f);
     void enqueueAudioTask(const std::function<void()> &f);
     void processVideoTasks();
     void processAudioTasks();
@@ -182,7 +182,7 @@ void fcMP4Context::resetEncoders()
     }
 }
 
-void fcMP4Context::enqueueTask(const std::function<void()> &f)
+void fcMP4Context::enqueueVideoTask(const std::function<void()> &f)
 {
     {
         std::unique_lock<std::mutex> lock(m_video_queue_mutex);
@@ -283,7 +283,7 @@ void fcMP4Context::addVideoFrameTask(fcH264Frame& h264, fcVideoFrame &raw, bool 
 
 void fcMP4Context::wait()
 {
-    while (m_video_active_task_count > 0)
+    while (m_video_active_task_count > 0 || m_audio_active_task_count > 0)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -318,7 +318,7 @@ bool fcMP4Context::addVideoFrameTexture(void *tex, uint64_t timestamp)
     m_h264_frames.push_back(fcH264Frame());
     fcH264Frame& h264 = m_h264_frames.back();
     ++m_video_active_task_count;
-    enqueueTask([this, &h264, &raw](){
+    enqueueVideoTask([this, &h264, &raw](){
         addVideoFrameTask(h264, raw, true);
         --m_video_active_task_count;
     });
@@ -355,7 +355,7 @@ bool fcMP4Context::addVideoFramePixels(void *pixels, fcColorSpace cs, uint64_t t
     m_h264_frames.push_back(fcH264Frame());
     fcH264Frame& fdata = m_h264_frames.back();
     ++m_video_active_task_count;
-    enqueueTask([this, &fdata, &raw, rgba2i420](){
+    enqueueVideoTask([this, &fdata, &raw, rgba2i420](){
         addVideoFrameTask(fdata, raw, rgba2i420);
         --m_video_active_task_count;
     });
@@ -379,7 +379,7 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, uint64_t
 
     // aac encode
     ++m_audio_active_task_count;
-    enqueueTask([this, &aac, &raw](){
+    enqueueAudioTask([this, &aac, &raw](){
         m_aac_encoder->encode(aac, (float*)raw.data.ptr(), raw.data.size() / sizeof(float));
         aac.timestamp = raw.timestamp;
 
