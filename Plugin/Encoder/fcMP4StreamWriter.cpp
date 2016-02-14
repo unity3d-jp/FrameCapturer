@@ -35,7 +35,7 @@ private:
 };
 
 
-time_t GetMacTime()
+time_t fcGetMacTime()
 {
     return time(0) + 2082844800;
 }
@@ -70,8 +70,9 @@ void fcMP4StreamWriter::mp4Begin()
 
     m_mdat_begin = os.tellp();
 
-    os  << u32_be(0x0)
-        << u32_be('mdat');
+    os  << u32_be(0x1)
+        << u32_be('mdat')
+        << u64(0); // 64bit mdat length
 }
 
 void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
@@ -120,20 +121,23 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
 
 void fcMP4StreamWriter::mp4End()
 {
-    const std::string audio_track_name = "UTJ Sound Media Handler";
-    const std::string video_track_name = "UTJ Video Media Handler";
+    const char audio_track_name[] = "UTJ Sound Media Handler";
+    const char video_track_name[] = "UTJ Video Media Handler";
     const char video_compression_name[31] = "AVC Coding";
-    u32 mac_time = (u32)GetMacTime();
 
-    size_t num_video_frames = m_video_frame_info.size();
-    size_t num_audio_frames = m_audio_frame_info.size();
-    bool has_video = num_video_frames != 0;
-    bool has_audio = num_audio_frames != 0;
-    u32 video_unit_duration = 1000;
-    u32 audio_unit_duration = 1000;
+    const fcMP4Config& c = m_conf;
+    const u32 ctime = (u32)fcGetMacTime();
+    const u32 video_unit_duration = 1000; // millisec
+    const u32 audio_unit_duration = 1000; // millisec
     u32 video_duration = 0;
     u32 audio_duration = 0;
-    fcMP4Config& c = m_conf;
+
+    std::vector<fcSampleToChunk> video_samples_to_chunk;
+    std::vector<fcSampleToChunk> audio_samples_to_chunk;
+    std::vector<fcOffsetValue> video_decode_times;
+    std::vector<fcOffsetValue> audio_decode_times;
+    std::vector<u64> video_chunks;
+    std::vector<u64> audio_chunks;
 
     if (m_iframe_ids.empty()) {
         m_iframe_ids.push_back(1);
@@ -163,8 +167,8 @@ void fcMP4StreamWriter::mp4End()
         }
         return total_duration_ms;
     };
-    video_duration = compute_decode_times(m_video_frame_info, m_video_decode_times);
-    audio_duration = compute_decode_times(m_audio_frame_info, m_audio_decode_times);
+    video_duration = compute_decode_times(m_video_frame_info, video_decode_times);
+    audio_duration = compute_decode_times(m_audio_frame_info, audio_decode_times);
 
 
     // compute chunk data
@@ -192,51 +196,19 @@ void fcMP4StreamWriter::mp4End()
             }
         }
     };
-    compute_chunk_data(m_video_frame_info, m_video_chunks, m_video_samples_to_chunk);
-    compute_chunk_data(m_audio_frame_info, m_audio_chunks, m_audio_samples_to_chunk);
+    compute_chunk_data(m_video_frame_info, video_chunks, video_samples_to_chunk);
+    compute_chunk_data(m_audio_frame_info, audio_chunks, audio_samples_to_chunk);
 
 
+    //------------------------------------------------------
+    // moov section
+    //------------------------------------------------------
 
-
-    BinaryStream& os = m_stream;
-    size_t mdat_end = os.tellp();
-
-    Buffer dd_buf; // decoder descriptor
-    BufferStream dd(dd_buf);
-    if (has_audio) {
-        Buffer add_buf; //  audio decoder descriptor
-        BufferStream add(add_buf); // audio decoder descriptor
-        add << u8(64)
-            << u8(0x15)         // stream/type flags.  always 0x15 for my purposes.
-            << u8(0)            // buffer size, just set it to 1536 for both mp3 and aac
-            << u16_be(0x600)
-            << u32_be(c.audio_bitrate) // max bit rate (cue bill 'o reily meme for these two)
-            << u32_be(c.audio_bitrate) // avg bit rate
-            << u8(0x5)          //decoder specific descriptor type
-            << u8(m_audio_header.data.size() - 2);
-        add.write(&m_audio_header.data[2], m_audio_header.data.size() - 2);
-
-        dd << u16(0);   // es id
-        dd << u8(0);    // stream priority
-        dd << u8(4);    // descriptor type
-        dd << u8(add_buf.size());
-        dd.write(add_buf.ptr(), add_buf.size());
-        dd << u8(0x6);  // config descriptor type
-        dd << u8(1);    // len
-        dd << u8(2);    // SL value(? always 2)
-    }
-
-
-
-    //-------------------------------------------
-
-    Buffer track_info;
-    track_info.reserve( (num_video_frames + num_audio_frames) * 20 + 131072);
-    BufferStream bs(track_info);
+    BinaryStream& bs = m_stream;
     Box box = Box(bs);
+    size_t mdat_end = bs.tellp();
 
     u32 track_index = 0;
-
 
     box(u32_be('moov'), [&]() {
 
@@ -245,8 +217,8 @@ void fcMP4StreamWriter::mp4End()
         //------------------------------------------------------
         box(u32_be('mvhd'), [&]() {
             bs << u32(0);                       // version and flags (none)
-            bs << u32_be(mac_time);             // creation time
-            bs << u32_be(mac_time);             // modified time
+            bs << u32_be(ctime);                // creation time
+            bs << u32_be(ctime);                // modified time
             bs << u32_be(video_unit_duration);  // time base (milliseconds = 1000)
             bs << u32_be(video_duration);       // duration (in time base units)
             bs << u32_be(0x00010000);           // fixed point playback speed 1.0
@@ -262,19 +234,45 @@ void fcMP4StreamWriter::mp4End()
             bs << u32(0);   // selection(?) start time (time base units)
             bs << u32(0);   // selection(?) duration (time base units)
             bs << u32(0);   // current time (0, time base units)
-            bs << u32_be(has_audio ? 3 : 2);// next free track id (1-based rather than 0-based)
+            bs << u32_be(!m_audio_frame_info.empty() ? 3 : 2);// next free track id (1-based rather than 0-based)
         });
 
         //------------------------------------------------------
         // audio track
         //------------------------------------------------------
-        if (has_audio) {
+        if (!m_audio_frame_info.empty()) {
             ++track_index;
+
+            Buffer dd_buf; // decoder descriptor
+            {
+                Buffer add_buf; //  audio decoder descriptor
+                BufferStream dd(dd_buf);
+                BufferStream add(add_buf);
+                add << u8(64)
+                    << u8(0x15)         // stream/type flags.  always 0x15 for my purposes.
+                    << u8(0)            // buffer size, just set it to 1536 for both mp3 and aac
+                    << u16_be(0x600)
+                    << u32_be(c.audio_bitrate) // max bit rate (cue bill 'o reily meme for these two)
+                    << u32_be(c.audio_bitrate) // avg bit rate
+                    << u8(0x5)          //decoder specific descriptor type
+                    << u8(m_audio_header.data.size() - 2);
+                add.write(&m_audio_header.data[2], m_audio_header.data.size() - 2);
+
+                dd << u16(0);   // es id
+                dd << u8(0);    // stream priority
+                dd << u8(4);    // descriptor type
+                dd << u8(add_buf.size());
+                dd.write(add_buf.ptr(), add_buf.size());
+                dd << u8(0x6);  // config descriptor type
+                dd << u8(1);    // len
+                dd << u8(2);    // SL value(? always 2)
+            }
+
             box(u32_be('trak'), [&]() {
                 box(u32_be('tkhd'), [&]() {
                     bs << u32_be(0x00000007);   // version (0) and flags (0xF)
-                    bs << u32_be(mac_time);     // creation time
-                    bs << u32_be(mac_time);     // modified time
+                    bs << u32_be(ctime);        // creation time
+                    bs << u32_be(ctime);        // modified time
                     bs << u32_be(track_index);  // track ID
                     bs << u32(0);               // reserved
                     bs << u32_be(audio_duration);// duration (in time base units)
@@ -292,8 +290,8 @@ void fcMP4StreamWriter::mp4End()
                 box(u32_be('mdia'), [&]() {
                     box(u32_be('mdhd'), [&]() {
                         bs << u32(0);                       // version and flags (none)
-                        bs << u32_be(mac_time);             // creation time
-                        bs << u32_be(mac_time);             // modified time
+                        bs << u32_be(ctime);                // creation time
+                        bs << u32_be(ctime);                // modified time
                         bs << u32_be(c.audio_sample_rate);  // time scale
                         bs << u32_be(audio_unit_duration);
                         bs << u32_be(0x15c70000);
@@ -305,7 +303,7 @@ void fcMP4StreamWriter::mp4End()
                         bs << u32(0);           // manufacturer reserved
                         bs << u32(0);           // quicktime component reserved flags
                         bs << u32(0);           // quicktime component reserved mask
-                        bs.write(audio_track_name.c_str(), audio_track_name.size() + 1); //track name
+                        bs.write(audio_track_name, strlen(audio_track_name) + 1); //track name
                     }); // hdlr
                     box(u32_be('minf'), [&]() {
                         box(u32_be('smhd'), [&]() {
@@ -348,16 +346,16 @@ void fcMP4StreamWriter::mp4End()
 
                             box(u32_be('stts'), [&]() {
                                 bs << u32(0);   // version and flags (none)
-                                bs << u32_be(m_audio_decode_times.size());
-                                for (auto& v : m_audio_decode_times) {
+                                bs << u32_be(audio_decode_times.size());
+                                for (auto& v : audio_decode_times) {
                                     bs << u32_be(v.count) << u32_be(v.value);
                                 }
                             });
 
                             box(u32_be('stsc'), [&]() {
                                 bs << u32(0);   // version and flags (none)
-                                bs << u32_be(m_audio_samples_to_chunk.size());
-                                for (auto& v : m_audio_samples_to_chunk) {
+                                bs << u32_be(audio_samples_to_chunk.size());
+                                for (auto& v : audio_samples_to_chunk) {
                                     bs << u32_be(v.first_chunk_ID) << u32_be(v.samples_per_chunk) << u32(u32_be(1));
                                 }
                             });
@@ -365,18 +363,18 @@ void fcMP4StreamWriter::mp4End()
                             box(u32_be('stsz'), [&]() {
                                 bs << u32(0);   // version and flags (none)
                                 bs << u32(0);   // block size for all (0 if differing sizes)
-                                bs << u32_be(num_audio_frames);
+                                bs << u32_be(m_audio_frame_info.size());
                                 for (auto& v : m_audio_frame_info) {
                                     bs << u32_be(v.size);
                                 }
                             });
 
-                            if (!m_audio_chunks.empty() && m_audio_chunks.back() > 0xFFFFFFFFLL)
+                            if (!audio_chunks.empty() && audio_chunks.back() > 0xFFFFFFFFLL)
                             {
                                 box(u32_be('co64'), [&]() {
                                     bs << u32(0); // version and flags (none)
-                                    bs << u32_be(m_audio_chunks.size());
-                                    for (auto &v : m_audio_chunks) {
+                                    bs << u32_be(audio_chunks.size());
+                                    for (auto &v : audio_chunks) {
                                         bs << u64_be(v);
                                     }
                                 });
@@ -385,8 +383,8 @@ void fcMP4StreamWriter::mp4End()
                             {
                                 box(u32_be('stco'), [&]() {
                                     bs << u32(0); // version and flags (none)
-                                    bs << u32_be(m_audio_chunks.size());
-                                    for (auto &v : m_audio_chunks) {
+                                    bs << u32_be(audio_chunks.size());
+                                    for (auto &v : audio_chunks) {
                                         bs << u32_be(v);
                                     }
                                 });
@@ -400,174 +398,181 @@ void fcMP4StreamWriter::mp4End()
         //------------------------------------------------------
         // video track
         //------------------------------------------------------
-        ++track_index;
-        box(u32_be('trak'), [&]() {
-            box(u32_be('tkhd'), [&]() {
-                bs << u32_be(0x00000006);       // version (0) and flags (0x6)
-                bs << u32_be(mac_time);         // creation time
-                bs << u32_be(mac_time);         // modified time
-                bs << u32_be(track_index);      // track ID
-                bs << u32(0);                   // reserved
-                bs << u32_be(video_duration);   // duration (in time base units)
-                bs << u64(0);                   // reserved
-                bs << u16(0);                   // video layer (0)
-                bs << u16(0);                   // quicktime alternate track id (0)
-                bs << u16(0);                   // track audio volume (this is video, so 0)
-                bs << u16(0);                   // reserved
-                bs << u32_be(0x00010000) << u32_be(0x00000000) << u32_be(0x00000000); //window matrix row 1 (1.0, 0.0, 0.0)
-                bs << u32_be(0x00000000) << u32_be(0x00010000) << u32_be(0x00000000); //window matrix row 2 (0.0, 1.0, 0.0)
-                bs << u32_be(0x00000000) << u32_be(0x00000000) << u32_be(0x40000000); //window matrix row 3 (0.0, 0.0, 16384.0)
-                bs << u32_be(c.video_width << 16);  // video width (fixed point)
-                bs << u32_be(c.video_height << 16); // video height (fixed point)
-            }); // tkhd
+        if (!m_video_frame_info.empty()) {
+            ++track_index;
+            box(u32_be('trak'), [&]() {
+                box(u32_be('tkhd'), [&]() {
+                    bs << u32_be(0x00000006);       // version (0) and flags (0x6)
+                    bs << u32_be(ctime);            // creation time
+                    bs << u32_be(ctime);            // modified time
+                    bs << u32_be(track_index);      // track ID
+                    bs << u32(0);                   // reserved
+                    bs << u32_be(video_duration);   // duration (in time base units)
+                    bs << u64(0);                   // reserved
+                    bs << u16(0);                   // video layer (0)
+                    bs << u16(0);                   // quicktime alternate track id (0)
+                    bs << u16(0);                   // track audio volume (this is video, so 0)
+                    bs << u16(0);                   // reserved
+                    bs << u32_be(0x00010000) << u32_be(0x00000000) << u32_be(0x00000000); //window matrix row 1 (1.0, 0.0, 0.0)
+                    bs << u32_be(0x00000000) << u32_be(0x00010000) << u32_be(0x00000000); //window matrix row 2 (0.0, 1.0, 0.0)
+                    bs << u32_be(0x00000000) << u32_be(0x00000000) << u32_be(0x40000000); //window matrix row 3 (0.0, 0.0, 16384.0)
+                    bs << u32_be(c.video_width << 16);  // video width (fixed point)
+                    bs << u32_be(c.video_height << 16); // video height (fixed point)
+                }); // tkhd
 
-            box(u32_be('mdia'), [&]() {
-                box(u32_be('mdhd'), [&]() {
-                    bs << u32(0);           // version and flags (none)
-                    bs << u32_be(mac_time);    // creation time
-                    bs << u32_be(mac_time);    // modified time
-                    bs << u32_be(video_unit_duration);     // time scale
-                    bs << u32_be(video_duration);
-                    bs << u32_be(0x55c40000);
-                }); // mdhd
-                box(u32_be('hdlr'), [&]() {
-                    bs << u32(0);           // version and flags (none)
-                    bs << u32(0);           // quicktime type (none)
-                    bs << u32_be('vide');   // media type
-                    bs << u32(0);           // manufacturer reserved
-                    bs << u32(0);           // quicktime component reserved flags
-                    bs << u32(0);           // quicktime component reserved mask
-                    bs.write(video_track_name.c_str(), video_track_name.size() + 1); //track name
-                }); // hdlr
-                box(u32_be('minf'), [&]() {
-                    box(u32_be('vmhd'), [&]() {
-                        bs << u32_be(0x00000001); //version (0) and flags (1)
-                        bs << u16(0);       // quickdraw graphic mode (copy = 0)
-                        bs << u16(0);       // quickdraw red value
-                        bs << u16(0);       // quickdraw green value
-                        bs << u16(0);       // quickdraw blue value
-                    }); // 
-                    box(u32_be('dinf'), [&]() {
-                        box(u32_be('dref'), [&]() {
-                            bs << u32(0); //version and flags (none)
-                            bs << u32_be(1); //count
-                            box(u32_be('url '), [&]() {
-                                bs << u32_be(0x00000001); //version (0) and flags (1)
+                box(u32_be('mdia'), [&]() {
+                    box(u32_be('mdhd'), [&]() {
+                        bs << u32(0);           // version and flags (none)
+                        bs << u32_be(ctime);    // creation time
+                        bs << u32_be(ctime);    // modified time
+                        bs << u32_be(video_unit_duration);  // time scale
+                        bs << u32_be(video_duration);
+                        bs << u32_be(0x55c40000);
+                    }); // mdhd
+                    box(u32_be('hdlr'), [&]() {
+                        bs << u32(0);           // version and flags (none)
+                        bs << u32(0);           // quicktime type (none)
+                        bs << u32_be('vide');   // media type
+                        bs << u32(0);           // manufacturer reserved
+                        bs << u32(0);           // quicktime component reserved flags
+                        bs << u32(0);           // quicktime component reserved mask
+                        bs.write(video_track_name, strlen(video_track_name) + 1); //track name
+                    }); // hdlr
+                    box(u32_be('minf'), [&]() {
+                        box(u32_be('vmhd'), [&]() {
+                            bs << u32_be(0x00000001); //version (0) and flags (1)
+                            bs << u16(0);       // quickdraw graphic mode (copy = 0)
+                            bs << u16(0);       // quickdraw red value
+                            bs << u16(0);       // quickdraw green value
+                            bs << u16(0);       // quickdraw blue value
+                        }); // 
+                        box(u32_be('dinf'), [&]() {
+                            box(u32_be('dref'), [&]() {
+                                bs << u32(0); //version and flags (none)
+                                bs << u32_be(1); //count
+                                box(u32_be('url '), [&]() {
+                                    bs << u32_be(0x00000001); //version (0) and flags (1)
+                                }); // dref
                             }); // dref
-                        }); // dref
-                    }); // dinf
+                        }); // dinf
 
-                    box(u32_be('stbl'), [&]() {
-                        box(u32_be('stsd'), [&]() {
-                            bs << u32(0);       // version and flags (none)
-                            bs << u32_be(1);    // count
-                            box(u32_be('avc1'), [&]() {
-                                bs << u32(0);               //reserved 6 bytes
-                                bs << u16(0);
-                                bs << u16_be(1);            // index
-                                bs << u16(0);               // encoding version
-                                bs << u16(0);               // encoding revision level
-                                bs << u32(0);               // encoding vendor
-                                bs << u32(0);               // temporal quality
-                                bs << u32(0);               // spatial quality
-                                bs << u16_be(c.video_width);    // video_width
-                                bs << u16_be(c.video_height);   // video_height
-                                bs << u32_be(0x00480000);   // fixed point video_width pixel resolution (72.0)
-                                bs << u32_be(0x00480000);   // fixed point video_height pixel resolution (72.0)
-                                bs << u32(0);               // quicktime video data size 
-                                bs << u16_be(1);            // frame count(?)
-                                bs << u8(strlen(video_compression_name)); // compression name length
-                                bs.write(video_compression_name, sizeof(video_compression_name)); // 31 bytes for the name
-                                bs << u16(0);               // 
-                                bs << u16(0xFFFF);          // quicktime video color table id (none = -1)
-                                box(u32_be('avcC'), [&]() {
-                                    bs << u8(1);            // version
-                                    bs << u8(0x42);         // h264 profile ID
-                                    bs << u8(0xc0);         // h264 compatible profiles
-                                    bs << u8(0x14);         // h264 level
-                                    bs << u8(0xff);         // reserved
-                                    bs << u8(0xe1);         // first half-byte = no clue. second half = sps count
-                                    bs << u16_be(m_sps.size()); // sps size
-                                    bs.write(&m_sps[0], m_sps.size()); // sps data
-                                    bs << u8(1); // pps count
-                                    bs << u16_be(m_pps.size()); // pps size
-                                    bs.write(&m_pps[0], m_pps.size()); // pps data
-                                }); // 
-                            }); // avc1
-                        }); // stsd
+                        box(u32_be('stbl'), [&]() {
+                            box(u32_be('stsd'), [&]() {
+                                bs << u32(0);       // version and flags (none)
+                                bs << u32_be(1);    // count
+                                box(u32_be('avc1'), [&]() {
+                                    bs << u32(0);               //reserved 6 bytes
+                                    bs << u16(0);
+                                    bs << u16_be(1);            // index
+                                    bs << u16(0);               // encoding version
+                                    bs << u16(0);               // encoding revision level
+                                    bs << u32(0);               // encoding vendor
+                                    bs << u32(0);               // temporal quality
+                                    bs << u32(0);               // spatial quality
+                                    bs << u16_be(c.video_width);    // video_width
+                                    bs << u16_be(c.video_height);   // video_height
+                                    bs << u32_be(0x00480000);   // fixed point video_width pixel resolution (72.0)
+                                    bs << u32_be(0x00480000);   // fixed point video_height pixel resolution (72.0)
+                                    bs << u32(0);               // quicktime video data size 
+                                    bs << u16_be(1);            // frame count(?)
+                                    bs << u8(strlen(video_compression_name)); // compression name length
+                                    bs.write(video_compression_name, sizeof(video_compression_name)); // 31 bytes for the name
+                                    bs << u16(0);               // 
+                                    bs << u16(0xFFFF);          // quicktime video color table id (none = -1)
+                                    box(u32_be('avcC'), [&]() {
+                                        bs << u8(1);            // version
+                                        bs << u8(0x42);         // h264 profile ID
+                                        bs << u8(0xc0);         // h264 compatible profiles
+                                        bs << u8(0x14);         // h264 level
+                                        bs << u8(0xff);         // reserved
+                                        bs << u8(0xe1);         // first half-byte = no clue. second half = sps count
+                                        bs << u16_be(m_sps.size()); // sps size
+                                        bs.write(&m_sps[0], m_sps.size()); // sps data
+                                        bs << u8(1); // pps count
+                                        bs << u16_be(m_pps.size()); // pps size
+                                        bs.write(&m_pps[0], m_pps.size()); // pps data
+                                    }); // 
+                                }); // avc1
+                            }); // stsd
 
-                        box(u32_be('stts'), [&]() {
-                            bs << u32(0); // version and flags (none)
-                            bs << u32_be(m_video_decode_times.size());
-                            for (auto& v : m_video_decode_times)
+                            box(u32_be('stts'), [&]() {
+                                bs << u32(0); // version and flags (none)
+                                bs << u32_be(video_decode_times.size());
+                                for (auto& v : video_decode_times)
+                                {
+                                    bs << u32_be(v.count);
+                                    bs << u32_be(v.value);
+                                }
+                            }); // stts
+
+                            if (m_iframe_ids.size())
                             {
-                                bs << u32_be(v.count);
-                                bs << u32_be(v.value);
+                                box(u32_be('stss'), [&]() {
+                                    bs << u32(0); // version and flags (none)
+                                    bs << u32_be(m_iframe_ids.size());
+                                    for (u32 v : m_iframe_ids) {
+                                        bs << u32_be(v);
+                                    }
+                                }); // stss
                             }
-                        }); // stts
 
-                        if (m_iframe_ids.size())
-                        {
-                            box(u32_be('stss'), [&]() {
+                            box(u32_be('stsc'), [&]() {
                                 bs << u32(0); // version and flags (none)
-                                bs << u32_be(m_iframe_ids.size());
-                                for (u32 v : m_iframe_ids) {
-                                    bs << u32_be(v);
+                                bs << u32_be(video_samples_to_chunk.size());
+                                for (auto& v : video_samples_to_chunk)
+                                {
+                                    bs << u32_be(v.first_chunk_ID);
+                                    bs << u32_be(v.samples_per_chunk);
+                                    bs << u32_be(v.sample_description_ID);
                                 }
-                            }); // stss
-                        }
+                            }); // stsc
 
-                        box(u32_be('stsc'), [&]() {
-                            bs << u32(0); // version and flags (none)
-                            bs << u32_be(m_video_samples_to_chunk.size());
-                            for (auto& v : m_video_samples_to_chunk)
-                            {
-                                bs << u32_be(v.first_chunk_ID);
-                                bs << u32_be(v.samples_per_chunk);
-                                bs << u32_be(v.sample_description_ID);
+                            box(u32_be('stsz'), [&]() {
+                                bs << u32(0); // version and flags (none)
+                                bs << u32(0); // block size for all (0 if differing sizes)
+                                bs << u32_be(m_video_frame_info.size());
+                                for (auto& v : m_video_frame_info) {
+                                    bs << u32_be(v.size);
+                                }
+                            }); // stsz
+
+                            if (!video_chunks.empty() && video_chunks.back() > 0xFFFFFFFFLL) {
+                                box(u32_be('co64'), [&]() {
+                                    bs << u32(0); // version and flags (none)
+                                    bs << u32_be(video_chunks.size());
+                                    for (auto& v : video_chunks) {
+                                        bs << u64_be(v);
+                                    }
+                                }); // co64
                             }
-                        }); // stsc
-
-                        box(u32_be('stsz'), [&]() {
-                            bs << u32(0); // version and flags (none)
-                            bs << u32(0); // block size for all (0 if differing sizes)
-                            bs << u32_be(num_video_frames);
-                            for (auto& v : m_video_frame_info) {
-                                bs << u32_be(v.size);
+                            else {
+                                box(u32_be('stco'), [&]() {
+                                    bs << u32(0); // version and flags (none)
+                                    bs << u32_be(video_chunks.size());
+                                    for (auto& v : video_chunks) {
+                                        bs << u32_be(v);
+                                    }
+                                }); // stco
                             }
-                        }); // stsz
-
-                        if (!m_video_chunks.empty() && m_video_chunks.back() > 0xFFFFFFFFLL) {
-                            box(u32_be('co64'), [&]() {
-                                bs << u32(0); // version and flags (none)
-                                bs << u32_be(m_video_chunks.size());
-                                for (auto& v : m_video_chunks) {
-                                    bs << u64_be(v);
-                                }
-                            }); // co64
-                        }
-                        else {
-                            box(u32_be('stco'), [&]() {
-                                bs << u32(0); // version and flags (none)
-                                bs << u32_be(m_video_chunks.size());
-                                for (auto& v : m_video_chunks) {
-                                    bs << u32_be(v);
-                                }
-                            }); // stco
-                        }
-                    }); // stbl
-                }); // minf
-            }); // mdia
-        }); // trak
-
+                        }); // stbl
+                    }); // minf
+                }); // mdia
+            }); // trak
+        }
     }); // moov
 
-
-    u32 mdat_size = u32_be(mdat_end - m_mdat_begin);
-
-    os.write(track_info.ptr(), track_info.size());
-    os.seekp(m_mdat_begin);
-    os.write(&mdat_size, sizeof(mdat_size));
+    //{
+    //    // 32bit mdat length
+    //    u32 mdat_size = u32_be(mdat_end - m_mdat_begin);
+    //    bs.seekp(m_mdat_begin);
+    //    bs.write(&mdat_size, sizeof(mdat_size));
+    //}
+    {
+        // 64bit mdat length
+        u64 mdat_size = u64_be(mdat_end - m_mdat_begin);
+        bs.seekp(m_mdat_begin + 8);
+        bs.write(&mdat_size, sizeof(mdat_size));
+    }
 
     fcDebugLog("fcMP4Stream::mp4End() done.");
 }
