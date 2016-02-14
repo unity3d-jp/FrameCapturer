@@ -120,10 +120,9 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
 
 void fcMP4StreamWriter::mp4End()
 {
-    const std::string version_string = "MP4 Capturer by Unity Technologies Japan";
-    const std::string audio_track_name = "Sound Media Handler";
-    const std::string video_track_name = "Video Media Handler";
-    const std::string video_compression_name = "AVC Coding";
+    const std::string audio_track_name = "UTJ Sound Media Handler";
+    const std::string video_track_name = "UTJ Video Media Handler";
+    const char video_compression_name[31] = "AVC Coding";
     u32 mac_time = (u32)GetMacTime();
 
     size_t num_video_frames = m_video_frame_info.size();
@@ -178,7 +177,8 @@ void fcMP4StreamWriter::mp4End()
             auto* cur = &frame_info[i];
             auto* prev = i > 0 ? &frame_info[i - 1] : nullptr;
 
-            if (!prev || prev->file_offset + prev->size != cur->file_offset) {
+            if (!prev || prev->file_offset + prev->size != cur->file_offset)
+            {
                 chunks.push_back(cur->file_offset);
 
                 fcSampleToChunk stc;
@@ -476,8 +476,8 @@ void fcMP4StreamWriter::mp4End()
                                 bs << u32_be(0x00480000);   // fixed point video_height pixel resolution (72.0)
                                 bs << u32(0);               // quicktime video data size 
                                 bs << u16_be(1);            // frame count(?)
-                                bs << u8(video_compression_name.size()); // compression name length
-                                bs.write(video_compression_name.c_str(), video_compression_name.size()); // 31 bytes for the name
+                                bs << u8(strlen(video_compression_name)); // compression name length
+                                bs.write(video_compression_name, sizeof(video_compression_name)); // 31 bytes for the name
                                 bs << u16(0);               // 
                                 bs << u16(0xFFFF);          // quicktime video color table id (none = -1)
                                 box(u32_be('avcC'), [&]() {
