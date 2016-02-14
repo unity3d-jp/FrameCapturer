@@ -8,9 +8,6 @@
     <ClCompile Include="Encoder\fcMP4Muxer.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcAACEncoder.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
     <ClCompile Include="Foundation\Network.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
@@ -30,6 +27,9 @@
       <Filter>Encoder</Filter>
     </ClCompile>
     <ClCompile Include="Encoder\fcAMDH264Encoder.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcFAACEncoder.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
   </ItemGroup>

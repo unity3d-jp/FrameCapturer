@@ -1,28 +1,27 @@
 ﻿#ifndef fcAACEncoder_h
 #define fcAACEncoder_h
 
-#define FAACDLL "libfaac" fcDLLExt
 
-class fcAACEncoder
+struct fcAACEncoderConfig
+{
+    int sampling_rate;
+    int num_channels;
+    int target_bitrate;
+
+    fcAACEncoderConfig() : sampling_rate(), num_channels(), target_bitrate() {}
+};
+
+class fcIAACEncoder
 {
 public:
-    static bool loadModule();
-
-    fcAACEncoder(int sampling_rate, int num_channels, int bitrate);
-    ~fcAACEncoder();
-    operator bool() const;
-    Buffer encode(const float *samples, int num_samples);
-    const std::string& getHeader();
-
-private:
-    void *m_handle;
-    unsigned long m_num_read_samples;
-    unsigned long m_output_size;
-    std::vector<float> m_tmp_buf;
-    std::string m_aac_tmp_buf;
-    std::string m_aac_buf;
-    std::string m_aac_header;
+    virtual ~fcIAACEncoder() {}
+    virtual const char* getEncoderName() = 0;
+    virtual const Buffer& getHeader() = 0;
+    virtual bool encode(fcAACFrame& dst, const float *samples, int num_samples) = 0;
 };
+
+bool fcLoadFAACModule();
+fcIAACEncoder* fcCreateFAACEncoder(const fcAACEncoderConfig& conf);
 
 
 #endif // fcAACEncoder_h

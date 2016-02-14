@@ -8,6 +8,9 @@
     #define fcDebugLog(...)
 #endif
 
+#define fcMP464BitLength
+
+
 namespace {
 
 class Box
@@ -72,7 +75,10 @@ void fcMP4StreamWriter::mp4Begin()
 
     os  << u32_be(0x1)
         << u32_be('mdat')
-        << u64(0); // 64bit mdat length
+#ifdef fcMP464BitLength
+        << u64(0) // 64bit mdat length
+#endif // fcMP464BitLength
+        ;
 }
 
 void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
@@ -83,6 +89,7 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
     info.file_offset = os.tellp();
     info.timestamp = frame.timestamp;
 
+    // video frame
     if (frame.type == fcFrameType_H264) {
         const auto& h264 = (const fcH264Frame&)frame;
 
@@ -110,13 +117,23 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
 
         m_video_frame_info.emplace_back(info);
     }
+    // audio frame
     else if (frame.type == fcFrameType_AAC) {
         const int offset = 2;
-        info.size = frame.data.size() - offset;
+        const size_t size = frame.data.size();
+
+        os << u32_be(size - offset);
         os.write(&frame.data[offset], info.size);
+        info.size = (size - offset) + 4;
 
         m_audio_frame_info.emplace_back(info);
     }
+}
+
+void fcMP4StreamWriter::setAACHeader(const Buffer& aacheader)
+{
+    u8 *ptr = (u8*)aacheader.ptr();
+    m_audio_header.assign(ptr, ptr + aacheader.size());
 }
 
 void fcMP4StreamWriter::mp4End()
@@ -255,8 +272,8 @@ void fcMP4StreamWriter::mp4End()
                     << u32_be(c.audio_bitrate) // max bit rate (cue bill 'o reily meme for these two)
                     << u32_be(c.audio_bitrate) // avg bit rate
                     << u8(0x5)          //decoder specific descriptor type
-                    << u8(m_audio_header.data.size() - 2);
-                add.write(&m_audio_header.data[2], m_audio_header.data.size() - 2);
+                    << u8(m_audio_header.size() - 2);
+                add.write(&m_audio_header[2], m_audio_header.size() - 2);
 
                 dd << u16(0);   // es id
                 dd << u8(0);    // stream priority
@@ -561,18 +578,21 @@ void fcMP4StreamWriter::mp4End()
         }
     }); // moov
 
-    //{
-    //    // 32bit mdat length
-    //    u32 mdat_size = u32_be(mdat_end - m_mdat_begin);
-    //    bs.seekp(m_mdat_begin);
-    //    bs.write(&mdat_size, sizeof(mdat_size));
-    //}
+#ifdef fcMP464BitLength
     {
         // 64bit mdat length
         u64 mdat_size = u64_be(mdat_end - m_mdat_begin);
         bs.seekp(m_mdat_begin + 8);
         bs.write(&mdat_size, sizeof(mdat_size));
     }
+#else
+    {
+        // 32bit mdat length
+        u32 mdat_size = u32_be(mdat_end - m_mdat_begin);
+        bs.seekp(m_mdat_begin);
+        bs.write(&mdat_size, sizeof(mdat_size));
+    }
+#endif
 
     fcDebugLog("fcMP4Stream::mp4End() done.");
 }

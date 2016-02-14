@@ -59,7 +59,7 @@ private:
     int m_num_audio_frame;
 
     std::unique_ptr<fcIH264Encoder> m_h264_encoder;
-    std::unique_ptr<fcAACEncoder> m_aac_encoder;
+    std::unique_ptr<fcIAACEncoder> m_aac_encoder;
     std::unique_ptr<fcMP4Muxer> m_muxer;
 
     std::atomic<int> m_video_active_task_count;
@@ -109,8 +109,9 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         m_raw_audio_frames.resize(m_conf.video_max_buffers);
     }
 
-    resetEncoders();
     m_muxer.reset(new fcMP4Muxer());
+    m_ofile.open("test.mp4", std::ios::out | std::ios::binary);
+    m_writer.reset(new fcMP4StreamWriter(m_stream, m_conf));
 
     // run working thread
     if (m_conf.video) {
@@ -120,8 +121,7 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         m_audio_worker = std::thread([this](){ processAudioTasks(); });
     }
 
-    m_ofile.open("test.mp4", std::ios::out | std::ios::binary);
-    m_writer.reset(new fcMP4StreamWriter(m_stream, m_conf));
+    resetEncoders();
 }
 
 fcMP4Context::~fcMP4Context()
@@ -170,7 +170,15 @@ void fcMP4Context::resetEncoders()
 
     m_aac_encoder.reset();
     if (m_conf.audio) {
-        m_aac_encoder.reset(new fcAACEncoder(m_conf.audio_sample_rate, m_conf.audio_num_channels, m_conf.audio_bitrate));
+        fcAACEncoderConfig aacconf;
+        aacconf.sampling_rate = m_conf.audio_sample_rate;
+        aacconf.num_channels = m_conf.audio_num_channels;
+        aacconf.target_bitrate = m_conf.audio_bitrate;
+
+        m_aac_encoder.reset(fcCreateFAACEncoder(aacconf));
+        if (m_aac_encoder && m_writer) {
+            m_writer->setAACHeader(m_aac_encoder->getHeader());
+        }
     }
 }
 
@@ -371,10 +379,9 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, uint64_t
 
     // aac encode
     ++m_audio_active_task_count;
-    enqueueTask([this, &aac, &raw](){
-        auto ret = m_aac_encoder->encode((float*)raw.data.ptr(), raw.data.size() / sizeof(float));
+    enqueueTask([this, &aac, &raw, timestamp](){
+        m_aac_encoder->encode(aac, (float*)raw.data.ptr(), raw.data.size() / sizeof(float));
         aac.timestamp = raw.timestamp;
-        aac.data.assign((char*)ret.ptr(), ret.size());
 
         if (m_writer) {
             m_writer->addFrame(aac);
@@ -544,7 +551,7 @@ void fcMP4Context::eraseFrame(int begin_frame, int end_frame)
 fcCLinkage fcExport fcIMP4Context* fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev)
 {
     if (fcLoadOpenH264Module()) {
-        fcAACEncoder::loadModule();
+        fcLoadFAACModule();
         return new fcMP4Context(conf, dev);
     }
     return nullptr;
