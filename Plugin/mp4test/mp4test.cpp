@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <vector>
+#include <thread>
 #include <windows.h>
 #include "../FrameCapturer.h"
 
@@ -38,14 +39,28 @@ void CreateTestVideoData(RGBA *rgba, int width, int height, int scroll)
 void CreateTestAudioData(float *samples, int num_samples, int scroll)
 {
     for (int i = 0; i < num_samples; ++i) {
-        samples[i] = std::sin((float(i) * 2.5f) * (3.14159f / 180.0f)) * 32767.0f;
+        samples[i] = std::sin((float(i + (num_samples * scroll)) * 1.5f) * (3.14159f / 180.0f)) * 32767.0f;
     }
 }
 
 
+bool g_download_completed = false;
+
+void DownloadCallback(bool is_complete, const char *status)
+{
+    puts(status);
+    g_download_completed = is_complete;
+}
 
 int main(int argc, char** argv)
 {
+    using namespace std::literals;
+    fcMP4DownloadCodec(DownloadCallback);
+    for (int i = 0; i < 10; ++i) {
+        if (g_download_completed) { break; }
+        std::this_thread::sleep_for(1s);
+    }
+
     fcMP4Config conf;
     conf.video = true;
     conf.video_width = Width;
@@ -59,14 +74,15 @@ int main(int argc, char** argv)
     fcIMP4Context *ctx = fcMP4CreateContext(&conf);
 
     std::vector<RGBA> video_frame(Width * Height);
-    std::vector<float> audio_sample(SamplingRate);
-    for (int i = 0; i < 300; ++i) {
+    std::vector<float> audio_sample(SamplingRate / conf.video_framerate);
+    for (int i = 0; i < 90; ++i) {
         CreateTestVideoData(&video_frame[0], Width, Height, i);
         fcMP4AddVideoFramePixels(ctx, &video_frame[0]);
-    }
-    for (int i = 0; i < 600; ++i) {
-        CreateTestAudioData(&audio_sample[0], audio_sample.size(), 0);
+
+        CreateTestAudioData(&audio_sample[0], audio_sample.size(), i);
         fcMP4AddAudioSamples(ctx, &audio_sample[0], audio_sample.size());
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000 / conf.video_framerate));
     }
     fcMP4WriteFile(ctx, "out.mp4", 0, -1);
 
