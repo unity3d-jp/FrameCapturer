@@ -98,7 +98,17 @@ struct fcH264Frame : public fcFrameData
     fcH264FrameType h264_type;
     std::vector<int> nal_sizes;
 
-    fcH264Frame() : h264_type(fcH264FrameType_Invalid) { type = fcFrameType_H264; }
+    fcH264Frame()
+        : h264_type(fcH264FrameType_Invalid)
+    {
+        type = fcFrameType_H264;
+    }
+
+    void clear()
+    {
+        data.clear();
+        nal_sizes.clear();
+    }
 
     // Body: [](const char *nal_data, int nal_size) -> void
     template<class Body>
@@ -114,7 +124,30 @@ struct fcH264Frame : public fcFrameData
 
 struct fcAACFrame : public fcFrameData
 {
-    fcAACFrame() { type = fcFrameType_AAC; }
+    std::vector<int> block_sizes;
+
+    fcAACFrame()
+    {
+        type = fcFrameType_AAC;
+        clear();
+    }
+
+    void clear()
+    {
+        data.clear();
+        block_sizes.clear();
+    }
+
+    // Body: [](const char *data, int block_size) -> void
+    template<class Body>
+    void eachBlocks(const Body& body) const
+    {
+        int total = 0;
+        for (int size : block_sizes) {
+            body(&data[total], size);
+            total += size;
+        }
+    }
 };
 
 

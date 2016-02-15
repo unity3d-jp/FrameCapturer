@@ -121,12 +121,15 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
     }
     // audio frame
     else if (frame.type == fcFrameType_AAC) {
-        const int offset = 0;
-        const size_t size = frame.data.size();
-        const char *data = frame.data.ptr();
+        const auto& aac = (const fcAACFrame&)frame;
 
-        os.write(data, size - offset);
-        info.size = (size - offset);
+        aac.eachBlocks([&](const char *data, int size) {
+            const int offset = 7;
+
+            os.write(data + offset, size - offset);
+            info.size += (size - offset);
+        });
+
 
         m_audio_frame_info.emplace_back(info);
     }
@@ -267,7 +270,7 @@ void fcMP4StreamWriter::mp4End()
                 Buffer add_buf; //  audio decoder descriptor
                 BufferStream dd(dd_buf);
                 BufferStream add(add_buf);
-                add << u8(64)
+                add << u8(0x40)         // MPEG-4 Audio
                     << u8(0x15)         // stream/type flags.  always 0x15 for my purposes.
                     << u8(0)            // buffer size, just set it to 1536 for both mp3 and aac
                     << u16_be(0x600)

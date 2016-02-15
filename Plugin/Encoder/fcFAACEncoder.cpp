@@ -114,12 +114,17 @@ const char* fcFAACEncoder::getEncoderName() { return "fcFAACEncoder"; }
 
 bool fcFAACEncoder::encode(fcAACFrame& dst, const float *samples, int num_samples)
 {
-    dst.data.clear();
     m_aac_tmp_buf.resize(m_output_size);
+
+    int block_index = 0;
     for (;;) {
         int process_size = std::min<int>(m_num_read_samples, num_samples);
         int size_encoded = faacEncEncode_i(m_handle, (int32_t*)samples, process_size, (unsigned char*)&m_aac_tmp_buf[0], m_output_size);
-        dst.data.append(&m_aac_tmp_buf[0], size_encoded);
+        if (size_encoded > 0) {
+            dst.data.append(&m_aac_tmp_buf[0], size_encoded);
+            dst.block_sizes.push_back(size_encoded);
+            ++block_index;
+        }
         samples += process_size;
         num_samples -= process_size;
         if (num_samples <= 0) { break; }

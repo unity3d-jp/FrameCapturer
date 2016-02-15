@@ -149,6 +149,7 @@ void fcMP4Context::resetEncoders()
 {
     waitAllTasksFinished();
 
+    // create h264 encoder
     m_h264_encoder.reset();
     if (m_conf.video) {
         fcH264EncoderConfig h264conf;
@@ -172,6 +173,7 @@ void fcMP4Context::resetEncoders()
         m_h264_encoder.reset(enc);
     }
 
+    // create aac encoder
     m_aac_encoder.reset();
     if (m_conf.audio) {
         fcAACEncoderConfig aacconf;
@@ -366,6 +368,7 @@ bool fcMP4Context::addVideoFrameTexture(void *tex, uint64_t timestamp)
     fcH264Frame& h264 = m_h264_frames.back();
     ++m_video_active_task_count;
     enqueueVideoTask([this, &h264, &raw](){
+        h264.clear();
         addVideoFrameTask(h264, raw, true);
         returnTempraryVideoFrame(raw);
         --m_video_active_task_count;
@@ -400,10 +403,11 @@ bool fcMP4Context::addVideoFramePixels(void *pixels, fcColorSpace cs, uint64_t t
 
     // h264 データを生成
     m_h264_frames.push_back(fcH264Frame());
-    fcH264Frame& fdata = m_h264_frames.back();
+    fcH264Frame& h264 = m_h264_frames.back();
     ++m_video_active_task_count;
-    enqueueVideoTask([this, &fdata, &raw, rgba2i420](){
-        addVideoFrameTask(fdata, raw, rgba2i420);
+    enqueueVideoTask([this, &h264, &raw, rgba2i420](){
+        h264.clear();
+        addVideoFrameTask(h264, raw, rgba2i420);
         returnTempraryVideoFrame(raw);
         --m_video_active_task_count;
     });
@@ -426,6 +430,7 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, uint64_t
     // aac encode
     ++m_audio_active_task_count;
     enqueueAudioTask([this, &aac, &raw](){
+        aac.clear();
         m_aac_encoder->encode(aac, (float*)raw.data.ptr(), raw.data.size() / sizeof(float));
         aac.timestamp = raw.timestamp;
 
