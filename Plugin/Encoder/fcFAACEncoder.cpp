@@ -138,7 +138,6 @@ const Buffer& fcFAACEncoder::getHeader()
         unsigned char *buf;
         unsigned long num_buf;
         faacEncGetDecoderSpecificInfo_i(m_handle, &buf, &num_buf);
-        m_aac_header.append("\xaf\x00", 2);
         m_aac_header.append((char*)buf, num_buf);
         free(buf);
     }
