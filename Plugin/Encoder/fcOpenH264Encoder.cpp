@@ -48,9 +48,13 @@ namespace {
 typedef int  (*WelsCreateSVCEncoder_t)(ISVCEncoder** ppEncoder);
 typedef void (*WelsDestroySVCEncoder_t)(ISVCEncoder* pEncoder);
 
+#define EachOpenH264Functions(Body)\
+    Body(WelsCreateSVCEncoder)\
+    Body(WelsDestroySVCEncoder)
+
+
 #define decl(name) name##_t name##_i;
-decl(WelsCreateSVCEncoder)
-decl(WelsDestroySVCEncoder)
+EachOpenH264Functions(decl)
 #undef decl
 
 module_t g_mod_h264;
@@ -66,10 +70,9 @@ bool fcLoadOpenH264Module()
     if (g_mod_h264 == nullptr) { return false; }
 
 #define imp(name) (void*&)name##_i = DLLGetSymbol(g_mod_h264, #name);
-    imp(WelsCreateSVCEncoder)
-        imp(WelsDestroySVCEncoder)
+    EachOpenH264Functions(imp)
 #undef imp
-        return true;
+    return true;
 }
 
 

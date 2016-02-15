@@ -20,7 +20,6 @@ private:
     void *m_handle;
     unsigned long m_num_read_samples;
     unsigned long m_output_size;
-    std::vector<float> m_tmp_buf;
     Buffer m_aac_tmp_buf;
     Buffer m_aac_header;
 };
@@ -52,13 +51,17 @@ namespace {
 
     typedef int(FAACAPI* faacEncClose_t)(faacEncHandle hEncoder);
 
+#define EachFAACFunctions(Body)\
+    Body(faacEncGetCurrentConfiguration)\
+    Body(faacEncSetConfiguration)\
+    Body(faacEncOpen)\
+    Body(faacEncGetDecoderSpecificInfo)\
+    Body(faacEncEncode)\
+    Body(faacEncClose)
+
+
 #define decl(name) name##_t name##_i;
-decl(faacEncGetCurrentConfiguration)
-decl(faacEncSetConfiguration)
-decl(faacEncOpen)
-decl(faacEncGetDecoderSpecificInfo)
-decl(faacEncEncode)
-decl(faacEncClose)
+    EachFAACFunctions(decl)
 #undef decl
 
 module_t g_mod_faac;
@@ -73,14 +76,9 @@ bool fcLoadFAACModule()
     if (g_mod_faac == nullptr) { return false; }
 
 #define imp(name) (void*&)name##_i = DLLGetSymbol(g_mod_faac, #name);
-    imp(faacEncGetCurrentConfiguration)
-        imp(faacEncSetConfiguration)
-        imp(faacEncOpen)
-        imp(faacEncGetDecoderSpecificInfo)
-        imp(faacEncEncode)
-        imp(faacEncClose)
+    EachFAACFunctions(imp)
 #undef imp
-        return true;
+    return true;
 }
 
 
