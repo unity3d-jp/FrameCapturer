@@ -126,8 +126,6 @@ bool fcOpenH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, uint6
         return false;
     }
 
-    dst.nal_sizes.clear();
-    dst.data.clear();
     dst.h264_type = (fcH264FrameType)frame.eFrameType;
 
     for (int li = 0; li < frame.iLayerNum; ++li) {
