@@ -101,18 +101,19 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
 
         h264.eachNALs([&](const char *data, int size) {
             const int offset = 4; // 0x00000001
+            size -= offset;
 
             fcH264NALHeader nalh(data[4]);
             if (nalh.nal_unit_type == NAL_SPS) {
-                m_sps.assign(&data[offset], &data[offset] + (size - offset));
+                m_sps.assign(&data[offset], &data[offset] + size);
             }
             else if (nalh.nal_unit_type == NAL_PPS) {
-                m_pps.assign(&data[offset], &data[offset] + (size - offset));
+                m_pps.assign(&data[offset], &data[offset] + size);
             }
             else {
-                os << u32_be(size - offset);
-                os.write(&data[offset], size - offset);
-                info.size += (size - offset) + 4;
+                os << u32_be(size);
+                os.write(&data[offset], size);
+                info.size += size + 4;
             }
 
         });
@@ -125,11 +126,11 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
 
         aac.eachBlocks([&](const char *data, int size) {
             const int offset = 7;
+            size -= offset;
 
-            os.write(data + offset, size - offset);
-            info.size += (size - offset);
+            os.write(data + offset, size);
+            info.size += size;
         });
-
 
         m_audio_frame_info.emplace_back(info);
     }
@@ -277,8 +278,8 @@ void fcMP4StreamWriter::mp4End()
                     << u32_be(c.audio_bitrate) // max bit rate (cue bill 'o reily meme for these two)
                     << u32_be(c.audio_bitrate) // avg bit rate
                     << u8(0x5)          //decoder specific descriptor type
-                    << u8(m_audio_header.size() - 2);
-                add.write(&m_audio_header[2], m_audio_header.size() - 2);
+                    << u8(m_audio_header.size());
+                add.write(&m_audio_header[0], m_audio_header.size());
 
                 dd << u16(0);   // es id
                 dd << u8(0);    // stream priority
@@ -352,7 +353,7 @@ void fcMP4StreamWriter::mp4End()
                                     bs << u16(0);       // quicktime encoding version
                                     bs << u16(0);       // quicktime encoding revision
                                     bs << u32(0);       // quicktime audio encoding vendor
-                                    bs << u16(2);       // channels (ignored)
+                                    bs << u16_be(2);       // channels (ignored)
                                     bs << u16_be(16);   // sample size
                                     bs << u16(0);       // quicktime audio compression id
                                     bs << u16(0);       // quicktime audio packet size
