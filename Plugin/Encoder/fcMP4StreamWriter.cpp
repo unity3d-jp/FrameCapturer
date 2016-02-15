@@ -121,12 +121,12 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
     }
     // audio frame
     else if (frame.type == fcFrameType_AAC) {
-        const int offset = 2;
+        const int offset = 0;
         const size_t size = frame.data.size();
+        const char *data = frame.data.ptr();
 
-        os << u32_be(size - offset);
-        os.write(&frame.data[offset], size - offset);
-        info.size = (size - offset) + 4;
+        os.write(data, size - offset);
+        info.size = (size - offset);
 
         m_audio_frame_info.emplace_back(info);
     }

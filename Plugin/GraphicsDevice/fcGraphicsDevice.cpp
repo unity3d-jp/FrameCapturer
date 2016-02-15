@@ -12,7 +12,6 @@ fcIGraphicsDevice* fcCreateGraphicsDeviceD3D11(void *device);
 
 fcIGraphicsDevice *g_the_graphics_device;
 fcCLinkage fcExport fcIGraphicsDevice* fcGetGraphicsDevice() { return g_the_graphics_device; }
-typedef fcIGraphicsDevice* (*fcGetGraphicsDeviceT)();
 
 
 fcCLinkage fcExport void UnitySetGraphicsDevice(void* device, int deviceType, int eventType)
@@ -75,38 +74,3 @@ fcCLinkage fcExport void fcFinalizeGraphicsDevice()
     UnitySetGraphicsDevice(nullptr, kGfxRendererNull, kGfxDeviceEventShutdown);
 }
 
-
-
-//#if !defined(fcMaster) && defined(fcWindows)
-//
-//// PatchLibrary で突っ込まれたモジュールは UnitySetGraphicsDevice() が呼ばれないので、
-//// DLL_PROCESS_ATTACH のタイミングで先にロードされているモジュールからデバイスをもらって同等の処理を行う。
-//BOOL WINAPI DllMain(HINSTANCE module_handle, DWORD reason_for_call, LPVOID reserved)
-//{
-//    if (reason_for_call == DLL_PROCESS_ATTACH)
-//    {
-//        HMODULE m = ::GetModuleHandleA("FrameCapturer.dll");
-//        if (m) {
-//            auto proc = (fcGetGraphicsDeviceT)::GetProcAddress(m, "fcGetGraphicsDevice");
-//            if (proc) {
-//                fcIGraphicsDevice *dev = proc();
-//                if (dev) {
-//                    UnitySetGraphicsDevice(dev->getDevicePtr(), dev->getDeviceType(), kGfxDeviceEventInitialize);
-//                }
-//            }
-//        }
-//    }
-//    else if (reason_for_call == DLL_PROCESS_DETACH)
-//    {
-//    }
-//    return TRUE;
-//}
-//
-//// "DllMain already defined in MSVCRT.lib" 対策
-//#ifdef _X86_
-//extern "C" { int _afxForceUSRDLL; }
-//#else
-//extern "C" { int __afxForceUSRDLL; }
-//#endif
-//
-//#endif
