@@ -319,12 +319,30 @@ fcCLinkage fcExport void fcMP4EraseFrame(fcIMP4Context *ctx, int begin_frame, in
 
 #include <windows.h>
 
+fcCLinkage fcExport void UnitySetGraphicsDevice(void* device, int deviceType, int eventType);
+typedef fcIGraphicsDevice* (*fcGetGraphicsDeviceT)();
+
 BOOL WINAPI DllMain(HINSTANCE module_handle, DWORD reason_for_call, LPVOID reserved)
 {
     if (reason_for_call == DLL_PROCESS_ATTACH)
     {
         // add dll search path to load additional modules (FrameCapturer_MP4.dll etc).
         DLLAddSearchPath(DLLGetDirectoryOfCurrentModule());
+
+#ifndef fcMaster
+        // PatchLibrary で突っ込まれたモジュールは UnitySetGraphicsDevice() が呼ばれないので、
+        // DLL_PROCESS_ATTACH のタイミングで先にロードされているモジュールからデバイスをもらって同等の処理を行う。
+        HMODULE m = ::GetModuleHandleA("FrameCapturer.dll");
+        if (m) {
+            auto proc = (fcGetGraphicsDeviceT)::GetProcAddress(m, "fcGetGraphicsDevice");
+            if (proc) {
+                fcIGraphicsDevice *dev = proc();
+                if (dev) {
+                    UnitySetGraphicsDevice(dev->getDevicePtr(), dev->getDeviceType(), kGfxDeviceEventInitialize);
+                }
+            }
+        }
+#endif // fcMaster
     }
     return TRUE;
 }
