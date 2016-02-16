@@ -431,6 +431,16 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, uint64_t
     ++m_audio_active_task_count;
     enqueueAudioTask([this, &aac, &raw](){
         aac.clear();
+
+        // apply audio_scale
+        if (m_conf.audio_scale != 1.0f) {
+            float *samples = (float*)raw.data.ptr();
+            size_t num_samples = raw.data.size() / sizeof(float);
+            for (size_t i = 0; i < num_samples; ++i) {
+                samples[i] *= m_conf.audio_scale;
+            }
+        }
+
         m_aac_encoder->encode(aac, (float*)raw.data.ptr(), raw.data.size() / sizeof(float));
         aac.timestamp = raw.timestamp;
 

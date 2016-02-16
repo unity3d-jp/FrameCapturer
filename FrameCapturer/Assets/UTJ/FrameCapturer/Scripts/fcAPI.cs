@@ -110,6 +110,7 @@ namespace UTJ
             public int video_max_buffers;
             public int video_max_frame;
             public int video_max_data_size;
+            public float audio_scale;
             public int audio_sampling_rate;
             public int audio_num_channels;
             public int audio_bitrate;
@@ -130,6 +131,7 @@ namespace UTJ
                         video_max_buffers = 8,
                         video_max_frame = 0,
                         video_max_data_size = 0,
+                        audio_scale = 32767.0f,
                         audio_sampling_rate = 48000,
                         audio_num_channels = 2,
                         audio_bitrate = 64000,

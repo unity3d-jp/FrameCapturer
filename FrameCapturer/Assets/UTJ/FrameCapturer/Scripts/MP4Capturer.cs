@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -15,10 +16,10 @@ namespace UTJ
     public class MP4Capturer : MovieCapturer
     {
         public bool m_video = true;
-        public bool m_audio = false;
+        public bool m_audio = true;
         public int m_resolution_width = 300;
-        public int m_capture_every_n_frames = 2;
-        public int m_frame_rate = 30;
+        public int m_capture_every_nth_frames = 2;
+        public int m_target_frame_rate = 30;
         public int m_max_frame = 1800;
         public int m_keyframe = 60;
         public int m_video_bitrate = 1024000;
@@ -33,17 +34,17 @@ namespace UTJ
         CommandBuffer m_cb;
         RenderTexture m_scratch_buffer;
         Camera m_cam;
-        int m_frame;
-        bool m_recode = false;
+        int m_num_video_frame;
+        bool m_record = false;
 
 
         public override bool recode
         {
-            get { return m_recode; }
+            get { return m_record; }
             set
             {
-                m_recode = value;
-                if (m_recode && m_ctx.ptr == IntPtr.Zero)
+                m_record = value;
+                if (m_record && m_ctx.ptr == IntPtr.Zero)
                 {
                     ResetRecordingState();
                 }
@@ -94,13 +95,13 @@ namespace UTJ
             m_scratch_buffer.wrapMode = TextureWrapMode.Repeat;
             m_scratch_buffer.Create();
 
-            m_frame = 0;
+            m_num_video_frame = 0;
             fcAPI.fcMP4Config conf = fcAPI.fcMP4Config.default_value;
             conf.video = m_video;
             conf.audio = m_audio;
             conf.video_width = m_scratch_buffer.width;
             conf.video_height = m_scratch_buffer.height;
-            conf.video_framerate = m_frame_rate;
+            conf.video_framerate = m_target_frame_rate;
             conf.video_bitrate = m_video_bitrate;
             conf.video_max_frame = m_max_frame;
             conf.video_max_data_size = m_max_data_size;
@@ -190,12 +191,12 @@ namespace UTJ
 
         IEnumerator OnPostRender()
         {
-            if (m_recode)
+            if (m_record && m_video)
             {
                 yield return new WaitForEndOfFrame();
 
-                int frame = m_frame++;
-                if (frame % m_capture_every_n_frames == 0)
+                int frame = m_num_video_frame++;
+                if (frame % m_capture_every_nth_frames == 0)
                 {
                     m_mat_copy.SetPass(0);
                     Graphics.SetRenderTarget(m_scratch_buffer);
@@ -206,11 +207,11 @@ namespace UTJ
             }
         }
 
-        void OnAudioFilterRead(float[] samples, int num_samples)
+        void OnAudioFilterRead(float[] samples, int channels)
         {
-            if (m_audio)
+            if (m_record && m_audio)
             {
-                fcAPI.fcMP4AddAudioSamples(m_ctx, samples, num_samples);
+                fcAPI.fcMP4AddAudioSamples(m_ctx, samples, samples.Length);
             }
         }
     }
