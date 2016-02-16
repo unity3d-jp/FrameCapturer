@@ -6,6 +6,8 @@ class fcIMP4Context
 public:
     virtual void release() = 0;
 
+    virtual void addStream(fcStream *s) = 0;
+
     // assume texture format is RGBA8.
     // timestamp=0 is treated as current time.
     virtual bool    addVideoFrameTexture(void *tex, uint64_t timestamp = 0) = 0;

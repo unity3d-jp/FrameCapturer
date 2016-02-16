@@ -141,10 +141,9 @@ inline BinaryStream& operator>>(BinaryStream &o, double&   v) { o.read(&v, 8); r
 class BufferStream : public BinaryStream
 {
 public:
-    BufferStream(Buffer &buf)
-        : m_buf(buf), m_wpos(buf.size()), m_rpos()
-    {
-    }
+    BufferStream(Buffer &buf) : m_buf(buf), m_wpos(buf.size()), m_rpos(), m_delete_flag(false) {}
+    BufferStream(Buffer *buf, bool del) : m_buf(*buf), m_wpos(buf->size()), m_rpos(), m_delete_flag(del) {}
+    ~BufferStream() { if (m_delete_flag) { delete &m_buf; } }
 
     size_t tellg() override
     {
@@ -191,13 +190,16 @@ protected:
     Buffer &m_buf;
     size_t m_wpos;
     size_t m_rpos;
+    bool m_delete_flag;
 };
 
 
 class StdOStream : public BinaryStream
 {
 public:
-    StdOStream(std::ostream& os) : m_os(os) {}
+    StdOStream(std::ostream& os) : m_os(os), m_delete_flag(false) {}
+    StdOStream(std::ostream *os, bool del) : m_os(*os), m_delete_flag(del) {}
+    ~StdOStream() { if (m_delete_flag) { delete &m_os; } }
 
     // dummy
     size_t  tellg() override { return 0; }
@@ -222,13 +224,16 @@ public:
 
 protected:
     std::ostream& m_os;
+    bool m_delete_flag;
 };
 
 
 class StdIStream : public BinaryStream
 {
 public:
-    StdIStream(std::istream& is) : m_is(is) {}
+    StdIStream(std::istream& is) : m_is(is), m_delete_flag(false) {}
+    StdIStream(std::istream *is, bool del) : m_is(*is), m_delete_flag(del) {}
+    ~StdIStream() { if (m_delete_flag) { delete &m_is; } }
 
     size_t tellg() override
     {
@@ -253,13 +258,16 @@ public:
 
 protected:
     std::istream& m_is;
+    bool m_delete_flag;
 };
 
 
 class StdIOStream : public BinaryStream
 {
 public:
-    StdIOStream(std::iostream& os) : m_ios(os) {}
+    StdIOStream(std::iostream& ios) : m_ios(ios), m_delete_flag(false) {}
+    StdIOStream(std::iostream *ios, bool del) : m_ios(*ios), m_delete_flag(del) {}
+    ~StdIOStream() { if (m_delete_flag) { delete &m_ios; } }
 
     size_t tellg() override
     {
@@ -296,6 +304,7 @@ public:
 
 protected:
     std::iostream& m_ios;
+    bool m_delete_flag;
 };
 
 

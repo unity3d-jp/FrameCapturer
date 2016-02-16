@@ -72,7 +72,9 @@ int main(int argc, char** argv)
     conf.audio_num_channels = 1;
     conf.audio_bitrate = 64000;
 
+    fcStream* fs0 = fcCreateFileStream("test0.mp4");
     fcIMP4Context *ctx = fcMP4CreateContext(&conf);
+    fcMP4AddStream(ctx, fs0);
 
 
     std::thread video_thread = std::thread([&]() {
@@ -99,5 +101,6 @@ int main(int argc, char** argv)
     fcMP4WriteFile(ctx, "out.mp4", 0, -1);
 
     fcMP4DestroyContext(ctx);
+    fcDestroyStream(fs0);
 }
 
