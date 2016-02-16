@@ -9,12 +9,12 @@ using UTJ;
 [RequireComponent(typeof(TweetMedia))]
 public class TMExtAttachScreenshot : MonoBehaviour
 {
-    public MovieCapturerHUD m_capturer_hud;
+    public GifCapturerHUD m_capturer_hud;
     public UnityEngine.UI.Toggle m_toggle_screenshot;
     TweetMedia m_tweet_media;
 
 
-    public static TweetMediaPlugin.tmEMediaType GetMediaType(MovieCapturer capturer)
+    public static TweetMediaPlugin.tmEMediaType GetMediaType(IGifCapturer capturer)
     {
         if (capturer.GetType()==typeof(GifCapturer))
         {
@@ -34,7 +34,7 @@ public class TMExtAttachScreenshot : MonoBehaviour
             if (!m_toggle_screenshot.isOn) { return; }
             m_toggle_screenshot.isOn = false;
 
-            MovieCapturer capturer = m_capturer_hud.m_capturer;
+            IGifCapturer capturer = m_capturer_hud.m_capturer;
             var mtype = GetMediaType(capturer);
             if (mtype != TweetMediaPlugin.tmEMediaType.Unknown)
             {

@@ -6,7 +6,7 @@ class fcIMP4Context
 public:
     virtual void release() = 0;
 
-    virtual void addStream(fcStream *s) = 0;
+    virtual void addOutputStream(fcStream *s) = 0;
 
     // assume texture format is RGBA8.
     // timestamp=0 is treated as current time.
@@ -18,15 +18,6 @@ public:
 
     // timestamp=0 is treated as current time.
     virtual bool    addAudioFrame(const float *samples, int num_samples, uint64_t timestamp = 0) = 0;
-
-    virtual void    clearFrame() = 0;
-    virtual bool    writeFile(const char *path, int begin_frame, int end_frame) = 0;
-    virtual int     writeMemory(void *buf, int begin_frame, int end_frame) = 0;
-
-    virtual int     getFrameCount() = 0;
-    virtual void    getFrameData(void *tex, int frame) = 0;
-    virtual int     getExpectedDataSize(int begin_frame, int end_frame) = 0;
-    virtual void    eraseFrame(int begin_frame, int end_frame) = 0;
 
 protected:
     virtual ~fcIMP4Context() {}

@@ -13,7 +13,7 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/GifCapturer")]
     [RequireComponent(typeof(Camera))]
-    public class GifCapturer : MovieCapturer
+    public class GifCapturer : IGifCapturer
     {
         public int m_resolution_width = 300;
         public int m_num_colors = 255;

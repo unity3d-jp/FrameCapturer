@@ -266,10 +266,10 @@ fcCLinkage fcExport void fcMP4DestroyContext(fcIMP4Context *ctx)
     ctx->release();
 }
 
-fcCLinkage fcExport void fcMP4AddStream(fcIMP4Context *ctx, fcStream *stream)
+fcCLinkage fcExport void fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream)
 {
     if (!ctx) { return; }
-    ctx->addStream(stream);
+    ctx->addOutputStream(stream);
 }
 
 fcCLinkage fcExport bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex)
@@ -284,54 +284,11 @@ fcCLinkage fcExport bool fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixe
     return ctx->addVideoFramePixels(pixels, cs);
 }
 
-fcCLinkage fcExport bool fcMP4AddAudioSamples(fcIMP4Context *ctx, const float *samples, int num_samples)
+fcCLinkage fcExport bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples)
 {
     if (!ctx) { return false; }
     return ctx->addAudioFrame(samples, num_samples);
 }
-
-fcCLinkage fcExport void fcMP4ClearFrame(fcIMP4Context *ctx)
-{
-    if (!ctx) { return; }
-    ctx->clearFrame();
-}
-
-fcCLinkage fcExport bool fcMP4WriteFile(fcIMP4Context *ctx, const char *path, int begin_frame, int end_frame)
-{
-    if (!ctx) { return false; }
-    return ctx->writeFile(path, begin_frame, end_frame);
-}
-
-fcCLinkage fcExport int fcMP4WriteMemory(fcIMP4Context *ctx, void *buf, int begin_frame, int end_frame)
-{
-    if (!ctx) { return 0; }
-    return ctx->writeMemory(buf, begin_frame, end_frame);
-}
-
-fcCLinkage fcExport int fcMP4GetFrameCount(fcIMP4Context *ctx)
-{
-    if (!ctx) { return 0; }
-    return ctx->getFrameCount();
-}
-
-fcCLinkage fcExport void fcMP4GetFrameData(fcIMP4Context *ctx, void *tex, int frame)
-{
-    if (!ctx) { return; }
-    return ctx->getFrameData(tex, frame);
-}
-
-fcCLinkage fcExport int fcMP4GetExpectedDataSize(fcIMP4Context *ctx, int begin_frame, int end_frame)
-{
-    if (!ctx) { return 0; }
-    return ctx->getExpectedDataSize(begin_frame, end_frame);
-}
-
-fcCLinkage fcExport void fcMP4EraseFrame(fcIMP4Context *ctx, int begin_frame, int end_frame)
-{
-    if (!ctx) { return; }
-    ctx->eraseFrame(begin_frame, end_frame);
-}
-
 #endif // fcSupportMP4
 
 

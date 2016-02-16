@@ -5,9 +5,9 @@ using UnityEngine.UI;
 
 namespace UTJ
 {
-    public class MovieCapturerHUD : MonoBehaviour
+    public class GifCapturerHUD : MonoBehaviour
     {
-        public MovieCapturer m_capturer;
+        public IGifCapturer m_capturer;
         public Text m_text_info;
         public RawImage m_gif_preview;
         public Slider m_timeslider;
