@@ -3,7 +3,7 @@
 
 namespace UTJ
 {
-    public abstract class MovieCapturer : MonoBehaviour
+    public abstract class IGifCapturer : MonoBehaviour
     {
         public abstract bool recode { get; set; }
         public abstract bool WriteFile(string path = "", int begin_frame = 0, int end_frame = -1);

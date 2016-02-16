@@ -5,7 +5,6 @@
 #include "fcMP4File.h"
 #include "fcH264Encoder.h"
 #include "fcAACEncoder.h"
-#include "fcMP4Muxer.h"
 #include "fcMP4StreamWriter.h"
 #include "GraphicsDevice/fcGraphicsDevice.h"
 #ifdef fcWindows
@@ -22,35 +21,29 @@ public:
     ~fcMP4Context();
     void release() override;
 
-    void addStream(fcStream *s) override;
+    void addOutputStream(fcStream *s) override;
     bool addVideoFrameTexture(void *tex, uint64_t timestamp) override;
     bool addVideoFramePixels(void *pixels, fcColorSpace c, uint64_t timestamps) override;
     bool addAudioFrame(const float *samples, int num_samples, uint64_t timestamp) override;
-    void clearFrame() override;
-    bool writeFile(const char *path, int begin_frame, int end_frame) override;
-    int  writeMemory(void *buf, int begin_frame, int end_frame) override;
-
-    int getFrameCount() override;
-    void getFrameData(void *tex, int frame) override;
-    int getExpectedDataSize(int begin_frame, int end_frame) override;
-    void eraseFrame(int begin_frame, int end_frame) override;
 
 private:
+    typedef std::pair<fcVideoFrame, fcH264Frame> VideoFrame;
+    typedef std::pair<fcAudioFrame, fcAACFrame> AudioFrame;
+    typedef std::unique_ptr<fcMP4StreamWriter> StreamWriterPtr;
+
     void enqueueVideoTask(const std::function<void()> &f);
     void enqueueAudioTask(const std::function<void()> &f);
     void processVideoTasks();
     void processAudioTasks();
 
-    fcVideoFrame&   getTempraryVideoFrame();
-    void            returnTempraryVideoFrame(fcVideoFrame& v);
-    fcAudioFrame&   getTempraryAudioFrame();
-    void            returnTempraryAudioFrame(fcAudioFrame& v);
+    VideoFrame& getTempraryVideoFrame();
+    void        returnTempraryVideoFrame(VideoFrame& v);
+    AudioFrame& getTempraryAudioFrame();
+    void        returnTempraryAudioFrame(AudioFrame& v);
 
     void resetEncoders();
-    void scrape(bool is_tasks_running);
     void waitAllTasksFinished();
-    void addVideoFrameTask(fcH264Frame& o_fdata, fcVideoFrame &raw_buffer, bool rgba2i420);
-    void write(std::ostream& os, int begin_frame, int end_frame);
+    void encodeVideoFrame(VideoFrame& vf, bool rgba2i420);
 
     template<class Body>
     void eachStreams(const Body &b)
@@ -59,36 +52,35 @@ private:
     }
 
 private:
-    typedef std::unique_ptr<fcMP4StreamWriter> StreamWriterPtr;
-
     fcMP4Config m_conf;
     fcIGraphicsDevice *m_dev;
+    bool m_stop;
 
-    std::vector<fcVideoFrame> m_tmp_video_frames;
-    std::vector<fcAudioFrame> m_tmp_audio_frames;
-    std::vector<fcVideoFrame*> m_tmp_video_frames_unused;
-    std::vector<fcAudioFrame*> m_tmp_audio_frames_unused;
-    std::list<fcH264Frame>  m_h264_frames;
-    std::list<fcAACFrame>   m_aac_frames;
+    std::vector<VideoFrame>     m_tmp_video_frames;
+    std::vector<AudioFrame>     m_tmp_audio_frames;
+    std::vector<VideoFrame*>    m_tmp_video_frames_unused;
+    std::vector<AudioFrame*>    m_tmp_audio_frames_unused;
 
     std::unique_ptr<fcIH264Encoder> m_h264_encoder;
     std::unique_ptr<fcIAACEncoder> m_aac_encoder;
     std::vector<StreamWriterPtr> m_streams;
-    std::unique_ptr<fcMP4Muxer> m_muxer;
 
     std::atomic_int m_video_active_task_count;
     std::thread m_video_worker;
-    std::mutex m_video_queue_mutex;
+    std::mutex m_video_mutex;
     std::condition_variable m_video_condition;
     std::deque<std::function<void()>> m_video_tasks;
 
     std::atomic_int m_audio_active_task_count;
     std::thread m_audio_worker;
-    std::mutex m_audio_queue_mutex;
+    std::mutex m_audio_mutex;
     std::condition_variable m_audio_condition;
     std::deque<std::function<void()>> m_audio_tasks;
 
-    bool m_stop;
+#ifndef fcMaster
+    std::unique_ptr<StdIOStream> m_dbg_h264_out;
+    std::unique_ptr<StdIOStream> m_dbg_aac_out;
+#endif // fcMaster
 };
 
 
@@ -96,9 +88,9 @@ private:
 fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
     : m_conf(conf)
     , m_dev(dev)
+    , m_stop(false)
     , m_video_active_task_count(0)
     , m_audio_active_task_count(0)
-    , m_stop(false)
 {
     if (m_conf.video_max_buffers == 0) {
         m_conf.video_max_buffers = fcMP4DefaultMaxBuffers;
@@ -108,7 +100,7 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
     if (m_conf.video) {
         m_tmp_video_frames.resize(m_conf.video_max_buffers);
         for (auto& v : m_tmp_video_frames) {
-            v.allocate(m_conf.video_width, m_conf.video_height);
+            v.first.allocate(m_conf.video_width, m_conf.video_height);
             m_tmp_video_frames_unused.push_back(&v);
         }
 
@@ -123,7 +115,20 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         m_audio_worker = std::thread([this]() { processAudioTasks(); });
     }
 
-    m_muxer.reset(new fcMP4Muxer());
+#ifndef fcMaster
+    // output raw h264 & aac packets to file
+    {
+        uint64_t now = (uint64_t)::time(nullptr);
+        char tmp_h264_filename[256];
+        char tmp_aac_filename[256];
+        sprintf(tmp_h264_filename, "%llu.h264", now);
+        sprintf(tmp_aac_filename, "%llu.aac", now);
+
+        m_dbg_h264_out.reset(new StdIOStream(new std::fstream(tmp_h264_filename, std::ios::binary | std::ios::out), true));
+        m_dbg_aac_out.reset(new StdIOStream(new std::fstream(tmp_aac_filename, std::ios::binary | std::ios::out), true));
+    }
+#endif // fcMaster
+
 
     resetEncoders();
 }
@@ -141,6 +146,11 @@ fcMP4Context::~fcMP4Context()
         m_audio_worker.join();
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+#ifndef fcMaster
+    m_dbg_h264_out.reset();
+    m_dbg_aac_out.reset();
+#endif // fcMaster
 
     m_streams.clear();
 }
@@ -188,7 +198,7 @@ void fcMP4Context::resetEncoders()
 void fcMP4Context::enqueueVideoTask(const std::function<void()> &f)
 {
     {
-        std::unique_lock<std::mutex> lock(m_video_queue_mutex);
+        std::unique_lock<std::mutex> lock(m_video_mutex);
         m_video_tasks.push_back(std::function<void()>(f));
     }
     m_video_condition.notify_one();
@@ -197,7 +207,7 @@ void fcMP4Context::enqueueVideoTask(const std::function<void()> &f)
 void fcMP4Context::enqueueAudioTask(const std::function<void()> &f)
 {
     {
-        std::unique_lock<std::mutex> lock(m_audio_queue_mutex);
+        std::unique_lock<std::mutex> lock(m_audio_mutex);
         m_audio_tasks.push_back(std::function<void()>(f));
     }
     m_audio_condition.notify_one();
@@ -211,14 +221,14 @@ void fcMP4Context::waitAllTasksFinished()
 }
 
 
-fcVideoFrame& fcMP4Context::getTempraryVideoFrame()
+fcMP4Context::VideoFrame& fcMP4Context::getTempraryVideoFrame()
 {
-    fcVideoFrame *ret = nullptr;
+    VideoFrame *ret = nullptr;
 
     // wait if all temporaries are in use
     for (;;) {
         {
-            std::unique_lock<std::mutex> lock(m_video_queue_mutex);
+            std::unique_lock<std::mutex> lock(m_video_mutex);
             if (!m_tmp_video_frames_unused.empty()) {
                 ret = m_tmp_video_frames_unused.back();
                 m_tmp_video_frames_unused.pop_back();
@@ -231,20 +241,20 @@ fcVideoFrame& fcMP4Context::getTempraryVideoFrame()
     return *ret;
 }
 
-void fcMP4Context::returnTempraryVideoFrame(fcVideoFrame& v)
+void fcMP4Context::returnTempraryVideoFrame(VideoFrame& v)
 {
-    std::unique_lock<std::mutex> lock(m_video_queue_mutex);
+    std::unique_lock<std::mutex> lock(m_video_mutex);
     m_tmp_video_frames_unused.push_back(&v);
 }
 
-fcAudioFrame& fcMP4Context::getTempraryAudioFrame()
+fcMP4Context::AudioFrame& fcMP4Context::getTempraryAudioFrame()
 {
-    fcAudioFrame *ret = nullptr;
+    AudioFrame *ret = nullptr;
 
     // wait if all temporaries are in use
     for (;;) {
         {
-            std::unique_lock<std::mutex> lock(m_audio_queue_mutex);
+            std::unique_lock<std::mutex> lock(m_audio_mutex);
             if (!m_tmp_audio_frames_unused.empty()) {
                 ret = m_tmp_audio_frames_unused.back();
                 m_tmp_audio_frames_unused.pop_back();
@@ -257,9 +267,9 @@ fcAudioFrame& fcMP4Context::getTempraryAudioFrame()
     return *ret;
 }
 
-void fcMP4Context::returnTempraryAudioFrame(fcAudioFrame& v)
+void fcMP4Context::returnTempraryAudioFrame(AudioFrame& v)
 {
-    std::unique_lock<std::mutex> lock(m_audio_queue_mutex);
+    std::unique_lock<std::mutex> lock(m_audio_mutex);
     m_tmp_audio_frames_unused.push_back(&v);
 }
 
@@ -270,7 +280,7 @@ void fcMP4Context::processVideoTasks()
     {
         std::function<void()> task;
         {
-            std::unique_lock<std::mutex> lock(m_video_queue_mutex);
+            std::unique_lock<std::mutex> lock(m_video_mutex);
             while (!m_stop && m_video_tasks.empty()) {
                 m_video_condition.wait(lock);
             }
@@ -289,7 +299,7 @@ void fcMP4Context::processAudioTasks()
     {
         std::function<void()> task;
         {
-            std::unique_lock<std::mutex> lock(m_audio_queue_mutex);
+            std::unique_lock<std::mutex> lock(m_audio_mutex);
             while (!m_stop && m_audio_tasks.empty()) {
                 m_audio_condition.wait(lock);
             }
@@ -308,7 +318,7 @@ void fcMP4Context::release()
     delete this;
 }
 
-void fcMP4Context::addStream(fcStream *s)
+void fcMP4Context::addOutputStream(fcStream *s)
 {
     auto writer =new fcMP4StreamWriter(*s, m_conf);
     if (m_aac_encoder) {
@@ -317,20 +327,11 @@ void fcMP4Context::addStream(fcStream *s)
     m_streams.emplace_back(StreamWriterPtr(writer));
 }
 
-
-void fcMP4Context::scrape(bool updating)
+void fcMP4Context::encodeVideoFrame(VideoFrame& vf, bool rgba2i420)
 {
-    // 最大容量か最大フレーム数が設定されている場合、それらを超過したフレームをここで切り捨てる。
-    // 切り捨てるフレームがパレットを持っている場合パレットの移動も行う。
+    auto& raw = vf.first;
+    auto& h264 = vf.second;
 
-    // 実行中のタスクが更新中のデータを間引くのはマズいので、更新中は最低でもタスク数分は残す
-    int min_frames = updating ? std::max<int>(m_conf.video_max_buffers, 1) : 1;
-
-    // todo
-}
-
-void fcMP4Context::addVideoFrameTask(fcH264Frame& h264, fcVideoFrame &raw, bool rgba2i420)
-{
     // 必要であれば RGBA -> I420 変換
     int width = m_conf.video_width;
     int frame_size = m_conf.video_width * m_conf.video_height;
@@ -347,10 +348,14 @@ void fcMP4Context::addVideoFrameTask(fcH264Frame& h264, fcVideoFrame &raw, bool 
     }
 
     // I420 のピクセルデータを H264 へエンコード
-    m_h264_encoder->encode(h264, raw.i420, raw.timestamp);
+    h264.clear();
     h264.timestamp = raw.timestamp;
+    m_h264_encoder->encode(h264, raw.i420, raw.timestamp);
 
     eachStreams([&](auto& s) { s.addFrame(h264); });
+#ifndef fcMaster
+    m_dbg_h264_out->write(h264.data.ptr(), h264.data.size());
+#endif // fcMaster
 }
 
 
@@ -358,28 +363,26 @@ bool fcMP4Context::addVideoFrameTexture(void *tex, uint64_t timestamp)
 {
     if (!m_h264_encoder) { return false; }
 
-    fcVideoFrame& raw = getTempraryVideoFrame();
+    VideoFrame& vf = getTempraryVideoFrame();
+    auto& raw = vf.first;
+    auto& h264 = vf.second;
     raw.timestamp = timestamp!=0 ? timestamp : GetCurrentTimeNanosec();
 
     // フレームバッファの内容取得
     if (!m_dev->readTexture(&raw.rgba[0], raw.rgba.size(), tex, m_conf.video_width, m_conf.video_height, fcTextureFormat_ARGB32))
     {
-        returnTempraryVideoFrame(raw);
+        returnTempraryVideoFrame(vf);
         return false;
     }
 
     // h264 データを生成
-    m_h264_frames.push_back(fcH264Frame());
-    fcH264Frame& h264 = m_h264_frames.back();
     ++m_video_active_task_count;
-    enqueueVideoTask([this, &h264, &raw](){
-        h264.clear();
-        addVideoFrameTask(h264, raw, true);
-        returnTempraryVideoFrame(raw);
+    enqueueVideoTask([this, &vf](){
+        encodeVideoFrame(vf, true);
+        returnTempraryVideoFrame(vf);
         --m_video_active_task_count;
     });
 
-    scrape(true);
     return true;
 }
 
@@ -387,7 +390,9 @@ bool fcMP4Context::addVideoFramePixels(void *pixels, fcColorSpace cs, uint64_t t
 {
     if (!m_h264_encoder) { return false; }
 
-    fcVideoFrame& raw = getTempraryVideoFrame();
+    VideoFrame& vf = getTempraryVideoFrame();
+    auto& raw = vf.first;
+    auto& h264 = vf.second;
     raw.timestamp = timestamp != 0 ? timestamp : GetCurrentTimeNanosec();
 
     bool rgba2i420 = true;
@@ -407,17 +412,13 @@ bool fcMP4Context::addVideoFramePixels(void *pixels, fcColorSpace cs, uint64_t t
     }
 
     // h264 データを生成
-    m_h264_frames.push_back(fcH264Frame());
-    fcH264Frame& h264 = m_h264_frames.back();
     ++m_video_active_task_count;
-    enqueueVideoTask([this, &h264, &raw, rgba2i420](){
-        h264.clear();
-        addVideoFrameTask(h264, raw, rgba2i420);
-        returnTempraryVideoFrame(raw);
+    enqueueVideoTask([this, &vf, rgba2i420](){
+        encodeVideoFrame(vf, rgba2i420);
+        returnTempraryVideoFrame(vf);
         --m_video_active_task_count;
     });
 
-    scrape(true);
     return true;
 }
 
@@ -425,16 +426,15 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, uint64_t
 {
     if (!m_aac_encoder) { return false; }
 
-    fcAudioFrame& raw = getTempraryAudioFrame();
+    AudioFrame& af = getTempraryAudioFrame();
+    auto& raw = af.first;
+    auto& aac = af.second;
     raw.timestamp = timestamp != 0 ? timestamp : GetCurrentTimeNanosec();
     raw.data = Buffer(samples, sizeof(float)*num_samples);
 
-    m_aac_frames.push_back(fcAACFrame());
-    fcAACFrame& aac = m_aac_frames.back();
-
     // aac encode
     ++m_audio_active_task_count;
-    enqueueAudioTask([this, &aac, &raw](){
+    enqueueAudioTask([this, &aac, &raw, &af](){
         aac.clear();
 
         // apply audio_scale
@@ -450,164 +450,15 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, uint64_t
         aac.timestamp = raw.timestamp;
 
         eachStreams([&](auto& s) { s.addFrame(aac); });
+#ifndef fcMaster
+        m_dbg_aac_out->write(aac.data.ptr(), aac.data.size());
+#endif // fcMaster
 
-        returnTempraryAudioFrame(raw);
+        returnTempraryAudioFrame(af);
         --m_audio_active_task_count;
     });
 
     return true;
-}
-
-void fcMP4Context::clearFrame()
-{
-    waitAllTasksFinished();
-    m_h264_frames.clear();
-    m_aac_frames.clear();
-    resetEncoders();
-}
-
-
-static inline void adjust_frame(int &begin_frame, int &end_frame, int max_frame)
-{
-    begin_frame = std::max<int>(begin_frame, 0);
-    if (end_frame < 0) {
-        end_frame = max_frame;
-    }
-    else {
-        end_frame = std::min<int>(end_frame, max_frame);
-    }
-}
-
-
-void fcMP4Context::write(std::ostream &os, int begin_frame, int end_frame)
-{
-    addAudioFrame(nullptr, 0, 0); // flush
-    waitAllTasksFinished();
-    scrape(false);
-
-    char tmp_h264_filename[256];
-    char tmp_aac_filename[256];
-    char tmp_mp4_filename[256];
-
-    uint64_t now = (uint64_t)::time(nullptr);
-    sprintf(tmp_h264_filename, "%llu.h264", now);
-    sprintf(tmp_aac_filename, "%llu.aac", now);
-    sprintf(tmp_mp4_filename, "%llu.mp4", now);
-
-    fcMP4Muxer::Params params;
-    params.frame_rate = m_conf.video_framerate;
-    params.out_mp4_path = tmp_mp4_filename;
-    if(m_conf.video) {
-        params.in_h264_path = tmp_h264_filename;
-        std::ofstream tmp_h264(tmp_h264_filename, std::ios::binary);
-
-        adjust_frame(begin_frame, end_frame, (int)m_h264_frames.size());
-        auto begin = m_h264_frames.begin();
-        auto end = m_h264_frames.begin();
-        std::advance(begin, begin_frame);
-        std::advance(end, end_frame);
-        for (auto i = begin; i != end; ++i) {
-            tmp_h264.write(&i->data[0], i->data.size());
-        }
-    }
-    if (m_conf.audio) {
-        params.in_aac_path = tmp_aac_filename;
-        std::ofstream tmp_aac(tmp_aac_filename, std::ios::binary);
-
-        for (const auto& aac : m_aac_frames) {
-            tmp_aac.write(aac.data.ptr(), aac.data.size());
-        }
-    }
-
-    m_muxer->mux(params);
-
-    {
-        char buf[1024];
-        std::ifstream tmp_mp4(tmp_mp4_filename, std::ios::binary);
-        while (!tmp_mp4.eof()) {
-            tmp_mp4.read(buf, sizeof(buf));
-            os.write(buf, tmp_mp4.gcount());
-        }
-    }
-#ifdef fcMaster
-    std::remove(tmp_aac_filename);
-    std::remove(tmp_h264_filename);
-    std::remove(tmp_mp4_filename);
-#endif // fcMaster
-}
-
-bool fcMP4Context::writeFile(const char *path, int begin_frame, int end_frame)
-{
-    std::ofstream os(path, std::ios::binary);
-    if (!os) { return false; }
-    write(os, begin_frame, end_frame);
-    os.close();
-    return true;
-}
-
-int fcMP4Context::writeMemory(void *buf, int begin_frame, int end_frame)
-{
-    std::ostringstream os(std::ios::binary);
-    write(os, begin_frame, end_frame);
-
-    std::string s = os.str();
-    memcpy(buf, &s[0], s.size());
-    return (int)s.size();
-}
-
-
-int fcMP4Context::getFrameCount()
-{
-    return m_h264_frames.size();
-}
-
-void fcMP4Context::getFrameData(void *tex, int frame)
-{
-    if (frame >= m_h264_frames.size()) { return; }
-    waitAllTasksFinished();
-    scrape(false);
-
-    fcH264Frame *fdata = nullptr;
-    {
-        auto it = m_h264_frames.begin();
-        std::advance(it, frame);
-        fdata = &(*it);
-    }
-
-    fcVideoFrame raw;
-    raw.allocate(m_conf.video_width, m_conf.video_height);
-    // todo: decode
-    m_dev->writeTexture(tex, m_conf.video_width, m_conf.video_height, fcTextureFormat_ARGB32, &raw.rgba[0], raw.rgba.size());
-}
-
-
-int fcMP4Context::getExpectedDataSize(int begin_frame, int end_frame)
-{
-    adjust_frame(begin_frame, end_frame, (int)m_h264_frames.size());
-    auto begin = m_h264_frames.begin();
-    auto end = m_h264_frames.begin();
-    std::advance(begin, begin_frame);
-    std::advance(end, end_frame);
-
-    size_t size = 2048; // mp4 metadata
-    for (auto i = begin; i != end; ++i) {
-        size += i->data.size();
-    }
-    return (int)size;
-}
-
-void fcMP4Context::eraseFrame(int begin_frame, int end_frame)
-{
-    waitAllTasksFinished();
-    scrape(false);
-
-    adjust_frame(begin_frame, end_frame, (int)m_h264_frames.size());
-    auto begin = m_h264_frames.begin();
-    auto end = m_h264_frames.begin();
-    std::advance(begin, begin_frame);
-    std::advance(end, end_frame);
-    m_h264_frames.erase(begin, end);
-    // todo: remake IDR frame if needed
 }
 
 

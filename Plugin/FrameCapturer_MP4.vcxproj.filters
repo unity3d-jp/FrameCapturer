@@ -5,9 +5,6 @@
     <ClCompile Include="Encoder\fcMP4File.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcMP4Muxer.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
     <ClCompile Include="Foundation\Network.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
@@ -37,9 +34,6 @@
     <ClInclude Include="FrameCapturer.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Encoder\fcMP4File.h">
-      <Filter>Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="Encoder\fcMP4Muxer.h">
       <Filter>Encoder</Filter>
     </ClInclude>
     <ClInclude Include="Encoder\fcH264Encoder.h">

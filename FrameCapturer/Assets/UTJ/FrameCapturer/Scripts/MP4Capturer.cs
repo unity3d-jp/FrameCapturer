@@ -13,7 +13,7 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/MP4Capturer")]
     [RequireComponent(typeof(Camera))]
-    public class MP4Capturer : MovieCapturer
+    public class MP4Capturer : IMP4Capturer
     {
         public bool m_video = true;
         public bool m_audio = true;
@@ -30,6 +30,7 @@ namespace UTJ
 
         fcAPI.fcMP4Context m_ctx;
         fcAPI.fcMP4Config m_mp4conf = fcAPI.fcMP4Config.default_value;
+        fcAPI.fcStream m_ostream;
 
         Material m_mat_copy;
         Mesh m_quad;
@@ -54,37 +55,13 @@ namespace UTJ
             }
         }
 
-        public override bool WriteFile(string path = "", int begin_frame = 0, int end_frame = -1)
-        {
-            bool ret = false;
-            if (m_ctx.ptr != IntPtr.Zero)
-            {
-                if (path.Length == 0)
-                {
-                    path = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
-                }
-                ret = fcAPI.fcMP4WriteFile(m_ctx, path, begin_frame, end_frame);
-                Debug.Log("MP4Capturer.WriteFile() : " + path);
-            }
-            return ret;
-        }
-
-        public override int WriteMemory(System.IntPtr dst_buf, int begin_frame = 0, int end_frame = -1)
-        {
-            int ret = 0;
-            if (m_ctx.ptr != IntPtr.Zero)
-            {
-                ret = fcAPI.fcMP4WriteMemory(m_ctx, dst_buf, begin_frame, end_frame);
-                Debug.Log("MP4Capturer.WriteMemry()");
-            }
-            return ret;
-        }
-
         public override RenderTexture GetScratchBuffer() { return m_scratch_buffer; }
 
         public override void ResetRecordingState()
         {
             fcAPI.fcMP4DestroyContext(m_ctx);
+            fcAPI.fcDestroyStream(m_ostream);
+
             m_ctx.ptr = IntPtr.Zero;
             if (m_scratch_buffer != null)
             {
@@ -121,26 +98,11 @@ namespace UTJ
                 case AudioSpeakerMode.Prologic: m_mp4conf.audio_num_channels = 6; break;
             }
             m_ctx = fcAPI.fcMP4CreateContext(ref m_mp4conf);
-        }
 
-        public override void EraseFrame(int begin_frame, int end_frame)
-        {
-            fcAPI.fcMP4EraseFrame(m_ctx, begin_frame, end_frame);
-        }
 
-        public override int GetExpectedFileSize(int begin_frame = 0, int end_frame = -1)
-        {
-            return fcAPI.fcMP4GetExpectedDataSize(m_ctx, begin_frame, end_frame);
-        }
-
-        public override int GetFrameCount()
-        {
-            return fcAPI.fcMP4GetFrameCount(m_ctx);
-        }
-
-        public override void GetFrameData(RenderTexture rt, int frame)
-        {
-            fcAPI.fcMP4GetFrameData(m_ctx, rt.GetNativeTexturePtr(), frame);
+            string path = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
+            m_ostream = fcAPI.fcCreateFileStream(path);
+            fcAPI.fcMP4AddOutputStream(m_ctx, m_ostream);
         }
 
         public fcAPI.fcMP4Context GetMP4Context() { return m_ctx; }
@@ -156,7 +118,7 @@ namespace UTJ
         {
 #if UNITY_EDITOR
 #else
-        fcAPI.fcSetModulePath(Application.persistentDataPath);
+            fcAPI.fcSetModulePath(Application.persistentDataPath);
 #endif
             fcAPI.fcMP4DownloadCodec(null);
         }
@@ -186,6 +148,7 @@ namespace UTJ
         void OnDisable()
         {
             fcAPI.fcMP4DestroyContext(m_ctx);
+            fcAPI.fcDestroyStream(m_ostream);
             m_ctx.ptr = IntPtr.Zero;
 
             m_cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb);
@@ -223,7 +186,7 @@ namespace UTJ
                     return;
                 }
 
-                fcAPI.fcMP4AddAudioSamples(m_ctx, samples, samples.Length);
+                fcAPI.fcMP4AddAudioFrame(m_ctx, samples, samples.Length);
             }
         }
     }

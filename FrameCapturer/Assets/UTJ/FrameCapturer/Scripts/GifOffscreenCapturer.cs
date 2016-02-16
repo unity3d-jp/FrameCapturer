@@ -13,7 +13,7 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/GifOffscreenCapturer")]
     [RequireComponent(typeof(Camera))]
-    public class GifOffscreenCapturer : MovieCapturer
+    public class GifOffscreenCapturer : IGifCapturer
     {
         public RenderTexture m_target;
         public int m_resolution_width = 300;

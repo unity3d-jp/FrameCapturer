@@ -74,7 +74,7 @@ int main(int argc, char** argv)
 
     fcStream* fs0 = fcCreateFileStream("test0.mp4");
     fcIMP4Context *ctx = fcMP4CreateContext(&conf);
-    fcMP4AddStream(ctx, fs0);
+    fcMP4AddOutputStream(ctx, fs0);
 
 
     std::thread video_thread = std::thread([&]() {
@@ -90,15 +90,13 @@ int main(int argc, char** argv)
         std::vector<float> audio_sample(SamplingRate);
         for (int i = 0; i < 10; ++i) {
             CreateTestAudioData(&audio_sample[0], audio_sample.size(), i);
-            fcMP4AddAudioSamples(ctx, &audio_sample[0], audio_sample.size());
+            fcMP4AddAudioFrame(ctx, &audio_sample[0], audio_sample.size());
 
             std::this_thread::sleep_for(1s);
         }
     });
     video_thread.join();
     audio_thread.join();
-
-    fcMP4WriteFile(ctx, "out.mp4", 0, -1);
 
     fcMP4DestroyContext(ctx);
     fcDestroyStream(fs0);

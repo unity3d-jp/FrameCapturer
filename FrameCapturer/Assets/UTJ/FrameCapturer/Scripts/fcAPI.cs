@@ -140,21 +140,20 @@ namespace UTJ
             }
         };
         public struct fcMP4Context { public IntPtr ptr; }
+        public struct fcStream { public IntPtr ptr; }
         public delegate void fcDownloadCallback(bool is_complete, IntPtr message);
+
+        [DllImport ("FrameCapturer")] public static extern fcStream     fcCreateFileStream(string path);
+        [DllImport ("FrameCapturer")] public static extern fcStream     fcCreateMemoryStream();
+        [DllImport ("FrameCapturer")] public static extern void         fcDestroyStream(fcStream s);
 
         [DllImport ("FrameCapturer")] public static extern bool         fcMP4DownloadCodec(fcDownloadCallback cb);
         [DllImport ("FrameCapturer")] public static extern fcMP4Context fcMP4CreateContext(ref fcMP4Config conf);
         [DllImport ("FrameCapturer")] public static extern void         fcMP4DestroyContext(fcMP4Context ctx);
+        [DllImport ("FrameCapturer")] public static extern void         fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);
         [DllImport ("FrameCapturer")] public static extern bool         fcMP4AddVideoFrameTexture(fcMP4Context ctx, IntPtr tex);
         [DllImport ("FrameCapturer")] public static extern bool         fcMP4AddVideoFramePixels(fcMP4Context ctx, IntPtr pixels, fcEColorSpace cs=fcEColorSpace.RGBA);
-        [DllImport ("FrameCapturer")] public static extern bool         fcMP4AddAudioSamples(fcMP4Context ctx, float[] samples, int num_samples);
-        [DllImport ("FrameCapturer")] public static extern void         fcMP4ClearFrame(fcMP4Context ctx);
-        [DllImport ("FrameCapturer")] public static extern bool         fcMP4WriteFile(fcMP4Context ctx, string path, int begin_frame, int end_frame);
-        [DllImport ("FrameCapturer")] public static extern int          fcMP4WriteMemory(fcMP4Context ctx, IntPtr dst, int begin_frame, int end_frame);
-        [DllImport ("FrameCapturer")] public static extern int          fcMP4GetFrameCount(fcMP4Context ctx);
-        [DllImport ("FrameCapturer")] public static extern void         fcMP4GetFrameData(fcMP4Context ctx, IntPtr tex, int frame);
-        [DllImport ("FrameCapturer")] public static extern int          fcMP4GetExpectedDataSize(fcMP4Context ctx, int begin_frame, int end_frame);
-        [DllImport ("FrameCapturer")] public static extern void         fcMP4EraseFrame(fcMP4Context ctx, int begin_frame, int end_frame);
+        [DllImport ("FrameCapturer")] public static extern bool         fcMP4AddAudioFrame(fcMP4Context ctx, float[] samples, int num_samples);
 
     }
 

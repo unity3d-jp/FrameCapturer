@@ -170,16 +170,9 @@ fcCLinkage fcExport bool            fcMP4DownloadCodec(fcDownloadCallback cb);
 
 fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
 fcCLinkage fcExport void            fcMP4DestroyContext(fcIMP4Context *ctx);
-fcCLinkage fcExport void            fcMP4AddStream(fcIMP4Context *ctx, fcStream *stream);
+fcCLinkage fcExport void            fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream);
 fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex);
 fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixels, fcColorSpace cs = fcColorSpace_RGBA);
-fcCLinkage fcExport bool            fcMP4AddAudioSamples(fcIMP4Context *ctx, const float *samples, int num_samples);
-fcCLinkage fcExport void            fcMP4ClearFrame(fcIMP4Context *ctx);
-fcCLinkage fcExport bool            fcMP4WriteFile(fcIMP4Context *ctx, const char *path, int begin_frame, int end_frame);
-fcCLinkage fcExport int             fcMP4WriteMemory(fcIMP4Context *ctx, void *buf, int begin_frame, int end_frame);
-fcCLinkage fcExport int             fcMP4GetFrameCount(fcIMP4Context *ctx);
-fcCLinkage fcExport void            fcMP4GetFrameData(fcIMP4Context *ctx, void *tex, int frame);
-fcCLinkage fcExport int             fcMP4GetExpectedDataSize(fcIMP4Context *ctx, int begin_frame, int end_frame);
-fcCLinkage fcExport void            fcMP4EraseFrame(fcIMP4Context *ctx, int begin_frame, int end_frame);
+fcCLinkage fcExport bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples);
 
 #endif // FrameCapturer_h
