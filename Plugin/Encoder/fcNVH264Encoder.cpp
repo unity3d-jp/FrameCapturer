@@ -1,6 +1,5 @@
 #include "pch.h"
 #include <libyuv/libyuv.h>
-#include "fcFoundation.h"
 #include "fcMP4Internal.h"
 #include "fcH264Encoder.h"
 

@@ -1,5 +1,4 @@
 ﻿#include "pch.h"
-#include "FrameCapturer.h"
 #include "fcFoundation.h"
 #include "fcGraphicsDevice.h"
 

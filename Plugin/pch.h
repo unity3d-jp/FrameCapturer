@@ -15,6 +15,20 @@
 
 #define fcImpl
 
+#if defined(_WIN32)
+    #define fcWindows
+#elif defined(__APPLE__)
+    #ifdef TARGET_OS_IPHONE
+        #define fciOS
+    #else
+        #define fcMac
+    #endif
+#elif defined(__ANDROID__)
+    #define fcAndroid
+#elif defined(__linux__)
+    #define fcLinux
+#endif
+
 #ifdef _WIN32
     #define fcBreak() DebugBreak()
 #else
@@ -48,3 +62,7 @@
     #define fcSupportOpenH264
     #define fcSupportNVH264
 #endif
+
+//#define fcGIFSplitModule
+#define fcEXRSplitModule
+#define fcMP4SplitModule

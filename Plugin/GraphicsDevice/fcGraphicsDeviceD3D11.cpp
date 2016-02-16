@@ -1,5 +1,4 @@
 ﻿#include "pch.h"
-#include "FrameCapturer.h"
 
 #ifdef fcSupportD3D11
 #include "fcFoundation.h"

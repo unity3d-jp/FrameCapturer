@@ -29,6 +29,8 @@ namespace UTJ
         public Shader m_sh_copy;
 
         fcAPI.fcMP4Context m_ctx;
+        fcAPI.fcMP4Config m_mp4conf = fcAPI.fcMP4Config.default_value;
+
         Material m_mat_copy;
         Mesh m_quad;
         CommandBuffer m_cb;
@@ -36,6 +38,7 @@ namespace UTJ
         Camera m_cam;
         int m_num_video_frame;
         bool m_record = false;
+
 
 
         public override bool recode
@@ -96,24 +99,28 @@ namespace UTJ
             m_scratch_buffer.Create();
 
             m_num_video_frame = 0;
-            fcAPI.fcMP4Config conf = fcAPI.fcMP4Config.default_value;
-            conf.video = m_video;
-            conf.audio = m_audio;
-            conf.video_width = m_scratch_buffer.width;
-            conf.video_height = m_scratch_buffer.height;
-            conf.video_framerate = m_target_frame_rate;
-            conf.video_bitrate = m_video_bitrate;
-            conf.video_max_frame = m_max_frame;
-            conf.video_max_data_size = m_max_data_size;
-            conf.audio_bitrate = m_audio_bitrate;
-            conf.audio_sampling_rate = AudioSettings.outputSampleRate;
+            m_mp4conf = fcAPI.fcMP4Config.default_value;
+            m_mp4conf.video = m_video;
+            m_mp4conf.audio = m_audio;
+            m_mp4conf.video_width = m_scratch_buffer.width;
+            m_mp4conf.video_height = m_scratch_buffer.height;
+            m_mp4conf.video_framerate = m_target_frame_rate;
+            m_mp4conf.video_bitrate = m_video_bitrate;
+            m_mp4conf.video_max_frame = m_max_frame;
+            m_mp4conf.video_max_data_size = m_max_data_size;
+            m_mp4conf.audio_bitrate = m_audio_bitrate;
+            m_mp4conf.audio_sampling_rate = AudioSettings.outputSampleRate;
             switch (AudioSettings.speakerMode)
             {
-                case AudioSpeakerMode.Mono: conf.audio_num_channels = 1; break;
-                case AudioSpeakerMode.Stereo: conf.audio_num_channels = 2; break;
-                    // todo: maybe need more case
+                case AudioSpeakerMode.Mono: m_mp4conf.audio_num_channels = 1; break;
+                case AudioSpeakerMode.Stereo: m_mp4conf.audio_num_channels = 2; break;
+                case AudioSpeakerMode.Quad: m_mp4conf.audio_num_channels = 4; break;
+                case AudioSpeakerMode.Surround: m_mp4conf.audio_num_channels = 5; break;
+                case AudioSpeakerMode.Mode5point1: m_mp4conf.audio_num_channels = 6; break;
+                case AudioSpeakerMode.Mode7point1: m_mp4conf.audio_num_channels = 8; break;
+                case AudioSpeakerMode.Prologic: m_mp4conf.audio_num_channels = 6; break;
             }
-            m_ctx = fcAPI.fcMP4CreateContext(ref conf);
+            m_ctx = fcAPI.fcMP4CreateContext(ref m_mp4conf);
         }
 
         public override void EraseFrame(int begin_frame, int end_frame)
@@ -211,6 +218,11 @@ namespace UTJ
         {
             if (m_record && m_audio)
             {
+                if(channels != m_mp4conf.audio_num_channels) {
+                    Debug.LogError("MP4Capturer: audio channels mismatch!");
+                    return;
+                }
+
                 fcAPI.fcMP4AddAudioSamples(m_ctx, samples, samples.Length);
             }
         }

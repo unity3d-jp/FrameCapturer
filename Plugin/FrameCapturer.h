@@ -1,28 +1,8 @@
 ﻿#ifndef FrameCapturer_h
 #define FrameCapturer_h
 
-//#define fcGIFSplitModule
-#define fcEXRSplitModule
-#define fcMP4SplitModule
-
-
-#if defined(_WIN32)
-    #define fcWindows
-#elif defined(__APPLE__)
-    #ifdef TARGET_OS_IPHONE
-        #define fciOS
-    #else
-        #define fcMac
-    #endif
-#elif defined(__ANDROID__)
-    #define fcAndroid
-#elif defined(__linux__)
-    #define fcLinux
-#endif
-
-
 #define fcCLinkage extern "C"
-#ifdef fcWindows
+#ifdef _WIN32
     #ifndef fcStaticLink
         #ifdef fcImpl
             #define fcExport __declspec(dllexport)
@@ -32,9 +12,9 @@
     #else
         #define fcExport
     #endif
-#else // fcWindows
+#else
     #define fcExport
-#endif // fcWindows
+#endif
 
 
 class fcIGraphicsDevice;
@@ -151,6 +131,14 @@ fcCLinkage fcExport void            fcGifEraseFrame(fcIGifContext *ctx, int begi
 // MP4 Exporter
 // -------------------------------------------------------------
 
+#ifndef fcImpl
+struct fcStream;
+#endif
+fcCLinkage fcExport fcStream*       fcCreateFileStream(const char *path);
+fcCLinkage fcExport fcStream*       fcCreateMemoryStream();
+fcCLinkage fcExport void            fcDestroyStream(fcStream *str);
+
+
 struct fcMP4Config
 {
     bool video;
@@ -182,6 +170,7 @@ fcCLinkage fcExport bool            fcMP4DownloadCodec(fcDownloadCallback cb);
 
 fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
 fcCLinkage fcExport void            fcMP4DestroyContext(fcIMP4Context *ctx);
+fcCLinkage fcExport void            fcMP4AddStream(fcIMP4Context *ctx, fcStream *stream);
 fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex);
 fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixels, fcColorSpace cs = fcColorSpace_RGBA);
 fcCLinkage fcExport bool            fcMP4AddAudioSamples(fcIMP4Context *ctx, const float *samples, int num_samples);
