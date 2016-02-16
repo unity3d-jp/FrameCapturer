@@ -124,7 +124,8 @@ struct fcH264Frame : public fcFrameData
 
 struct fcAACFrame : public fcFrameData
 {
-    std::vector<int> block_sizes;
+    std::vector<int> encoded_block_sizes;
+    std::vector<int> raw_block_sizes;
 
     fcAACFrame()
     {
@@ -135,17 +136,18 @@ struct fcAACFrame : public fcFrameData
     void clear()
     {
         data.clear();
-        block_sizes.clear();
+        encoded_block_sizes.clear();
+        raw_block_sizes.clear();
     }
 
-    // Body: [](const char *data, int block_size) -> void
+    // Body: [](const char *data, int encoded_block_size, int raw_block_size) -> void
     template<class Body>
     void eachBlocks(const Body& body) const
     {
         int total = 0;
-        for (int size : block_sizes) {
-            body(&data[total], size);
-            total += size;
+        for (size_t i = 0; i < encoded_block_sizes.size(); ++i) {
+            body(&data[total], encoded_block_sizes[i], raw_block_sizes[i]);
+            total += encoded_block_sizes[i];
         }
     }
 };

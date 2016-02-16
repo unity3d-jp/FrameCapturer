@@ -87,13 +87,13 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
 
     BinaryStream& os = m_stream;
 
-    fcFrameInfo info;
-    info.file_offset = os.tellp();
-    info.timestamp = frame.timestamp;
 
     // video frame
     if (frame.type == fcFrameType_H264) {
         const auto& h264 = (const fcH264Frame&)frame;
+        fcFrameInfo info;
+        info.file_offset = os.tellp();
+        info.timestamp = frame.timestamp;
 
         if (h264.h264_type == fcH264FrameType_I) {
             m_iframe_ids.push_back((uint32_t)m_video_frame_info.size() + 1);
@@ -124,15 +124,21 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
     else if (frame.type == fcFrameType_AAC) {
         const auto& aac = (const fcAACFrame&)frame;
 
-        aac.eachBlocks([&](const char *data, int size) {
+        u64 timestamp = frame.timestamp;
+        aac.eachBlocks([&](const char *data, int size, int raw_size) {
+            fcFrameInfo info;
+            info.file_offset = os.tellp();
+            info.timestamp = timestamp;
+
             const int offset = 7;
             size -= offset;
 
             os.write(data + offset, size);
             info.size += size;
-        });
+            timestamp += (u64)raw_size * (u64)1000000000 / (u64)m_conf.audio_sample_rate;
 
-        m_audio_frame_info.emplace_back(info);
+            m_audio_frame_info.emplace_back(info);
+        });
     }
 }
 

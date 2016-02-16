@@ -71,19 +71,31 @@ int main(int argc, char** argv)
     conf.audio_sample_rate = SamplingRate;
     conf.audio_num_channels = 1;
     conf.audio_bitrate = 64000;
+
     fcIMP4Context *ctx = fcMP4CreateContext(&conf);
 
-    std::vector<RGBA> video_frame(Width * Height);
-    std::vector<float> audio_sample(SamplingRate / conf.video_framerate);
-    for (int i = 0; i < 300; ++i) {
-        CreateTestVideoData(&video_frame[0], Width, Height, i);
-        fcMP4AddVideoFramePixels(ctx, &video_frame[0]);
 
-        CreateTestAudioData(&audio_sample[0], audio_sample.size(), i);
-        fcMP4AddAudioSamples(ctx, &audio_sample[0], audio_sample.size());
+    std::thread video_thread = std::thread([&]() {
+        std::vector<RGBA> video_frame(Width * Height);
+        for (int i = 0; i < 300; ++i) {
+            CreateTestVideoData(&video_frame[0], Width, Height, i);
+            fcMP4AddVideoFramePixels(ctx, &video_frame[0]);
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000 / conf.video_framerate));
-    }
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000 / conf.video_framerate));
+        }
+    });
+    std::thread audio_thread = std::thread([&]() {
+        std::vector<float> audio_sample(SamplingRate);
+        for (int i = 0; i < 10; ++i) {
+            CreateTestAudioData(&audio_sample[0], audio_sample.size(), i);
+            fcMP4AddAudioSamples(ctx, &audio_sample[0], audio_sample.size());
+
+            std::this_thread::sleep_for(1s);
+        }
+    });
+    video_thread.join();
+    audio_thread.join();
+
     fcMP4WriteFile(ctx, "out.mp4", 0, -1);
 
     fcMP4DestroyContext(ctx);
