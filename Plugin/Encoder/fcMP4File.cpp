@@ -22,6 +22,7 @@ public:
     ~fcMP4Context();
     void release() override;
 
+    void addStream(fcStream *s) override;
     bool addVideoFrameTexture(void *tex, uint64_t timestamp) override;
     bool addVideoFramePixels(void *pixels, fcColorSpace c, uint64_t timestamps) override;
     bool addAudioFrame(const float *samples, int num_samples, uint64_t timestamp) override;
@@ -51,7 +52,15 @@ private:
     void addVideoFrameTask(fcH264Frame& o_fdata, fcVideoFrame &raw_buffer, bool rgba2i420);
     void write(std::ostream& os, int begin_frame, int end_frame);
 
+    template<class Body>
+    void eachStreams(const Body &b)
+    {
+        for (auto& s : m_streams) { b(*s); }
+    }
+
 private:
+    typedef std::unique_ptr<fcMP4StreamWriter> StreamWriterPtr;
+
     fcMP4Config m_conf;
     fcIGraphicsDevice *m_dev;
 
@@ -64,6 +73,7 @@ private:
 
     std::unique_ptr<fcIH264Encoder> m_h264_encoder;
     std::unique_ptr<fcIAACEncoder> m_aac_encoder;
+    std::vector<StreamWriterPtr> m_streams;
     std::unique_ptr<fcMP4Muxer> m_muxer;
 
     std::atomic_int m_video_active_task_count;
@@ -79,10 +89,6 @@ private:
     std::deque<std::function<void()>> m_audio_tasks;
 
     bool m_stop;
-
-    std::fstream m_ofile;
-    StdOStream m_stream;
-    std::unique_ptr<fcMP4StreamWriter> m_writer;
 };
 
 
@@ -93,7 +99,6 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
     , m_video_active_task_count(0)
     , m_audio_active_task_count(0)
     , m_stop(false)
-    , m_stream(m_ofile)
 {
     if (m_conf.video_max_buffers == 0) {
         m_conf.video_max_buffers = fcMP4DefaultMaxBuffers;
@@ -119,8 +124,6 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
     }
 
     m_muxer.reset(new fcMP4Muxer());
-    m_ofile.open("test.mp4", std::ios::out | std::ios::binary);
-    m_writer.reset(new fcMP4StreamWriter(m_stream, m_conf));
 
     resetEncoders();
 }
@@ -139,7 +142,7 @@ fcMP4Context::~fcMP4Context()
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    m_writer.reset();
+    m_streams.clear();
 }
 
 void fcMP4Context::resetEncoders()
@@ -179,9 +182,6 @@ void fcMP4Context::resetEncoders()
         aacconf.target_bitrate = m_conf.audio_bitrate;
 
         m_aac_encoder.reset(fcCreateFAACEncoder(aacconf));
-        if (m_aac_encoder && m_writer) {
-            m_writer->setAACHeader(m_aac_encoder->getHeader());
-        }
     }
 }
 
@@ -308,6 +308,16 @@ void fcMP4Context::release()
     delete this;
 }
 
+void fcMP4Context::addStream(fcStream *s)
+{
+    auto writer =new fcMP4StreamWriter(*s, m_conf);
+    if (m_aac_encoder) {
+        writer->setAACHeader(m_aac_encoder->getHeader());
+    }
+    m_streams.emplace_back(StreamWriterPtr(writer));
+}
+
+
 void fcMP4Context::scrape(bool updating)
 {
     // 最大容量か最大フレーム数が設定されている場合、それらを超過したフレームをここで切り捨てる。
@@ -340,9 +350,7 @@ void fcMP4Context::addVideoFrameTask(fcH264Frame& h264, fcVideoFrame &raw, bool 
     m_h264_encoder->encode(h264, raw.i420, raw.timestamp);
     h264.timestamp = raw.timestamp;
 
-    if (m_writer) {
-        m_writer->addFrame(h264);
-    }
+    eachStreams([&](auto& s) { s.addFrame(h264); });
 }
 
 
@@ -441,9 +449,7 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, uint64_t
         m_aac_encoder->encode(aac, (float*)raw.data.ptr(), raw.data.size() / sizeof(float));
         aac.timestamp = raw.timestamp;
 
-        if (m_writer) {
-            m_writer->addFrame(aac);
-        }
+        eachStreams([&](auto& s) { s.addFrame(aac); });
 
         returnTempraryAudioFrame(raw);
         --m_audio_active_task_count;

@@ -136,7 +136,7 @@ struct fcStream;
 #endif
 fcCLinkage fcExport fcStream*       fcCreateFileStream(const char *path);
 fcCLinkage fcExport fcStream*       fcCreateMemoryStream();
-fcCLinkage fcExport void            fcDestroyStream(fcStream *str);
+fcCLinkage fcExport void            fcDestroyStream(fcStream *s);
 
 
 struct fcMP4Config

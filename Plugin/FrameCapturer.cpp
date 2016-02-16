@@ -188,6 +188,21 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
 // MP4 Exporter
 // -------------------------------------------------------------
 
+
+fcCLinkage fcExport fcStream* fcCreateFileStream(const char *path)
+{
+    return new StdIOStream(new std::fstream(path, std::ios::binary | std::ios::out), true);
+}
+fcCLinkage fcExport fcStream* fcCreateMemoryStream()
+{
+    return new BufferStream(new Buffer(), true);
+}
+fcCLinkage fcExport void fcDestroyStream(fcStream *s)
+{
+    delete s;
+}
+
+
 #ifdef fcSupportMP4
 #include "Encoder/fcMP4File.h"
 
@@ -249,6 +264,12 @@ fcCLinkage fcExport void fcMP4DestroyContext(fcIMP4Context *ctx)
 {
     if (!ctx) { return; }
     ctx->release();
+}
+
+fcCLinkage fcExport void fcMP4AddStream(fcIMP4Context *ctx, fcStream *stream)
+{
+    if (!ctx) { return; }
+    ctx->addStream(stream);
 }
 
 fcCLinkage fcExport bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex)
