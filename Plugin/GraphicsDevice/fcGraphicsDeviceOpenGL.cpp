@@ -1,5 +1,4 @@
 ﻿#include "pch.h"
-#include "FrameCapturer.h"
 
 #ifdef fcSupportOpenGL
 #include "fcFoundation.h"

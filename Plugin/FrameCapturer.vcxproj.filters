@@ -33,7 +33,6 @@
     <ClInclude Include="Encoder\fcGifFile.h">
       <Filter>Encoder</Filter>
     </ClInclude>
-    <ClInclude Include="fcFoundation.h" />
     <ClInclude Include="Foundation\Misc.h">
       <Filter>Foundation</Filter>
     </ClInclude>

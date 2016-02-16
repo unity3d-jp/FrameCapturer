@@ -1,5 +1,4 @@
 ﻿#include "pch.h"
-#include "FrameCapturer.h"
 
 #include <half.h>
 #include <ImfRgbaFile.h>

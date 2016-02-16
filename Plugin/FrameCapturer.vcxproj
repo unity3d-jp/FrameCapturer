@@ -46,7 +46,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Encoder\fcGifFile.h" />
-    <ClInclude Include="fcFoundation.h" />
     <ClInclude Include="fcThreadPool.h" />
     <ClInclude Include="Foundation\fcFoundation.h" />
     <ClInclude Include="Foundation\Misc.h" />

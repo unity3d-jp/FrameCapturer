@@ -1,17 +1,12 @@
 ﻿#include "pch.h"
-#include <fstream>
-#include "lsmash/lsmash.h"
-#include "lsmash/importer.h"
-#include "fcFoundation.h"
+#include <lsmash/lsmash.h>
+#include <lsmash/importer.h>
+#include "fcMP4Internal.h"
 #include "fcMP4Muxer.h"
-
 
 #ifdef fcWindows
     #pragma comment(lib, "liblsmash.lib")
-#else 
 #endif
-
-
 
 
 

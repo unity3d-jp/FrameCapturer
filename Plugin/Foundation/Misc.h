@@ -1,8 +1,6 @@
 ﻿#ifndef fcMisc_h
 #define fcMisc_h
 
-#include "FrameCapturer.h"
-
 #ifdef fcWindows
     #define fcDLLExt ".dll"
 #else 
@@ -103,6 +101,9 @@ inline IntType ceildiv(IntType a, IntType b)
     return a / b + (a%b == 0 ? 0 : 1);
 }
 
+
+enum fcTextureFormat;
+enum fcPixelFormat;
 
 int fcGetPixelSize(fcTextureFormat format);
 int fcGetPixelSize(fcPixelFormat format);

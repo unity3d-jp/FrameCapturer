@@ -1,4 +1,5 @@
-﻿#ifdef fcSupportGIF
+﻿#ifndef fcGifFile_h
+#define fcGifFile_h
 
 class fcIGifContext
 {
@@ -20,4 +21,4 @@ protected:
 };
 typedef fcIGifContext* (*fcGifCreateContextImplT)(fcGifConfig &conf, fcIGraphicsDevice*);
 
-#endif // fcSupportGIF
+#endif // fcGifFile_h

@@ -1,8 +1,7 @@
 #ifndef fcMP4Internal_h
 #define fcMP4Internal_h
 
-#include "Misc.h"
-#include "Buffer.h"
+#include "fcFoundation.h"
 
 struct fcI420Image
 {

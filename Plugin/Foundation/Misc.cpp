@@ -1,6 +1,5 @@
 #include "pch.h"
-#include "FrameCapturer.h"
-#include "Misc.h"
+#include "fcFoundation.h"
 
 #ifdef fcWindows
     #include <windows.h>

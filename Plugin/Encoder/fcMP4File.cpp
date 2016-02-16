@@ -1,16 +1,13 @@
 ﻿#include "pch.h"
-#include "FrameCapturer.h"
-
 #include <libyuv/libyuv.h>
-#include "fcFoundation.h"
 #include "fcThreadPool.h"
-#include "GraphicsDevice/fcGraphicsDevice.h"
 #include "fcMP4Internal.h"
 #include "fcMP4File.h"
 #include "fcH264Encoder.h"
 #include "fcAACEncoder.h"
 #include "fcMP4Muxer.h"
 #include "fcMP4StreamWriter.h"
+#include "GraphicsDevice/fcGraphicsDevice.h"
 #ifdef fcWindows
     #pragma comment(lib, "yuv.lib")
 #endif

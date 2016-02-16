@@ -1,7 +1,4 @@
 ﻿#include "pch.h"
-#include "FrameCapturer.h"
-
-#ifdef fcSupportGIF
 #include "fcFoundation.h"
 #include "fcThreadPool.h"
 #include "GraphicsDevice/fcGraphicsDevice.h"
@@ -311,4 +308,3 @@ fcCLinkage fcExport fcIGifContext* fcGifCreateContextImpl(fcGifConfig &conf, fcI
 {
     return new fcGifContext(conf, dev);
 }
-#endif // fcSupportGIF

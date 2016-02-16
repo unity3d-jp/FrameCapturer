@@ -1,5 +1,7 @@
 #include "pch.h"
-#define CURL_STATICLIB
+#ifdef fcWindows
+    #define CURL_STATICLIB
+#endif
 #include <curl/curl.h>
 #include "Misc.h"
 
