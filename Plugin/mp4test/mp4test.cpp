@@ -39,7 +39,7 @@ void CreateTestVideoData(RGBA *rgba, int width, int height, int scroll)
 void CreateTestAudioData(float *samples, int num_samples, int scroll)
 {
     for (int i = 0; i < num_samples; ++i) {
-        samples[i] = std::sin((float(i + (num_samples * scroll)) * 1.5f) * (3.14159f / 180.0f)) * 32767.0f;
+        samples[i] = std::sin((float(i + (num_samples * scroll)) * 0.5f) * (3.14159f / 180.0f)) * 32767.0f;
     }
 }
 
@@ -75,7 +75,7 @@ int main(int argc, char** argv)
 
     std::vector<RGBA> video_frame(Width * Height);
     std::vector<float> audio_sample(SamplingRate / conf.video_framerate);
-    for (int i = 0; i < 90; ++i) {
+    for (int i = 0; i < 300; ++i) {
         CreateTestVideoData(&video_frame[0], Width, Height, i);
         fcMP4AddVideoFramePixels(ctx, &video_frame[0]);
 
