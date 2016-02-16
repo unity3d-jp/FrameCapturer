@@ -150,10 +150,10 @@ void fcMP4StreamWriter::mp4End()
 
     const fcMP4Config& c = m_conf;
     const u32 ctime = (u32)fcGetMacTime();
-    const u32 video_unit_duration = 1000; // millisec
-    const u32 audio_unit_duration = 1000; // millisec
+    const u32 unit_duration = 1000; // millisec
     u32 video_duration = 0;
     u32 audio_duration = 0;
+    u32 duration = 0;
 
     std::vector<fcSampleToChunk> video_samples_to_chunk;
     std::vector<fcSampleToChunk> audio_samples_to_chunk;
@@ -162,6 +162,7 @@ void fcMP4StreamWriter::mp4End()
     std::vector<u64> video_chunks;
     std::vector<u64> audio_chunks;
 
+    // there must be at least 1 I-frame
     if (m_iframe_ids.empty()) {
         m_iframe_ids.push_back(1);
     }
@@ -169,7 +170,7 @@ void fcMP4StreamWriter::mp4End()
     // compute decode times
     auto compute_decode_times = [](
         std::vector<fcFrameInfo>& frame_info,
-        std::vector<fcOffsetValue>& decode_times) -> u32
+        std::vector<fcOffsetValue>& decode_times) -> u32 // return duration in millisec
     {
         u32 total_duration_ms = 0;
         for (size_t i = 1; i < frame_info.size(); ++i) {
@@ -192,7 +193,7 @@ void fcMP4StreamWriter::mp4End()
     };
     video_duration = compute_decode_times(m_video_frame_info, video_decode_times);
     audio_duration = compute_decode_times(m_audio_frame_info, audio_decode_times);
-
+    duration = std::max<u32>(video_duration, audio_duration);
 
     // compute chunk data
     auto compute_chunk_data = [](
@@ -242,8 +243,8 @@ void fcMP4StreamWriter::mp4End()
             bs << u32(0);                       // version and flags (none)
             bs << u32_be(ctime);                // creation time
             bs << u32_be(ctime);                // modified time
-            bs << u32_be(video_unit_duration);  // time base (milliseconds = 1000)
-            bs << u32_be(video_duration);       // duration (in time base units)
+            bs << u32_be(unit_duration);        // time base (milliseconds = 1000)
+            bs << u32_be(duration);             // duration (in time base units)
             bs << u32_be(0x00010000);           // fixed point playback speed 1.0
             bs << u16_be(0x0100);               // fixed point vol 1.0
             bs << u64(0);                       // reserved (10 bytes)
@@ -316,7 +317,7 @@ void fcMP4StreamWriter::mp4End()
                         bs << u32_be(ctime);                // creation time
                         bs << u32_be(ctime);                // modified time
                         bs << u32_be(c.audio_sample_rate);  // time scale
-                        bs << u32_be(audio_unit_duration);
+                        bs << u32_be(unit_duration);
                         bs << u32_be(0x55C40000);
                     }); // mdhd
                     box(u32_be('hdlr'), [&]() {
@@ -371,7 +372,7 @@ void fcMP4StreamWriter::mp4End()
                                 bs << u32(0);   // version and flags (none)
                                 bs << u32_be(audio_decode_times.size());
                                 for (auto& v : audio_decode_times) {
-                                    bs << u32_be(v.count) << u32_be(v.value);
+                                    bs << u32_be(v.count) << u32_be(v.value * c.audio_sample_rate / unit_duration);
                                 }
                             });
 
@@ -448,7 +449,7 @@ void fcMP4StreamWriter::mp4End()
                         bs << u32(0);           // version and flags (none)
                         bs << u32_be(ctime);    // creation time
                         bs << u32_be(ctime);    // modified time
-                        bs << u32_be(video_unit_duration);  // time scale
+                        bs << u32_be(unit_duration);  // time scale
                         bs << u32_be(video_duration);
                         bs << u32_be(0x55c40000);
                     }); // mdhd
