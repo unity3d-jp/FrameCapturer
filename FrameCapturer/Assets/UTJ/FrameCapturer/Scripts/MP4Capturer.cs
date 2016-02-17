@@ -23,6 +23,8 @@ namespace UTJ
         public int m_audio_bitrate = 64000;
         public Shader m_sh_copy;
 
+        string m_output_dir;
+        string m_output_file;
         fcAPI.fcMP4Context m_ctx;
         fcAPI.fcMP4Config m_mp4conf = fcAPI.fcMP4Config.default_value;
         fcAPI.fcStream m_ostream;
@@ -37,7 +39,7 @@ namespace UTJ
 
 
 
-        public override bool recode
+        public override bool record
         {
             get { return m_record; }
             set
@@ -50,7 +52,9 @@ namespace UTJ
             }
         }
 
+        public override string GetOutputPath() { return m_output_file; }
         public override RenderTexture GetScratchBuffer() { return m_scratch_buffer; }
+        public override int GetFrameCount() { return m_num_video_frame; }
 
         public override void ResetRecordingState()
         {
@@ -93,8 +97,8 @@ namespace UTJ
             m_ctx = fcAPI.fcMP4CreateContext(ref m_mp4conf);
 
 
-            string path = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
-            m_ostream = fcAPI.fcCreateFileStream(path);
+            m_output_file = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
+            m_ostream = fcAPI.fcCreateFileStream(m_output_file);
             fcAPI.fcMP4AddOutputStream(m_ctx, m_ostream);
         }
 
@@ -103,7 +107,7 @@ namespace UTJ
 #if UNITY_EDITOR
         void Reset()
         {
-            m_sh_copy = AssetDatabase.LoadAssetAtPath("Assets/FrameCapturer/Shaders/CopyFrameBuffer.shader", typeof(Shader)) as Shader;
+            m_sh_copy = FrameCapturerUtils.GetFrameBufferCopyShader();
         }
 #endif // UNITY_EDITOR
 
