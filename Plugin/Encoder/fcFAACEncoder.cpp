@@ -1,9 +1,11 @@
 ﻿#include "pch.h"
-#include <libfaac/faac.h>
 #include "fcFoundation.h"
 #include "fcMP4Internal.h"
 #include "fcAACEncoder.h"
 
+#ifdef fcSupportFAAC
+
+#include <libfaac/faac.h>
 #define FAACDLL "libfaac" fcDLLExt
 
 class fcFAACEncoder : public fcIAACEncoder
@@ -12,7 +14,7 @@ public:
     fcFAACEncoder(const fcAACEncoderConfig& conf);
     ~fcFAACEncoder() override;
     const char* getEncoderName() override;
-    const Buffer& getHeader() override;
+    const Buffer& getEncoderInfo() override;
     bool encode(fcAACFrame& dst, const float *samples, int num_samples) override;
 
 private:
@@ -68,26 +70,6 @@ module_t g_mod_faac;
 
 } // namespace
 
-bool fcLoadFAACModule()
-{
-    if (g_mod_faac != nullptr) { return true; }
-
-    g_mod_faac = DLLLoad(FAACDLL);
-    if (g_mod_faac == nullptr) { return false; }
-
-#define imp(name) (void*&)name##_i = DLLGetSymbol(g_mod_faac, #name);
-    EachFAACFunctions(imp)
-#undef imp
-    return true;
-}
-
-
-fcIAACEncoder* fcCreateFAACEncoder(const fcAACEncoderConfig& conf)
-{
-    if (!fcLoadFAACModule()) { return nullptr; }
-    return new fcFAACEncoder(conf);
-}
-
 fcFAACEncoder::fcFAACEncoder(const fcAACEncoderConfig& conf)
     : m_conf(conf), m_handle(nullptr), m_num_read_samples(), m_output_size()
 {
@@ -133,7 +115,7 @@ bool fcFAACEncoder::encode(fcAACFrame& dst, const float *samples, int num_sample
     return true;
 }
 
-const Buffer& fcFAACEncoder::getHeader()
+const Buffer& fcFAACEncoder::getEncoderInfo()
 {
     if (m_aac_header.empty()) {
         unsigned char *buf;
@@ -144,3 +126,38 @@ const Buffer& fcFAACEncoder::getHeader()
     }
     return m_aac_header;
 }
+
+
+bool fcLoadFAACModule()
+{
+    if (g_mod_faac != nullptr) { return true; }
+
+    g_mod_faac = DLLLoad(FAACDLL);
+    if (g_mod_faac == nullptr) { return false; }
+
+#define imp(name) (void*&)name##_i = DLLGetSymbol(g_mod_faac, #name);
+    EachFAACFunctions(imp)
+#undef imp
+    return true;
+}
+
+
+fcIAACEncoder* fcCreateFAACEncoder(const fcAACEncoderConfig& conf)
+{
+    if (!fcLoadFAACModule()) { return nullptr; }
+    return new fcFAACEncoder(conf);
+}
+
+#else  // fcSupportFAAC
+
+bool fcLoadFAACModule()
+{
+    return false;
+}
+
+fcIAACEncoder* fcCreateFAACEncoder(const fcAACEncoderConfig& conf)
+{
+    return nullptr;
+}
+
+#endif // fcSupportFAAC

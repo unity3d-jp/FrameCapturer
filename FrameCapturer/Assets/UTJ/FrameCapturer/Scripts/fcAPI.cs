@@ -37,7 +37,6 @@ namespace UTJ
         // -------------------------------------------------------------
 
         [DllImport ("FrameCapturer")] public static extern void     fcSetModulePath(string path);
-        [DllImport ("FrameCapturer")] public static extern ulong    fcMakeTimestamp();
         [DllImport ("FrameCapturer")] public static extern ulong    fcSecondsToTimestamp(double sec);
 
 

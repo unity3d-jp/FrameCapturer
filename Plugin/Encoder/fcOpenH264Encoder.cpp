@@ -1,10 +1,10 @@
 ﻿#include "pch.h"
-#include <openh264/codec_api.h>
-#include <libyuv/libyuv.h>
 #include "fcMP4Internal.h"
 #include "fcH264Encoder.h"
 
 #ifdef fcSupportOpenH264
+
+#include <openh264/codec_api.h>
 
 #define OpenH264Version "1.5.0"
 #ifdef fcWindows

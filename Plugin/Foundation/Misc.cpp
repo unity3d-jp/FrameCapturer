@@ -7,6 +7,31 @@
     #include <dlfcn.h>
 #endif
 
+
+void DebugLogImpl(const char* fmt, ...)
+{
+#ifdef fcWindows
+
+    char buf[2048];
+    va_list vl;
+    va_start(vl, fmt);
+    vsprintf(buf, fmt, vl);
+    ::OutputDebugStringA(buf);
+    va_end(vl);
+
+#else // fcWindows
+
+    char buf[2048];
+    va_list vl;
+    va_start(vl, fmt);
+    vprintf(fmt, vl);
+    va_end(vl);
+
+#endif // fcWindows
+}
+
+
+
 #ifdef fcWindows
 
 module_t DLLLoad(const char *path) { return ::LoadLibraryA(path); }

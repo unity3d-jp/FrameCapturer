@@ -21,7 +21,7 @@ private:
     std::vector<u8> m_pps;
     std::vector<u8> m_sps;
     std::vector<u32> m_iframe_ids;
-    std::vector<u8> m_audio_header;
+    std::vector<u8> m_audio_encoder_info;
 
     size_t m_mdat_begin;
 };
