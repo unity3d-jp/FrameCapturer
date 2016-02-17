@@ -137,7 +137,7 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
     }
 }
 
-void fcMP4StreamWriter::setAACHeader(const Buffer& aacheader)
+void fcMP4StreamWriter::setAACEncoderInfo(const Buffer& aacheader)
 {
     u8 *ptr = (u8*)aacheader.ptr();
     m_audio_encoder_info.assign(ptr, ptr + aacheader.size());

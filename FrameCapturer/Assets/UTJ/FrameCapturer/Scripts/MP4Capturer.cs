@@ -19,13 +19,8 @@ namespace UTJ
         public bool m_audio = true;
         public int m_resolution_width = 300;
         public int m_capture_every_nth_frames = 2;
-        public int m_target_frame_rate = 30;
-        public int m_max_frame = 1800;
-        public int m_keyframe = 60;
         public int m_video_bitrate = 1024000;
         public int m_audio_bitrate = 64000;
-        public int m_max_data_size = 0;
-        public int m_max_active_tasks = 0;
         public Shader m_sh_copy;
 
         fcAPI.fcMP4Context m_ctx;
@@ -81,10 +76,8 @@ namespace UTJ
             m_mp4conf.audio = m_audio;
             m_mp4conf.video_width = m_scratch_buffer.width;
             m_mp4conf.video_height = m_scratch_buffer.height;
-            m_mp4conf.video_framerate = m_target_frame_rate;
+            m_mp4conf.video_max_framerate = 60;
             m_mp4conf.video_bitrate = m_video_bitrate;
-            m_mp4conf.video_max_frame = m_max_frame;
-            m_mp4conf.video_max_data_size = m_max_data_size;
             m_mp4conf.audio_bitrate = m_audio_bitrate;
             m_mp4conf.audio_sampling_rate = AudioSettings.outputSampleRate;
             switch (AudioSettings.speakerMode)

@@ -308,4 +308,71 @@ protected:
 };
 
 
+
+typedef size_t (*tellg_t)(void *obj);
+typedef void   (*seekg_t)(void *obj, size_t pos);
+typedef size_t (*read_t)(void *obj, void *dst, size_t len);
+
+typedef size_t (*tellp_t)(void *obj);
+typedef void   (*seekp_t)(void *obj, size_t pos);
+typedef size_t (*write_t)(void *obj, const void *data, size_t len);
+
+struct CustomStreamData
+{
+    void *obj;
+    tellg_t tellg;
+    seekg_t seekg;
+    read_t  read;
+    tellp_t tellp;
+    seekp_t seekp;
+    write_t write;
+
+    CustomStreamData()
+        : obj()
+        , tellg(), seekg(), read()
+        , tellp(), seekp(), write()
+    {}
+};
+
+class CustomStream : public BinaryStream
+{
+public:
+    CustomStream(const CustomStreamData& csd) : m_csd(csd) {}
+
+    size_t tellg() override
+    {
+        return m_csd.tellg(m_csd.obj);
+    }
+
+    void seekg(size_t pos) override
+    {
+        return m_csd.seekg(m_csd.obj, pos);
+    }
+
+    size_t read(void *dst, size_t len) override
+    {
+        return m_csd.read(m_csd.obj, dst, len);
+    }
+
+
+    size_t tellp() override
+    {
+        return m_csd.tellp(m_csd.obj);
+    }
+
+    void seekp(size_t pos) override
+    {
+        return m_csd.seekp(m_csd.obj, pos);
+    }
+
+    size_t write(const void *data, size_t len) override
+    {
+        return m_csd.write(m_csd.obj, data, len);
+    }
+
+private:
+    CustomStreamData m_csd;
+};
+
+
 #endif // fcBuffer_h

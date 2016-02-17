@@ -135,33 +135,35 @@ fcCLinkage fcExport void            fcGifEraseFrame(fcIGifContext *ctx, int begi
 #ifndef fcImpl
 struct fcStream;
 #endif
+typedef size_t (*fcTellp_t)(void *obj);
+typedef void   (*fcSeekp_t)(void *obj, size_t pos);
+typedef size_t (*fcWrite_t)(void *obj, const void *data, size_t len);
+
 fcCLinkage fcExport fcStream*       fcCreateFileStream(const char *path);
 fcCLinkage fcExport fcStream*       fcCreateMemoryStream();
+fcCLinkage fcExport fcStream*       fcCreateCustomStream(void *obj, fcTellp_t tellp, fcSeekp_t seekp, fcWrite_t write);
 fcCLinkage fcExport void            fcDestroyStream(fcStream *s);
 
 struct fcMP4Config
 {
-    bool video;
-    bool audio;
-    bool video_use_hardware_encoder_if_possible;
-    int video_width;
-    int video_height;
-    int video_bitrate;
-    int video_framerate;
-    int video_max_buffers;
-    int video_max_frame;
-    int video_max_data_size;
-    float audio_scale;
-    int audio_sample_rate;
-    int audio_num_channels;
-    int audio_bitrate;
+    bool    video;
+    bool    audio;
+    bool    video_use_hardware_encoder_if_possible;
+    int     video_width;
+    int     video_height;
+    int     video_bitrate;
+    int     video_max_framerate;
+    int     video_max_buffers;
+    float   audio_scale;
+    int     audio_sample_rate;
+    int     audio_num_channels;
+    int     audio_bitrate;
 
     fcMP4Config()
-        : video(true), audio(false)
+        : video(true), audio(true)
         , video_use_hardware_encoder_if_possible(true)
         , video_width(320), video_height(240)
-        , video_bitrate(256000), video_framerate(30)
-        , video_max_buffers(8), video_max_frame(0), video_max_data_size(0)
+        , video_bitrate(256000), video_max_framerate(60), video_max_buffers(8)
         , audio_scale(1.0f), audio_sample_rate(48000), audio_num_channels(2), audio_bitrate(64000)
     {}
 };

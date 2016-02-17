@@ -165,7 +165,7 @@ void fcMP4Context::resetEncoders()
         fcH264EncoderConfig h264conf;
         h264conf.width = m_conf.video_width;
         h264conf.height = m_conf.video_height;
-        h264conf.target_framerate = m_conf.video_framerate;
+        h264conf.max_framerate = m_conf.video_max_framerate;
         h264conf.target_bitrate = m_conf.video_bitrate;
 
         fcIH264Encoder *enc = nullptr;
@@ -322,7 +322,7 @@ void fcMP4Context::addOutputStream(fcStream *s)
 {
     auto writer =new fcMP4StreamWriter(*s, m_conf);
     if (m_aac_encoder) {
-        writer->setAACHeader(m_aac_encoder->getEncoderInfo());
+        writer->setAACEncoderInfo(m_aac_encoder->getEncoderInfo());
     }
     m_streams.emplace_back(StreamWriterPtr(writer));
 }
