@@ -188,10 +188,14 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
 // MP4 Exporter
 // -------------------------------------------------------------
 
+fcTimestamp fcGetTime()
+{
+    return GetCurrentTimeNanosec();
+}
 
 fcCLinkage fcExport fcStream* fcCreateFileStream(const char *path)
 {
-    return new StdIOStream(new std::fstream(path, std::ios::binary | std::ios::out), true);
+    return new StdIOStream(new std::fstream(path, std::ios::binary | std::ios::in | std::ios::out | std::ios::trunc), true);
 }
 fcCLinkage fcExport fcStream* fcCreateMemoryStream()
 {
@@ -272,22 +276,22 @@ fcCLinkage fcExport void fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stre
     ctx->addOutputStream(stream);
 }
 
-fcCLinkage fcExport bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex)
+fcCLinkage fcExport bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcTimestamp t)
 {
     if (!ctx) { return false; }
-    return ctx->addVideoFrameTexture(tex);
+    return ctx->addVideoFrameTexture(tex, t);
 }
 
-fcCLinkage fcExport bool fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixels, fcColorSpace cs)
+fcCLinkage fcExport bool fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixels, fcColorSpace cs, fcTimestamp t)
 {
     if (!ctx) { return false; }
-    return ctx->addVideoFramePixels(pixels, cs);
+    return ctx->addVideoFramePixels(pixels, cs, t);
 }
 
-fcCLinkage fcExport bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples)
+fcCLinkage fcExport bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTimestamp t)
 {
     if (!ctx) { return false; }
-    return ctx->addAudioFrame(samples, num_samples);
+    return ctx->addAudioFrame(samples, num_samples, t);
 }
 #endif // fcSupportMP4
 

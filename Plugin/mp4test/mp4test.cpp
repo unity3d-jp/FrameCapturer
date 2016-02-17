@@ -79,20 +79,20 @@ int main(int argc, char** argv)
 
     std::thread video_thread = std::thread([&]() {
         std::vector<RGBA> video_frame(Width * Height);
+        fcTimestamp t = 0;
         for (int i = 0; i < 300; ++i) {
             CreateTestVideoData(&video_frame[0], Width, Height, i);
-            fcMP4AddVideoFramePixels(ctx, &video_frame[0]);
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000 / conf.video_framerate));
+            fcMP4AddVideoFramePixels(ctx, &video_frame[0], fcColorSpace_RGBA, t);
+            t += 1000000000LLU / conf.video_framerate;
         }
     });
     std::thread audio_thread = std::thread([&]() {
         std::vector<float> audio_sample(SamplingRate);
+        fcTimestamp t = 0;
         for (int i = 0; i < 10; ++i) {
             CreateTestAudioData(&audio_sample[0], audio_sample.size(), i);
-            fcMP4AddAudioFrame(ctx, &audio_sample[0], audio_sample.size());
-
-            std::this_thread::sleep_for(1s);
+            fcMP4AddAudioFrame(ctx, &audio_sample[0], audio_sample.size(), t);
+            t += 1000000000LLU;
         }
     });
     video_thread.join();

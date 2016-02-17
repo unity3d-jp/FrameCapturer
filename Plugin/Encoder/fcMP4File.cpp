@@ -22,9 +22,9 @@ public:
     void release() override;
 
     void addOutputStream(fcStream *s) override;
-    bool addVideoFrameTexture(void *tex, uint64_t timestamp) override;
-    bool addVideoFramePixels(void *pixels, fcColorSpace c, uint64_t timestamps) override;
-    bool addAudioFrame(const float *samples, int num_samples, uint64_t timestamp) override;
+    bool addVideoFrameTexture(void *tex, fcTimestamp timestamp) override;
+    bool addVideoFramePixels(void *pixels, fcColorSpace c, fcTimestamp timestamps) override;
+    bool addAudioFrame(const float *samples, int num_samples, fcTimestamp timestamp) override;
 
 private:
     typedef std::pair<fcVideoFrame, fcH264Frame> VideoFrame;
@@ -359,14 +359,14 @@ void fcMP4Context::encodeVideoFrame(VideoFrame& vf, bool rgba2i420)
 }
 
 
-bool fcMP4Context::addVideoFrameTexture(void *tex, uint64_t timestamp)
+bool fcMP4Context::addVideoFrameTexture(void *tex, fcTimestamp timestamp)
 {
     if (!m_h264_encoder) { return false; }
 
     VideoFrame& vf = getTempraryVideoFrame();
     auto& raw = vf.first;
     auto& h264 = vf.second;
-    raw.timestamp = timestamp!=0 ? timestamp : GetCurrentTimeNanosec();
+    raw.timestamp = timestamp != -1 ? timestamp : GetCurrentTimeNanosec();
 
     // フレームバッファの内容取得
     if (!m_dev->readTexture(&raw.rgba[0], raw.rgba.size(), tex, m_conf.video_width, m_conf.video_height, fcTextureFormat_ARGB32))
@@ -386,14 +386,14 @@ bool fcMP4Context::addVideoFrameTexture(void *tex, uint64_t timestamp)
     return true;
 }
 
-bool fcMP4Context::addVideoFramePixels(void *pixels, fcColorSpace cs, uint64_t timestamp)
+bool fcMP4Context::addVideoFramePixels(void *pixels, fcColorSpace cs, fcTimestamp timestamp)
 {
     if (!m_h264_encoder) { return false; }
 
     VideoFrame& vf = getTempraryVideoFrame();
     auto& raw = vf.first;
     auto& h264 = vf.second;
-    raw.timestamp = timestamp != 0 ? timestamp : GetCurrentTimeNanosec();
+    raw.timestamp = timestamp != -1 ? timestamp : GetCurrentTimeNanosec();
 
     bool rgba2i420 = true;
     if (cs == fcColorSpace_RGBA) {
@@ -422,14 +422,14 @@ bool fcMP4Context::addVideoFramePixels(void *pixels, fcColorSpace cs, uint64_t t
     return true;
 }
 
-bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, uint64_t timestamp)
+bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, fcTimestamp timestamp)
 {
     if (!m_aac_encoder) { return false; }
 
     AudioFrame& af = getTempraryAudioFrame();
     auto& raw = af.first;
     auto& aac = af.second;
-    raw.timestamp = timestamp != 0 ? timestamp : GetCurrentTimeNanosec();
+    raw.timestamp = timestamp != -1 ? timestamp : GetCurrentTimeNanosec();
     raw.data = Buffer(samples, sizeof(float)*num_samples);
 
     // aac encode
