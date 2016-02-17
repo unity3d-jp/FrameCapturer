@@ -56,10 +56,17 @@ namespace UTJ
         public override RenderTexture GetScratchBuffer() { return m_scratch_buffer; }
         public override int GetFrameCount() { return m_num_video_frame; }
 
-        public override void ResetRecordingState()
+        public override void FlushMP4()
         {
             fcAPI.fcMP4DestroyContext(m_ctx);
             fcAPI.fcDestroyStream(m_ostream);
+            m_ctx.ptr = IntPtr.Zero;
+            m_ostream.ptr = IntPtr.Zero;
+        }
+
+        public override void ResetRecordingState()
+        {
+            FlushMP4();
 
             m_ctx.ptr = IntPtr.Zero;
             if (m_scratch_buffer != null)
