@@ -9,14 +9,14 @@ public:
     virtual void addOutputStream(fcStream *s) = 0;
 
     // assume texture format is RGBA8.
-    // timestamp=0 is treated as current time.
+    // timestamp=-1 is treated as current time.
     virtual bool    addVideoFrameTexture(void *tex, fcTime timestamp = 0) = 0;
 
     // assume pixel format is RGBA8 or I420 (color_space indicates)
-    // timestamp=0 is treated as current time.
-    virtual bool    addVideoFramePixels(void *pixels, fcColorSpace color_space, fcTime timestamp = -1) = 0;
+    // timestamp=-1 is treated as current time.
+    virtual bool    addVideoFramePixels(const void *pixels, fcColorSpace color_space, fcTime timestamp = -1) = 0;
 
-    // timestamp=0 is treated as current time.
+    // timestamp=-1 is treated as current time.
     virtual bool    addAudioFrame(const float *samples, int num_samples, fcTime timestamp = -1) = 0;
 
 protected:

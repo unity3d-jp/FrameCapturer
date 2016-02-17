@@ -80,8 +80,8 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
 {
     if (frame.data.empty()) { return; }
 
+    std::unique_lock<std::mutex> lock(m_mutex);
     BinaryStream& os = m_stream;
-
 
     // video frame
     if (frame.type == fcFrameType_H264) {

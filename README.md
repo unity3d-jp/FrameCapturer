@@ -134,8 +134,9 @@ Channel は何番目のチャンネルかを指定するもので、0,1,2,3 が�
   - FAAC http://www.audiocoding.com/faac.html  
   - libcurl (OpenH264 ダウンローダに使用) http://curl.haxx.se/libcurl/
   - bzip2 (OpenH264 ダウンローダに使用) http://www.bzip.org/
-- exr エクスポートに OpenEXR を使用しています。  
-  - http://www.openexr.com/  
+- exr エクスポート以下のライブラリ群を使用しています。
+  - OpenEXR http://www.openexr.com/  
+  - ZLib http://www.zlib.net/  
 - Twitter への投稿に TweetMedia を使用しています。  
   - https://github.com/unity3d-jp/TweetMedia
 
