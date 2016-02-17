@@ -79,13 +79,15 @@ int main(int argc, char** argv)
     conf.audio_bitrate = 64000;
 
 
-    fcStream* fos = fcCreateFileStream("file_stream.mp4");
+    fcStream* fstream = fcCreateFileStream("file_stream.mp4");
+    fcStream* mstream = fcCreateMemoryStream();
     FILE *ofile = fopen("custom_stream.mp4", "wb");
-    fcStream* cos = fcCreateCustomStream(ofile, &tellp, &seekp, &write);
+    fcStream* cstream = fcCreateCustomStream(ofile, &tellp, &seekp, &write);
 
     fcIMP4Context *ctx = fcMP4CreateContext(&conf);
-    fcMP4AddOutputStream(ctx, fos);
-    fcMP4AddOutputStream(ctx, cos);
+    fcMP4AddOutputStream(ctx, fstream);
+    fcMP4AddOutputStream(ctx, mstream);
+    fcMP4AddOutputStream(ctx, cstream);
 
     // add video data
     std::thread video_thread = std::thread([&]() {
@@ -113,8 +115,15 @@ int main(int argc, char** argv)
     audio_thread.join();
 
     fcMP4DestroyContext(ctx);
-    fcDestroyStream(fos);
-    fcDestroyStream(cos);
+
+    {
+        fcBufferData bd = fcGetBufferData(mstream);
+        std::fstream of("memory_stream.mp4", std::ios::binary | std::ios::out);
+        of.write((char*)bd.data, bd.size);
+    }
+    fcDestroyStream(fstream);
+    fcDestroyStream(mstream);
+    fcDestroyStream(cstream);
     fclose(ofile);
 }
 
