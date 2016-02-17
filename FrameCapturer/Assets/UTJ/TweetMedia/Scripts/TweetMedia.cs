@@ -30,9 +30,9 @@ namespace UTJ
         }
 
 
-        public string m_consumer_key;
-        public string m_consumer_secret;
-        public string m_path_to_savedata;
+        public string m_consumerKey;
+        public string m_consumerSecret;
+        public DataPath m_credentialFile = new DataPath(DataPath.Root.PersistentDataPath, "TweetMediaCredentials.txt");
 
         TweetMediaPlugin.tmContext m_ctx;
         List<Action<AuthStateCode>> m_auth_event_handlers = new List<Action<AuthStateCode>>();
@@ -108,7 +108,7 @@ namespace UTJ
 
             // 保存された token が有効かチェック
             auth_state = AuthStateCode.VerifyCredentialsBegin;
-            TweetMediaPlugin.tmLoadCredentials(m_ctx, m_path_to_savedata);
+            TweetMediaPlugin.tmLoadCredentials(m_ctx, m_credentialFile.GetPath());
             TweetMediaPlugin.tmVerifyCredentialsAsync(m_ctx);
             while (enabled)
             {
@@ -138,7 +138,7 @@ namespace UTJ
             {
                 // 認証 URL を取得
                 auth_state = AuthStateCode.RequestAuthURLBegin;
-                TweetMediaPlugin.tmRequestAuthURLAsync(m_ctx, m_consumer_key, m_consumer_secret);
+                TweetMediaPlugin.tmRequestAuthURLAsync(m_ctx, m_consumerKey, m_consumerSecret);
                 while (enabled)
                 {
                     var state = TweetMediaPlugin.tmGetRequestAuthURLState(m_ctx);
@@ -183,7 +183,7 @@ namespace UTJ
                         if (state.code == TweetMediaPlugin.tmEStatusCode.Succeeded)
                         {
                             authorized = true;
-                            TweetMediaPlugin.tmSaveCredentials(m_ctx, m_path_to_savedata);
+                            TweetMediaPlugin.tmSaveCredentials(m_ctx, m_credentialFile.GetPath());
                             auth_state = AuthStateCode.EnterPINSucceeded;
                         }
                         else
@@ -253,9 +253,9 @@ namespace UTJ
 
         void OnEnable()
         {
-            if (m_consumer_key == "" || m_consumer_secret == "")
+            if (m_consumerKey == "" || m_consumerSecret == "")
             {
-                Debug.LogError("TweetMedia: set consumer_key and consumer_secret!");
+                Debug.LogError("TweetMedia: set consumerKey and consumerSecret!");
             }
             m_ctx = TweetMediaPlugin.tmCreateContext();
         }
