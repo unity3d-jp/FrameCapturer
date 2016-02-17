@@ -86,7 +86,7 @@ fcOpenH264Encoder::fcOpenH264Encoder(const fcH264EncoderConfig& conf)
     SEncParamBase param;
     memset(&param, 0, sizeof(SEncParamBase));
     param.iUsageType = SCREEN_CONTENT_REAL_TIME;
-    param.fMaxFrameRate = conf.target_framerate;
+    param.fMaxFrameRate = conf.max_framerate;
     param.iPicWidth = conf.width;
     param.iPicHeight = conf.height;
     param.iTargetBitrate = conf.target_bitrate;

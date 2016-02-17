@@ -7,9 +7,9 @@ struct fcH264EncoderConfig
     int width;
     int height;
     int target_bitrate;
-    int target_framerate;
+    int max_framerate;
 
-    fcH264EncoderConfig() : width(), height(), target_bitrate(), target_framerate() {}
+    fcH264EncoderConfig() : width(), height(), target_bitrate(), max_framerate() {}
 };
 
 class fcIH264Encoder

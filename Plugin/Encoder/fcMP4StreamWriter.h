@@ -7,7 +7,7 @@ public:
     fcMP4StreamWriter(BinaryStream &stream, const fcMP4Config &conf);
     virtual ~fcMP4StreamWriter();
     void addFrame(const fcFrameData& buf); // thread safe
-    void setAACHeader(const Buffer& aacheader);
+    void setAACEncoderInfo(const Buffer& aacheader);
 
 private:
     void mp4Begin();

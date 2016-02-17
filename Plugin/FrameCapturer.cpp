@@ -196,6 +196,16 @@ fcCLinkage fcExport fcStream* fcCreateMemoryStream()
 {
     return new BufferStream(new Buffer(), true);
 }
+fcCLinkage fcExport fcStream* fcCreateCustomStream(void *obj, fcTellp_t tellp, fcSeekp_t seekp, fcWrite_t write)
+{
+    CustomStreamData csd;
+    csd.obj = obj;
+    csd.tellp = tellp;
+    csd.seekp = seekp;
+    csd.write = write;
+    return new CustomStream(csd);
+}
+
 fcCLinkage fcExport void fcDestroyStream(fcStream *s)
 {
     delete s;
