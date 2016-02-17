@@ -271,22 +271,22 @@ fcCLinkage fcExport void fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stre
     ctx->addOutputStream(stream);
 }
 
-fcCLinkage fcExport bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcTime t)
+fcCLinkage fcExport bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcTime timestamp)
 {
     if (!ctx) { return false; }
-    return ctx->addVideoFrameTexture(tex, t);
+    return ctx->addVideoFrameTexture(tex, timestamp);
 }
 
-fcCLinkage fcExport bool fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixels, fcColorSpace cs, fcTime t)
+fcCLinkage fcExport bool fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcColorSpace cs, fcTime timestamp)
 {
     if (!ctx) { return false; }
-    return ctx->addVideoFramePixels(pixels, cs, t);
+    return ctx->addVideoFramePixels(pixels, cs, timestamp);
 }
 
-fcCLinkage fcExport bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime t)
+fcCLinkage fcExport bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp)
 {
     if (!ctx) { return false; }
-    return ctx->addAudioFrame(samples, num_samples, t);
+    return ctx->addAudioFrame(samples, num_samples, timestamp);
 }
 #endif // fcSupportMP4
 

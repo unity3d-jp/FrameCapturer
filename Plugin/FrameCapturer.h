@@ -171,8 +171,11 @@ fcCLinkage fcExport bool            fcMP4DownloadCodec(fcDownloadCallback cb);
 fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
 fcCLinkage fcExport void            fcMP4DestroyContext(fcIMP4Context *ctx);
 fcCLinkage fcExport void            fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream);
-fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcTime t = -1);
-fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixels, fcColorSpace cs, fcTime t = -1);
-fcCLinkage fcExport bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime t = -1);
+// timestamp=-1 is treated as current time.
+fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcTime timestamp = -1);
+// timestamp=-1 is treated as current time.
+fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcColorSpace cs, fcTime timestamp = -1);
+// timestamp=-1 is treated as current time.
+fcCLinkage fcExport bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp = -1);
 
 #endif // FrameCapturer_h

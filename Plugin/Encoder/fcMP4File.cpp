@@ -23,7 +23,7 @@ public:
 
     void addOutputStream(fcStream *s) override;
     bool addVideoFrameTexture(void *tex, fcTime timestamp) override;
-    bool addVideoFramePixels(void *pixels, fcColorSpace c, fcTime timestamps) override;
+    bool addVideoFramePixels(const void *pixels, fcColorSpace c, fcTime timestamps) override;
     bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp) override;
 
 private:
@@ -386,7 +386,7 @@ bool fcMP4Context::addVideoFrameTexture(void *tex, fcTime timestamp)
     return true;
 }
 
-bool fcMP4Context::addVideoFramePixels(void *pixels, fcColorSpace cs, fcTime timestamp)
+bool fcMP4Context::addVideoFramePixels(const void *pixels, fcColorSpace cs, fcTime timestamp)
 {
     if (!m_h264_encoder) { return false; }
 
@@ -436,6 +436,7 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, fcTime t
     ++m_audio_active_task_count;
     enqueueAudioTask([this, &aac, &raw, &af](){
         aac.clear();
+        aac.timestamp = raw.timestamp;
 
         // apply audio_scale
         if (m_conf.audio_scale != 1.0f) {
@@ -447,7 +448,6 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, fcTime t
         }
 
         m_aac_encoder->encode(aac, (float*)raw.data.ptr(), raw.data.size() / sizeof(float));
-        aac.timestamp = raw.timestamp;
 
         eachStreams([&](auto& s) { s.addFrame(aac); });
 #ifndef fcMaster
