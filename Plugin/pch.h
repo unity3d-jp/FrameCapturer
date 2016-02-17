@@ -29,23 +29,11 @@
     #define fcLinux
 #endif
 
-#ifdef _WIN32
-    #define fcBreak() DebugBreak()
-#else
-    #define fcBreak() __builtin_trap()
-#endif
-
 #ifdef fcDebug
-    void fcDebugLogImpl(const char* fmt, ...);
-    #define fcDebugLog(...) fcDebugLogImpl(__VA_ARGS__)
-    #ifdef fcVerboseDebug
-        #define fcDebugLogVerbose(...) fcDebugLogImpl(__VA_ARGS__)
-    #else
-        #define fcDebugLogVerbose(...)
-    #endif
+    void DebugLogImpl(const char* fmt, ...);
+    #define fcDebugLog(...) DebugLogImpl(__VA_ARGS__)
 #else
     #define fcDebugLog(...)
-    #define fcDebugLogVerbose(...)
 #endif
 
 #ifdef _WIN32
@@ -53,12 +41,14 @@
     #define fcSupportD3D9
     #define fcSupportD3D11
 
+    #define fcSupportFAAC
     #define fcSupportOpenH264
     #define fcSupportNVH264
     #define fcSupportAMDH264
 #else
     #define fcSupportOpenGL
 
+    #define fcSupportFAAC
     #define fcSupportOpenH264
     #define fcSupportNVH264
 #endif

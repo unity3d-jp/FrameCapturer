@@ -3,11 +3,6 @@
 #include "fcMP4Internal.h"
 #include "fcMP4StreamWriter.h"
 
-#ifdef fcDebugLog
-    #undef fcDebugLog
-    #define fcDebugLog(...)
-#endif
-
 #define fcMP464BitLength
 
 
@@ -145,7 +140,7 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
 void fcMP4StreamWriter::setAACHeader(const Buffer& aacheader)
 {
     u8 *ptr = (u8*)aacheader.ptr();
-    m_audio_header.assign(ptr, ptr + aacheader.size());
+    m_audio_encoder_info.assign(ptr, ptr + aacheader.size());
 }
 
 void fcMP4StreamWriter::mp4End()
@@ -273,6 +268,10 @@ void fcMP4StreamWriter::mp4End()
         if (!m_audio_frame_info.empty()) {
             ++track_index;
 
+            if (m_audio_encoder_info.empty()) {
+                fcDebugLog("fcMP4StreamWriter::mp4End(): m_audio_encoder_info is not set!\n");
+            }
+
             Buffer dd_buf; // decoder descriptor
             {
                 Buffer add_buf; //  audio decoder descriptor
@@ -285,8 +284,8 @@ void fcMP4StreamWriter::mp4End()
                     << u32_be(c.audio_bitrate) // max bit rate (cue bill 'o reily meme for these two)
                     << u32_be(c.audio_bitrate) // avg bit rate
                     << u8(0x5)          //decoder specific descriptor type
-                    << u8(m_audio_header.size());
-                add.write(&m_audio_header[0], m_audio_header.size());
+                    << u8(m_audio_encoder_info.size());
+                add.write(&m_audio_encoder_info[0], m_audio_encoder_info.size());
 
                 dd << u16(0);   // es id
                 dd << u8(0);    // stream priority
@@ -607,5 +606,5 @@ void fcMP4StreamWriter::mp4End()
     }
 #endif
 
-    fcDebugLog("fcMP4Stream::mp4End() done.");
+    fcDebugLog("fcMP4StreamWriter::mp4End() done.\n");
 }

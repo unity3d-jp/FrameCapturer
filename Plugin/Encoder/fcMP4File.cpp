@@ -22,9 +22,9 @@ public:
     void release() override;
 
     void addOutputStream(fcStream *s) override;
-    bool addVideoFrameTexture(void *tex, fcTimestamp timestamp) override;
-    bool addVideoFramePixels(void *pixels, fcColorSpace c, fcTimestamp timestamps) override;
-    bool addAudioFrame(const float *samples, int num_samples, fcTimestamp timestamp) override;
+    bool addVideoFrameTexture(void *tex, fcTime timestamp) override;
+    bool addVideoFramePixels(void *pixels, fcColorSpace c, fcTime timestamps) override;
+    bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp) override;
 
 private:
     typedef std::pair<fcVideoFrame, fcH264Frame> VideoFrame;
@@ -322,7 +322,7 @@ void fcMP4Context::addOutputStream(fcStream *s)
 {
     auto writer =new fcMP4StreamWriter(*s, m_conf);
     if (m_aac_encoder) {
-        writer->setAACHeader(m_aac_encoder->getHeader());
+        writer->setAACHeader(m_aac_encoder->getEncoderInfo());
     }
     m_streams.emplace_back(StreamWriterPtr(writer));
 }
@@ -359,7 +359,7 @@ void fcMP4Context::encodeVideoFrame(VideoFrame& vf, bool rgba2i420)
 }
 
 
-bool fcMP4Context::addVideoFrameTexture(void *tex, fcTimestamp timestamp)
+bool fcMP4Context::addVideoFrameTexture(void *tex, fcTime timestamp)
 {
     if (!m_h264_encoder) { return false; }
 
@@ -386,7 +386,7 @@ bool fcMP4Context::addVideoFrameTexture(void *tex, fcTimestamp timestamp)
     return true;
 }
 
-bool fcMP4Context::addVideoFramePixels(void *pixels, fcColorSpace cs, fcTimestamp timestamp)
+bool fcMP4Context::addVideoFramePixels(void *pixels, fcColorSpace cs, fcTime timestamp)
 {
     if (!m_h264_encoder) { return false; }
 
@@ -422,7 +422,7 @@ bool fcMP4Context::addVideoFramePixels(void *pixels, fcColorSpace cs, fcTimestam
     return true;
 }
 
-bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, fcTimestamp timestamp)
+bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, fcTime timestamp)
 {
     if (!m_aac_encoder) { return false; }
 

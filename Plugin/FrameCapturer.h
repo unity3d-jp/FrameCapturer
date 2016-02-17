@@ -21,7 +21,7 @@ class fcIGraphicsDevice;
 class fcIExrContext;
 class fcIGifContext;
 class fcIMP4Context;
-typedef unsigned long long fcTimestamp; // time in nanosec
+typedef unsigned long long fcTime; // time in nanosec
 
 enum fcColorSpace
 {
@@ -81,8 +81,8 @@ enum fcTextureFormat
 fcCLinkage fcExport void            fcSetModulePath(const char *path);
 fcCLinkage fcExport const char*     fcGetModulePath(); // null-terminated path list. i.e. {"hoge", "hage", nullptr}
 
-fcCLinkage fcExport uint64_t        fcMakeTimestamp();
-fcCLinkage fcExport uint64_t        fcSecondsToTimestamp(double sec);
+fcCLinkage fcExport fcTime          fcGetTime();
+fcCLinkage fcExport fcTime          fcSecondsToTimestamp(double sec);
 
 
 // -------------------------------------------------------------
@@ -135,7 +135,6 @@ fcCLinkage fcExport void            fcGifEraseFrame(fcIGifContext *ctx, int begi
 #ifndef fcImpl
 struct fcStream;
 #endif
-fcCLinkage fcExport fcTimestamp     fcGetTime();
 fcCLinkage fcExport fcStream*       fcCreateFileStream(const char *path);
 fcCLinkage fcExport fcStream*       fcCreateMemoryStream();
 fcCLinkage fcExport void            fcDestroyStream(fcStream *s);
@@ -172,8 +171,8 @@ fcCLinkage fcExport bool            fcMP4DownloadCodec(fcDownloadCallback cb);
 fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
 fcCLinkage fcExport void            fcMP4DestroyContext(fcIMP4Context *ctx);
 fcCLinkage fcExport void            fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream);
-fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcTimestamp t = -1);
-fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixels, fcColorSpace cs, fcTimestamp t = -1);
-fcCLinkage fcExport bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTimestamp t = -1);
+fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcTime t = -1);
+fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, void *pixels, fcColorSpace cs, fcTime t = -1);
+fcCLinkage fcExport bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime t = -1);
 
 #endif // FrameCapturer_h
