@@ -30,11 +30,11 @@ namespace UTJ
 
         public CaptureData[] m_targets;
 
-        public string m_output_directory = "ExrOutput";
-        public string m_output_filename = "Offscreen";
-        public int m_begin_frame = 0;
-        public int m_end_frame = 100;
-        public int m_max_active_tasks = 1;
+        public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "ExrOutput");
+        public string m_outputFilename = "Offscreen";
+        public int m_beginFrame = 0;
+        public int m_endFrame = 100;
+        public int m_maxTasks = 1;
         public Shader m_sh_copy;
 
         fcAPI.fcEXRContext m_exr;
@@ -53,7 +53,7 @@ namespace UTJ
 
         void OnEnable()
         {
-            System.IO.Directory.CreateDirectory(m_output_directory);
+            m_outputDir.CreateDirectory();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
             m_mat_copy = new Material(m_sh_copy);
 
@@ -65,7 +65,7 @@ namespace UTJ
             }
 
             fcAPI.fcExrConfig conf;
-            conf.max_active_tasks = m_max_active_tasks;
+            conf.max_active_tasks = m_maxTasks;
             m_exr = fcAPI.fcExrCreateContext(ref conf);
         }
 
@@ -78,14 +78,14 @@ namespace UTJ
         IEnumerator OnPostRender()
         {
             int frame = m_frame++;
-            if (frame >= m_begin_frame && frame <= m_end_frame)
+            if (frame >= m_beginFrame && frame <= m_endFrame)
             {
                 yield return new WaitForEndOfFrame();
 
                 Debug.Log("ExrOffscreenCapturer: frame " + frame);
 
                 var rt = m_targets[0].target;
-                string path = m_output_directory + "/" + m_output_filename + "_" + frame.ToString("0000") + ".exr";
+                string path = m_outputDir.GetPath() + "/" + m_outputFilename + "_" + frame.ToString("0000") + ".exr";
 
                 // 上下反転などを行うため、一度スクラッチバッファに内容を移す
                 for (int ti = 0; ti < m_targets.Length; ++ti)

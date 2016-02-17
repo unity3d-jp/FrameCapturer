@@ -150,7 +150,6 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern bool         fcMP4AddVideoFrameTexture(fcMP4Context ctx, IntPtr tex, ulong time = ~0LU);
         [DllImport ("FrameCapturer")] public static extern bool         fcMP4AddVideoFramePixels(fcMP4Context ctx, IntPtr pixels, fcColorSpace cs, ulong time = ~0LU);
         [DllImport ("FrameCapturer")] public static extern bool         fcMP4AddAudioFrame(fcMP4Context ctx, float[] samples, int num_samples, ulong time = ~0LU);
-
     }
 
 
@@ -179,5 +178,4 @@ namespace UTJ
         }
     #endif
     }
-
 }

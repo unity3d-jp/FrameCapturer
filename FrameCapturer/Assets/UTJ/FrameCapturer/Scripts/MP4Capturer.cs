@@ -15,15 +15,15 @@ namespace UTJ
     [RequireComponent(typeof(Camera))]
     public class MP4Capturer : IMP4Capturer
     {
-        public bool m_video = true;
-        public bool m_audio = true;
-        public int m_resolution_width = 300;
-        public int m_capture_every_nth_frames = 2;
-        public int m_video_bitrate = 1024000;
-        public int m_audio_bitrate = 64000;
+        public DataPath m_outputDir = new DataPath(DataPath.Root.PersistentDataPath, "");
+        public bool m_captureVideo = true;
+        public bool m_captureAudio = true;
+        public int m_resolutionWidth = 300;
+        public int m_captureEveryNthFrame = 1;
+        public int m_videoBitrate = 1024000;
+        public int m_audioBitrate = 64000;
         public Shader m_sh_copy;
 
-        string m_output_dir;
         string m_output_file;
         fcAPI.fcMP4Context m_ctx;
         fcAPI.fcMP4Config m_mp4conf = fcAPI.fcMP4Config.default_value;
@@ -52,7 +52,13 @@ namespace UTJ
             }
         }
 
-        public override string GetOutputPath() { return m_output_file; }
+        public override string GetOutputPath()
+        {
+            string ret = m_outputDir.GetPath();
+            if(ret.Length > 0) { ret += "/"; }
+            ret += m_output_file;
+            return ret;
+        }
         public override RenderTexture GetScratchBuffer() { return m_scratch_buffer; }
         public override int GetFrameCount() { return m_num_video_frame; }
 
@@ -75,21 +81,21 @@ namespace UTJ
                 m_scratch_buffer = null;
             }
 
-            int capture_width = m_resolution_width;
-            int capture_height = (int)((float)m_resolution_width / ((float)m_cam.pixelWidth / (float)m_cam.pixelHeight));
+            int capture_width = m_resolutionWidth;
+            int capture_height = (int)((float)m_resolutionWidth / ((float)m_cam.pixelWidth / (float)m_cam.pixelHeight));
             m_scratch_buffer = new RenderTexture(capture_width, capture_height, 0, RenderTextureFormat.ARGB32);
             m_scratch_buffer.wrapMode = TextureWrapMode.Repeat;
             m_scratch_buffer.Create();
 
             m_num_video_frame = 0;
             m_mp4conf = fcAPI.fcMP4Config.default_value;
-            m_mp4conf.video = m_video;
-            m_mp4conf.audio = m_audio;
+            m_mp4conf.video = m_captureVideo;
+            m_mp4conf.audio = m_captureAudio;
             m_mp4conf.video_width = m_scratch_buffer.width;
             m_mp4conf.video_height = m_scratch_buffer.height;
             m_mp4conf.video_max_framerate = 60;
-            m_mp4conf.video_bitrate = m_video_bitrate;
-            m_mp4conf.audio_bitrate = m_audio_bitrate;
+            m_mp4conf.video_bitrate = m_videoBitrate;
+            m_mp4conf.audio_bitrate = m_audioBitrate;
             m_mp4conf.audio_sampling_rate = AudioSettings.outputSampleRate;
             switch (AudioSettings.speakerMode)
             {
@@ -105,8 +111,9 @@ namespace UTJ
 
 
             m_output_file = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
-            m_ostream = fcAPI.fcCreateFileStream(m_output_file);
+            m_ostream = fcAPI.fcCreateFileStream(GetOutputPath());
             fcAPI.fcMP4AddOutputStream(m_ctx, m_ostream);
+            Debug.Log("MP4Capturer: created stream " + GetOutputPath());
         }
 
         public fcAPI.fcMP4Context GetMP4Context() { return m_ctx; }
@@ -146,7 +153,6 @@ namespace UTJ
                 // tid は意図的に開放しない
                 m_cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
             }
-            ResetRecordingState();
         }
 
         void OnDisable()
@@ -165,12 +171,12 @@ namespace UTJ
 
         IEnumerator OnPostRender()
         {
-            if (m_record && m_video)
+            if (m_record && m_captureVideo)
             {
                 yield return new WaitForEndOfFrame();
 
                 int frame = m_num_video_frame++;
-                if (frame % m_capture_every_nth_frames == 0)
+                if (frame % m_captureEveryNthFrame == 0)
                 {
                     m_mat_copy.SetPass(0);
                     Graphics.SetRenderTarget(m_scratch_buffer);
@@ -183,7 +189,7 @@ namespace UTJ
 
         void OnAudioFilterRead(float[] samples, int channels)
         {
-            if (m_record && m_audio)
+            if (m_record && m_captureAudio)
             {
                 if(channels != m_mp4conf.audio_num_channels) {
                     Debug.LogError("MP4Capturer: audio channels mismatch!");

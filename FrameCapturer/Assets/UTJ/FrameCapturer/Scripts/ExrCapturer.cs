@@ -22,16 +22,16 @@ namespace UTJ
         }
 
 
-        public bool m_capture_framebuffer = true;
-        public bool m_capture_gbuffer = true;
-        public DepthFormat m_depth_format = DepthFormat.Float;
+        public bool m_captureFramebuffer = true;
+        public bool m_captureGBuffer = true;
+        public DepthFormat m_depthFormat = DepthFormat.Float;
 
-        public string m_output_directory = "ExrOutput";
-        public string m_filename_framebuffer = "FrameBuffer";
-        public string m_filename_gbuffer = "GBuffer";
-        public int m_begin_frame = 0;
-        public int m_end_frame = 100;
-        public int m_max_active_tasks = 1;
+        public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "ExrOutput");
+        public string m_filenameFramebuffer = "FrameBuffer";
+        public string m_filenameGBuffer = "GBuffer";
+        public int m_beginFrame = 0;
+        public int m_endFrame = 100;
+        public int m_maxTasks = 1;
         public Shader m_sh_copy;
 
         fcAPI.fcEXRContext m_exr;
@@ -55,7 +55,7 @@ namespace UTJ
 
         void OnEnable()
         {
-            System.IO.Directory.CreateDirectory(m_output_directory);
+            m_outputDir.CreateDirectory();
             m_cam = GetComponent<Camera>();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
             m_mat_copy = new Material(m_sh_copy);
@@ -64,7 +64,7 @@ namespace UTJ
                 m_mat_copy.EnableKeyword("OFFSCREEN");
             }
 
-            if (m_capture_framebuffer)
+            if (m_captureFramebuffer)
             {
                 int tid = Shader.PropertyToID("_TmpFrameBuffer");
                 m_cb = new CommandBuffer();
@@ -80,16 +80,16 @@ namespace UTJ
             }
 
 #if UNITY_EDITOR
-            if (m_capture_gbuffer &&
+            if (m_captureGBuffer &&
                 m_cam.renderingPath != RenderingPath.DeferredShading &&
                 (m_cam.renderingPath == RenderingPath.UsePlayerSettings && PlayerSettings.renderingPath != RenderingPath.DeferredShading))
             {
                 Debug.Log("ExrCapturer: Rendering path must be deferred to use capture_gbuffer mode.");
-                m_capture_gbuffer = false;
+                m_captureGBuffer = false;
             }
 #endif // UNITY_EDITOR
 
-            if (m_capture_gbuffer)
+            if (m_captureGBuffer)
             {
                 m_gbuffer = new RenderTexture[4];
                 m_rt_gbuffer = new RenderBuffer[4];
@@ -101,7 +101,7 @@ namespace UTJ
                     m_rt_gbuffer[i] = m_gbuffer[i].colorBuffer;
                 }
                 {
-                    RenderTextureFormat format = m_depth_format == DepthFormat.Half ? RenderTextureFormat.RHalf : RenderTextureFormat.RFloat;
+                    RenderTextureFormat format = m_depthFormat == DepthFormat.Half ? RenderTextureFormat.RHalf : RenderTextureFormat.RFloat;
                     m_depth = new RenderTexture(m_cam.pixelWidth, m_cam.pixelHeight, 0, format);
                     m_depth.filterMode = FilterMode.Point;
                     m_depth.Create();
@@ -109,7 +109,7 @@ namespace UTJ
             }
 
             fcAPI.fcExrConfig conf;
-            conf.max_active_tasks = m_max_active_tasks;
+            conf.max_active_tasks = m_maxTasks;
             m_exr = fcAPI.fcExrCreateContext(ref conf);
         }
 
@@ -144,11 +144,11 @@ namespace UTJ
         IEnumerator OnPostRender()
         {
             int frame = m_frame++;
-            if (frame >= m_begin_frame && frame <= m_end_frame)
+            if (frame >= m_beginFrame && frame <= m_endFrame)
             {
                 Debug.Log("ExrCapturer: frame " + frame);
 
-                if (m_capture_gbuffer)
+                if (m_captureGBuffer)
                 {
                     m_mat_copy.SetPass(1);
                     Graphics.SetRenderTarget(m_rt_gbuffer, m_gbuffer[0].depthBuffer);
@@ -159,7 +159,7 @@ namespace UTJ
                     Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                     Graphics.SetRenderTarget(null);
 
-                    string path = m_output_directory + "/" + m_filename_gbuffer + "_" + frame.ToString("0000") + ".exr";
+                    string path = m_outputDir.GetPath() + "/" + m_filenameGBuffer + "_" + frame.ToString("0000") + ".exr";
                     fcAPI.fcExrBeginFrame(m_exr, path, m_gbuffer[0].width, m_gbuffer[0].height);
                     AddLayer(m_gbuffer[0], 0, "Albedo.R");
                     AddLayer(m_gbuffer[0], 1, "Albedo.G");
@@ -180,14 +180,14 @@ namespace UTJ
                 }
 
                 yield return new WaitForEndOfFrame();
-                if (m_capture_framebuffer)
+                if (m_captureFramebuffer)
                 {
                     m_mat_copy.SetPass(0);
                     Graphics.SetRenderTarget(m_frame_buffer);
                     Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                     Graphics.SetRenderTarget(null);
 
-                    string path = m_output_directory + "/" + m_filename_framebuffer + "_" + frame.ToString("0000") + ".exr";
+                    string path = m_outputDir.GetPath() + "/" + m_filenameFramebuffer + "_" + frame.ToString("0000") + ".exr";
                     fcAPI.fcExrBeginFrame(m_exr, path, m_frame_buffer.width, m_frame_buffer.height);
                     AddLayer(m_frame_buffer, 0, "R");
                     AddLayer(m_frame_buffer, 1, "G");

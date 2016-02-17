@@ -15,14 +15,15 @@ namespace UTJ
     [RequireComponent(typeof(Camera))]
     public class GifOffscreenCapturer : IGifCapturer
     {
+        public DataPath m_outputDir = new DataPath(DataPath.Root.PersistentDataPath, "");
         public RenderTexture m_target;
-        public int m_resolution_width = 300;
-        public int m_num_colors = 255;
-        public int m_capture_every_n_frames = 2;
-        public int m_interval_centi_sec = 3;
-        public int m_max_frame = 1800;
-        public int m_max_data_size = 0;
-        public int m_max_active_tasks = 0;
+        public int m_resolutionWidth = 300;
+        public int m_numColors = 255;
+        public int m_captureEveryNthFrame = 2;
+        public int m_intervalCS = 3;
+        public int m_maxFrame = 1800;
+        public int m_maxSize = 0;
+        public int m_maxTasks = 0;
         public int m_keyframe = 0;
         public Shader m_sh_copy;
 
@@ -45,7 +46,7 @@ namespace UTJ
             {
                 if (path.Length == 0)
                 {
-                    path = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
+                    path = m_outputDir.GetPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
                 }
                 return fcAPI.fcGifWriteFile(m_gif, path, begin_frame, end_frame);
             }
@@ -75,26 +76,26 @@ namespace UTJ
                 m_scratch_buffer = null;
             }
 
-            int capture_width = m_resolution_width;
-            int capture_height = (int)(m_resolution_width / ((float)m_target.width / (float)m_target.height));
+            int capture_width = m_resolutionWidth;
+            int capture_height = (int)(m_resolutionWidth / ((float)m_target.width / (float)m_target.height));
             m_scratch_buffer = new RenderTexture(capture_width, capture_height, 0, RenderTextureFormat.ARGB32);
             m_scratch_buffer.wrapMode = TextureWrapMode.Repeat;
             m_scratch_buffer.Create();
 
             m_frame = 0;
-            if (m_max_active_tasks <= 0)
+            if (m_maxTasks <= 0)
             {
-                m_max_active_tasks = SystemInfo.processorCount;
+                m_maxTasks = SystemInfo.processorCount;
             }
             fcAPI.fcGifConfig conf;
             conf.width = m_scratch_buffer.width;
             conf.height = m_scratch_buffer.height;
-            conf.num_colors = m_num_colors;
-            conf.delay_csec = m_interval_centi_sec;
+            conf.num_colors = m_numColors;
+            conf.delay_csec = m_intervalCS;
             conf.keyframe = m_keyframe;
-            conf.max_frame = m_max_frame;
-            conf.max_data_size = m_max_data_size;
-            conf.max_active_tasks = m_max_active_tasks;
+            conf.max_frame = m_maxFrame;
+            conf.max_data_size = m_maxSize;
+            conf.max_active_tasks = m_maxTasks;
             m_gif = fcAPI.fcGifCreateContext(ref conf);
         }
 
@@ -129,7 +130,7 @@ namespace UTJ
 
         void OnValidate()
         {
-            m_num_colors = Mathf.Clamp(m_num_colors, 1, 255);
+            m_numColors = Mathf.Clamp(m_numColors, 1, 255);
         }
 #endif // UNITY_EDITOR
 
@@ -157,7 +158,7 @@ namespace UTJ
                 yield return new WaitForEndOfFrame();
 
                 int frame = m_frame++;
-                if (frame % m_capture_every_n_frames == 0)
+                if (frame % m_captureEveryNthFrame == 0)
                 {
                     m_mat_copy.SetTexture("_TmpRenderTarget", m_target);
                     m_mat_copy.SetPass(3);
