@@ -211,6 +211,17 @@ fcCLinkage fcExport void fcDestroyStream(fcStream *s)
     delete s;
 }
 
+fcCLinkage fcExport fcBufferData fcGetBufferData(fcStream *s)
+{
+    fcBufferData ret;
+    if (BufferStream *bs = dynamic_cast<BufferStream*>(s)) {
+        ret.data = bs->get().ptr();
+        ret.size = bs->get().size();
+    }
+    return ret;
+}
+
+
 
 #ifdef fcSupportMP4
 #include "Encoder/fcMP4File.h"

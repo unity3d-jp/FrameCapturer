@@ -145,6 +145,9 @@ public:
     BufferStream(Buffer *buf, bool del) : m_buf(*buf), m_wpos(buf->size()), m_rpos(), m_delete_flag(del) {}
     ~BufferStream() { if (m_delete_flag) { delete &m_buf; } }
 
+    Buffer& get()               { return m_buf; }
+    const Buffer& get() const   { return m_buf; }
+
     size_t tellg() override
     {
         return m_rpos;
@@ -201,6 +204,9 @@ public:
     StdOStream(std::ostream *os, bool del) : m_os(*os), m_delete_flag(del) {}
     ~StdOStream() { if (m_delete_flag) { delete &m_os; } }
 
+    std::ostream& get()             { return m_os; }
+    const std::ostream& get() const { return m_os; }
+
     // dummy
     size_t  tellg() override { return 0; }
     void    seekg(size_t pos) override {}
@@ -235,6 +241,9 @@ public:
     StdIStream(std::istream *is, bool del) : m_is(*is), m_delete_flag(del) {}
     ~StdIStream() { if (m_delete_flag) { delete &m_is; } }
 
+    std::istream& get()             { return m_is; }
+    const std::istream& get() const { return m_is; }
+
     size_t tellg() override
     {
         return m_is.tellg();
@@ -268,6 +277,9 @@ public:
     StdIOStream(std::iostream& ios) : m_ios(ios), m_delete_flag(false) {}
     StdIOStream(std::iostream *ios, bool del) : m_ios(*ios), m_delete_flag(del) {}
     ~StdIOStream() { if (m_delete_flag) { delete &m_ios; } }
+
+    std::iostream& get()            { return m_ios; }
+    const std::iostream& get() const{ return m_ios; }
 
     size_t tellg() override
     {
@@ -338,6 +350,9 @@ class CustomStream : public BinaryStream
 {
 public:
     CustomStream(const CustomStreamData& csd) : m_csd(csd) {}
+
+    CustomStreamData& get()             { return m_csd; }
+    const CustomStreamData& get() const { return m_csd; }
 
     size_t tellg() override
     {

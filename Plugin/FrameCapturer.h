@@ -79,7 +79,7 @@ enum fcTextureFormat
 // -------------------------------------------------------------
 
 fcCLinkage fcExport void            fcSetModulePath(const char *path);
-fcCLinkage fcExport const char*     fcGetModulePath(); // null-terminated path list. i.e. {"hoge", "hage", nullptr}
+fcCLinkage fcExport const char*     fcGetModulePath();
 
 fcCLinkage fcExport fcTime          fcGetTime();
 fcCLinkage fcExport fcTime          fcSecondsToTimestamp(double sec);
@@ -135,14 +135,24 @@ fcCLinkage fcExport void            fcGifEraseFrame(fcIGifContext *ctx, int begi
 #ifndef fcImpl
 struct fcStream;
 #endif
+// function types for custom stream
 typedef size_t (*fcTellp_t)(void *obj);
 typedef void   (*fcSeekp_t)(void *obj, size_t pos);
 typedef size_t (*fcWrite_t)(void *obj, const void *data, size_t len);
+
+struct fcBufferData
+{
+    void *data;
+    size_t size;
+
+    fcBufferData() : data(), size() {}
+};
 
 fcCLinkage fcExport fcStream*       fcCreateFileStream(const char *path);
 fcCLinkage fcExport fcStream*       fcCreateMemoryStream();
 fcCLinkage fcExport fcStream*       fcCreateCustomStream(void *obj, fcTellp_t tellp, fcSeekp_t seekp, fcWrite_t write);
 fcCLinkage fcExport void            fcDestroyStream(fcStream *s);
+fcCLinkage fcExport fcBufferData    fcGetBufferData(fcStream *s); // return {nullptr, 0} if s is not created by fcCreateMemoryStream()
 
 struct fcMP4Config
 {
@@ -154,7 +164,7 @@ struct fcMP4Config
     int     video_bitrate;
     int     video_max_framerate;
     int     video_max_buffers;
-    float   audio_scale;
+    float   audio_scale; // useful for scaling (-1.0 - 1.0) samples to (-32767.0f - 32767.0f)
     int     audio_sample_rate;
     int     audio_num_channels;
     int     audio_bitrate;
@@ -162,7 +172,7 @@ struct fcMP4Config
     fcMP4Config()
         : video(true), audio(true)
         , video_use_hardware_encoder_if_possible(true)
-        , video_width(320), video_height(240)
+        , video_width(), video_height()
         , video_bitrate(256000), video_max_framerate(60), video_max_buffers(8)
         , audio_scale(1.0f), audio_sample_rate(48000), audio_num_channels(2), audio_bitrate(64000)
     {}

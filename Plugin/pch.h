@@ -15,6 +15,10 @@
 
 #define fcImpl
 
+#ifdef _MSC_VER
+    #pragma warning(disable: 4190)
+#endif
+
 #if defined(_WIN32)
     #define fcWindows
 #elif defined(__APPLE__)
