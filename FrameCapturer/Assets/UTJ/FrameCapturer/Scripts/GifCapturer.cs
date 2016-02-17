@@ -34,7 +34,7 @@ namespace UTJ
         int m_frame;
         bool m_recode = false;
 
-        public override bool recode
+        public override bool record
         {
             get { return m_recode; }
             set { m_recode = value; }

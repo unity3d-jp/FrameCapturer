@@ -175,32 +175,7 @@ namespace UTJ
     #if UNITY_EDITOR
         public static Shader GetFrameBufferCopyShader()
         {
-            string[] guids = AssetDatabase.FindAssets("CopyFrameBuffer t:shader");
-
-            if (guids.Length >= 1)
-            {
-                if (guids.Length > 1)
-                {
-                    foreach (string guid in guids)
-                    {
-                        string path = AssetDatabase.GUIDToAssetPath(guid);
-                    
-                        if (path.EndsWith("FrameCapturer/Shaders/CopyFrameBuffer.shader"))
-                        {
-                            return AssetDatabase.LoadAssetAtPath(path, typeof(Shader)) as Shader;
-                        }
-                    }
-
-                    Debug.LogWarning("Found several shaders named 'CopyFrameBuffer'. Use first found.");
-                }
-            
-                return AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(guids[0]), typeof(Shader)) as Shader;
-            }
-            else
-            {
-                Debug.LogWarning("Could not find 'CopyFrameBuffer' shader");
-                return null;
-            }
+            return AssetDatabase.LoadAssetAtPath<Shader>(AssetDatabase.GUIDToAssetPath("2283fb92223c7914c9096670e29202c8"));
         }
     #endif
     }

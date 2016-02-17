@@ -36,12 +36,12 @@ namespace UTJ
         }
 
 
-        public bool recode
+        public bool record
         {
-            get { return m_capturer.recode; }
+            get { return m_capturer.record; }
             set
             {
-                m_capturer.recode = value;
+                m_capturer.record = value;
                 m_update_status = true;
                 if (value)
                 {
@@ -64,7 +64,7 @@ namespace UTJ
         public void ResetRecordingState()
         {
             m_capturer.ResetRecordingState();
-            if (recode)
+            if (record)
             {
                 UpdatePreviewImage(m_capturer.GetScratchBuffer());
             }
@@ -150,7 +150,7 @@ namespace UTJ
                 m_capturer.GetFrameData(m_gif_image, m_current_frame);
                 UpdatePreviewImage(m_gif_image);
             }
-            if (m_update_status || recode)
+            if (m_update_status || record)
             {
                 m_update_status = false;
                 int recoded_frames = m_capturer.GetFrameCount();
