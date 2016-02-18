@@ -13,7 +13,7 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/GifCapturer")]
     [RequireComponent(typeof(Camera))]
-    public class GifCapturer : IEditableMovieRecorder
+    public class GifRecorder : IEditableMovieRecorder
     {
         public DataPath m_outputDir = new DataPath(DataPath.Root.PersistentDataPath, "");
         public int m_resolutionWidth = 300;

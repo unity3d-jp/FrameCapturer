@@ -13,7 +13,7 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/GifOffscreenCapturer")]
     [RequireComponent(typeof(Camera))]
-    public class GifOffscreenCapturer : IEditableMovieRecorder
+    public class GifOffscreenRecorder : IEditableMovieRecorder
     {
         public DataPath m_outputDir = new DataPath(DataPath.Root.PersistentDataPath, "");
         public RenderTexture m_target;
