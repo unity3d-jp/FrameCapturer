@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
+﻿using System.Collections;
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif // UNITY_EDITOR
 
 
 namespace UTJ

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 
@@ -48,7 +46,7 @@ namespace UTJ
             return m_recorder.FlushFile();
         }
 
-        public void ResetRecordingState()
+        public override void ResetRecordingState()
         {
             m_recorder.ResetRecordingState();
             if (record)
