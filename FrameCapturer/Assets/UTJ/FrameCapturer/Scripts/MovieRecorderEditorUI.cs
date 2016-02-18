@@ -1,40 +1,23 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 
 namespace UTJ
 {
 
-    public class MovieRecorderEditorUI : IMovieRecoerderEditorUI
+    public class MovieRecorderEditorUI : IMovieRecoerderUI
     {
         public IEditableMovieRecorder m_recorder;
-        public Text m_text_info;
-        public RawImage m_gif_preview;
-        public Slider m_timeslider;
-        public InputField m_field_current_frame;
-        public RenderTexture m_gif_image;
-        int m_current_frame = 0;
-        int m_begin_frame = 0;
-        int m_end_frame = -1;
-        bool m_update_status;
-        bool m_update_preview;
-
-
-        public int beginFrame
-        {
-            get { return m_begin_frame; }
-        }
-
-        public int endFrame
-        {
-            get { return m_end_frame; }
-        }
-
-        public int currentFrame
-        {
-            get { return m_current_frame; }
-        }
+        public Text m_textInfo;
+        public RawImage m_imagePreview;
+        public Slider m_timeSlider;
+        public InputField m_inputCurrentFrame;
+        public RenderTexture m_rt;
+        int m_currentFrame = 0;
+        int m_beginFrame = 0;
+        int m_endFrame = -1;
+        bool m_updateStatus;
+        bool m_updatePreview;
 
 
         public override bool record
@@ -43,7 +26,7 @@ namespace UTJ
             set
             {
                 m_recorder.record = value;
-                m_update_status = true;
+                m_updateStatus = true;
                 if (value)
                 {
                     GetComponent<Image>().color = new Color(1.0f, 0.5f, 0.5f, 0.5f);
@@ -52,7 +35,7 @@ namespace UTJ
                 else
                 {
                     GetComponent<Image>().color = new Color(1.0f, 1.0f, 1.0f, 0.5f);
-                    m_end_frame = -1;
+                    m_endFrame = -1;
                 }
             }
         }
@@ -69,107 +52,118 @@ namespace UTJ
 
         public override bool FlushFile()
         {
-            return m_recorder.FlushFile(m_begin_frame, m_end_frame);
+            return m_recorder.FlushFile(m_beginFrame, m_endFrame);
         }
 
-        public void ResetRecordingState()
+        public override void ResetRecordingState()
         {
             m_recorder.ResetRecordingState();
             if (record)
             {
                 UpdatePreviewImage(m_recorder.GetScratchBuffer());
             }
-            m_update_status = true;
+            m_updateStatus = true;
         }
 
 
-        public void SetFrameSeek(float v)
+        public int beginFrame
         {
-            m_current_frame = (int)v;
-            m_update_status = true;
-            m_update_preview = true;
-            m_field_current_frame.text = v.ToString();
-        }
-
-        public void SetBeginFrame()
-        {
-            m_begin_frame = m_current_frame;
-            if (m_end_frame >= 0)
+            get { return m_beginFrame; }
+            set
             {
-                m_end_frame = Mathf.Max(m_end_frame, m_begin_frame);
-            }
-            m_update_status = true;
-        }
-
-        public void SetEndFrame()
-        {
-            m_end_frame = m_current_frame;
-            m_begin_frame = Mathf.Min(m_end_frame, m_begin_frame);
-            m_update_status = true;
-        }
-
-        public void EraseFrame()
-        {
-            if (m_end_frame >= 0)
-            {
-                m_recorder.EraseFrame(m_begin_frame, m_end_frame);
-                m_begin_frame = 0;
-                m_end_frame = -1;
-                m_update_status = true;
+                m_beginFrame = m_currentFrame;
+                if (m_endFrame >= 0)
+                {
+                    m_endFrame = Mathf.Max(m_endFrame, m_beginFrame);
+                }
+                m_updateStatus = true;
             }
         }
 
+        public int endFrame
+        {
+            get { return m_endFrame; }
+            set
+            {
+                m_endFrame = m_currentFrame;
+                m_beginFrame = Mathf.Min(m_endFrame, m_beginFrame);
+                m_updateStatus = true;
+            }
+        }
+
+        public int currentFrame
+        {
+            get { return m_currentFrame; }
+            set
+            {
+                m_currentFrame = (int)value;
+                m_updateStatus = true;
+                m_updatePreview = true;
+                m_inputCurrentFrame.text = value.ToString();
+            }
+        }
+
+        public void EraseFrames()
+        {
+            if (m_endFrame >= 0)
+            {
+                m_recorder.EraseFrame(m_beginFrame, m_endFrame);
+                m_beginFrame = 0;
+                m_endFrame = -1;
+                m_updateStatus = true;
+            }
+        }
 
 
         void UpdatePreviewImage(RenderTexture rt)
         {
             const float MaxXScale = 1.8f;
-            m_gif_preview.texture = rt;
+            m_imagePreview.texture = rt;
             float s = (float)rt.width / (float)rt.height;
             float xs = Mathf.Min(s, MaxXScale);
             float ys = MaxXScale / s;
-            m_gif_preview.rectTransform.localScale = new Vector3(xs, ys, 1.0f);
+            m_imagePreview.rectTransform.localScale = new Vector3(xs, ys, 1.0f);
         }
+
 
 
         void OnEnable()
         {
-
         }
 
         void OnDisable()
         {
-            if (m_gif_image != null)
+            if (m_rt != null)
             {
-                m_gif_image.Release();
-                m_gif_image = null;
+                m_rt.Release();
+                m_rt = null;
             }
         }
 
         void Update()
         {
-            if (m_gif_image == null)
+            if (m_rt == null)
             {
                 var gif = m_recorder.GetScratchBuffer();
-                m_gif_image = new RenderTexture(gif.width, gif.height, 0, RenderTextureFormat.ARGB32);
-                m_gif_image.wrapMode = TextureWrapMode.Repeat;
-                m_gif_image.Create();
+                m_rt = new RenderTexture(gif.width, gif.height, 0, RenderTextureFormat.ARGB32);
+                m_rt.wrapMode = TextureWrapMode.Repeat;
+                m_rt.Create();
             }
-            if (m_update_preview)
+            if (m_updatePreview)
             {
-                m_update_preview = false;
-                m_recorder.GetFrameData(m_gif_image, m_current_frame);
-                UpdatePreviewImage(m_gif_image);
+                m_updatePreview = false;
+                m_recorder.GetFrameData(m_rt, m_currentFrame);
+                UpdatePreviewImage(m_rt);
             }
-            if (m_update_status || record)
+            if (m_updateStatus || record)
             {
-                m_update_status = false;
+                m_updateStatus = false;
                 int recoded_frames = m_recorder.GetFrameCount();
-                m_timeslider.maxValue = recoded_frames;
-                int begin_frame = m_begin_frame;
-                int end_frame = m_end_frame == -1 ? recoded_frames : m_end_frame;
+                m_timeSlider.maxValue = recoded_frames;
+                int begin_frame = m_beginFrame;
+                int end_frame = m_endFrame == -1 ? recoded_frames : m_endFrame;
                 int frame_count = end_frame - begin_frame;
-                m_text_info.text =
+                m_textInfo.text =
                     recoded_frames.ToString() + " recoded frames\n" +
                     frame_count.ToString() + " output frames (" + begin_frame + " - " + end_frame + ")\n" +
                     "expected file size: " + m_recorder.GetExpectedFileSize(begin_frame, end_frame);

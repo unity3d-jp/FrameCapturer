@@ -7,6 +7,7 @@ namespace UTJ
     {
         public abstract bool record { get; set; }
         public abstract string GetOutputPath();
+
         public abstract bool FlushFile();
         public abstract RenderTexture GetScratchBuffer();
         public abstract void ResetRecordingState();
@@ -23,6 +24,7 @@ namespace UTJ
     }
 
 
+
     public abstract class IMovieRecoerderUI : MonoBehaviour
     {
         public abstract IMovieRecorder GetRecorder();
@@ -30,9 +32,6 @@ namespace UTJ
         public abstract bool record { get; set; }
         public abstract string GetOutputPath();
         public abstract bool FlushFile();
-    }
-
-    public abstract class IMovieRecoerderEditorUI : IMovieRecoerderUI
-    {
+        public abstract void ResetRecordingState();
     }
 }

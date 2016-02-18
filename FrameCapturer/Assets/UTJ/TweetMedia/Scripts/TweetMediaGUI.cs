@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,12 +12,12 @@ namespace UTJ
         public TweetMedia m_tweet_media;
         public GameObject m_ui_auth;
         public GameObject m_ui_tweet;
-        public UnityEngine.UI.Text m_text_status;
-        public UnityEngine.UI.Button m_button_auth_url;
-        public UnityEngine.UI.InputField m_input_pin;
-        public UnityEngine.UI.Button m_button_pin;
-        public UnityEngine.UI.InputField m_input_message;
-        public UnityEngine.UI.Button m_button_tweet;
+        public Text m_text_status;
+        public Button m_button_auth_url;
+        public InputField m_input_pin;
+        public Button m_button_pin;
+        public InputField m_input_message;
+        public Button m_button_tweet;
         Action<TweetMedia.AuthStateCode> m_auth_event_handler;
         Action<TweetMedia.TweetStateCode> m_tweet_event_handler;
 
