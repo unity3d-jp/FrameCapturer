@@ -13,7 +13,7 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/MP4Capturer")]
     [RequireComponent(typeof(Camera))]
-    public class MP4Capturer : IMP4Capturer
+    public class MP4Capturer : IMovieRecorder
     {
         public DataPath m_outputDir = new DataPath(DataPath.Root.PersistentDataPath, "");
         public bool m_captureVideo = true;
@@ -62,17 +62,18 @@ namespace UTJ
         public override RenderTexture GetScratchBuffer() { return m_scratch_buffer; }
         public override int GetFrameCount() { return m_num_video_frame; }
 
-        public override void FlushMP4()
+        public override bool FlushFile()
         {
             fcAPI.fcMP4DestroyContext(m_ctx);
             fcAPI.fcDestroyStream(m_ostream);
             m_ctx.ptr = IntPtr.Zero;
             m_ostream.ptr = IntPtr.Zero;
+            return true;
         }
 
         public override void ResetRecordingState()
         {
-            FlushMP4();
+            FlushFile();
 
             m_ctx.ptr = IntPtr.Zero;
             if (m_scratch_buffer != null)

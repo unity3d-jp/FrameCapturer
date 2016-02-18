@@ -25,6 +25,7 @@ private:
     std::vector<u8> m_audio_encoder_info;
 
     size_t m_mdat_begin;
+    size_t m_mdat_end;
 };
 
 #endif // fcMP4StreamWriter_h

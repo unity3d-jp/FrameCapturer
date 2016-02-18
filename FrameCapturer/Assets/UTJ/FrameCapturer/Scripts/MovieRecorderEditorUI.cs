@@ -5,9 +5,10 @@ using UnityEngine.UI;
 
 namespace UTJ
 {
-    public class GifCapturerHUD : MonoBehaviour
+
+    public class MovieRecorderEditorUI : IMovieRecoerderEditorUI
     {
-        public IGifCapturer m_capturer;
+        public IEditableMovieRecorder m_recorder;
         public Text m_text_info;
         public RawImage m_gif_preview;
         public Slider m_timeslider;
@@ -20,33 +21,33 @@ namespace UTJ
         bool m_update_preview;
 
 
-        public int begin_frame
+        public int beginFrame
         {
             get { return m_begin_frame; }
         }
 
-        public int end_frame
+        public int endFrame
         {
             get { return m_end_frame; }
         }
 
-        public int current_frame
+        public int currentFrame
         {
             get { return m_current_frame; }
         }
 
 
-        public bool record
+        public override bool record
         {
-            get { return m_capturer.record; }
+            get { return m_recorder.record; }
             set
             {
-                m_capturer.record = value;
+                m_recorder.record = value;
                 m_update_status = true;
                 if (value)
                 {
                     GetComponent<Image>().color = new Color(1.0f, 0.5f, 0.5f, 0.5f);
-                    UpdatePreviewImage(m_capturer.GetScratchBuffer());
+                    UpdatePreviewImage(m_recorder.GetScratchBuffer());
                 }
                 else
                 {
@@ -56,17 +57,27 @@ namespace UTJ
             }
         }
 
-        public void WriteFile()
+        public override IMovieRecorder GetRecorder()
         {
-            m_capturer.WriteFile("", m_begin_frame, m_end_frame);
+            return m_recorder;
+        }
+
+        public override string GetOutputPath()
+        {
+            return m_recorder.GetOutputPath();
+        }
+
+        public override bool FlushFile()
+        {
+            return m_recorder.FlushFile(m_begin_frame, m_end_frame);
         }
 
         public void ResetRecordingState()
         {
-            m_capturer.ResetRecordingState();
+            m_recorder.ResetRecordingState();
             if (record)
             {
-                UpdatePreviewImage(m_capturer.GetScratchBuffer());
+                UpdatePreviewImage(m_recorder.GetScratchBuffer());
             }
             m_update_status = true;
         }
@@ -101,7 +112,7 @@ namespace UTJ
         {
             if (m_end_frame >= 0)
             {
-                m_capturer.EraseFrame(m_begin_frame, m_end_frame);
+                m_recorder.EraseFrame(m_begin_frame, m_end_frame);
                 m_begin_frame = 0;
                 m_end_frame = -1;
                 m_update_status = true;
@@ -139,7 +150,7 @@ namespace UTJ
         {
             if (m_gif_image == null)
             {
-                var gif = m_capturer.GetScratchBuffer();
+                var gif = m_recorder.GetScratchBuffer();
                 m_gif_image = new RenderTexture(gif.width, gif.height, 0, RenderTextureFormat.ARGB32);
                 m_gif_image.wrapMode = TextureWrapMode.Repeat;
                 m_gif_image.Create();
@@ -147,13 +158,13 @@ namespace UTJ
             if (m_update_preview)
             {
                 m_update_preview = false;
-                m_capturer.GetFrameData(m_gif_image, m_current_frame);
+                m_recorder.GetFrameData(m_gif_image, m_current_frame);
                 UpdatePreviewImage(m_gif_image);
             }
             if (m_update_status || record)
             {
                 m_update_status = false;
-                int recoded_frames = m_capturer.GetFrameCount();
+                int recoded_frames = m_recorder.GetFrameCount();
                 m_timeslider.maxValue = recoded_frames;
                 int begin_frame = m_begin_frame;
                 int end_frame = m_end_frame == -1 ? recoded_frames : m_end_frame;
@@ -161,7 +172,7 @@ namespace UTJ
                 m_text_info.text =
                     recoded_frames.ToString() + " recoded frames\n" +
                     frame_count.ToString() + " output frames (" + begin_frame + " - " + end_frame + ")\n" +
-                    "expected file size: " + m_capturer.GetExpectedFileSize(begin_frame, end_frame);
+                    "expected file size: " + m_recorder.GetExpectedFileSize(begin_frame, end_frame);
             }
         }
     }

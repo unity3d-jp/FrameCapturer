@@ -16,12 +16,13 @@
     #define fcExport
 #endif
 
+#include <cstdint>
 
 class fcIGraphicsDevice;
 class fcIExrContext;
 class fcIGifContext;
 class fcIMP4Context;
-typedef unsigned long long fcTime; // time in nanosec
+typedef uint64_t fcTime; // time in nanosec
 
 enum fcColorSpace
 {
@@ -152,7 +153,8 @@ fcCLinkage fcExport fcStream*       fcCreateFileStream(const char *path);
 fcCLinkage fcExport fcStream*       fcCreateMemoryStream();
 fcCLinkage fcExport fcStream*       fcCreateCustomStream(void *obj, fcTellp_t tellp, fcSeekp_t seekp, fcWrite_t write);
 fcCLinkage fcExport void            fcDestroyStream(fcStream *s);
-fcCLinkage fcExport fcBufferData    fcGetBufferData(fcStream *s); // return {nullptr, 0} if s is not created by fcCreateMemoryStream()
+fcCLinkage fcExport fcBufferData    fcStreamGetBufferData(fcStream *s); // s must be created by fcCreateMemoryStream(), otherwise return {nullptr, 0}.
+fcCLinkage fcExport uint64_t        fcStreamGetWrittenSize(fcStream *s);
 
 struct fcMP4Config
 {

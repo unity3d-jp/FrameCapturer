@@ -108,6 +108,7 @@ namespace UTJ
             switch (m_root)
             {
                 case Root.CurrentDirectory:
+                    ret += ".";
                     break;
                 case Root.PersistentDataPath:
                     ret += Application.persistentDataPath;
@@ -122,7 +123,7 @@ namespace UTJ
                     ret += Application.dataPath;
                     break;
             }
-            if(ret.Length > 0) { ret += "/"; }
+            ret += "/";
             return ret + m_leaf;
         }
 

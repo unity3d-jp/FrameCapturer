@@ -117,7 +117,7 @@ int main(int argc, char** argv)
     fcMP4DestroyContext(ctx);
 
     {
-        fcBufferData bd = fcGetBufferData(mstream);
+        fcBufferData bd = fcStreamGetBufferData(mstream);
         std::fstream of("memory_stream.mp4", std::ios::binary | std::ios::out);
         of.write((char*)bd.data, bd.size);
     }

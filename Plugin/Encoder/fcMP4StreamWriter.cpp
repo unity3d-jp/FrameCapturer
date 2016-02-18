@@ -44,7 +44,7 @@ time_t fcGetMacTime()
 fcMP4StreamWriter::fcMP4StreamWriter(BinaryStream& stream, const fcMP4Config &conf)
     : m_stream(stream)
     , m_conf(conf)
-    , m_mdat_begin(0)
+    , m_mdat_begin(), m_mdat_end()
 {
     mp4Begin();
 }
@@ -231,7 +231,7 @@ void fcMP4StreamWriter::mp4End()
 
     BinaryStream& bs = m_stream;
     Box box = Box(bs);
-    size_t mdat_end = bs.tellp();
+    m_mdat_end = bs.tellp();
 
     u32 track_index = 0;
 
@@ -590,21 +590,21 @@ void fcMP4StreamWriter::mp4End()
         }
     }); // moov
 
-#ifdef fcMP464BitLength
     {
+        size_t pos = bs.tellp();
+#ifdef fcMP464BitLength
         // 64bit mdat length
-        u64 mdat_size = u64_be(mdat_end - m_mdat_begin);
+        u64 mdat_size = u64_be(m_mdat_end - m_mdat_begin);
         bs.seekp(m_mdat_begin + 8);
         bs.write(&mdat_size, sizeof(mdat_size));
-    }
 #else
-    {
         // 32bit mdat length
-        u32 mdat_size = u32_be(mdat_end - m_mdat_begin);
+        u32 mdat_size = u32_be(m_mdat_end - m_mdat_begin);
         bs.seekp(m_mdat_begin);
         bs.write(&mdat_size, sizeof(mdat_size));
-    }
 #endif
+        bs.seekp(pos);
+    }
 
     fcDebugLog("fcMP4StreamWriter::mp4End() done.\n");
 }

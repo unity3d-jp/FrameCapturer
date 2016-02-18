@@ -13,7 +13,7 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/GifCapturer")]
     [RequireComponent(typeof(Camera))]
-    public class GifCapturer : IGifCapturer
+    public class GifCapturer : IEditableMovieRecorder
     {
         public DataPath m_outputDir = new DataPath(DataPath.Root.PersistentDataPath, "");
         public int m_resolutionWidth = 300;
@@ -26,6 +26,7 @@ namespace UTJ
         public int m_keyframe = 0;
         public Shader m_sh_copy;
 
+        string m_output_file;
         fcAPI.fcGIFContext m_gif;
         Material m_mat_copy;
         Mesh m_quad;
@@ -41,28 +42,25 @@ namespace UTJ
             set { m_recode = value; }
         }
 
-        public override bool WriteFile(string path = "", int begin_frame = 0, int end_frame = -1)
+        public override string GetOutputPath()
+        {
+            return m_outputDir.GetPath() + "/" + m_output_file;
+        }
+
+        public override bool FlushFile()
+        {
+            return FlushFile(0, -1);
+        }
+
+        public override bool FlushFile(int begin_frame, int end_frame)
         {
             bool ret = false;
             if (m_gif.ptr != IntPtr.Zero)
             {
-                if (path.Length == 0)
-                {
-                    path = m_outputDir.GetPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
-                }
+                m_output_file = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
+                var path = GetOutputPath();
                 ret = fcAPI.fcGifWriteFile(m_gif, path, begin_frame, end_frame);
-                Debug.Log("GifCapturer.WriteFile() : " + path);
-            }
-            return ret;
-        }
-
-        public override int WriteMemory(System.IntPtr dst_buf, int begin_frame = 0, int end_frame = -1)
-        {
-            int ret = 0;
-            if (m_gif.ptr != IntPtr.Zero)
-            {
-                ret = fcAPI.fcGifWriteMemory(m_gif, dst_buf, begin_frame, end_frame);
-                Debug.Log("GifCapturer.WriteMemry()");
+                Debug.Log("GifCapturer.FlushFile(" + begin_frame + ", " + end_frame + "): " + path);
             }
             return ret;
         }
