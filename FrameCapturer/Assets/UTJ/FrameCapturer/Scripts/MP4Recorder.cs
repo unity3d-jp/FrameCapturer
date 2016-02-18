@@ -13,7 +13,7 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/MP4Capturer")]
     [RequireComponent(typeof(Camera))]
-    public class MP4Capturer : IMovieRecorder
+    public class MP4Recorder : IMovieRecorder
     {
         public DataPath m_outputDir = new DataPath(DataPath.Root.PersistentDataPath, "");
         public bool m_captureVideo = true;
@@ -128,10 +128,7 @@ namespace UTJ
 
         void Start()
         {
-#if UNITY_EDITOR
-#else
             fcAPI.fcSetModulePath(Application.persistentDataPath);
-#endif
             fcAPI.fcMP4DownloadCodec(null);
         }
 

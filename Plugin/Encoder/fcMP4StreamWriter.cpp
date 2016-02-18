@@ -68,7 +68,7 @@ void fcMP4StreamWriter::mp4Begin()
 
     m_mdat_begin = os.tellp();
 
-    os  << u32_be(0x1)
+    os  << u32_be(0x1) // 32bit mdat length
         << u32_be('mdat')
 #ifdef fcMP464BitLength
         << u64(0) // 64bit mdat length

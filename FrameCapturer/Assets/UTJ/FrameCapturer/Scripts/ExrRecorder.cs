@@ -13,7 +13,7 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/ExrCapturer")]
     [RequireComponent(typeof(Camera))]
-    public class ExrCapturer : MonoBehaviour
+    public class ExrRecorder : MonoBehaviour
     {
         public enum DepthFormat
         {

@@ -12,7 +12,7 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/ExrOffscreenCapturer")]
     [RequireComponent(typeof(Camera))]
-    public class ExrOffscreenCapturer : MonoBehaviour
+    public class ExrOffscreenRecorder : MonoBehaviour
     {
         [System.Serializable]
         public class ChannelData

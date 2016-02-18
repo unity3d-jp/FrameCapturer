@@ -1,8 +1,10 @@
 #ifndef fcFoundation_h
 #define fcFoundation_h
 
-#include "Buffer.h"
+class BinaryStream;
 typedef BinaryStream fcStream;
+
+#include "Buffer.h"
 #include "Misc.h"
 #include "FrameCapturer.h"
 
