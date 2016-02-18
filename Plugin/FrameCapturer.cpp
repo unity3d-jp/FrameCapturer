@@ -211,7 +211,7 @@ fcCLinkage fcExport void fcDestroyStream(fcStream *s)
     delete s;
 }
 
-fcCLinkage fcExport fcBufferData fcGetBufferData(fcStream *s)
+fcCLinkage fcExport fcBufferData fcStreamGetBufferData(fcStream *s)
 {
     fcBufferData ret;
     if (BufferStream *bs = dynamic_cast<BufferStream*>(s)) {
@@ -219,6 +219,11 @@ fcCLinkage fcExport fcBufferData fcGetBufferData(fcStream *s)
         ret.size = bs->get().size();
     }
     return ret;
+}
+
+fcCLinkage fcExport uint64_t fcStreamGetWrittenSize(fcStream *s)
+{
+    return s->tellp();
 }
 
 

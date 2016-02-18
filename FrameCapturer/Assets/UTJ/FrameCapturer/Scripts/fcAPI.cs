@@ -142,6 +142,7 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern fcStream     fcCreateFileStream(string path);
         [DllImport ("FrameCapturer")] public static extern fcStream     fcCreateMemoryStream();
         [DllImport ("FrameCapturer")] public static extern void         fcDestroyStream(fcStream s);
+        [DllImport ("FrameCapturer")] public static extern ulong        fcStreamGetWrittenSize(fcStream s);
 
         [DllImport ("FrameCapturer")] public static extern bool         fcMP4DownloadCodec(fcDownloadCallback cb);
         [DllImport ("FrameCapturer")] public static extern fcMP4Context fcMP4CreateContext(ref fcMP4Config conf);
