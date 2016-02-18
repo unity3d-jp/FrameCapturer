@@ -50,9 +50,9 @@ namespace UTJ
             return m_recorder.GetOutputPath();
         }
 
-        public override bool FlushFile()
+        public override void FlushFile()
         {
-            return m_recorder.FlushFile(m_beginFrame, m_endFrame);
+            m_recorder.FlushFile(m_beginFrame, m_endFrame);
         }
 
         public override void ResetRecordingState()
@@ -71,7 +71,7 @@ namespace UTJ
             get { return m_beginFrame; }
             set
             {
-                m_beginFrame = m_currentFrame;
+                m_beginFrame = value;
                 if (m_endFrame >= 0)
                 {
                     m_endFrame = Mathf.Max(m_endFrame, m_beginFrame);
@@ -85,7 +85,7 @@ namespace UTJ
             get { return m_endFrame; }
             set
             {
-                m_endFrame = m_currentFrame;
+                m_endFrame = value;
                 m_beginFrame = Mathf.Min(m_endFrame, m_beginFrame);
                 m_updateStatus = true;
             }
@@ -96,11 +96,27 @@ namespace UTJ
             get { return m_currentFrame; }
             set
             {
-                m_currentFrame = (int)value;
+                m_currentFrame = value;
                 m_updateStatus = true;
                 m_updatePreview = true;
                 m_inputCurrentFrame.text = value.ToString();
             }
+        }
+
+
+        public void SetCurrentFrame(float v)
+        {
+            currentFrame = (int)v;
+        }
+
+        public void SetBeginFrame()
+        {
+            beginFrame = currentFrame;
+        }
+
+        public void SetEndFrame()
+        {
+            endFrame = currentFrame;
         }
 
         public void EraseFrames()

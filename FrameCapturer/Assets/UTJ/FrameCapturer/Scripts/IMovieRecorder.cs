@@ -31,7 +31,7 @@ namespace UTJ
 
         public abstract bool record { get; set; }
         public abstract string GetOutputPath();
-        public abstract bool FlushFile();
+        public abstract void FlushFile();
         public abstract void ResetRecordingState();
     }
 }
