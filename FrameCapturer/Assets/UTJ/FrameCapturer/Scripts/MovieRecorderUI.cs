@@ -41,9 +41,9 @@ namespace UTJ
             return m_recorder.GetOutputPath();
         }
 
-        public override bool FlushFile()
+        public override void FlushFile()
         {
-            return m_recorder.FlushFile();
+            m_recorder.FlushFile();
         }
 
         public override void ResetRecordingState()
