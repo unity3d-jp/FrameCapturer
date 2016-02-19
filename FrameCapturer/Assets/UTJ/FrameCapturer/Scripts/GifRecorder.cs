@@ -10,6 +10,7 @@ namespace UTJ
     [RequireComponent(typeof(Camera))]
     public class GifRecorder : IEditableMovieRecorder
     {
+        [Tooltip("output directory. filename is generated automatically.")]
         public DataPath m_outputDir = new DataPath(DataPath.Root.PersistentDataPath, "");
         public int m_resolutionWidth = 300;
         public int m_numColors = 255;

@@ -9,10 +9,20 @@ namespace UTJ
     [RequireComponent(typeof(Camera))]
     public class MP4Recorder : IMovieRecorder
     {
+        public enum FramerateMode
+        {
+            Variable,
+            Constant,
+        }
+
+        [Tooltip("output directory. filename is generated automatically.")]
         public DataPath m_outputDir = new DataPath(DataPath.Root.PersistentDataPath, "");
         public bool m_captureVideo = true;
         public bool m_captureAudio = true;
         public int m_resolutionWidth = 300;
+        public FramerateMode m_framerateMode = FramerateMode.Variable;
+        [Tooltip("relevant only if Framerate Mode is Constant")]
+        public int m_framerate = 30;
         public int m_captureEveryNthFrame = 1;
         public int m_videoBitrate = 1024000;
         public int m_audioBitrate = 64000;
@@ -28,7 +38,7 @@ namespace UTJ
         CommandBuffer m_cb;
         RenderTexture m_scratch_buffer;
         Camera m_cam;
-        int m_num_video_frame;
+        int m_num_video_frames;
         bool m_record = false;
 
 
@@ -54,7 +64,7 @@ namespace UTJ
             return ret;
         }
         public override RenderTexture GetScratchBuffer() { return m_scratch_buffer; }
-        public override int GetFrameCount() { return m_num_video_frame; }
+        public override int GetFrameCount() { return m_num_video_frames; }
 
         public override bool FlushFile()
         {
@@ -82,7 +92,7 @@ namespace UTJ
             m_scratch_buffer.wrapMode = TextureWrapMode.Repeat;
             m_scratch_buffer.Create();
 
-            m_num_video_frame = 0;
+            m_num_video_frames = 0;
             m_mp4conf = fcAPI.fcMP4Config.default_value;
             m_mp4conf.video = m_captureVideo;
             m_mp4conf.audio = m_captureAudio;
@@ -167,14 +177,20 @@ namespace UTJ
             {
                 yield return new WaitForEndOfFrame();
 
-                int frame = m_num_video_frame++;
-                if (frame % m_captureEveryNthFrame == 0)
+                if (Time.frameCount % m_captureEveryNthFrame == 0)
                 {
+                    ulong timestamp = ~0LU;
+                    if(m_framerateMode == FramerateMode.Constant)
+                    {
+                        timestamp = 1000000000LU / (ulong)m_framerate * (ulong)m_num_video_frames;
+                    }
+
                     m_mat_copy.SetPass(0);
                     Graphics.SetRenderTarget(m_scratch_buffer);
                     Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                     Graphics.SetRenderTarget(null);
-                    fcAPI.fcMP4AddVideoFrameTexture(m_ctx, m_scratch_buffer.GetNativeTexturePtr());
+                    fcAPI.fcMP4AddVideoFrameTexture(m_ctx, m_scratch_buffer.GetNativeTexturePtr(), timestamp);
+                    m_num_video_frames++;
                 }
             }
         }
