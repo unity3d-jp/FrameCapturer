@@ -23,6 +23,7 @@ namespace UTJ
         public bool m_captureGBuffer = true;
         public DepthFormat m_depthFormat = DepthFormat.Float;
 
+        [Tooltip("output directory. filename is generated automatically.")]
         public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "ExrOutput");
         public string m_filenameFramebuffer = "FrameBuffer";
         public string m_filenameGBuffer = "GBuffer";

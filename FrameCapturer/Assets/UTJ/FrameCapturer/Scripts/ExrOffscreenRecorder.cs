@@ -24,6 +24,7 @@ namespace UTJ
 
         public CaptureData[] m_targets;
 
+        [Tooltip("output directory. filename is generated automatically.")]
         public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "ExrOutput");
         public string m_outputFilename = "Offscreen";
         public int m_beginFrame = 0;
