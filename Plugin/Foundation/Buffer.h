@@ -209,8 +209,8 @@ public:
 
     // dummy
     size_t  tellg() override { return 0; }
-    void    seekg(size_t pos) override {}
-    size_t  read(void *dst, size_t len) override { return 0; }
+    void    seekg(size_t /*pos*/) override {}
+    size_t  read(void* /*dst*/, size_t /*len*/) override { return 0; }
 
     size_t tellp() override
     {
@@ -262,8 +262,8 @@ public:
 
     // dummy
     size_t  tellp() override { return 0; }
-    void    seekp(size_t pos) override {}
-    size_t  write(const void *data, size_t len) override { return 0; }
+    void    seekp(size_t /*pos*/) override {}
+    size_t  write(const void* /*data*/, size_t /*len*/) override { return 0; }
 
 protected:
     std::istream& m_is;

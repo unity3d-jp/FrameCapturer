@@ -231,7 +231,7 @@ int fcGifContext::writeMemory(void *buf, int begin_frame, int end_frame)
 
 int fcGifContext::getFrameCount()
 {
-    return m_gif_buffers.size();
+    return (int)m_gif_buffers.size();
 }
 
 void fcGifContext::getFrameData(void *tex, int frame)

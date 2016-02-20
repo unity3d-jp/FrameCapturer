@@ -13,8 +13,8 @@ bool BZ2Decompress(std::vector<char> &dst, const void *src, size_t src_len)
 
     int ret = 0;
     for (;;) {
-        uint32_t dst_len = dst.size();
-        BZ2_bzBuffToBuffDecompress(&dst[0], &dst_len, (char*)src, src_len, 0, 0);
+        uint32_t dst_len = (uint32_t)dst.size();
+        BZ2_bzBuffToBuffDecompress(&dst[0], &dst_len, (char*)src, (uint32_t)src_len, 0, 0);
         if (ret == BZ_OUTBUFF_FULL) {
             dst.resize(dst.size() * 2);
         }

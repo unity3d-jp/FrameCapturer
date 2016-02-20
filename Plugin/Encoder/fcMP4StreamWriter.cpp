@@ -177,7 +177,7 @@ void fcMP4StreamWriter::mp4End()
         for (size_t i = 1; i < frame_info.size(); ++i) {
             auto& prev = frame_info[i - 1];
             auto& cur = frame_info[i];
-            uint32_t duration = (cur.timestamp - prev.timestamp) / 1000000; // nanosec to millisec
+            uint32_t duration = uint32_t((cur.timestamp - prev.timestamp) / 1000000); // nanosec to millisec
             total_duration_ms += duration;
 
             if (!decode_times.empty() && decode_times.back().value == duration) {
