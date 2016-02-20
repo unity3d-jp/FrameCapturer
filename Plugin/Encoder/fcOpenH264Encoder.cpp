@@ -148,7 +148,6 @@ bool fcOpenH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, uint6
 // OpenH264 downloader
 // -------------------------------------------------------------
 
-extern std::string g_fcModulePath;
 
 namespace {
 
@@ -156,7 +155,7 @@ namespace {
 
     std::string fcGetOpenH264ModulePath()
     {
-        std::string ret = !g_fcModulePath.empty() ? g_fcModulePath : DLLGetDirectoryOfCurrentModule();
+        std::string ret = !fcMP4GetModulePath().empty() ? fcMP4GetModulePath() : DLLGetDirectoryOfCurrentModule();
         if (!ret.empty() && (ret.back() != '/' && ret.back() != '\\')) {
             ret += "/";
         }
@@ -172,17 +171,17 @@ namespace {
     {
         std::string response;
         if (HTTPGet(OpenH264URL, response)) {
-            cb(false, "HTTP Get completed");
+            cb(fcDownloadState_InProgress, "HTTP Get completed");
             if (BZ2DecompressToFile(fcGetOpenH264ModulePath().c_str(), &response[0], response.size()))
             {
-                cb(true, "BZ2 Decompress completed");
+                cb(fcDownloadState_Completed, "BZ2 Decompress completed");
             }
             else {
-                cb(true, "BZ2 Decompress failed");
+                cb(fcDownloadState_Error, "BZ2 Decompress failed");
             }
         }
         else {
-            cb(true, "HTTP Get failed");
+            cb(fcDownloadState_Error, "HTTP Get failed");
         }
 
         g_download_thread->detach();
@@ -194,10 +193,10 @@ namespace {
 
 bool fcDownloadOpenH264(fcDownloadCallback cb)
 {
-    if (cb == nullptr) { cb = &fcDownloadCB_Dummy; }
+    if (cb == nullptr) { cb = fcDownloadCB_Dummy; }
 
     if (fcLoadOpenH264Module()) {
-        cb(true, "module already exists");
+        cb(fcDownloadState_Completed, "file already exists");
         return true;
     }
 

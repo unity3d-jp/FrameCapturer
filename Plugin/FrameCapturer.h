@@ -179,8 +179,15 @@ struct fcMP4Config
         , audio_scale(1.0f), audio_sample_rate(48000), audio_num_channels(2), audio_bitrate(64000)
     {}
 };
-typedef void(*fcDownloadCallback)(bool is_complete, const char *status);
-fcCLinkage fcExport bool            fcMP4DownloadCodec(fcDownloadCallback cb);
+
+enum fcDownloadState {
+    fcDownloadState_Idle,
+    fcDownloadState_Completed,
+    fcDownloadState_Error,
+    fcDownloadState_InProgress,
+};
+fcCLinkage fcExport bool            fcMP4DownloadCodecBegin();
+fcCLinkage fcExport fcDownloadState fcMP4DownloadCodecGetState();
 
 fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
 fcCLinkage fcExport void            fcMP4DestroyContext(fcIMP4Context *ctx);

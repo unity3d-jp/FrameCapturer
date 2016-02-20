@@ -176,4 +176,8 @@ struct fcSampleToChunk
     uint32_t sample_description_ID;
 };
 
+typedef std::function<void(fcDownloadState, const char *message)> fcDownloadCallback;
+
+const std::string fcMP4GetModulePath();
+
 #endif // fcMP4Internal_h

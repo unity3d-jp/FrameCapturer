@@ -58,10 +58,12 @@ void DownloadCallback(bool is_complete, const char *status)
 int main(int argc, char** argv)
 {
     using namespace std::literals;
-    fcMP4DownloadCodec(DownloadCallback);
+    fcMP4DownloadCodecBegin();
     for (int i = 0; i < 10; ++i) {
-        if (g_download_completed) { break; }
-        std::this_thread::sleep_for(1s);
+        if (fcMP4DownloadCodecGetState() == fcDownloadState_InProgress) {
+            std::this_thread::sleep_for(1s);
+        }
+        else { break; }
     }
 
     const int DurationInSeconds = 10;
