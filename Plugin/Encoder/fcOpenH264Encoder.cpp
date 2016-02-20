@@ -86,12 +86,12 @@ fcOpenH264Encoder::fcOpenH264Encoder(const fcH264EncoderConfig& conf)
     SEncParamBase param;
     memset(&param, 0, sizeof(SEncParamBase));
     param.iUsageType = SCREEN_CONTENT_REAL_TIME;
-    param.fMaxFrameRate = conf.max_framerate;
+    param.fMaxFrameRate = (float)conf.max_framerate;
     param.iPicWidth = conf.width;
     param.iPicHeight = conf.height;
     param.iTargetBitrate = conf.target_bitrate;
     param.iRCMode = RC_BITRATE_MODE;
-    int ret = m_encoder->Initialize(&param);
+    m_encoder->Initialize(&param);
 }
 
 fcOpenH264Encoder::~fcOpenH264Encoder()
@@ -101,7 +101,7 @@ fcOpenH264Encoder::~fcOpenH264Encoder()
     WelsDestroySVCEncoder_i(m_encoder);
 }
 
-bool fcOpenH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, uint64_t timestamp, bool force_keyframe)
+bool fcOpenH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, uint64_t timestamp, bool /*force_keyframe*/)
 {
     if (!m_encoder) { return false; }
 
@@ -163,10 +163,6 @@ namespace {
         return ret;
     }
 
-    void fcDownloadCB_Dummy(bool, const char*)
-    {
-    }
-
     void fcMP4DownloadCodecBody(fcDownloadCallback cb)
     {
         std::string response;
@@ -193,8 +189,6 @@ namespace {
 
 bool fcDownloadOpenH264(fcDownloadCallback cb)
 {
-    if (cb == nullptr) { cb = fcDownloadCB_Dummy; }
-
     if (fcLoadOpenH264Module()) {
         cb(fcDownloadState_Completed, "file already exists");
         return true;

@@ -38,7 +38,7 @@ bool fcLoadNVH264Module()
     if (g_nvencoder) { return true; }
 
     g_nvencoder = DLLLoad(NVEncoderDLL);
-    return g_nvencoder;
+    return g_nvencoder != nullptr;
 }
 
 

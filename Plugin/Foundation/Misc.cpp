@@ -52,7 +52,7 @@ void DLLAddSearchPath(const char *path_to_add)
     std::string path;
     path.resize(1024 * 64);
 
-    DWORD ret = ::GetEnvironmentVariableA("PATH", &path[0], path.size());
+    DWORD ret = ::GetEnvironmentVariableA("PATH", &path[0], (DWORD)path.size());
     path.resize(ret);
     path += ";";
     path += path_to_add;

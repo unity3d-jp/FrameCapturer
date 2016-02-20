@@ -175,7 +175,7 @@ bool fcGraphicsDeviceD3D9::readTexture(void *o_buf, size_t bufsize, void *tex_, 
 
             // D3D9 の ARGB32 のピクセルの並びは BGRA になっているので並べ替える
             if (format == fcTextureFormat_ARGB32) {
-                BGRA_RGBA_conversion((RGBA<uint8_t>*)o_buf, bufsize / 4);
+                BGRA_RGBA_conversion((RGBA<uint8_t>*)o_buf, int(bufsize / 4));
             }
             ret = true;
         }
@@ -214,7 +214,7 @@ bool fcGraphicsDeviceD3D9::writeTexture(void *o_tex, int width, int height, fcTe
 
         // こちらも ARGB32 の場合 BGRA に並べ替える必要がある
         if (format == fcTextureFormat_ARGB32) {
-            copy_with_BGRA_RGBA_conversion((RGBA<uint8_t>*)wpixels, (RGBA<uint8_t>*)rpixels, bufsize / 4);
+            copy_with_BGRA_RGBA_conversion((RGBA<uint8_t>*)wpixels, (RGBA<uint8_t>*)rpixels, int(bufsize / 4));
         }
         else {
             memcpy(wpixels, rpixels, bufsize);

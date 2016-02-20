@@ -1,3 +1,7 @@
+#ifdef _MSC_VER
+    #pragma warning(disable: 4190)
+    #define _CRT_SECURE_NO_WARNINGS
+#endif
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
@@ -41,7 +45,7 @@ void CreateAudioData(float *samples, int num_samples, int scroll)
 
 // custom stream functions
 size_t tellp(void *f) { return ftell((FILE*)f); }
-void   seekp(void *f, size_t pos) { fseek((FILE*)f, pos, SEEK_SET); }
+void   seekp(void *f, size_t pos) { fseek((FILE*)f, (long)pos, SEEK_SET); }
 size_t write(void *f, const void *data, size_t len) { return fwrite(data, 1, len, (FILE*)f); }
 
 
@@ -101,8 +105,8 @@ int main(int argc, char** argv)
         std::vector<float> audio_sample(SamplingRate);
         fcTime t = 0;
         for (int i = 0; i < DurationInSeconds; ++i) {
-            CreateAudioData(&audio_sample[0], audio_sample.size(), i);
-            fcMP4AddAudioFrame(ctx, &audio_sample[0], audio_sample.size(), t);
+            CreateAudioData(&audio_sample[0], (int)audio_sample.size(), i);
+            fcMP4AddAudioFrame(ctx, &audio_sample[0], (int)audio_sample.size(), t);
             t += 1000000000LLU;
         }
     });

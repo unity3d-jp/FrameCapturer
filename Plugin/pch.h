@@ -1,4 +1,9 @@
-﻿#include <algorithm>
+﻿#ifdef _MSC_VER
+    #pragma warning(disable: 4190)
+    #define _CRT_SECURE_NO_WARNINGS
+#endif
+
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <deque>
@@ -14,10 +19,6 @@
 #include <sstream>
 
 #define fcImpl
-
-#ifdef _MSC_VER
-    #pragma warning(disable: 4190)
-#endif
 
 #if defined(_WIN32)
     #define fcWindows

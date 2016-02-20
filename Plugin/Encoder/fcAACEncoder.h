@@ -17,7 +17,7 @@ public:
     virtual ~fcIAACEncoder() {}
     virtual const char* getEncoderName() = 0;
     virtual const Buffer& getEncoderInfo() = 0;
-    virtual bool encode(fcAACFrame& dst, const float *samples, int num_samples) = 0;
+    virtual bool encode(fcAACFrame& dst, const float *samples, size_t num_samples) = 0;
 };
 
 bool fcLoadFAACModule();
