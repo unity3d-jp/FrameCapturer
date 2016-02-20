@@ -11,7 +11,7 @@
 
 struct RGBA { uint8_t r, g, b, a; };
 
-void CreateTestVideoData(RGBA *rgba, int width, int height, int scroll)
+void CreateVideoData(RGBA *rgba, int width, int height, int scroll)
 {
     const int block_size = 32;
     for (int iy = 0; iy < height; iy++) {
@@ -32,7 +32,7 @@ void CreateTestVideoData(RGBA *rgba, int width, int height, int scroll)
 
 // audio data generator
 
-void CreateTestAudioData(float *samples, int num_samples, int scroll)
+void CreateAudioData(float *samples, int num_samples, int scroll)
 {
     for (int i = 0; i < num_samples; ++i) {
         samples[i] = std::sin((float(i + (num_samples * scroll)) * 0.5f) * (3.14159f / 180.0f)) * 32767.0f;
@@ -45,19 +45,11 @@ void   seekp(void *f, size_t pos) { fseek((FILE*)f, pos, SEEK_SET); }
 size_t write(void *f, const void *data, size_t len) { return fwrite(data, 1, len, (FILE*)f); }
 
 
-// download callbacks
-
-bool g_download_completed = false;
-
-void DownloadCallback(bool is_complete, const char *status)
-{
-    puts(status);
-    g_download_completed = is_complete;
-}
-
 int main(int argc, char** argv)
 {
     using namespace std::literals;
+
+    // download OpenH264 codec
     fcMP4DownloadCodecBegin();
     for (int i = 0; i < 10; ++i) {
         if (fcMP4DownloadCodecGetState() == fcDownloadState_InProgress) {
@@ -81,11 +73,13 @@ int main(int argc, char** argv)
     conf.audio_bitrate = 64000;
 
 
+    // create output streams
     fcStream* fstream = fcCreateFileStream("file_stream.mp4");
     fcStream* mstream = fcCreateMemoryStream();
     FILE *ofile = fopen("custom_stream.mp4", "wb");
     fcStream* cstream = fcCreateCustomStream(ofile, &tellp, &seekp, &write);
 
+    // create mp4 context and add output streams
     fcIMP4Context *ctx = fcMP4CreateContext(&conf);
     fcMP4AddOutputStream(ctx, fstream);
     fcMP4AddOutputStream(ctx, mstream);
@@ -96,7 +90,7 @@ int main(int argc, char** argv)
         std::vector<RGBA> video_frame(Width * Height);
         fcTime t = 0;
         for (int i = 0; i < DurationInSeconds * FrameRate; ++i) {
-            CreateTestVideoData(&video_frame[0], Width, Height, i);
+            CreateVideoData(&video_frame[0], Width, Height, i);
             fcMP4AddVideoFramePixels(ctx, &video_frame[0], fcColorSpace_RGBA, t);
             t += 1000000000LLU / FrameRate;
         }
@@ -107,17 +101,20 @@ int main(int argc, char** argv)
         std::vector<float> audio_sample(SamplingRate);
         fcTime t = 0;
         for (int i = 0; i < DurationInSeconds; ++i) {
-            CreateTestAudioData(&audio_sample[0], audio_sample.size(), i);
+            CreateAudioData(&audio_sample[0], audio_sample.size(), i);
             fcMP4AddAudioFrame(ctx, &audio_sample[0], audio_sample.size(), t);
             t += 1000000000LLU;
         }
     });
 
+    // wait
     video_thread.join();
     audio_thread.join();
 
+    // destroy mp4 context
     fcMP4DestroyContext(ctx);
 
+    // destroy output streams
     {
         fcBufferData bd = fcStreamGetBufferData(mstream);
         std::fstream of("memory_stream.mp4", std::ios::binary | std::ios::out);
