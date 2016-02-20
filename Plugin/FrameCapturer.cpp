@@ -231,43 +231,56 @@ fcCLinkage fcExport uint64_t fcStreamGetWrittenSize(fcStream *s)
 #ifdef fcSupportMP4
 #include "Encoder/fcMP4File.h"
 
+
 #ifdef fcMP4SplitModule
     #define fcMP4ModuleName  "FrameCapturer_MP4" fcDLLExt
-    static module_t fcMP4Module;
-    static fcMP4SetModulePathImplT fcMP4SetModulePathImpl;
-    static fcMP4DownloadCodecImplT fcMP4DownloadCodecImpl;
-    static fcMP4CreateContextImplT fcMP4CreateContextImpl;
-#else
-    fcCLinkage fcExport void            fcMP4SetModulePathImpl(const char *path)
-    fcCLinkage fcExport bool            fcMP4DownloadCodecImpl(fcDownloadCallback cb)
-    fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev);
+    namespace {
+#define decl(Name) Name##_t Name;
+        fcMP4EachFunctions(decl)
+#undef decl
+
+        module_t fcMP4Module;
+        void fcMP4InitializeModule()
+        {
+            if (!fcMP4Module) {
+                fcMP4Module = DLLLoad(fcMP4ModuleName);
+                if (fcMP4Module) {
+#define imp(Name) (void*&)Name = DLLGetSymbol(fcMP4Module, #Name);
+                    fcMP4EachFunctions(imp)
+#undef imp
+                }
+            }
+        }
+    }
 #endif
 
 #ifdef fcMP4SplitModule
-static void fcMP4InitializeModule()
-{
-    if (!fcMP4Module) {
-        fcMP4Module = DLLLoad(fcMP4ModuleName);
-        if (fcMP4Module) {
-            (void*&)fcMP4SetModulePathImpl = DLLGetSymbol(fcMP4Module, "fcMP4SetModulePathImpl");
-            (void*&)fcMP4DownloadCodecImpl = DLLGetSymbol(fcMP4Module, "fcMP4DownloadCodecImpl");
-            (void*&)fcMP4CreateContextImpl = DLLGetSymbol(fcMP4Module, "fcMP4CreateContextImpl");
-        }
-    }
-}
 #endif // fcMP4SplitModule
 
-fcCLinkage fcExport bool fcMP4DownloadCodec(fcDownloadCallback cb)
+fcCLinkage fcExport bool fcMP4DownloadCodecBegin()
 {
 #ifdef fcMP4SplitModule
     fcMP4InitializeModule();
-    if (fcMP4SetModulePathImpl && fcMP4DownloadCodecImpl) {
+    if (fcMP4SetModulePathImpl && fcMP4DownloadCodecBeginImpl) {
         fcMP4SetModulePathImpl(fcGetModulePath());
-        return fcMP4DownloadCodecImpl(cb);
+        return fcMP4DownloadCodecBeginImpl();
     }
     return false;
 #else
-    return fcMP4DownloadCodecImpl(cb);
+    return fcMP4DownloadCodecBeginImpl();
+#endif
+}
+
+fcCLinkage fcExport fcDownloadState fcMP4DownloadCodecGetState()
+{
+#ifdef fcMP4SplitModule
+    fcMP4InitializeModule();
+    if (fcMP4DownloadCodecGetStateImpl) {
+        return fcMP4DownloadCodecGetStateImpl();
+    }
+    return fcDownloadState_Error;
+#else
+    return fcMP4DownloadCodecGetStateImpl();
 #endif
 }
 

@@ -30,6 +30,15 @@ namespace UTJ
             RInt,
         };
 
+        public enum fcDownloadState
+        {
+            Idle,
+            Completed,
+            Error,
+            InProgress,
+        };
+
+
         // -------------------------------------------------------------
         // Foundation
         // -------------------------------------------------------------
@@ -134,7 +143,6 @@ namespace UTJ
         };
         public struct fcMP4Context { public IntPtr ptr; }
         public struct fcStream { public IntPtr ptr; }
-        public delegate void fcDownloadCallback(bool is_complete, IntPtr message);
 
         [DllImport ("FrameCapturer")] public static extern ulong        fcGetTime();
         [DllImport ("FrameCapturer")] public static extern fcStream     fcCreateFileStream(string path);
@@ -142,13 +150,14 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern void         fcDestroyStream(fcStream s);
         [DllImport ("FrameCapturer")] public static extern ulong        fcStreamGetWrittenSize(fcStream s);
 
-        [DllImport ("FrameCapturer")] public static extern bool         fcMP4DownloadCodec(fcDownloadCallback cb);
-        [DllImport ("FrameCapturer")] public static extern fcMP4Context fcMP4CreateContext(ref fcMP4Config conf);
-        [DllImport ("FrameCapturer")] public static extern void         fcMP4DestroyContext(fcMP4Context ctx);
-        [DllImport ("FrameCapturer")] public static extern void         fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);
-        [DllImport ("FrameCapturer")] public static extern bool         fcMP4AddVideoFrameTexture(fcMP4Context ctx, IntPtr tex, ulong time = ~0LU);
-        [DllImport ("FrameCapturer")] public static extern bool         fcMP4AddVideoFramePixels(fcMP4Context ctx, IntPtr pixels, fcColorSpace cs, ulong time = ~0LU);
-        [DllImport ("FrameCapturer")] public static extern bool         fcMP4AddAudioFrame(fcMP4Context ctx, float[] samples, int num_samples, ulong time = ~0LU);
+        [DllImport ("FrameCapturer")] public static extern bool             fcMP4DownloadCodecBegin();
+        [DllImport ("FrameCapturer")] public static extern fcDownloadState  fcMP4DownloadCodecGetState();
+        [DllImport ("FrameCapturer")] public static extern fcMP4Context     fcMP4CreateContext(ref fcMP4Config conf);
+        [DllImport ("FrameCapturer")] public static extern void             fcMP4DestroyContext(fcMP4Context ctx);
+        [DllImport ("FrameCapturer")] public static extern void             fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);
+        [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddVideoFrameTexture(fcMP4Context ctx, IntPtr tex, ulong time = ~0LU);
+        [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddVideoFramePixels(fcMP4Context ctx, IntPtr pixels, fcColorSpace cs, ulong time = ~0LU);
+        [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddAudioFrame(fcMP4Context ctx, float[] samples, int num_samples, ulong time = ~0LU);
     }
 
 

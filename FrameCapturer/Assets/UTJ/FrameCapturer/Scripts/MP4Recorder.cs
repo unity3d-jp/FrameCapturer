@@ -133,7 +133,7 @@ namespace UTJ
         void Start()
         {
             fcAPI.fcSetModulePath(Application.persistentDataPath);
-            fcAPI.fcMP4DownloadCodec(null);
+            fcAPI.fcMP4DownloadCodecBegin();
         }
 
         void OnEnable()

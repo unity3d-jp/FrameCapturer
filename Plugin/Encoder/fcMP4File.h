@@ -23,10 +23,24 @@ protected:
     virtual ~fcIMP4Context() {}
 };
 
-typedef void(*fcDownloadCallback)(bool is_complete, const char *status);
+#define fcMP4EachFunctions(Body)\
+    Body(fcMP4SetModulePathImpl)\
+    Body(fcMP4DownloadCodecBeginImpl)\
+    Body(fcMP4DownloadCodecGetStateImpl)\
+    Body(fcMP4CreateContextImpl)
 
-typedef void            (*fcMP4SetModulePathImplT)(const char *path);
-typedef bool            (*fcMP4DownloadCodecImplT)(fcDownloadCallback cb);
-typedef fcIMP4Context*  (*fcMP4CreateContextImplT)(fcMP4Config &conf, fcIGraphicsDevice*);
+#ifdef fcMP4SplitModule
+    #define fcMP4API fcCLinkage fcExport
+    typedef void            (*fcMP4SetModulePathImpl_t)(const char *path);
+    typedef bool            (*fcMP4DownloadCodecBeginImpl_t)();
+    typedef fcDownloadState (*fcMP4DownloadCodecGetStateImpl_t)();
+    typedef fcIMP4Context*  (*fcMP4CreateContextImpl_t)(fcMP4Config &conf, fcIGraphicsDevice*);
+#else
+    #define fcMP4API 
+    fcMP4API void            fcMP4SetModulePathImpl(const char *path);
+    fcMP4API bool            fcMP4DownloadCodecBeginImpl();
+    fcMP4API fcDownloadState fcMP4DownloadCodecGetStateImpl();
+    fcMP4API fcIMP4Context*  fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice*);
+#endif
 
 #endif // fcMP4File_h
