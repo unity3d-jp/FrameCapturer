@@ -51,7 +51,6 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3A7D5CB3-3A06-418E-B457-86456A4EB2F0}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <ProjectName>FrameCapturer_EXR</ProjectName>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

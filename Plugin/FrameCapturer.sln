@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrameCapturer_EXR", "FrameC
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{FECF9257-E769-403F-89EC-1767901184CD}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrameCapturer_EXR", "FrameCapturer_PNG.vcxproj", "{100CA7B7-EFE5-4255-B4CA-D903038333B3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -71,6 +73,18 @@ Global
 		{3A7D5CB3-3A06-418E-B457-86456A4EB2F0}.MasterLib|Win32.Build.0 = MasterLib|Win32
 		{3A7D5CB3-3A06-418E-B457-86456A4EB2F0}.MasterLib|x64.ActiveCfg = MasterLib|x64
 		{3A7D5CB3-3A06-418E-B457-86456A4EB2F0}.MasterLib|x64.Build.0 = MasterLib|x64
+		{100CA7B7-EFE5-4255-B4CA-D903038333B3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{100CA7B7-EFE5-4255-B4CA-D903038333B3}.Debug|Win32.Build.0 = Debug|Win32
+		{100CA7B7-EFE5-4255-B4CA-D903038333B3}.Debug|x64.ActiveCfg = Debug|x64
+		{100CA7B7-EFE5-4255-B4CA-D903038333B3}.Debug|x64.Build.0 = Debug|x64
+		{100CA7B7-EFE5-4255-B4CA-D903038333B3}.MasterDLL|Win32.ActiveCfg = MasterDLL|Win32
+		{100CA7B7-EFE5-4255-B4CA-D903038333B3}.MasterDLL|Win32.Build.0 = MasterDLL|Win32
+		{100CA7B7-EFE5-4255-B4CA-D903038333B3}.MasterDLL|x64.ActiveCfg = MasterDLL|x64
+		{100CA7B7-EFE5-4255-B4CA-D903038333B3}.MasterDLL|x64.Build.0 = MasterDLL|x64
+		{100CA7B7-EFE5-4255-B4CA-D903038333B3}.MasterLib|Win32.ActiveCfg = MasterLib|Win32
+		{100CA7B7-EFE5-4255-B4CA-D903038333B3}.MasterLib|Win32.Build.0 = MasterLib|Win32
+		{100CA7B7-EFE5-4255-B4CA-D903038333B3}.MasterLib|x64.ActiveCfg = MasterLib|x64
+		{100CA7B7-EFE5-4255-B4CA-D903038333B3}.MasterLib|x64.Build.0 = MasterLib|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

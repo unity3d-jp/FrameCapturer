@@ -19,6 +19,7 @@
 #include <cstdint>
 
 class fcIGraphicsDevice;
+class fcIPngContext;
 class fcIExrContext;
 class fcIGifContext;
 class fcIMP4Context;
@@ -84,6 +85,20 @@ fcCLinkage fcExport const char*     fcGetModulePath();
 
 fcCLinkage fcExport fcTime          fcGetTime();
 fcCLinkage fcExport fcTime          fcSecondsToTimestamp(double sec);
+
+
+// -------------------------------------------------------------
+// PNG Exporter
+// -------------------------------------------------------------
+
+struct fcPngConfig
+{
+    int max_active_tasks;
+};
+fcCLinkage fcExport fcIPngContext*  fcPngCreateContext(fcPngConfig *conf);
+fcCLinkage fcExport void            fcPngDestroyContext(fcIPngContext *ctx);
+fcCLinkage fcExport bool            fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcTextureFormat fmt, bool flipY);
+fcCLinkage fcExport bool            fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, bool flipY);
 
 
 // -------------------------------------------------------------
