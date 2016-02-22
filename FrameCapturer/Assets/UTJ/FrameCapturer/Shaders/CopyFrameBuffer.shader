@@ -7,6 +7,7 @@ CGINCLUDE
 #include "UnityCG.cginc"
 //#pragma multi_compile ___ UNITY_HDR_ON
 #pragma multi_compile ___ OFFSCREEN
+#pragma multi_compile ___ FILL_ALPHA
 
 sampler2D _TmpFrameBuffer;
 sampler2D _CameraGBufferTexture0;
@@ -73,17 +74,31 @@ gbuffer_out copy_gbuffer(v2f i)
     o.spec_smoothness   = tex2D(_CameraGBufferTexture1, t);
     o.normal            = tex2D(_CameraGBufferTexture2, t);
     o.emission          = tex2D(_CameraGBufferTexture3, t);
+#if FILL_ALPHA
+    o.diffuse.a         = 1.0;
+    o.spec_smoothness.a = 1.0;
+    o.normal.a          = 1.0;
+    o.emission.a        = 1.0;
+#endif // FILL_ALPHA
     return o;
 }
 
 float4 copy_depth(v2f i) : SV_Target
 {
-    return tex2D(_CameraDepthTexture, get_texcoord_gb(i)).rrrr;
+    float4 ret = tex2D(_CameraDepthTexture, get_texcoord_gb(i)).rrrr;
+#if FILL_ALPHA
+    ret.a = 1.0;
+#endif // FILL_ALPHA
+    return ret;
 }
 
 half4 copy_rendertarget(v2f i) : SV_Target
 {
-    return tex2D(_TmpRenderTarget, get_texcoord_gb(i));
+    half4 ret = tex2D(_TmpRenderTarget, get_texcoord_gb(i));
+#if FILL_ALPHA
+    ret.a = 1.0;
+#endif // FILL_ALPHA
+    return ret;
 }
 ENDCG
 
