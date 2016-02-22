@@ -19,20 +19,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="mp4test.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\FrameCapturer.vcxproj">
       <Project>{08361722-5520-47ac-a0c2-31e8a062b73f}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\FrameCapturer_MP4.vcxproj">
-      <Project>{067fa9e2-32cd-4c66-be1b-959edf510cc8}</Project>
-    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GifTest.cpp" />
+    <ClCompile Include="TestCommon.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TestCommon.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{7676585B-7ABD-4372-9E6A-05539D637E5A}</ProjectGuid>
+    <ProjectGuid>{F4B9B4B2-C4FF-48A0-9154-A2BD5A2D9130}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <ProjectName>MP4Test</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -83,7 +83,8 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <PostBuildEvent>
-      <Command>copy $(SolutionDir)external\libs\x86_64\libfaac.dll $(OutputPath)</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -116,7 +117,8 @@
       <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(SolutionDir)external\libs\x86\libfaac.dll $(OutputPath)</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Master|x64'">
@@ -142,7 +144,8 @@
       <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(SolutionDir)external\libs\x86_64\libfaac.dll $(OutputPath)</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">
@@ -167,7 +170,8 @@
       <AdditionalLibraryDirectories>C:\Project\OpenEXRExporter\Plugin\external\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(SolutionDir)external\libs\x86\libfaac.dll $(OutputPath)</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

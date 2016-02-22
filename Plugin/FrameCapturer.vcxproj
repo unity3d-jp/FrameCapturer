@@ -60,6 +60,9 @@
     <ProjectReference Include="FrameCapturer_MP4.vcxproj">
       <Project>{067fa9e2-32cd-4c66-be1b-959edf510cc8}</Project>
     </ProjectReference>
+    <ProjectReference Include="FrameCapturer_PNG.vcxproj">
+      <Project>{100ca7b7-efe5-4255-b4ca-d903038333b3}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{08361722-5520-47AC-A0C2-31E8A062B73F}</ProjectGuid>
