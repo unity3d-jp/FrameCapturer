@@ -6,7 +6,7 @@ using UnityEngine.Rendering;
 
 namespace UTJ
 {
-    [AddComponentMenu("UTJ/FrameCapturer/GifCapturer")]
+    [AddComponentMenu("UTJ/FrameCapturer/GifRecorder")]
     [RequireComponent(typeof(Camera))]
     public class GifRecorder : IEditableMovieRecorder
     {

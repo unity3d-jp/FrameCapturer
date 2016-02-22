@@ -8,7 +8,7 @@ using UnityEditor;
 
 namespace UTJ
 {
-    [AddComponentMenu("UTJ/FrameCapturer/ExrCapturer")]
+    [AddComponentMenu("UTJ/FrameCapturer/ExrRecorder")]
     [RequireComponent(typeof(Camera))]
     public class ExrRecorder : MonoBehaviour
     {

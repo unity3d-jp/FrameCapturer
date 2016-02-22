@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 namespace UTJ
 {
-    [AddComponentMenu("UTJ/FrameCapturer/MP4Capturer")]
+    [AddComponentMenu("UTJ/FrameCapturer/MP4Recorder")]
     [RequireComponent(typeof(Camera))]
     public class MP4Recorder : IMovieRecorder
     {
