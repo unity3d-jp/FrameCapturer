@@ -178,3 +178,24 @@ int fcGetPixelSize(fcPixelFormat format)
     }
     return 0;
 }
+
+fcPixelFormat fcGetPixelFormat(fcTextureFormat format)
+{
+    switch (format)
+    {
+    case fcTextureFormat_ARGB32:    return fcPixelFormat_RGBA8;
+
+    case fcTextureFormat_ARGBHalf:  return fcPixelFormat_RGBAHalf;
+    case fcTextureFormat_RGHalf:    return fcPixelFormat_RGHalf;
+    case fcTextureFormat_RHalf:     return fcPixelFormat_RHalf;
+
+    case fcTextureFormat_ARGBFloat: return fcPixelFormat_RGBAFloat;
+    case fcTextureFormat_RGFloat:   return fcPixelFormat_RGFloat;
+    case fcTextureFormat_RFloat:    return fcPixelFormat_RFloat;
+
+    case fcTextureFormat_ARGBInt:   return fcPixelFormat_RGBAInt;
+    case fcTextureFormat_RGInt:     return fcPixelFormat_RGInt;
+    case fcTextureFormat_RInt:      return fcPixelFormat_RInt;
+    }
+    return fcPixelFormat_Unknown;
+}

@@ -107,5 +107,6 @@ enum fcPixelFormat;
 
 int fcGetPixelSize(fcTextureFormat format);
 int fcGetPixelSize(fcPixelFormat format);
+fcPixelFormat fcGetPixelFormat(fcTextureFormat format);
 
 #endif // fcMisc_h
