@@ -89,31 +89,34 @@ int main(int argc, char** argv)
     fcMP4AddOutputStream(ctx, mstream);
     fcMP4AddOutputStream(ctx, cstream);
 
-    // add video data
-    std::thread video_thread = std::thread([&]() {
-        std::vector<RGBA> video_frame(Width * Height);
-        fcTime t = 0;
-        for (int i = 0; i < DurationInSeconds * FrameRate; ++i) {
-            CreateVideoData(&video_frame[0], Width, Height, i);
-            fcMP4AddVideoFramePixels(ctx, &video_frame[0], fcColorSpace_RGBA, t);
-            t += 1000000000LLU / FrameRate;
-        }
-    });
+    // create movie data
+    {
+        // add video frames
+        std::thread video_thread = std::thread([&]() {
+            std::vector<RGBA> video_frame(Width * Height);
+            fcTime t = 0;
+            for (int i = 0; i < DurationInSeconds * FrameRate; ++i) {
+                CreateVideoData(&video_frame[0], Width, Height, i);
+                fcMP4AddVideoFramePixels(ctx, &video_frame[0], fcColorSpace_RGBA, t);
+                t += 1000000000LLU / FrameRate;
+            }
+        });
 
-    // add audio data
-    std::thread audio_thread = std::thread([&]() {
-        std::vector<float> audio_sample(SamplingRate);
-        fcTime t = 0;
-        for (int i = 0; i < DurationInSeconds; ++i) {
-            CreateAudioData(&audio_sample[0], (int)audio_sample.size(), i);
-            fcMP4AddAudioFrame(ctx, &audio_sample[0], (int)audio_sample.size(), t);
-            t += 1000000000LLU;
-        }
-    });
+        // add audio frames
+        std::thread audio_thread = std::thread([&]() {
+            std::vector<float> audio_sample(SamplingRate);
+            fcTime t = 0;
+            for (int i = 0; i < DurationInSeconds; ++i) {
+                CreateAudioData(&audio_sample[0], (int)audio_sample.size(), i);
+                fcMP4AddAudioFrame(ctx, &audio_sample[0], (int)audio_sample.size(), t);
+                t += 1000000000LLU;
+            }
+        });
 
-    // wait
-    video_thread.join();
-    audio_thread.join();
+        // wait
+        video_thread.join();
+        audio_thread.join();
+    }
 
     // destroy mp4 context
     fcMP4DestroyContext(ctx);
