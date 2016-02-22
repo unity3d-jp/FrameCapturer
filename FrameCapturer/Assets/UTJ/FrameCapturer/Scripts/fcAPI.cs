@@ -48,6 +48,26 @@ namespace UTJ
 
 
         // -------------------------------------------------------------
+        // PNG Exporter
+        // -------------------------------------------------------------
+
+        public struct fcPngConfig
+        {
+            public int max_active_tasks;
+        };
+        public struct fcPNGContext { public IntPtr ptr; }
+
+        [DllImport ("FrameCapturer")] public static extern fcPNGContext fcPngCreateContext(ref fcPngConfig conf);
+        [DllImport ("FrameCapturer")] public static extern void         fcPngDestroyContext(fcPNGContext ctx);
+        [DllImport ("FrameCapturer")] public static extern bool         fcPngExportTexture(fcPNGContext ctx, string path, IntPtr tex, int width, int height, RenderTextureFormat f, bool flipY);
+        [DllImport ("FrameCapturer")] public static extern bool         fcPngExportPixels(fcPNGContext ctx, string path, IntPtr pixels, int width, int height, fcPixelFormat f, bool flipY);
+        public static bool fcPngExportTexture(fcPNGContext ctx, string path, RenderTexture tex, bool flipY)
+        {
+            return fcPngExportTexture(ctx, path, tex.GetNativeTexturePtr(), tex.width, tex.height, tex.format, flipY);
+        }
+
+
+        // -------------------------------------------------------------
         // EXR Exporter
         // -------------------------------------------------------------
 

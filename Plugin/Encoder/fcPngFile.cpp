@@ -125,10 +125,10 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
     int bits = 0;
     int color_type = 0;
 
-    if (fmt == fcPixelFormat_RGBA8 && fmt == fcPixelFormat_RGBAHalf && fmt == fcPixelFormat_RGBAFloat) {
+    if (fmt == fcPixelFormat_RGBA8 || fmt == fcPixelFormat_RGBAHalf || fmt == fcPixelFormat_RGBAFloat) {
         color_type = PNG_COLOR_TYPE_RGB_ALPHA;
     }
-    else if (fmt == fcPixelFormat_RGBHalf && fmt == fcPixelFormat_RGBFloat) {
+    else if (fmt == fcPixelFormat_RGBHalf || fmt == fcPixelFormat_RGBFloat) {
         color_type = PNG_COLOR_TYPE_RGB;
     }
     else {
@@ -146,7 +146,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
         int16_t *ipixels = (int16_t*)pixels;
         int n = (data.width * data.height * fcGetPixelSize(fmt)) / sizeof(half);
         for (int i = 0; i < n; ++i) {
-            ipixels[i] = int16_t(fpixels[i] * 32767.0f);
+            ipixels[i] = int16_t(fpixels[i] * 256.0f);
         }
     }
     else if (fmt == fcPixelFormat_RGBAFloat || fmt == fcPixelFormat_RGBFloat) {
@@ -156,7 +156,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
         int32_t *ipixels = (int32_t*)pixels;
         int n = (data.width * data.height * fcGetPixelSize(fmt)) / sizeof(float);
         for (int i = 0; i < n; ++i) {
-            ipixels[i] = int32_t(fpixels[i] * 2147483647.0f);
+            ipixels[i] = int32_t(fpixels[i] * 256.0f);
         }
     }
 
@@ -197,4 +197,9 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
     ::png_destroy_write_struct(&png_ptr, &info_ptr);
 
     return true;
+}
+
+fcCLinkage fcExport fcIPngContext* fcPngCreateContextImpl(fcPngConfig &conf, fcIGraphicsDevice *dev)
+{
+    return new fcPngContext(conf, dev);
 }

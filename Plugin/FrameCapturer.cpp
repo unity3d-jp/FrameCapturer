@@ -50,7 +50,17 @@ fcCLinkage fcExport uint64_t fcSecondsToTimestamp(double sec)
 
 fcCLinkage fcExport fcIPngContext* fcPngCreateContext(fcPngConfig *conf)
 {
+#ifdef fcPNGSplitModule
+    if (!fcPngModule) {
+        fcPngModule = DLLLoad(fcPNGModuleName);
+        if (fcPngModule) {
+            (void*&)fcPngCreateContextImpl = DLLGetSymbol(fcPngModule, "fcPngCreateContextImpl");
+        }
+    }
+    return fcPngCreateContextImpl ? fcPngCreateContextImpl(*conf, fcGetGraphicsDevice()) : nullptr;
+#else
     return fcPngCreateContextImpl(*conf, fcGetGraphicsDevice());
+#endif
 }
 
 fcCLinkage fcExport void fcPngDestroyContext(fcIPngContext *ctx)
