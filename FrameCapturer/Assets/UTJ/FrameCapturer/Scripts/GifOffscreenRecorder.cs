@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace UTJ
 {
-    [AddComponentMenu("UTJ/FrameCapturer/GifOffscreenCapturer")]
+    [AddComponentMenu("UTJ/FrameCapturer/GifOffscreenRecorder")]
     [RequireComponent(typeof(Camera))]
     public class GifOffscreenRecorder : IEditableMovieRecorder
     {

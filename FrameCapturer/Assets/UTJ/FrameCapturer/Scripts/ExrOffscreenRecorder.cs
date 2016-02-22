@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UTJ
 {
-    [AddComponentMenu("UTJ/FrameCapturer/ExrOffscreenCapturer")]
+    [AddComponentMenu("UTJ/FrameCapturer/ExrOffscreenRecorder")]
     [RequireComponent(typeof(Camera))]
     public class ExrOffscreenRecorder : MonoBehaviour
     {
