@@ -23,10 +23,10 @@ void CreateVideoData(TRGBA<T> *rgba, int width, int height, int frame)
             int xb = (ix + iy + frame) / block_size;
 
             if ((xb) % 2 == 0) {
-                rgba[ip].r = rgba[ip].g = rgba[ip].b = rgba[ip].a = 255;
+                rgba[ip] = White<T>();
             }
             else {
-                rgba[ip].r = rgba[ip].g = rgba[ip].b = rgba[ip].a = 0;
+                rgba[ip] = Black<T>();
             }
         }
     }

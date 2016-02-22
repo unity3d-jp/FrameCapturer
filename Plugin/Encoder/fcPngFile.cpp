@@ -44,12 +44,15 @@ private:
 };
 
 fcPngContext::fcPngContext(const fcPngConfig& conf, fcIGraphicsDevice *dev)
-    : m_conf(conf), m_dev(dev)
+    : m_conf(conf), m_dev(dev), m_active_task_count()
 {
 }
 
 fcPngContext::~fcPngContext()
 {
+    while (m_active_task_count > 0) {
+        std::this_thread::yield();
+    }
     m_tasks.wait();
 }
 

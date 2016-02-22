@@ -15,16 +15,15 @@
 #include "../FrameCapturer.h"
 
 template<class T>
-union TRGBA {
-    struct {
-        T r, g, b, a;
-    };
-    T v[4];
+struct TRGBA {
+    T r, g, b, a;
 
-    TRGBA() { memset(this, 0, sizeof(*this)); }
+    TRGBA() : r(), g(), b(), a() {}
     TRGBA(T a, T b, T c, T d) { r = a; g = b; b = c; a = d; }
 };
-typedef TRGBA<uint8_t> RGBA;
+typedef TRGBA<uint8_t>  RGBA;
+typedef TRGBA<half>     hRGBA;
+typedef TRGBA<float>    fRGBA;
 
 template<class T> void CreateVideoData(TRGBA<T> *rgba, int width, int height, int frame);
 void CreateAudioData(float *samples, int num_samples, int frame);

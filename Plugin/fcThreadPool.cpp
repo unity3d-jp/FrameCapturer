@@ -88,6 +88,7 @@ void fcTaskGroup::wait()
             }
         }
         if (task) { task(); }
+        else { std::this_thread::yield(); }
     }
 }
 
