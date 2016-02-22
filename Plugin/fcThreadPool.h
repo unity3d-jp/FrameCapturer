@@ -41,12 +41,12 @@ class fcTaskGroup
 {
 public:
     fcTaskGroup();
-    ~fcTaskGroup();
+    ~fcTaskGroup(); // ** destructor don't wait tasks finished **
     template<class F> void run(const F &f);
     void wait();
 
 private:
-    std::atomic<int> m_active_tasks;
+    std::atomic_int m_active_tasks;
 };
 
 template<class F>
