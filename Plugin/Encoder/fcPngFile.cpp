@@ -146,7 +146,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
         int16_t *ipixels = (int16_t*)pixels;
         int n = (data.width * data.height * fcGetPixelSize(fmt)) / sizeof(half);
         for (int i = 0; i < n; ++i) {
-            ipixels[i] = int16_t(fpixels[i] * 256.0f);
+            ipixels[i] = int16_t(fpixels[i] * 255.0f);
         }
     }
     else if (fmt == fcPixelFormat_RGBAFloat || fmt == fcPixelFormat_RGBFloat) {
@@ -156,7 +156,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
         int32_t *ipixels = (int32_t*)pixels;
         int n = (data.width * data.height * fcGetPixelSize(fmt)) / sizeof(float);
         for (int i = 0; i < n; ++i) {
-            ipixels[i] = int32_t(fpixels[i] * 256.0f);
+            ipixels[i] = int32_t(fpixels[i] * 255.0f);
         }
     }
 

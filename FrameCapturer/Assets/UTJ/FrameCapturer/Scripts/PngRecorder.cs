@@ -29,6 +29,7 @@ namespace UTJ
         public string m_filenameGBuffer = "GBuffer";
         public int m_beginFrame = 0;
         public int m_endFrame = 100;
+        public bool m_fillAlpha = false;
         public int m_maxTasks = 1;
         public Shader m_sh_copy;
 
@@ -145,6 +146,15 @@ namespace UTJ
             if (frame >= m_beginFrame && frame <= m_endFrame)
             {
                 Debug.Log("PngCapturer: frame " + frame);
+
+                if(m_fillAlpha)
+                {
+                    m_mat_copy.EnableKeyword("FILL_ALPHA");
+                }
+                else
+                {
+                    m_mat_copy.DisableKeyword("FILL_ALPHA");
+                }
 
                 if (m_captureGBuffer)
                 {
