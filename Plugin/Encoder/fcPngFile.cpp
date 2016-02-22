@@ -77,7 +77,7 @@ bool fcPngContext::exportTexture(const char *path_, void *tex, int width, int he
 
     // kick export task
     ++m_active_task_count;
-    m_tasks.run([=]() {
+    m_tasks.run([this, data]() {
         exportPixelsBody(*data);
         delete data;
         --m_active_task_count;
@@ -99,7 +99,7 @@ bool fcPngContext::exportPixels(const char *path_, const void *pixels_, int widt
 
     // kick export task
     ++m_active_task_count;
-    m_tasks.run([=]() {
+    m_tasks.run([this, data]() {
         exportPixelsBody(*data);
         delete data;
         --m_active_task_count;
