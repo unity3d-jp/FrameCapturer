@@ -214,7 +214,7 @@ public:
 
     size_t tellp() override
     {
-        return m_os.tellp();
+        return (size_t)m_os.tellp();
     }
 
     void seekp(size_t pos) override
@@ -246,7 +246,7 @@ public:
 
     size_t tellg() override
     {
-        return m_is.tellg();
+        return (size_t)m_is.tellg();
     }
 
     void seekg(size_t pos) override
@@ -257,7 +257,7 @@ public:
     size_t read(void *dst, size_t len) override
     {
         m_is.read((char*)dst, len);
-        return m_is.gcount();
+        return (size_t)m_is.gcount();
     }
 
     // dummy
@@ -283,7 +283,7 @@ public:
 
     size_t tellg() override
     {
-        return m_ios.tellg();
+        return (size_t)m_ios.tellg();
     }
 
     void seekg(size_t pos) override
@@ -294,13 +294,13 @@ public:
     size_t read(void *dst, size_t len) override
     {
         m_ios.read((char*)dst, len);
-        return m_ios.gcount();
+        return (size_t)m_ios.gcount();
     }
 
 
     size_t tellp() override
     {
-        return m_ios.tellp();
+        return (size_t)m_ios.tellp();
     }
 
     void seekp(size_t pos) override

@@ -46,6 +46,11 @@
     #define fcSupportD3D9
     #define fcSupportD3D11
 
+    #define fcSupportPNG
+    #define fcSupportEXR
+    #define fcSupportGIF
+    #define fcSupportMP4
+
     #define fcSupportFAAC
     #define fcSupportOpenH264
     #define fcSupportNVH264
@@ -53,11 +58,17 @@
 #else
     #define fcSupportOpenGL
 
+    #define fcSupportPNG
+    #define fcSupportEXR
+    #define fcSupportGIF
+    #define fcSupportMP4
+
     #define fcSupportFAAC
     #define fcSupportOpenH264
     #define fcSupportNVH264
 #endif
 
 //#define fcGIFSplitModule
+#define fcPNGSplitModule
 #define fcEXRSplitModule
 #define fcMP4SplitModule
