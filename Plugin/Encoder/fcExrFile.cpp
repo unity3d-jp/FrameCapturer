@@ -58,7 +58,7 @@ private:
     fcIGraphicsDevice *m_dev;
     fcExrFrameData *m_exr;
     fcTaskGroup m_tasks;
-    std::atomic<int> m_active_task_count;
+    std::atomic_int m_active_task_count;
 
     const void *m_tex_prev;
 };

@@ -34,6 +34,44 @@ fcCLinkage fcExport uint64_t fcSecondsToTimestamp(double sec)
 
 
 // -------------------------------------------------------------
+// PNG Exporter
+// -------------------------------------------------------------
+
+#ifdef fcSupportPNG
+#include "Encoder/fcPngFile.h"
+
+#ifdef fcPNGSplitModule
+    #define fcPNGModuleName  "FrameCapturer_PNG" fcDLLExt
+    static module_t fcPngModule;
+    fcPngCreateContextImplT fcPngCreateContextImpl;
+#else
+    fcCLinkage fcExport fcIPngContext* fcPngCreateContextImpl(fcPngConfig &conf, fcIGraphicsDevice *dev);
+#endif
+
+fcCLinkage fcExport fcIPngContext* fcPngCreateContext(fcPngConfig *conf)
+{
+    return fcPngCreateContextImpl(*conf, fcGetGraphicsDevice());
+}
+
+fcCLinkage fcExport void fcPngDestroyContext(fcIPngContext *ctx)
+{
+    ctx->release();
+}
+
+fcCLinkage fcExport bool fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcTextureFormat fmt, bool flipY)
+{
+    return ctx->exportTexture(path, tex, width, height, fmt, flipY);
+}
+
+fcCLinkage fcExport bool fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, bool flipY)
+{
+    return ctx->exportPixels(path, pixels, width, height, fmt, flipY);
+}
+
+#endif // #fcSupportPNG
+
+
+// -------------------------------------------------------------
 // EXR Exporter
 // -------------------------------------------------------------
 
