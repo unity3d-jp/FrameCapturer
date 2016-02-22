@@ -1,6 +1,19 @@
 #include "TestCommon.h"
+#ifdef _WIN32
+    #pragma comment(lib, "Half.lib")
+#endif
 
-void CreateVideoData(RGBA *rgba, int width, int height, int frame)
+
+template<class T> TRGBA<T> White();
+template<class T> TRGBA<T> Black() { return TRGBA<T>(); }
+
+template<> TRGBA<uint8_t> White() { return TRGBA<uint8_t>(255, 255, 255, 255); }
+template<> TRGBA<half>    White() { return TRGBA<half>(1.0f, 1.0f, 1.0f, 1.0f); }
+template<> TRGBA<float>   White() { return TRGBA<float>(1.0f, 1.0f, 1.0f, 1.0f); }
+
+
+template<class T>
+void CreateVideoData(TRGBA<T> *rgba, int width, int height, int frame)
 {
     const int block_size = 32;
     for (int iy = 0; iy < height; iy++) {
@@ -18,8 +31,10 @@ void CreateVideoData(RGBA *rgba, int width, int height, int frame)
         }
     }
 }
+template void CreateVideoData<uint8_t>(TRGBA<uint8_t> *rgba, int width, int height, int frame);
+template void CreateVideoData<half>(TRGBA<half> *rgba, int width, int height, int frame);
+template void CreateVideoData<float>(TRGBA<float> *rgba, int width, int height, int frame);
 
-// audio data generator
 
 void CreateAudioData(float *samples, int num_samples, int frame)
 {

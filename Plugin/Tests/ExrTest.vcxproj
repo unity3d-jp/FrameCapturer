@@ -58,26 +58,26 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)external;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)external\libs\x86_64mt;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)external;$(SolutionDir)external\OpenEXR;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)external\libs\x86_64;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)external;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)external\libs\x86mt;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)external;$(SolutionDir)external\OpenEXR;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)external\libs\x86;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|x64'">
     <IncludePath>$(SolutionDir)external;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)external\libs\x86_64mt;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)external\libs\x86_64;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">
     <IncludePath>$(SolutionDir)external;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)external\libs\x86mt;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)external\libs\x86;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>

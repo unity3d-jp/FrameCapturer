@@ -11,16 +11,22 @@
 #include <fstream>
 #include <vector>
 #include <thread>
+#include <half.h>
 #include "../FrameCapturer.h"
 
-union RGBA {
+template<class T>
+union TRGBA {
     struct {
-        uint8_t r, g, b, a;
+        T r, g, b, a;
     };
-    uint8_t v[4];
-};
+    T v[4];
 
-void CreateVideoData(RGBA *rgba, int width, int height, int frame);
+    TRGBA() { memset(this, 0, sizeof(*this)); }
+    TRGBA(T a, T b, T c, T d) { r = a; g = b; b = c; a = d; }
+};
+typedef TRGBA<uint8_t> RGBA;
+
+template<class T> void CreateVideoData(TRGBA<T> *rgba, int width, int height, int frame);
 void CreateAudioData(float *samples, int num_samples, int frame);
 
 #endif  // TestCommon_h
