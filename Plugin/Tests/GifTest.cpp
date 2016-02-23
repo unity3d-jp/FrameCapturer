@@ -1,7 +1,7 @@
 #include "TestCommon.h"
 
 template<class T>
-void Test(const char *filename)
+void GifTestImpl(const char *filename)
 {
     const int Width = 320;
     const int Height = 240;
@@ -20,13 +20,13 @@ void Test(const char *filename)
     fcGifDestroyContext(ctx);
 }
 
-int main(int argc, char** argv)
+void GifTest()
 {
-    Test<RGB>("RGB.gif");
-    Test<hRGB>("hRGB.gif");
-    Test<fRGB>("fRGB.gif");
-    Test<RGBA>("RGBA.gif");
-    Test<hRGBA>("hRGBA.gif");
-    Test<fRGBA>("fRGBA.gif");
+    GifTestImpl<RGB>("RGB.gif");
+    GifTestImpl<hRGB>("hRGB.gif");
+    GifTestImpl<fRGB>("fRGB.gif");
+    GifTestImpl<RGBA>("RGBA.gif");
+    GifTestImpl<hRGBA>("hRGBA.gif");
+    GifTestImpl<fRGBA>("fRGBA.gif");
 }
 
