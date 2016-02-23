@@ -126,20 +126,23 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
     fcPixelFormat fmt = data.format;
 
     int bit_depth = 0;
+    int num_channels = 0;
     int color_type = 0;
 
     if (fmt == fcPixelFormat_RGBA8 || fmt == fcPixelFormat_RGBAHalf || fmt == fcPixelFormat_RGBAFloat) {
         color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+        num_channels = 4;
     }
-    else if (fmt == fcPixelFormat_RGBHalf || fmt == fcPixelFormat_RGBFloat) {
+    else if (fmt == fcPixelFormat_RGB8 || fmt == fcPixelFormat_RGBHalf || fmt == fcPixelFormat_RGBFloat) {
         color_type = PNG_COLOR_TYPE_RGB;
+        num_channels = 3;
     }
     else {
         fcDebugLog("fcPngContext::exportPixelsBody(): unsupported pixel format");
         return false;
     }
 
-    if (fmt == fcPixelFormat_RGBA8) {
+    if (fmt == fcPixelFormat_RGB8 || fmt == fcPixelFormat_RGBA8) {
         bit_depth = 8;
     }
     else if (fmt == fcPixelFormat_RGBAHalf || fmt == fcPixelFormat_RGBHalf) {
@@ -153,7 +156,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
         }
     }
     else if (fmt == fcPixelFormat_RGBAFloat || fmt == fcPixelFormat_RGBFloat) {
-        // png doesn't support 32bit color. reduce to 16bit color.
+        // png doesn't support 32bit color. convert to 16bit color.
         bit_depth = 16;
 
         const float *fpixels = (const float*)pixels;
@@ -188,7 +191,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
     ::png_set_IHDR(png_ptr, info_ptr, data.width, data.height, bit_depth, color_type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
     ::png_write_info(png_ptr, info_ptr);
 
-    int pitch = data.width * (bit_depth / 8);
+    int pitch = data.width * (bit_depth / 8) * num_channels;
     std::vector<png_bytep> row_pointers(data.height);
     for (int yi = 0; yi <data.height; ++yi) {
         row_pointers[yi] = &pixels[pitch * yi];

@@ -7,17 +7,19 @@
 // Foundation
 // -------------------------------------------------------------
 
-static std::string g_module_path;
+namespace {
+    std::string g_fcModulePath;
+}
 
 fcCLinkage fcExport void fcSetModulePath(const char *path)
 {
-    g_module_path = path;
+    g_fcModulePath = path;
     DLLAddSearchPath(path);
 }
 
 fcCLinkage fcExport const char* fcGetModulePath()
 {
-    return !g_module_path.empty() ? g_module_path.c_str() : DLLGetDirectoryOfCurrentModule();
+    return !g_fcModulePath.empty() ? g_fcModulePath.c_str() : DLLGetDirectoryOfCurrentModule();
 }
 
 
@@ -156,11 +158,11 @@ fcCLinkage fcExport bool fcExrEndFrame(fcIExrContext *ctx)
     static module_t fcGifModule;
     fcGifCreateContextImplT fcGifCreateContextImpl;
 #else
-    fcCLinkage fcExport fcIGifContext* fcGifCreateContextImpl(fcGifConfig &conf, fcIGraphicsDevice *dev);
+    fcCLinkage fcExport fcIGifContext* fcGifCreateContextImpl(const fcGifConfig &conf, fcIGraphicsDevice *dev);
 #endif
 
 
-fcCLinkage fcExport fcIGifContext* fcGifCreateContext(fcGifConfig *conf)
+fcCLinkage fcExport fcIGifContext* fcGifCreateContext(const fcGifConfig *conf)
 {
 #ifdef fcGIFSplitModule
     if (!fcGifModule) {
