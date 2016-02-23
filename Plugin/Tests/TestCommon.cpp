@@ -5,11 +5,15 @@
 
 
 template<class T> TRGBA<T> White();
-template<class T> TRGBA<T> Black() { return TRGBA<T>(); }
+template<class T> TRGBA<T> Black();
 
-template<> TRGBA<uint8_t> White() { return TRGBA<uint8_t>(255, 255, 255, 255); }
-template<> TRGBA<half>    White() { return TRGBA<half>(1.0f, 1.0f, 1.0f, 1.0f); }
-template<> TRGBA<float>   White() { return TRGBA<float>(1.0f, 1.0f, 1.0f, 1.0f); }
+template<> TRGBA<u8>    White() { return TRGBA<u8>(255, 255, 255, 255); }
+template<> TRGBA<f16>   White() { return TRGBA<f16>(1.0f, 1.0f, 1.0f, 1.0f); }
+template<> TRGBA<f32>   White() { return TRGBA<f32>(1.0f, 1.0f, 1.0f, 1.0f); }
+
+template<> TRGBA<u8>    Black() { return TRGBA<u8>(0, 0, 0, 255); }
+template<> TRGBA<f16>   Black() { return TRGBA<f16>(0.0f, 0.0f, 0.0f, 1.0f); }
+template<> TRGBA<f32>   Black() { return TRGBA<f32>(0.0f, 0.0f, 0.0f, 1.0f); }
 
 
 template<class T>
@@ -31,9 +35,9 @@ void CreateVideoData(TRGBA<T> *rgba, int width, int height, int frame)
         }
     }
 }
-template void CreateVideoData<uint8_t>(TRGBA<uint8_t> *rgba, int width, int height, int frame);
-template void CreateVideoData<half>(TRGBA<half> *rgba, int width, int height, int frame);
-template void CreateVideoData<float>(TRGBA<float> *rgba, int width, int height, int frame);
+template void CreateVideoData< u8>(TRGBA< u8> *rgba, int width, int height, int frame);
+template void CreateVideoData<f16>(TRGBA<f16> *rgba, int width, int height, int frame);
+template void CreateVideoData<f32>(TRGBA<f32> *rgba, int width, int height, int frame);
 
 
 void CreateAudioData(float *samples, int num_samples, int frame)

@@ -26,7 +26,7 @@ struct fcPngTaskData
 class fcPngContext : public fcIPngContext
 {
 public:
-    fcPngContext(const fcPngConfig& conf, fcIGraphicsDevice *dev);
+    fcPngContext(const fcPngConfig *conf, fcIGraphicsDevice *dev);
     ~fcPngContext() override;
     void release() override;
     bool exportTexture(const char *path, void *tex, int width, int height, fcTextureFormat fmt, bool flipY) override;
@@ -43,16 +43,16 @@ private:
     std::atomic_int m_active_task_count;
 };
 
-fcPngContext::fcPngContext(const fcPngConfig& conf, fcIGraphicsDevice *dev)
-    : m_conf(conf), m_dev(dev), m_active_task_count()
+fcPngContext::fcPngContext(const fcPngConfig *conf, fcIGraphicsDevice *dev)
+    : m_conf(), m_dev(dev), m_active_task_count()
 {
+    if (conf != nullptr) {
+        m_conf = *conf;
+    }
 }
 
 fcPngContext::~fcPngContext()
 {
-    while (m_active_task_count > 0) {
-        std::this_thread::yield();
-    }
     m_tasks.wait();
 }
 
@@ -125,7 +125,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
     png_bytep pixels = (png_bytep)&data.pixels[0];
     fcPixelFormat fmt = data.format;
 
-    int bits = 0;
+    int bit_depth = 0;
     int color_type = 0;
 
     if (fmt == fcPixelFormat_RGBA8 || fmt == fcPixelFormat_RGBAHalf || fmt == fcPixelFormat_RGBAFloat) {
@@ -140,10 +140,10 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
     }
 
     if (fmt == fcPixelFormat_RGBA8) {
-        bits = 8;
+        bit_depth = 8;
     }
     else if (fmt == fcPixelFormat_RGBAHalf || fmt == fcPixelFormat_RGBHalf) {
-        bits = 16;
+        bit_depth = 16;
 
         const half *fpixels = (const half*)pixels;
         int16_t *ipixels = (int16_t*)pixels;
@@ -153,13 +153,14 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
         }
     }
     else if (fmt == fcPixelFormat_RGBAFloat || fmt == fcPixelFormat_RGBFloat) {
-        bits = 32;
+        // png doesn't support 32bit color. reduce to 16bit color.
+        bit_depth = 16;
 
         const float *fpixels = (const float*)pixels;
-        int32_t *ipixels = (int32_t*)pixels;
+        int16_t *ipixels = (int16_t*)pixels;
         int n = (data.width * data.height * fcGetPixelSize(fmt)) / sizeof(float);
         for (int i = 0; i < n; ++i) {
-            ipixels[i] = int32_t(fpixels[i] * 255.0f);
+            ipixels[i] = int16_t(fpixels[i] * 255.0f);
         }
     }
 
@@ -184,10 +185,10 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
     }
 
     ::png_init_io(png_ptr, ofile);
-    ::png_set_IHDR(png_ptr, info_ptr, data.width, data.height, bits, color_type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+    ::png_set_IHDR(png_ptr, info_ptr, data.width, data.height, bit_depth, color_type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
     ::png_write_info(png_ptr, info_ptr);
 
-    int pitch = data.width * fcGetPixelSize(fmt);
+    int pitch = data.width * (bit_depth / 8);
     std::vector<png_bytep> row_pointers(data.height);
     for (int yi = 0; yi <data.height; ++yi) {
         row_pointers[yi] = &pixels[pitch * yi];
@@ -202,7 +203,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
     return true;
 }
 
-fcCLinkage fcExport fcIPngContext* fcPngCreateContextImpl(fcPngConfig &conf, fcIGraphicsDevice *dev)
+fcCLinkage fcExport fcIPngContext* fcPngCreateContextImpl(const fcPngConfig *conf, fcIGraphicsDevice *dev)
 {
     return new fcPngContext(conf, dev);
 }

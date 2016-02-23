@@ -14,16 +14,21 @@
 #include <half.h>
 #include "../FrameCapturer.h"
 
+
+typedef uint8_t u8;
+typedef half    f16;
+typedef float   f32;
+
 template<class T>
 struct TRGBA {
     T r, g, b, a;
 
     TRGBA() : r(), g(), b(), a() {}
-    TRGBA(T a, T b, T c, T d) { r = a; g = b; b = c; a = d; }
+    TRGBA(T _r, T _g, T _b, T _a) : r(_r), g(_g), b(_b), a(_a) {}
 };
-typedef TRGBA<uint8_t>  RGBA;
-typedef TRGBA<half>     hRGBA;
-typedef TRGBA<float>    fRGBA;
+typedef TRGBA<u8>   RGBA;
+typedef TRGBA<f16>  hRGBA;
+typedef TRGBA<f32>  fRGBA;
 
 template<class T> void CreateVideoData(TRGBA<T> *rgba, int width, int height, int frame);
 void CreateAudioData(float *samples, int num_samples, int frame);

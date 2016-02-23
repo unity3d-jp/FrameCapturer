@@ -10,6 +10,6 @@ public:
 protected:
     virtual ~fcIPngContext() {}
 };
-typedef fcIPngContext* (*fcPngCreateContextImplT)(fcPngConfig &conf, fcIGraphicsDevice*);
+typedef fcIPngContext* (*fcPngCreateContextImplT)(const fcPngConfig *conf, fcIGraphicsDevice*);
 
 #endif // fcPNGFile_h

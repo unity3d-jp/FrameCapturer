@@ -45,10 +45,10 @@ fcCLinkage fcExport uint64_t fcSecondsToTimestamp(double sec)
     static module_t fcPngModule;
     fcPngCreateContextImplT fcPngCreateContextImpl;
 #else
-    fcCLinkage fcExport fcIPngContext* fcPngCreateContextImpl(fcPngConfig &conf, fcIGraphicsDevice *dev);
+    fcCLinkage fcExport fcIPngContext* fcPngCreateContextImpl(const fcPngConfig *conf, fcIGraphicsDevice *dev);
 #endif
 
-fcCLinkage fcExport fcIPngContext* fcPngCreateContext(fcPngConfig *conf)
+fcCLinkage fcExport fcIPngContext* fcPngCreateContext(const fcPngConfig *conf)
 {
 #ifdef fcPNGSplitModule
     if (!fcPngModule) {
@@ -57,9 +57,9 @@ fcCLinkage fcExport fcIPngContext* fcPngCreateContext(fcPngConfig *conf)
             (void*&)fcPngCreateContextImpl = DLLGetSymbol(fcPngModule, "fcPngCreateContextImpl");
         }
     }
-    return fcPngCreateContextImpl ? fcPngCreateContextImpl(*conf, fcGetGraphicsDevice()) : nullptr;
+    return fcPngCreateContextImpl ? fcPngCreateContextImpl(conf, fcGetGraphicsDevice()) : nullptr;
 #else
-    return fcPngCreateContextImpl(*conf, fcGetGraphicsDevice());
+    return fcPngCreateContextImpl(conf, fcGetGraphicsDevice());
 #endif
 }
 
@@ -93,11 +93,11 @@ fcCLinkage fcExport bool fcPngExportPixels(fcIPngContext *ctx, const char *path,
     static module_t fcExrModule;
     fcExrCreateContextImplT fcExrCreateContextImpl;
 #else
-    fcCLinkage fcExport fcIExrContext* fcExrCreateContextImpl(fcExrConfig &conf, fcIGraphicsDevice *dev);
+    fcCLinkage fcExport fcIExrContext* fcExrCreateContextImpl(const fcExrConfig *conf, fcIGraphicsDevice *dev);
 #endif
 
 
-fcCLinkage fcExport fcIExrContext* fcExrCreateContext(fcExrConfig *conf)
+fcCLinkage fcExport fcIExrContext* fcExrCreateContext(const fcExrConfig *conf)
 {
 #ifdef fcEXRSplitModule
     if (!fcExrModule) {
@@ -106,7 +106,7 @@ fcCLinkage fcExport fcIExrContext* fcExrCreateContext(fcExrConfig *conf)
             (void*&)fcExrCreateContextImpl = DLLGetSymbol(fcExrModule, "fcExrCreateContextImpl");
         }
     }
-    return fcExrCreateContextImpl ? fcExrCreateContextImpl(*conf, fcGetGraphicsDevice()) : nullptr;
+    return fcExrCreateContextImpl ? fcExrCreateContextImpl(conf, fcGetGraphicsDevice()) : nullptr;
 #else
     return fcExrCreateContextImpl(*conf, fcGetGraphicsDevice());
 #endif
