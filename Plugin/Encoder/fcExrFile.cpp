@@ -14,12 +14,12 @@
 #include "fcExrFile.h"
 
 #if defined(fcWindows) && !defined(fcNoAutoLink)
-#pragma comment(lib, "Half.lib")
-#pragma comment(lib, "Iex-2_2.lib")
-#pragma comment(lib, "IexMath-2_2.lib")
-#pragma comment(lib, "IlmThread-2_2.lib")
-#pragma comment(lib, "IlmImf-2_2.lib")
-#pragma comment(lib, "zlibstatic.lib")
+    #pragma comment(lib, "Half.lib")
+    #pragma comment(lib, "Iex-2_2.lib")
+    #pragma comment(lib, "IexMath-2_2.lib")
+    #pragma comment(lib, "IlmThread-2_2.lib")
+    #pragma comment(lib, "IlmImf-2_2.lib")
+    #pragma comment(lib, "zlibstatic.lib")
 #endif
 
 
@@ -42,7 +42,7 @@ struct fcExrFrameData
 class fcExrContext : public fcIExrContext
 {
 public:
-    fcExrContext(fcExrConfig &conf, fcIGraphicsDevice *dev);
+    fcExrContext(const fcExrConfig *conf, fcIGraphicsDevice *dev);
     ~fcExrContext();
     void release() override;
     bool beginFrame(const char *path, int width, int height) override;
@@ -64,13 +64,16 @@ private:
 };
 
 
-fcExrContext::fcExrContext(fcExrConfig &conf, fcIGraphicsDevice *dev)
-    : m_conf(conf)
+fcExrContext::fcExrContext(const fcExrConfig *conf, fcIGraphicsDevice *dev)
+    : m_conf()
     , m_dev(dev)
     , m_exr(nullptr)
     , m_active_task_count(0)
     , m_tex_prev(nullptr)
 {
+    if (conf != nullptr) {
+        m_conf = *conf;
+    }
 }
 
 fcExrContext::~fcExrContext()
@@ -250,7 +253,7 @@ void fcExrContext::endFrameTask(fcExrFrameData *exr)
 }
 
 
-fcCLinkage fcExport fcIExrContext* fcExrCreateContextImpl(fcExrConfig &conf, fcIGraphicsDevice *dev)
+fcCLinkage fcExport fcIExrContext* fcExrCreateContextImpl(const fcExrConfig *conf, fcIGraphicsDevice *dev)
 {
     return new fcExrContext(conf, dev);
 }

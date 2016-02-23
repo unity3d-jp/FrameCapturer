@@ -94,8 +94,9 @@ fcCLinkage fcExport fcTime          fcSecondsToTimestamp(double sec);
 struct fcPngConfig
 {
     int max_active_tasks;
+    fcPngConfig() : max_active_tasks(4) {}
 };
-fcCLinkage fcExport fcIPngContext*  fcPngCreateContext(fcPngConfig *conf);
+fcCLinkage fcExport fcIPngContext*  fcPngCreateContext(const fcPngConfig *conf = nullptr);
 fcCLinkage fcExport void            fcPngDestroyContext(fcIPngContext *ctx);
 fcCLinkage fcExport bool            fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcTextureFormat fmt, bool flipY = false);
 fcCLinkage fcExport bool            fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, bool flipY = false);
@@ -108,8 +109,9 @@ fcCLinkage fcExport bool            fcPngExportPixels(fcIPngContext *ctx, const 
 struct fcExrConfig
 {
     int max_active_tasks;
+    fcExrConfig() : max_active_tasks(4) {}
 };
-fcCLinkage fcExport fcIExrContext*  fcExrCreateContext(fcExrConfig *conf);
+fcCLinkage fcExport fcIExrContext*  fcExrCreateContext(const fcExrConfig *conf = nullptr);
 fcCLinkage fcExport void            fcExrDestroyContext(fcIExrContext *ctx);
 fcCLinkage fcExport bool            fcExrBeginFrame(fcIExrContext *ctx, const char *path, int width, int height);
 fcCLinkage fcExport bool            fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcTextureFormat fmt, int ch, const char *name, bool flipY = false);

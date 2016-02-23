@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     {
         std::vector<fRGBA> video_frame(Width * Height);
         CreateVideoData(&video_frame[0], Width, Height, 0);
-        fcPngExportPixels(ctx, "RGBA32.png", &video_frame[0], Width, Height, fcPixelFormat_RGBAFloat);
+        fcPngExportPixels(ctx, "RGBA32to16.png", &video_frame[0], Width, Height, fcPixelFormat_RGBAFloat);
     }
 
     fcPngDestroyContext(ctx);
