@@ -7,7 +7,7 @@ void   seekp(void *f, size_t pos) { fseek((FILE*)f, (long)pos, SEEK_SET); }
 size_t write(void *f, const void *data, size_t len) { return fwrite(data, 1, len, (FILE*)f); }
 
 
-int main(int argc, char** argv)
+void MP4Test()
 {
     using namespace std::literals;
 

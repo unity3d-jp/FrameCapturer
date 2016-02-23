@@ -1,7 +1,7 @@
 #include "TestCommon.h"
 
 template<class T>
-void Test(fcIPngContext *ctx, const char *filename)
+void PngTestImpl(fcIPngContext *ctx, const char *filename)
 {
     const int Width = 320;
     const int Height = 240;
@@ -11,17 +11,17 @@ void Test(fcIPngContext *ctx, const char *filename)
     fcPngExportPixels(ctx, filename, &video_frame[0], Width, Height, GetPixelFormat<T>::value);
 }
 
-int main(int argc, char** argv)
+void PngTest()
 {
     fcPngConfig conf;
     fcIPngContext *ctx = fcPngCreateContext(&conf);
 
-    Test<RGB>(ctx, "RGB.png");
-    Test<hRGB>(ctx, "hRGB.png");
-    Test<fRGB>(ctx, "fRGB.png");
-    Test<RGBA>(ctx, "RGBA.png");
-    Test<hRGBA>(ctx, "hRGBA.png");
-    Test<fRGBA>(ctx, "fRGBA.png");
+    PngTestImpl<RGB>(ctx, "RGB.png");
+    PngTestImpl<hRGB>(ctx, "hRGB.png");
+    PngTestImpl<fRGB>(ctx, "fRGB.png");
+    PngTestImpl<RGBA>(ctx, "RGBA.png");
+    PngTestImpl<hRGBA>(ctx, "hRGBA.png");
+    PngTestImpl<fRGBA>(ctx, "fRGBA.png");
 
     fcPngDestroyContext(ctx);
 }
