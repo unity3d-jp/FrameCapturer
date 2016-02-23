@@ -6,7 +6,8 @@ class fcIGifContext
 public:
     virtual void release() = 0;
 
-    virtual bool addFrame(void *tex) = 0;
+    virtual bool addFrameTexture(void *tex, fcTextureFormat fmt, bool keyframe, fcTime timestamp = -1) = 0;
+    virtual bool addFramePixels(const void *pixels, fcPixelFormat fmt, bool keyframe, fcTime timestamp = -1) = 0;
     virtual void clearFrame() = 0;
     virtual bool writeFile(const char *path, int begin_frame, int end_frame) = 0;
     virtual int  writeMemory(void *buf, int begin_frame, int end_frame) = 0;

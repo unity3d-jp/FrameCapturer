@@ -140,9 +140,13 @@ struct fcGifConfig
 fcCLinkage fcExport fcIGifContext*  fcGifCreateContext(const fcGifConfig *conf);
 fcCLinkage fcExport void            fcGifDestroyContext(fcIGifContext *ctx);
 fcCLinkage fcExport bool            fcGifAddFrame(fcIGifContext *ctx, void *tex);
+// timestamp=-1 is treated as current time.
+fcCLinkage fcExport bool            fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcTextureFormat fmt, bool keyframe = false, fcTime timestamp = -1);
+// timestamp=-1 is treated as current time.
+fcCLinkage fcExport bool            fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1);
 fcCLinkage fcExport void            fcGifClearFrame(fcIGifContext *ctx);
-fcCLinkage fcExport bool            fcGifWriteFile(fcIGifContext *ctx, const char *path, int begin_frame, int end_frame);
-fcCLinkage fcExport int             fcGifWriteMemory(fcIGifContext *ctx, void *buf, int begin_frame, int end_frame);
+fcCLinkage fcExport bool            fcGifWriteFile(fcIGifContext *ctx, const char *path, int begin_frame = 0, int end_frame = -1);
+fcCLinkage fcExport int             fcGifWriteMemory(fcIGifContext *ctx, void *buf, int begin_frame = 0, int end_frame = -1);
 fcCLinkage fcExport int             fcGifGetFrameCount(fcIGifContext *ctx);
 fcCLinkage fcExport void            fcGifGetFrameData(fcIGifContext *ctx, void *tex, int frame);
 fcCLinkage fcExport int             fcGifGetExpectedDataSize(fcIGifContext *ctx, int begin_frame, int end_frame);
