@@ -19,6 +19,6 @@ public:
 protected:
     virtual ~fcIGifContext() {}
 };
-typedef fcIGifContext* (*fcGifCreateContextImplT)(fcGifConfig &conf, fcIGraphicsDevice*);
+typedef fcIGifContext* (*fcGifCreateContextImplT)(const fcGifConfig &conf, fcIGraphicsDevice*);
 
 #endif // fcGifFile_h

@@ -133,8 +133,11 @@ struct fcGifConfig
     int max_active_tasks;
     int max_frame;
     int max_data_size;
+    fcGifConfig()
+        : width(), height(), num_colors(256)
+        , delay_csec(3), keyframe(30), max_active_tasks(8), max_frame(), max_data_size() {}
 };
-fcCLinkage fcExport fcIGifContext*  fcGifCreateContext(fcGifConfig *conf);
+fcCLinkage fcExport fcIGifContext*  fcGifCreateContext(const fcGifConfig *conf);
 fcCLinkage fcExport void            fcGifDestroyContext(fcIGifContext *ctx);
 fcCLinkage fcExport bool            fcGifAddFrame(fcIGifContext *ctx, void *tex);
 fcCLinkage fcExport void            fcGifClearFrame(fcIGifContext *ctx);

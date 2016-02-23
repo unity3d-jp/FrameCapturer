@@ -10,7 +10,7 @@
 class fcGifContext : public fcIGifContext
 {
 public:
-    fcGifContext(fcGifConfig &conf, fcIGraphicsDevice *dev);
+    fcGifContext(const fcGifConfig &conf, fcIGraphicsDevice *dev);
     ~fcGifContext();
     void release() override;
 
@@ -41,7 +41,7 @@ private:
 };
 
 
-fcGifContext::fcGifContext(fcGifConfig &conf, fcIGraphicsDevice *dev)
+fcGifContext::fcGifContext(const fcGifConfig &conf, fcIGraphicsDevice *dev)
     : m_conf(conf)
     , m_dev(dev)
     , m_frame(0)
@@ -304,7 +304,7 @@ void fcGifContext::eraseFrame(int begin_frame, int end_frame)
 }
 
 
-fcCLinkage fcExport fcIGifContext* fcGifCreateContextImpl(fcGifConfig &conf, fcIGraphicsDevice *dev)
+fcCLinkage fcExport fcIGifContext* fcGifCreateContextImpl(const fcGifConfig &conf, fcIGraphicsDevice *dev)
 {
     return new fcGifContext(conf, dev);
 }
