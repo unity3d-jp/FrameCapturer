@@ -39,6 +39,14 @@ typedef TRGBA<u8>   RGBA;
 typedef TRGBA<f16>  hRGBA;
 typedef TRGBA<f32>  fRGBA;
 
+template<class T> struct GetPixelFormat;
+template<> struct GetPixelFormat<RGB>  { static const fcPixelFormat value = fcPixelFormat_RGB8; };
+template<> struct GetPixelFormat<hRGB> { static const fcPixelFormat value = fcPixelFormat_RGBHalf; };
+template<> struct GetPixelFormat<fRGB> { static const fcPixelFormat value = fcPixelFormat_RGBFloat; };
+template<> struct GetPixelFormat<RGBA> { static const fcPixelFormat value = fcPixelFormat_RGBA8; };
+template<> struct GetPixelFormat<hRGBA>{ static const fcPixelFormat value = fcPixelFormat_RGBAHalf; };
+template<> struct GetPixelFormat<fRGBA>{ static const fcPixelFormat value = fcPixelFormat_RGBAFloat; };
+
 template<class T> void CreateVideoData(T *rgba, int width, int height, int frame);
 void CreateAudioData(float *samples, int num_samples, int frame);
 

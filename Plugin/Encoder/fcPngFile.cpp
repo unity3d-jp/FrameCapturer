@@ -1,12 +1,11 @@
 #include "pch.h"
-
-#include <libpng/png.h>
-#include <half.h>
 #include "fcFoundation.h"
 #include "fcThreadPool.h"
 #include "GraphicsDevice/fcGraphicsDevice.h"
 #include "fcPngFile.h"
 
+#include <libpng/png.h>
+#include <half.h>
 #ifdef fcWindows
     #pragma comment(lib, "libpng16_static.lib")
     #pragma comment(lib, "zlibstatic.lib")

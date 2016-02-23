@@ -186,7 +186,17 @@ fcCLinkage fcExport void fcGifDestroyContext(fcIGifContext *ctx)
 fcCLinkage fcExport bool fcGifAddFrame(fcIGifContext *ctx, void *tex)
 {
     if (!ctx) { return false; }
-    return ctx->addFrame(tex);
+    return ctx->addFrameTexture(tex, fcTextureFormat_ARGB32, false);
+}
+fcCLinkage fcExport bool fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcTextureFormat fmt, bool keyframe, fcTime timestamp)
+{
+    if (!ctx) { return false; }
+    return ctx->addFrameTexture(tex, fmt, keyframe, timestamp);
+}
+fcCLinkage fcExport bool fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
+{
+    if (!ctx) { return false; }
+    return ctx->addFramePixels(pixels, fmt, keyframe, timestamp);
 }
 
 fcCLinkage fcExport void fcGifClearFrame(fcIGifContext *ctx)
