@@ -320,7 +320,7 @@ void fcMP4Context::release()
 
 void fcMP4Context::addOutputStream(fcStream *s)
 {
-    auto writer =new fcMP4StreamWriter(*s, m_conf);
+    auto writer = new fcMP4StreamWriter(*s, m_conf);
     if (m_aac_encoder) {
         writer->setAACEncoderInfo(m_aac_encoder->getEncoderInfo());
     }

@@ -9,17 +9,23 @@ namespace UTJ
     [RequireComponent(typeof(Camera))]
     public class GifOffscreenRecorder : IEditableMovieRecorder
     {
+        public enum FramerateMode
+        {
+            Variable,
+            Constant,
+        }
         [Tooltip("output directory. filename is generated automatically.")]
         public DataPath m_outputDir = new DataPath(DataPath.Root.PersistentDataPath, "");
         public RenderTexture m_target;
         public int m_resolutionWidth = 300;
-        public int m_numColors = 255;
+        public int m_numColors = 256;
+        public FramerateMode m_framerateMode = FramerateMode.Variable;
+        [Tooltip("relevant only if Framerate Mode is Constant")]
+        public int m_framerate = 30;
         public int m_captureEveryNthFrame = 2;
-        public int m_intervalCS = 3;
-        public int m_maxFrame = 1800;
-        public int m_maxSize = 0;
+        public int m_keyframe = 30;
+        [Tooltip("0 is treated as processor count")]
         public int m_maxTasks = 0;
-        public int m_keyframe = 0;
         public Shader m_sh_copy;
 
         string m_output_file;
@@ -27,7 +33,7 @@ namespace UTJ
         Material m_mat_copy;
         Mesh m_quad;
         RenderTexture m_scratch_buffer;
-        int m_frame;
+        int m_num_frames;
         bool m_recode = false;
 
         public override bool record
@@ -77,7 +83,7 @@ namespace UTJ
             m_scratch_buffer.wrapMode = TextureWrapMode.Repeat;
             m_scratch_buffer.Create();
 
-            m_frame = 0;
+            m_num_frames = 0;
             if (m_maxTasks <= 0)
             {
                 m_maxTasks = SystemInfo.processorCount;
@@ -148,15 +154,23 @@ namespace UTJ
             {
                 yield return new WaitForEndOfFrame();
 
-                int frame = m_frame++;
-                if (frame % m_captureEveryNthFrame == 0)
+                if (Time.frameCount % m_captureEveryNthFrame == 0)
                 {
+                    bool keyframe = m_keyframe > 0 && m_num_frames % m_keyframe == 0;
+                    double timestamp = -1.0;
+                    if (m_framerateMode == FramerateMode.Constant)
+                    {
+                        timestamp = 1.0 / m_framerate * m_num_frames;
+                    }
+
                     m_mat_copy.SetTexture("_TmpRenderTarget", m_target);
                     m_mat_copy.SetPass(3);
                     Graphics.SetRenderTarget(m_scratch_buffer);
                     Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                     Graphics.SetRenderTarget(null);
-                    fcAPI.fcGifAddFrame(m_gif, m_scratch_buffer.GetNativeTexturePtr());
+                    fcAPI.fcGifAddFrameTexture(m_gif, m_scratch_buffer, keyframe, timestamp);
+
+                    m_num_frames++;
                 }
             }
         }

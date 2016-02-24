@@ -82,8 +82,29 @@ enum fcTextureFormat
 
 fcCLinkage fcExport void            fcSetModulePath(const char *path);
 fcCLinkage fcExport const char*     fcGetModulePath();
-
 fcCLinkage fcExport fcTime          fcGetTime();
+
+#ifndef fcImpl
+struct fcStream;
+#endif
+// function types for custom stream
+typedef size_t(*fcTellp_t)(void *obj);
+typedef void(*fcSeekp_t)(void *obj, size_t pos);
+typedef size_t(*fcWrite_t)(void *obj, const void *data, size_t len);
+
+struct fcBufferData
+{
+    void *data;
+    size_t size;
+
+    fcBufferData() : data(), size() {}
+};
+fcCLinkage fcExport fcStream*       fcCreateFileStream(const char *path);
+fcCLinkage fcExport fcStream*       fcCreateMemoryStream();
+fcCLinkage fcExport fcStream*       fcCreateCustomStream(void *obj, fcTellp_t tellp, fcSeekp_t seekp, fcWrite_t write);
+fcCLinkage fcExport void            fcDestroyStream(fcStream *s);
+fcCLinkage fcExport fcBufferData    fcStreamGetBufferData(fcStream *s); // s must be created by fcCreateMemoryStream(), otherwise return {nullptr, 0}.
+fcCLinkage fcExport uint64_t        fcStreamGetWrittenSize(fcStream *s);
 
 
 // -------------------------------------------------------------
@@ -138,9 +159,9 @@ fcCLinkage fcExport bool            fcGifAddFrame(fcIGifContext *ctx, void *tex)
 fcCLinkage fcExport bool            fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcTextureFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
 fcCLinkage fcExport bool            fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
+fcCLinkage fcExport bool            fcGifWrite(fcIGifContext *ctx, fcStream *stream, int begin_frame = 0, int end_frame = -1);
+
 fcCLinkage fcExport void            fcGifClearFrame(fcIGifContext *ctx);
-fcCLinkage fcExport bool            fcGifWriteFile(fcIGifContext *ctx, const char *path, int begin_frame = 0, int end_frame = -1);
-fcCLinkage fcExport int             fcGifWriteMemory(fcIGifContext *ctx, void *buf, int begin_frame = 0, int end_frame = -1);
 fcCLinkage fcExport int             fcGifGetFrameCount(fcIGifContext *ctx);
 fcCLinkage fcExport void            fcGifGetFrameData(fcIGifContext *ctx, void *tex, int frame);
 fcCLinkage fcExport int             fcGifGetExpectedDataSize(fcIGifContext *ctx, int begin_frame, int end_frame);
@@ -150,29 +171,6 @@ fcCLinkage fcExport void            fcGifEraseFrame(fcIGifContext *ctx, int begi
 // -------------------------------------------------------------
 // MP4 Exporter
 // -------------------------------------------------------------
-
-#ifndef fcImpl
-struct fcStream;
-#endif
-// function types for custom stream
-typedef size_t (*fcTellp_t)(void *obj);
-typedef void   (*fcSeekp_t)(void *obj, size_t pos);
-typedef size_t (*fcWrite_t)(void *obj, const void *data, size_t len);
-
-struct fcBufferData
-{
-    void *data;
-    size_t size;
-
-    fcBufferData() : data(), size() {}
-};
-
-fcCLinkage fcExport fcStream*       fcCreateFileStream(const char *path);
-fcCLinkage fcExport fcStream*       fcCreateMemoryStream();
-fcCLinkage fcExport fcStream*       fcCreateCustomStream(void *obj, fcTellp_t tellp, fcSeekp_t seekp, fcWrite_t write);
-fcCLinkage fcExport void            fcDestroyStream(fcStream *s);
-fcCLinkage fcExport fcBufferData    fcStreamGetBufferData(fcStream *s); // s must be created by fcCreateMemoryStream(), otherwise return {nullptr, 0}.
-fcCLinkage fcExport uint64_t        fcStreamGetWrittenSize(fcStream *s);
 
 struct fcMP4Config
 {

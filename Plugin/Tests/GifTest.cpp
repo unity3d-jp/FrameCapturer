@@ -18,7 +18,10 @@ void GifTestImpl(const char *filename)
         fcGifAddFramePixels(ctx, &video_frame[0], GetPixelFormat<T>::value, false, t);
         t += 1.0 / 30.0;
     }
-    fcGifWriteFile(ctx, filename);
+
+    fcStream *fstream = fcCreateFileStream(filename);
+    fcGifWrite(ctx, fstream);
+    fcDestroyStream(fstream);
     fcGifDestroyContext(ctx);
 }
 

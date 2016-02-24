@@ -9,6 +9,10 @@ namespace UTJ
 {
     public static class fcAPI
     {
+        // -------------------------------------------------------------
+        // Foundation
+        // -------------------------------------------------------------
+
         public enum fcPixelFormat
         {
             Unknown,
@@ -39,12 +43,14 @@ namespace UTJ
         };
 
 
-        // -------------------------------------------------------------
-        // Foundation
-        // -------------------------------------------------------------
+        [DllImport ("FrameCapturer")] public static extern void         fcSetModulePath(string path);
+        [DllImport ("FrameCapturer")] public static extern double       fcGetTime();
 
-        [DllImport ("FrameCapturer")] public static extern void     fcSetModulePath(string path);
-        [DllImport ("FrameCapturer")] public static extern ulong    fcSecondsToTimestamp(double sec);
+        public struct fcStream { public IntPtr ptr; }
+        [DllImport ("FrameCapturer")] public static extern fcStream     fcCreateFileStream(string path);
+        [DllImport ("FrameCapturer")] public static extern fcStream     fcCreateMemoryStream();
+        [DllImport ("FrameCapturer")] public static extern void         fcDestroyStream(fcStream s);
+        [DllImport ("FrameCapturer")] public static extern ulong        fcStreamGetWrittenSize(fcStream s);
 
 
         // -------------------------------------------------------------
@@ -54,6 +60,17 @@ namespace UTJ
         public struct fcPngConfig
         {
             public int max_active_tasks;
+
+            public static fcPngConfig default_value
+            {
+                get
+                {
+                    return new fcPngConfig
+                    {
+                        max_active_tasks = 8,
+                    };
+                }
+            }
         };
         public struct fcPNGContext { public IntPtr ptr; }
 
@@ -61,6 +78,7 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern void         fcPngDestroyContext(fcPNGContext ctx);
         [DllImport ("FrameCapturer")] public static extern bool         fcPngExportTexture(fcPNGContext ctx, string path, IntPtr tex, int width, int height, RenderTextureFormat f, bool flipY);
         [DllImport ("FrameCapturer")] public static extern bool         fcPngExportPixels(fcPNGContext ctx, string path, IntPtr pixels, int width, int height, fcPixelFormat f, bool flipY);
+
         public static bool fcPngExportTexture(fcPNGContext ctx, string path, RenderTexture tex, bool flipY)
         {
             return fcPngExportTexture(ctx, path, tex.GetNativeTexturePtr(), tex.width, tex.height, tex.format, flipY);
@@ -74,6 +92,17 @@ namespace UTJ
         public struct fcExrConfig
         {
             public int max_active_tasks;
+
+            public static fcExrConfig default_value
+            {
+                get
+                {
+                    return new fcExrConfig
+                    {
+                        max_active_tasks = 8,
+                    };
+                }
+            }
         };
         public struct fcEXRContext { public IntPtr ptr; }
 
@@ -95,19 +124,47 @@ namespace UTJ
             public int height;
             public int num_colors;
             public int max_active_tasks;
+
+            public static fcGifConfig default_value
+            {
+                get
+                {
+                    return new fcGifConfig
+                    {
+                        width = 320,
+                        height = 240,
+                        num_colors = 256,
+                        max_active_tasks = 8,
+                    };
+                }
+            }
         };
         public struct fcGIFContext { public IntPtr ptr; }
 
         [DllImport ("FrameCapturer")] public static extern fcGIFContext fcGifCreateContext(ref fcGifConfig conf);
         [DllImport ("FrameCapturer")] public static extern void         fcGifDestroyContext(fcGIFContext ctx);
-        [DllImport ("FrameCapturer")] public static extern void         fcGifAddFrame(fcGIFContext ctx, IntPtr tex);
+        [DllImport ("FrameCapturer")] public static extern bool         fcGifAddFrameTexture(fcGIFContext ctx, IntPtr tex, RenderTextureFormat fmt, bool keyframe = false, double timestamp = -1.0);
+        [DllImport ("FrameCapturer")] public static extern bool         fcGifAddFramePixels(fcGIFContext ctx, IntPtr pixels, fcPixelFormat fmt, bool keyframe = false, double timestamp = -1.0);
+        [DllImport ("FrameCapturer")] public static extern bool         fcGifWrite(fcGIFContext ctx, fcStream stream, int begin_frame=0, int end_frame=-1);
+
         [DllImport ("FrameCapturer")] public static extern void         fcGifClearFrame(fcGIFContext ctx);
-        [DllImport ("FrameCapturer")] public static extern bool         fcGifWriteFile(fcGIFContext ctx, string path, int begin_frame=0, int end_frame=-1);
-        [DllImport ("FrameCapturer")] public static extern int          fcGifWriteMemory(fcGIFContext ctx, IntPtr out_buf, int begin_frame=0, int end_frame=-1);
         [DllImport ("FrameCapturer")] public static extern int          fcGifGetFrameCount(fcGIFContext ctx);
         [DllImport ("FrameCapturer")] public static extern void         fcGifGetFrameData(fcGIFContext ctx, IntPtr tex, int frame);
         [DllImport ("FrameCapturer")] public static extern int          fcGifGetExpectedDataSize(fcGIFContext ctx, int begin_frame, int end_frame);
         [DllImport ("FrameCapturer")] public static extern void         fcGifEraseFrame(fcGIFContext ctx, int begin_frame, int end_frame);
+
+        public static bool fcGifAddFrameTexture(fcGIFContext ctx, RenderTexture tex, bool keyframe = false, double timestamp = -1.0)
+        {
+            return fcGifAddFrameTexture(ctx, tex.GetNativeTexturePtr(), tex.format, keyframe, timestamp);
+        }
+
+        public static bool fcGifWriteFile(fcGIFContext ctx, string path, int begin_frame = 0, int end_frame = -1)
+        {
+            fcStream fstream = fcCreateFileStream(path);
+            bool ret = fcGifWrite(ctx, fstream, begin_frame, end_frame);
+            fcDestroyStream(fstream);
+            return ret;
+        }
 
 
         // -------------------------------------------------------------
@@ -158,16 +215,10 @@ namespace UTJ
             }
         };
         public struct fcMP4Context { public IntPtr ptr; }
-        public struct fcStream { public IntPtr ptr; }
-
-        [DllImport ("FrameCapturer")] public static extern double       fcGetTime();
-        [DllImport ("FrameCapturer")] public static extern fcStream     fcCreateFileStream(string path);
-        [DllImport ("FrameCapturer")] public static extern fcStream     fcCreateMemoryStream();
-        [DllImport ("FrameCapturer")] public static extern void         fcDestroyStream(fcStream s);
-        [DllImport ("FrameCapturer")] public static extern ulong        fcStreamGetWrittenSize(fcStream s);
 
         [DllImport ("FrameCapturer")] public static extern bool             fcMP4DownloadCodecBegin();
         [DllImport ("FrameCapturer")] public static extern fcDownloadState  fcMP4DownloadCodecGetState();
+
         [DllImport ("FrameCapturer")] public static extern fcMP4Context     fcMP4CreateContext(ref fcMP4Config conf);
         [DllImport ("FrameCapturer")] public static extern void             fcMP4DestroyContext(fcMP4Context ctx);
         [DllImport ("FrameCapturer")] public static extern void             fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);

@@ -39,10 +39,9 @@ public:
 
     bool addFrameTexture(void *tex, fcTextureFormat fmt, bool keyframe, fcTime timestamp) override;
     bool addFramePixels(const void *pixels, fcPixelFormat fmt, bool keyframe, fcTime timestamp) override;
-    void clearFrame() override;
-    bool writeFile(const char *path, int begin_frame, int end_frame) override;
-    int  writeMemory(void *buf, int begin_frame, int end_frame) override;
+    bool write(fcStream& stream, int begin_frame, int end_frame) override;
 
+    void clearFrame() override;
     int  getFrameCount() override;
     void getFrameData(void *tex, int frame) override;
     int  getExpectedDataSize(int begin_frame, int end_frame) override;
@@ -224,7 +223,7 @@ void fcGifContext::kickTask(fcGifTaskData& data)
 bool fcGifContext::addFrameTexture(void *tex, fcTextureFormat fmt, bool keyframe, fcTime timestamp)
 {
     fcGifTaskData& data = getTempraryVideoFrame();
-    data.timestamp = timestamp;
+    data.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeSec();
     data.local_palette = data.frame == 0 || keyframe;
 
     // フレームバッファの内容取得
@@ -242,7 +241,7 @@ bool fcGifContext::addFrameTexture(void *tex, fcTextureFormat fmt, bool keyframe
 bool fcGifContext::addFramePixels(const void *pixels, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
 {
     fcGifTaskData& data = getTempraryVideoFrame();
-    data.timestamp = timestamp;
+    data.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeSec();
     data.local_palette = data.frame == 0 || keyframe;
     data.raw_pixel_format = fmt;
     data.raw_pixels.assign((char*)pixels, (char*)pixels + (m_conf.width * m_conf.height * fcGetPixelSize(fmt)));
@@ -272,7 +271,7 @@ static inline void adjust_frame(int &begin_frame, int &end_frame, int max_frame)
 }
 
 
-void fcGifContext::write(std::ostream &os, int begin_frame, int end_frame)
+bool fcGifContext::write(fcStream& os, int begin_frame, int end_frame)
 {
     m_tasks.wait();
 
@@ -287,7 +286,7 @@ void fcGifContext::write(std::ostream &os, int begin_frame, int end_frame)
     while (palette->frame.palette.empty()) { --palette; }
 
     int frame = 0;
-    int duration = 0;
+    int duration = 1;
     jo_gif_write_header(os, &m_gif);
     for (auto i = begin; i != end; ++i) {
         jo_gif_frame_t *pal = frame == 0 ? &palette->frame : nullptr;
@@ -299,25 +298,8 @@ void fcGifContext::write(std::ostream &os, int begin_frame, int end_frame)
         jo_gif_write_frame(os, &m_gif, &i->frame, pal, frame++, duration);
     }
     jo_gif_write_footer(os, &m_gif);
-}
 
-bool fcGifContext::writeFile(const char *path, int begin_frame, int end_frame)
-{
-    std::ofstream os(path, std::ios::binary);
-    if (!os) { return false; }
-    write(os, begin_frame, end_frame);
-    os.close();
     return true;
-}
-
-int fcGifContext::writeMemory(void *buf, int begin_frame, int end_frame)
-{
-    std::ostringstream os(std::ios::binary);
-    write(os, begin_frame, end_frame);
-
-    std::string s = os.str();
-    memcpy(buf, &s[0], s.size());
-    return (int)s.size();
 }
 
 

@@ -22,10 +22,47 @@ fcCLinkage fcExport const char* fcGetModulePath()
     return !g_fcModulePath.empty() ? g_fcModulePath.c_str() : DLLGetDirectoryOfCurrentModule();
 }
 
-
 fcCLinkage fcExport fcTime fcGetTime()
 {
     return GetCurrentTimeSec();
+}
+
+fcCLinkage fcExport fcStream* fcCreateFileStream(const char *path)
+{
+    return new StdIOStream(new std::fstream(path, std::ios::binary | std::ios::in | std::ios::out | std::ios::trunc), true);
+}
+fcCLinkage fcExport fcStream* fcCreateMemoryStream()
+{
+    return new BufferStream(new Buffer(), true);
+}
+fcCLinkage fcExport fcStream* fcCreateCustomStream(void *obj, fcTellp_t tellp, fcSeekp_t seekp, fcWrite_t write)
+{
+    CustomStreamData csd;
+    csd.obj = obj;
+    csd.tellp = tellp;
+    csd.seekp = seekp;
+    csd.write = write;
+    return new CustomStream(csd);
+}
+
+fcCLinkage fcExport void fcDestroyStream(fcStream *s)
+{
+    delete s;
+}
+
+fcCLinkage fcExport fcBufferData fcStreamGetBufferData(fcStream *s)
+{
+    fcBufferData ret;
+    if (BufferStream *bs = dynamic_cast<BufferStream*>(s)) {
+        ret.data = bs->get().ptr();
+        ret.size = bs->get().size();
+    }
+    return ret;
+}
+
+fcCLinkage fcExport uint64_t fcStreamGetWrittenSize(fcStream *s)
+{
+    return s->tellp();
 }
 
 
@@ -193,22 +230,16 @@ fcCLinkage fcExport bool fcGifAddFramePixels(fcIGifContext *ctx, const void *pix
     return ctx->addFramePixels(pixels, fmt, keyframe, timestamp);
 }
 
+fcCLinkage fcExport bool fcGifWrite(fcIGifContext *ctx, fcStream *stream, int begin_frame, int end_frame)
+{
+    if (!ctx || !stream) { return false; }
+    return ctx->write(*stream, begin_frame, end_frame);
+}
+
 fcCLinkage fcExport void fcGifClearFrame(fcIGifContext *ctx)
 {
     if (!ctx) { return; }
     ctx->clearFrame();
-}
-
-fcCLinkage fcExport bool fcGifWriteFile(fcIGifContext *ctx, const char *path, int begin_frame, int end_frame)
-{
-    if (!ctx) { return false; }
-    return ctx->writeFile(path, begin_frame, end_frame);
-}
-
-fcCLinkage fcExport int fcGifWriteMemory(fcIGifContext *ctx, void *buf, int begin_frame, int end_frame)
-{
-    if (!ctx) { return 0; }
-    return ctx->writeMemory(buf, begin_frame, end_frame);
 }
 
 fcCLinkage fcExport int fcGifGetFrameCount(fcIGifContext *ctx)
@@ -242,49 +273,8 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
 // MP4 Exporter
 // -------------------------------------------------------------
 
-fcCLinkage fcExport fcStream* fcCreateFileStream(const char *path)
-{
-    return new StdIOStream(new std::fstream(path, std::ios::binary | std::ios::in | std::ios::out | std::ios::trunc), true);
-}
-fcCLinkage fcExport fcStream* fcCreateMemoryStream()
-{
-    return new BufferStream(new Buffer(), true);
-}
-fcCLinkage fcExport fcStream* fcCreateCustomStream(void *obj, fcTellp_t tellp, fcSeekp_t seekp, fcWrite_t write)
-{
-    CustomStreamData csd;
-    csd.obj = obj;
-    csd.tellp = tellp;
-    csd.seekp = seekp;
-    csd.write = write;
-    return new CustomStream(csd);
-}
-
-fcCLinkage fcExport void fcDestroyStream(fcStream *s)
-{
-    delete s;
-}
-
-fcCLinkage fcExport fcBufferData fcStreamGetBufferData(fcStream *s)
-{
-    fcBufferData ret;
-    if (BufferStream *bs = dynamic_cast<BufferStream*>(s)) {
-        ret.data = bs->get().ptr();
-        ret.size = bs->get().size();
-    }
-    return ret;
-}
-
-fcCLinkage fcExport uint64_t fcStreamGetWrittenSize(fcStream *s)
-{
-    return s->tellp();
-}
-
-
-
 #ifdef fcSupportMP4
 #include "Encoder/fcMP4File.h"
-
 
 #ifdef fcMP4SplitModule
     #define fcMP4ModuleName  "FrameCapturer_MP4" fcDLLExt
