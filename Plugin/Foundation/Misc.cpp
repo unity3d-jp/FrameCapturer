@@ -111,7 +111,7 @@ void AlignedFree(void *p)
 #endif
 }
 
-uint64_t GetCurrentTimeNanosec()
+double GetCurrentTimeSec()
 {
 #ifdef fcWindows
     static LARGE_INTEGER g_freq = { 0, 0 };
@@ -121,11 +121,11 @@ uint64_t GetCurrentTimeNanosec()
 
     LARGE_INTEGER t;
     ::QueryPerformanceCounter(&t);
-    return u64(double(t.QuadPart) / double(g_freq.QuadPart) * 1000000000.0);
+    return double(t.QuadPart) / double(g_freq.QuadPart);
 #else
     timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);
-    return ts.tv_nsec;
+    return (double)ts.tv_nsec / 1000000000.0;
 #endif
 }
 

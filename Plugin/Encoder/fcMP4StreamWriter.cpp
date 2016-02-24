@@ -119,7 +119,7 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
     else if (frame.type == fcFrameType_AAC) {
         const auto& aac = (const fcAACFrame&)frame;
 
-        u64 timestamp = frame.timestamp;
+        fcTime timestamp = frame.timestamp;
         aac.eachBlocks([&](const char *data, int size, int raw_size) {
             fcFrameInfo info;
             info.file_offset = os.tellp();
@@ -130,7 +130,7 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
 
             os.write(data + offset, size);
             info.size += size;
-            timestamp += (u64)raw_size * (u64)1000000000 / (u64)m_conf.audio_sample_rate;
+            timestamp += (double)raw_size / (double)m_conf.audio_sample_rate;
 
             m_audio_frame_info.emplace_back(info);
         });
@@ -177,7 +177,7 @@ void fcMP4StreamWriter::mp4End()
         for (size_t i = 1; i < frame_info.size(); ++i) {
             auto& prev = frame_info[i - 1];
             auto& cur = frame_info[i];
-            uint32_t duration = uint32_t((cur.timestamp - prev.timestamp) / 1000000); // nanosec to millisec
+            uint32_t duration = uint32_t((cur.timestamp - prev.timestamp) * 1000); // sec to millisec
             total_duration_ms += duration;
 
             if (!decode_times.empty() && decode_times.back().value == duration) {
