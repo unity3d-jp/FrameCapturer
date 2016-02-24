@@ -56,7 +56,7 @@ void MP4Test()
             for (int i = 0; i < DurationInSeconds * FrameRate; ++i) {
                 CreateVideoData(&video_frame[0], Width, Height, i);
                 fcMP4AddVideoFramePixels(ctx, &video_frame[0], fcColorSpace_RGBA, t);
-                t += 1000000000LLU / FrameRate;
+                t += 1.0 / FrameRate;
             }
         });
 
@@ -67,7 +67,7 @@ void MP4Test()
             for (int i = 0; i < DurationInSeconds; ++i) {
                 CreateAudioData(&audio_sample[0], (int)audio_sample.size(), i);
                 fcMP4AddAudioFrame(ctx, &audio_sample[0], (int)audio_sample.size(), t);
-                t += 1000000000LLU;
+                t += 1.0;
             }
         });
 

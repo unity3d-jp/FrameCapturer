@@ -28,7 +28,7 @@ class fcOpenH264Encoder : public fcIH264Encoder
 public:
     fcOpenH264Encoder(const fcH264EncoderConfig& conf);
     ~fcOpenH264Encoder();
-    bool encode(fcH264Frame& dst, const fcI420Image& image, uint64_t timestamp, bool force_keyframe) override;
+    bool encode(fcH264Frame& dst, const fcI420Image& image, fcTime timestamp, bool force_keyframe) override;
 
 private:
     fcH264EncoderConfig m_conf;
@@ -101,7 +101,7 @@ fcOpenH264Encoder::~fcOpenH264Encoder()
     WelsDestroySVCEncoder_i(m_encoder);
 }
 
-bool fcOpenH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, uint64_t timestamp, bool /*force_keyframe*/)
+bool fcOpenH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, fcTime timestamp, bool /*force_keyframe*/)
 {
     if (!m_encoder) { return false; }
 
@@ -116,7 +116,7 @@ bool fcOpenH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, uint6
     src.iStride[0] = m_conf.width;
     src.iStride[1] = m_conf.width >> 1;
     src.iStride[2] = m_conf.width >> 1;
-    src.uiTimeStamp = timestamp / 1000000; // nanosec to millisec
+    src.uiTimeStamp = int64_t(timestamp * 1000.0); // sec to millisec
 
     SFrameBSInfo frame;
     memset(&frame, 0, sizeof(frame));

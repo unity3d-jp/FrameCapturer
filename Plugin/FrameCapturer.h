@@ -23,7 +23,7 @@ class fcIPngContext;
 class fcIExrContext;
 class fcIGifContext;
 class fcIMP4Context;
-typedef uint64_t fcTime; // time in nanosec
+typedef double fcTime;
 
 enum fcColorSpace
 {
@@ -84,7 +84,6 @@ fcCLinkage fcExport void            fcSetModulePath(const char *path);
 fcCLinkage fcExport const char*     fcGetModulePath();
 
 fcCLinkage fcExport fcTime          fcGetTime();
-fcCLinkage fcExport fcTime          fcSecondsToTimestamp(double sec);
 
 
 // -------------------------------------------------------------
@@ -141,9 +140,9 @@ fcCLinkage fcExport fcIGifContext*  fcGifCreateContext(const fcGifConfig *conf);
 fcCLinkage fcExport void            fcGifDestroyContext(fcIGifContext *ctx);
 fcCLinkage fcExport bool            fcGifAddFrame(fcIGifContext *ctx, void *tex);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcTextureFormat fmt, bool keyframe = false, fcTime timestamp = -1);
+fcCLinkage fcExport bool            fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcTextureFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1);
+fcCLinkage fcExport bool            fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
 fcCLinkage fcExport void            fcGifClearFrame(fcIGifContext *ctx);
 fcCLinkage fcExport bool            fcGifWriteFile(fcIGifContext *ctx, const char *path, int begin_frame = 0, int end_frame = -1);
 fcCLinkage fcExport int             fcGifWriteMemory(fcIGifContext *ctx, void *buf, int begin_frame = 0, int end_frame = -1);
@@ -219,8 +218,8 @@ fcCLinkage fcExport void            fcMP4AddOutputStream(fcIMP4Context *ctx, fcS
 // timestamp=-1 is treated as current time.
 fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcTime timestamp = -1);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcColorSpace cs, fcTime timestamp = -1);
+fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcColorSpace cs, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp = -1);
+fcCLinkage fcExport bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
 
 #endif // FrameCapturer_h

@@ -179,10 +179,10 @@ namespace UTJ
 
                 if (Time.frameCount % m_captureEveryNthFrame == 0)
                 {
-                    ulong timestamp = ~0LU;
+                    double timestamp = -1.0;
                     if(m_framerateMode == FramerateMode.Constant)
                     {
-                        timestamp = 1000000000LU / (ulong)m_framerate * (ulong)m_num_video_frames;
+                        timestamp = 1.0 / m_framerate * m_num_video_frames;
                     }
 
                     m_mat_copy.SetPass(0);

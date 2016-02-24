@@ -21,7 +21,7 @@ const char* DLLGetDirectoryOfCurrentModule();
 void*       AlignedAlloc(size_t size, size_t align);
 void        AlignedFree(void *p);
 
-uint64_t    GetCurrentTimeNanosec();
+double      GetCurrentTimeSec();
 
 
 

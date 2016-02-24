@@ -20,7 +20,7 @@ class fcAMDH264Encoder : public fcIH264Encoder
 public:
     fcAMDH264Encoder(const fcH264EncoderConfig& conf);
     ~fcAMDH264Encoder();
-    bool encode(fcH264Frame& dst, const fcI420Image& image, uint64_t timestamp, bool force_keyframe) override;
+    bool encode(fcH264Frame& dst, const fcI420Image& image, fcTime timestamp, bool force_keyframe) override;
 
 private:
     fcH264EncoderConfig m_conf;
@@ -52,7 +52,7 @@ fcAMDH264Encoder::~fcAMDH264Encoder()
 {
 }
 
-bool fcAMDH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, uint64_t timestamp, bool force_keyframe)
+bool fcAMDH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, fcTime timestamp, bool force_keyframe)
 {
     return false;
 }

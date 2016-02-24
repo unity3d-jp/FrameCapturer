@@ -16,7 +16,7 @@ struct fcI420Image
 // raw video sample
 struct fcVideoFrame
 {
-    u64 timestamp;
+    fcTime timestamp;
     Buffer rgba;
     fcI420Image i420;
 
@@ -46,7 +46,7 @@ struct fcVideoFrame
 // raw audio sample
 struct fcAudioFrame
 {
-    u64 timestamp;
+    fcTime timestamp;
     Buffer data;
 
     fcAudioFrame() : timestamp() {}
@@ -86,10 +86,10 @@ struct fcH264NALHeader
 struct fcFrameData
 {
     fcFrameType type;
-    uint64_t timestamp;
+    fcTime timestamp;
     Buffer data;
 
-    fcFrameData() : type(fcFrameType_Unknown), timestamp(0){}
+    fcFrameData() : type(fcFrameType_Unknown), timestamp(0.0){}
 };
 
 struct fcH264Frame : public fcFrameData
@@ -156,7 +156,7 @@ struct fcFrameInfo
 {
     size_t size;
     uint64_t file_offset;
-    uint64_t timestamp;
+    fcTime timestamp;
 
     fcFrameInfo()
         : size(), file_offset(), timestamp()

@@ -23,15 +23,9 @@ fcCLinkage fcExport const char* fcGetModulePath()
 }
 
 
-fcCLinkage fcExport uint64_t fcGetTime()
+fcCLinkage fcExport fcTime fcGetTime()
 {
-    return GetCurrentTimeNanosec();
-}
-
-fcCLinkage fcExport uint64_t fcSecondsToTimestamp(double sec)
-{
-    // timestamp is nanoseconds
-    return uint64_t(sec * 1e+9);
+    return GetCurrentTimeSec();
 }
 
 
