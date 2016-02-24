@@ -94,11 +94,7 @@ namespace UTJ
             public int width;
             public int height;
             public int num_colors;
-            public int delay_csec; // * centi second! *
-            public int keyframe;
             public int max_active_tasks;
-            public int max_frame;
-            public int max_data_size;
         };
         public struct fcGIFContext { public IntPtr ptr; }
 

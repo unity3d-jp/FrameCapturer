@@ -11,10 +11,12 @@ void GifTestImpl(const char *filename)
     conf.height = Height;
     fcIGifContext *ctx = fcGifCreateContext(&conf);
 
+    fcTime t = 0;
     std::vector<T> video_frame(Width * Height);
     for (int i = 0; i < 15; ++i) {
         CreateVideoData(&video_frame[0], Width, Height, i);
-        fcGifAddFramePixels(ctx, &video_frame[0], GetPixelFormat<T>::value);
+        fcGifAddFramePixels(ctx, &video_frame[0], GetPixelFormat<T>::value, false, t);
+        t += 1.0 / 30.0;
     }
     fcGifWriteFile(ctx, filename);
     fcGifDestroyContext(ctx);

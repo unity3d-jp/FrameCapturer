@@ -88,10 +88,6 @@ namespace UTJ
             conf.width = m_scratch_buffer.width;
             conf.height = m_scratch_buffer.height;
             conf.num_colors = m_numColors;
-            conf.delay_csec = m_intervalCS;
-            conf.keyframe = m_keyframe;
-            conf.max_frame = m_maxFrame;
-            conf.max_data_size = m_maxSize;
             conf.max_active_tasks = m_maxTasks;
             m_gif = fcAPI.fcGifCreateContext(ref conf);
         }

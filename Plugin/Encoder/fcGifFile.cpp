@@ -13,12 +13,18 @@
 #endif // fcSupportHalfPixelFormat
 
 
+struct fcGifFrame
+{
+    jo_gif_frame_t frame;
+    fcTime timestamp;
+};
+
 struct fcGifTaskData
 {
     fcPixelFormat raw_pixel_format;
     std::vector<uint8_t> raw_pixels;
     std::vector<uint8_t> rgba8_pixels;
-    jo_gif_frame_t *gif_frame;
+    fcGifFrame *gif_frame;
     int frame;
     bool local_palette;
     fcTime timestamp;
@@ -46,7 +52,6 @@ private:
     fcGifTaskData&  getTempraryVideoFrame();
     void            returnTempraryVideoFrame(fcGifTaskData& v);
 
-    void scrape(bool is_tasks_running);
     void addGifFrame(fcGifTaskData& data);
     void kickTask(fcGifTaskData& data);
     void write(std::ostream &os, int begin_frame, int end_frame);
@@ -56,7 +61,7 @@ private:
     fcIGraphicsDevice *m_dev;
     std::vector<fcGifTaskData> m_buffers;
     std::vector<fcGifTaskData*> m_buffers_unused;
-    std::list<jo_gif_frame_t> m_gif_buffers;
+    std::list<fcGifFrame> m_gif_frames;
     jo_gif_t m_gif;
     fcTaskGroup m_tasks;
     std::mutex m_mutex;
@@ -104,42 +109,6 @@ static inline void advance_palette_and_pop_front(std::list<jo_gif_frame_t>& fram
         }
     }
     frames.pop_front();
-}
-
-void fcGifContext::scrape(bool updating)
-{
-    // 最大容量か最大フレーム数が設定されている場合、それらを超過したフレームをここで切り捨てる。
-    // 切り捨てるフレームがパレットを持っている場合パレットの移動も行う。
-
-    // 実行中のタスクが更新中のデータを間引くのはマズいので、更新中は最低でもタスク数分は残す
-    int min_frames = updating ? std::max<int>(m_conf.max_active_tasks, 1) : 1;
-
-    // 最大フレーム数超えてたら間引く
-    if (m_conf.max_frame > 0)
-    {
-        while (m_conf.max_frame > min_frames && m_gif_buffers.size() > size_t(m_conf.max_frame))
-        {
-            advance_palette_and_pop_front(m_gif_buffers);
-        }
-    }
-
-    // 最大容量超えてたら間引く
-    if (m_conf.max_data_size > 0)
-    {
-        size_t size = 14; // gif header + footer size
-        if (m_gif.repeat >= 0) { size += 19; }
-        for (auto &fdata : m_gif_buffers)
-        {
-            size += fdata.palette.size() + fdata.encoded.size() + 20;
-        }
-
-        while (m_gif_buffers.size() > size_t(min_frames) && size > size_t(m_conf.max_data_size))
-        {
-            auto &fdata = m_gif_buffers.front();
-            size -= fdata.palette.size() + fdata.encoded.size() + 20;
-            advance_palette_and_pop_front(m_gif_buffers);
-        }
-    }
 }
 
 fcGifTaskData& fcGifContext::getTempraryVideoFrame()
@@ -227,17 +196,17 @@ void fcGifContext::addGifFrame(fcGifTaskData& data)
         src = (unsigned char*)&data.rgba8_pixels[0];
     }
 
-    jo_gif_frame(&m_gif, data.gif_frame, src, data.frame, data.local_palette);
+    jo_gif_frame(&m_gif, &data.gif_frame->frame, src, data.frame, data.local_palette);
     returnTempraryVideoFrame(data);
 }
 
 void fcGifContext::kickTask(fcGifTaskData& data)
 {
     // gif データを生成
-    m_gif_buffers.push_back(jo_gif_frame_t());
-    data.gif_frame = &m_gif_buffers.back();
+    m_gif_frames.push_back(fcGifFrame());
+    data.gif_frame = &m_gif_frames.back();
+    data.gif_frame->timestamp = data.timestamp;
     data.frame = m_frame++;
-    data.local_palette = data.frame == 0 || (m_conf.keyframe != 0 && data.frame % m_conf.keyframe == 0);
 
     if (data.local_palette) {
         // パレットの更新は前後のフレームに影響をあたえるため、同期更新でなければならない
@@ -250,8 +219,6 @@ void fcGifContext::kickTask(fcGifTaskData& data)
             addGifFrame(data);
         });
     }
-
-    scrape(true);
 }
 
 bool fcGifContext::addFrameTexture(void *tex, fcTextureFormat fmt, bool keyframe, fcTime timestamp)
@@ -276,6 +243,7 @@ bool fcGifContext::addFramePixels(const void *pixels, fcPixelFormat fmt, bool ke
 {
     fcGifTaskData& data = getTempraryVideoFrame();
     data.timestamp = timestamp;
+    data.local_palette = data.frame == 0 || keyframe;
     data.raw_pixel_format = fmt;
     data.raw_pixels.assign((char*)pixels, (char*)pixels + (m_conf.width * m_conf.height * fcGetPixelSize(fmt)));
 
@@ -287,7 +255,7 @@ bool fcGifContext::addFramePixels(const void *pixels, fcPixelFormat fmt, bool ke
 void fcGifContext::clearFrame()
 {
     m_tasks.wait();
-    m_gif_buffers.clear();
+    m_gif_frames.clear();
     m_frame = 0;
 }
 
@@ -307,23 +275,28 @@ static inline void adjust_frame(int &begin_frame, int &end_frame, int max_frame)
 void fcGifContext::write(std::ostream &os, int begin_frame, int end_frame)
 {
     m_tasks.wait();
-    scrape(false);
 
-    adjust_frame(begin_frame, end_frame, (int)m_gif_buffers.size());
-    auto begin = m_gif_buffers.begin();
-    auto end = m_gif_buffers.begin();
+    adjust_frame(begin_frame, end_frame, (int)m_gif_frames.size());
+    auto begin = m_gif_frames.begin();
+    auto end = m_gif_frames.begin();
     std::advance(begin, begin_frame);
     std::advance(end, end_frame);
 
     // パレット探索
     auto palette = begin;
-    while (palette->palette.empty()) { --palette; }
+    while (palette->frame.palette.empty()) { --palette; }
 
     int frame = 0;
+    int duration = 0;
     jo_gif_write_header(os, &m_gif);
     for (auto i = begin; i != end; ++i) {
-        jo_gif_frame_t *pal = frame == 0 ? &(*palette) : nullptr;
-        jo_gif_write_frame(os, &m_gif, &(*i), pal, frame++, m_conf.delay_csec);
+        jo_gif_frame_t *pal = frame == 0 ? &palette->frame : nullptr;
+
+        auto next = i; ++next;
+        if (next != end) {
+            duration = int((next->timestamp - i->timestamp) * 100.0);
+        }
+        jo_gif_write_frame(os, &m_gif, &i->frame, pal, frame++, duration);
     }
     jo_gif_write_footer(os, &m_gif);
 }
@@ -350,25 +323,24 @@ int fcGifContext::writeMemory(void *buf, int begin_frame, int end_frame)
 
 int fcGifContext::getFrameCount()
 {
-    return (int)m_gif_buffers.size();
+    return (int)m_gif_frames.size();
 }
 
 void fcGifContext::getFrameData(void *tex, int frame)
 {
-    if (frame >= 0 && size_t(frame) >= m_gif_buffers.size()) { return; }
+    if (frame >= 0 && size_t(frame) >= m_gif_frames.size()) { return; }
     m_tasks.wait();
-    scrape(false);
 
     jo_gif_frame_t *fdata, *palette;
     {
-        auto it = m_gif_buffers.begin();
+        auto it = m_gif_frames.begin();
         std::advance(it, frame);
-        fdata = &(*it);
+        fdata = &it->frame;
         for (;; --it)
         {
-            if (!it->palette.empty())
+            if (!it->frame.palette.empty())
             {
-                palette = &(*it);
+                palette = &it->frame;
                 break;
             }
         }
@@ -383,9 +355,9 @@ void fcGifContext::getFrameData(void *tex, int frame)
 
 int fcGifContext::getExpectedDataSize(int begin_frame, int end_frame)
 {
-    adjust_frame(begin_frame, end_frame, (int)m_gif_buffers.size());
-    auto begin = m_gif_buffers.begin();
-    auto end = m_gif_buffers.begin();
+    adjust_frame(begin_frame, end_frame, (int)m_gif_frames.size());
+    auto begin = m_gif_frames.begin();
+    auto end = m_gif_frames.begin();
     std::advance(begin, begin_frame);
     std::advance(end, end_frame);
 
@@ -396,15 +368,15 @@ int fcGifContext::getExpectedDataSize(int begin_frame, int end_frame)
         if (i == begin) {
             if (m_gif.repeat >= 0) { size += 19; }
             // パレット探索
-            if (begin->palette.empty())
+            if (begin->frame.palette.empty())
             {
                 auto palette = begin;
-                while (palette->palette.empty()) { --palette; }
-                size += palette->palette.size();
+                while (palette->frame.palette.empty()) { --palette; }
+                size += palette->frame.palette.size();
             }
         }
 
-        size += i->palette.size() + i->encoded.size() + 20;
+        size += i->frame.palette.size() + i->frame.encoded.size() + 20;
     }
     return (int)size;
 }
@@ -412,14 +384,13 @@ int fcGifContext::getExpectedDataSize(int begin_frame, int end_frame)
 void fcGifContext::eraseFrame(int begin_frame, int end_frame)
 {
     m_tasks.wait();
-    scrape(false);
 
-    adjust_frame(begin_frame, end_frame, (int)m_gif_buffers.size());
-    auto begin = m_gif_buffers.begin();
-    auto end = m_gif_buffers.begin();
+    adjust_frame(begin_frame, end_frame, (int)m_gif_frames.size());
+    auto begin = m_gif_frames.begin();
+    auto end = m_gif_frames.begin();
     std::advance(begin, begin_frame);
     std::advance(end, end_frame);
-    m_gif_buffers.erase(begin, end);
+    m_gif_frames.erase(begin, end);
 }
 
 
