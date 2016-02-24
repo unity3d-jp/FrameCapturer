@@ -189,7 +189,7 @@ namespace UTJ
                     Graphics.SetRenderTarget(m_scratch_buffer);
                     Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                     Graphics.SetRenderTarget(null);
-                    fcAPI.fcMP4AddVideoFrameTexture(m_ctx, m_scratch_buffer.GetNativeTexturePtr(), timestamp);
+                    fcAPI.fcMP4AddVideoFrameTexture(m_ctx, m_scratch_buffer, timestamp);
                     m_num_video_frames++;
                 }
             }

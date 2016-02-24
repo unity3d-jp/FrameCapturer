@@ -53,7 +53,6 @@ private:
 
     void addGifFrame(fcGifTaskData& data);
     void kickTask(fcGifTaskData& data);
-    void write(std::ostream &os, int begin_frame, int end_frame);
 
 private:
     fcGifConfig m_conf;

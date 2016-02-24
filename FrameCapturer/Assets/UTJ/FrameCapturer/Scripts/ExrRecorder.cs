@@ -198,7 +198,7 @@ namespace UTJ
 
         void AddLayer(RenderTexture rt, int ch, string name)
         {
-            fcAPI.fcExrAddLayerTexture(m_exr, rt.GetNativeTexturePtr(), rt.format, ch, name, false);
+            fcAPI.fcExrAddLayerTexture(m_exr, rt, ch, name, false);
         }
     }
 }

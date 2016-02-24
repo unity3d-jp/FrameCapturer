@@ -113,6 +113,11 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern bool         fcExrAddLayerPixels(fcEXRContext ctx, IntPtr pixels, fcPixelFormat f, int ch, string name, bool flipY);
         [DllImport ("FrameCapturer")] public static extern bool         fcExrEndFrame(fcEXRContext ctx);
 
+        public static bool fcExrAddLayerTexture(fcEXRContext ctx, RenderTexture tex, int ch, string name, bool flipY)
+        {
+            return fcExrAddLayerTexture(ctx, tex.GetNativeTexturePtr(), tex.format, ch, name, flipY);
+        }
+
 
         // -------------------------------------------------------------
         // GIF Exporter
@@ -225,6 +230,11 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddVideoFrameTexture(fcMP4Context ctx, IntPtr tex, double time = -1.0);
         [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddVideoFramePixels(fcMP4Context ctx, IntPtr pixels, fcColorSpace cs, double time = -1.0);
         [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddAudioFrame(fcMP4Context ctx, float[] samples, int num_samples, double time = -1.0);
+
+        public static bool fcMP4AddVideoFrameTexture(fcMP4Context ctx, RenderTexture tex, double time = -1.0)
+        {
+            return fcMP4AddVideoFrameTexture(ctx, tex.GetNativeTexturePtr(), time);
+        }
     }
 
 
