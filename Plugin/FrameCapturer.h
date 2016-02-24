@@ -127,14 +127,9 @@ struct fcGifConfig
     int width;
     int height;
     int num_colors;
-    int delay_csec;
-    int keyframe;
     int max_active_tasks;
-    int max_frame;
-    int max_data_size;
     fcGifConfig()
-        : width(), height(), num_colors(256)
-        , delay_csec(3), keyframe(30), max_active_tasks(8), max_frame(), max_data_size() {}
+        : width(), height(), num_colors(256), max_active_tasks(8) {}
 };
 fcCLinkage fcExport fcIGifContext*  fcGifCreateContext(const fcGifConfig *conf);
 fcCLinkage fcExport void            fcGifDestroyContext(fcIGifContext *ctx);

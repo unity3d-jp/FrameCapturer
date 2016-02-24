@@ -5,12 +5,13 @@
 フレームバッファの内容をキャプチャして画像や動画に出力する Unity 用のプラグインです。アニメ gif, mp4, exr への出力に対応しています。現在は Windows 専用となっています。(ソースレベルでは Mac や Linux でもビルドできて動くはずですが、未確認です)  
 使用するにはまずこのパッケージをプロジェクトにインポートしてください: [FrameCapturer.unitypackage](https://github.com/unity3d-jp/FrameCapturer/blob/master/Packages/FrameCapturer.unitypackage?raw=true)  
 以下は各コンポーネントの説明になります。
-- [Gif Capturer](#gif-capturer)
-- [MP4 Capturer](#mp4-capturer)
-- [Exr Capturer](#exr-capturer)
+- [Gif Recorder](#gif-recorder)
+- [MP4 Recorder](#mp4-recorder)
+- [Exr Recorder](#exr-recorder)
+- [Png Recorder](#png-recorder)
 
 
-## Gif Capturer
+## Gif Recorder
 ゲーム画面をキャプチャしてアニメ gif としてエクスポートします。
 常時録画して後で面白いカットを切り出してファイルに出力する、というような使い方を想定しています。録画解像度はかなり小さめ (横 300 pixel 程度) を推奨しています。解像度に比例してすごい勢いで処理が重くなるため、等倍での録画をリアルタイムで行うのは絶望的です。
 
@@ -28,21 +29,22 @@
 ![gif_example1](Screenshots/gif_example1.gif)  
 
 ### 使い方
-1. 録画したいカメラに GifCapturer コンポーネントを追加
-2. uGUI オブジェクト GifCapturerHUD.prefab をどこかに配置し、それの capturer に 2 で追加したコンポーネントを設定
+1. 録画したいカメラに GifRecorder コンポーネントを追加
+2. uGUI オブジェクト MovieRecorderUI.prefab をどこかに配置し、それの capturer に 2 で追加したコンポーネントを設定
 
-2 は必須ではありませんが、GifCapturer には録画の on/off 切り替えやファイルへの書き出しなどをコントロールするための GUI やスクリプトが必要になります。
-GifCapturerHUD.prefab は機能はともかく見た目は必要最小限のため、これを使う場合も独自に改良した方がいいでしょう。
+2 は必須ではありませんが、GifRecorder には録画の on/off 切り替えやファイルへの書き出しなどをコントロールするための GUI やスクリプトが必要になります。
+MovieRecorderUI.prefab は機能はともかく見た目は必要最小限のため、これを使う場合も独自に改良した方がいいでしょう。
 
 Twitter への投稿機能は、[TweetMedia](https://github.com/unity3d-jp/TweetMedia) によって実現されています。詳しくはそちらをご参照ください。  
 TweetScreenshot.prefab はこちらのパッケージにしかない prefab で、録画した gif を添付する機能が追加された Tweet 用 GUI になっています。
 
 
-## MP4 Capturer
-ゲーム画面をキャプチャして mp4 動画で出力します。  現在実験段階であり、録音、編集、シークなどは未対応です。単純に動画としてキャプチャしてファイルに書き出すことのみできます。  
-使い方は Gif Capturer とほぼ同じ (コンポーネントが MP4Capturer に変わっただけ) で、UI も GifCapturerHUD.prefab をそのまま使えます。  
+## MP4 Recorder
+ゲーム画面をキャプチャして mp4 動画で出力します。
 
-**MP4Capturer を使用する場合、事前に OpenH264 の dll を別途入手してプラグインフォルダ (FrameCapturer.dll と同じフォルダ) に置く必要があります**。https://github.com/cisco/openh264/releases/tag/v1.5.0 このページから openh264-1.5.0-win32msvc.dll.bz2 openh264-1.5.0-win64msvc.dll.bz2 を入手、解凍してプラグインフォルダに置いてください。   
+
+動画のエンコーダ (OpenH264) はパッケージには含んでおらず、実行時にダウンロードして展開するようになっています。
+このため、ダウンロードが終わるまでは
 パッケージに含めていないのにはライセンス的な理由があります。
 MP4 の使用には通常ライセンス料が課せられます。しかし、OpenH264 は特定の条件を満たしていればこのライセンス料を免除できるようになっています。その条件は以下のようなものです。
 
@@ -51,12 +53,12 @@ MP4 の使用には通常ライセンス料が課せられます。しかし、O
 3. OpenH264 の使用をコントロールする場所に次の一文を明記してある: "OpenH264 Video Codec provided by Cisco Systems, Inc."
 4. これらの条件のライセンスの条文 ( http://www.openh264.org/BINARY_LICENSE.txt 下部) が参照可能になっている
 
-より正確には原文の方を参照ください: http://www.openh264.org/faq.html  
-mp4 キャプチャ機能を備えたゲームをリリースしたい場合も、上記条件を満たさないとライセンス料を課せられる可能性が生じます。  
-いずれ OpenH264 のダウンローダを用意して上記条件を満たしつつユーザーに簡単にインストールできるようにしようと思っています。  
+(より正確には原文の方を参照ください: http://www.openh264.org/faq.html)  
+OpenH264 を使ったゲームをリリースしたい場合も、上記条件を満たさないとライセンス料を課せられる可能性が生じるため、このような仕様にしています。
 
 
-## Exr Capturer  
+
+## Exr Recorder  
 Exr は主に映像業界で使われる画像フォーマットで、float や half のピクセルデータで構成された画像、いわゆる HDR 画像を保持できます。  
 ExrCapturer は主に映像向けの用途を想定したもので、G-Buffer やマテリアル ID などを書き出し、コンポジットに使うことを目的としています。現状 G-Buffer の書き出しと、任意の RenderTexture の書き出しに対応しています。  
 Exr エクスポートは非常に重く、リアルタイムで行うのは厳しい処理であるため、デルタタイムを固定して事前に指定しておいた範囲のフレームを書き出す、という使い方を想定しています。  
@@ -124,6 +126,12 @@ Channel は何番目のチャンネルかを指定するもので、0,1,2,3 が�
 ![ExrOffscreenCapturer](Screenshots/ExrOffscreenCapturer.png)  
 
 
+## Png Recorder
+ゲーム画面を連番 PNG でキャプチャします。  
+こちらも想定している用途は映像のコンポジットで、使い方も大体 ExrRecorder と同じです。G-Buffer の各要素を HDR (16bit カラー) の連番 png で書き出すことができます。  
+png は 16bit カラーまでしかサポートしていないようで、float のピクセルデータは 16bit に落として保存するようになっています。32bit カラーで書き出したい場合は ExrRecorder をご使用ください。
+
+
 ## Thanks
 - gif エクスポートに Jon Olick 氏の GIF Writer に手を加えたものを使用しています。オリジナルからの主な変更点は、出力先をファイルからメモリに変えたことです。  
   - オリジナル: http://www.jonolick.com/home/gif-writer  
@@ -136,7 +144,9 @@ Channel は何番目のチャンネルかを指定するもので、0,1,2,3 が�
   - bzip2 (OpenH264 ダウンローダに使用) http://www.bzip.org/
 - exr エクスポート以下のライブラリ群を使用しています。
   - OpenEXR http://www.openexr.com/  
-  - ZLib http://www.zlib.net/  
+  - zlib http://www.zlib.net/  
+- png エクスポート以下のライブラリ群を使用しています。
+  - libpng http://www.libpng.org/pub/png/libpng.html
 - Twitter への投稿に TweetMedia を使用しています。  
   - https://github.com/unity3d-jp/TweetMedia
 
