@@ -13,11 +13,7 @@
 #endif // fcSupportHalfPixelFormat
 
 
-struct fcGifFrame
-{
-    jo_gif_frame_t frame;
-    fcTime timestamp;
-};
+typedef jo_gif_frame_t fcGifFrame;
 
 struct fcGifTaskData
 {
@@ -194,7 +190,7 @@ void fcGifContext::addGifFrame(fcGifTaskData& data)
         src = (unsigned char*)&data.rgba8_pixels[0];
     }
 
-    jo_gif_frame(&m_gif, &data.gif_frame->frame, src, data.frame, data.local_palette);
+    jo_gif_frame(&m_gif, data.gif_frame, src, data.frame, data.local_palette);
     returnTempraryVideoFrame(data);
 }
 
@@ -282,19 +278,19 @@ bool fcGifContext::write(fcStream& os, int begin_frame, int end_frame)
 
     // パレット探索
     auto palette = begin;
-    while (palette->frame.palette.empty()) { --palette; }
+    while (palette->palette.empty()) { --palette; }
 
     int frame = 0;
-    int duration = 1;
+    int duration = 1; // unit: centi-second
     jo_gif_write_header(os, &m_gif);
     for (auto i = begin; i != end; ++i) {
-        jo_gif_frame_t *pal = frame == 0 ? &palette->frame : nullptr;
+        jo_gif_frame_t *pal = frame == 0 ? &(*palette) : nullptr;
 
         auto next = i; ++next;
         if (next != end) {
-            duration = int((next->timestamp - i->timestamp) * 100.0);
+            duration = int((next->timestamp - i->timestamp) * 100.0); // seconds to centi-seconds
         }
-        jo_gif_write_frame(os, &m_gif, &i->frame, pal, frame++, duration);
+        jo_gif_write_frame(os, &m_gif, &(*i), pal, frame++, duration);
     }
     jo_gif_write_footer(os, &m_gif);
 
@@ -316,12 +312,12 @@ void fcGifContext::getFrameData(void *tex, int frame)
     {
         auto it = m_gif_frames.begin();
         std::advance(it, frame);
-        fdata = &it->frame;
+        fdata = &(*it);
         for (;; --it)
         {
-            if (!it->frame.palette.empty())
+            if (!it->palette.empty())
             {
-                palette = &it->frame;
+                palette = &(*it);
                 break;
             }
         }
@@ -349,15 +345,15 @@ int fcGifContext::getExpectedDataSize(int begin_frame, int end_frame)
         if (i == begin) {
             if (m_gif.repeat >= 0) { size += 19; }
             // パレット探索
-            if (begin->frame.palette.empty())
+            if (begin->palette.empty())
             {
                 auto palette = begin;
-                while (palette->frame.palette.empty()) { --palette; }
-                size += palette->frame.palette.size();
+                while (palette->palette.empty()) { --palette; }
+                size += palette->palette.size();
             }
         }
 
-        size += i->frame.palette.size() + i->frame.encoded.size() + 20;
+        size += i->palette.size() + i->encoded_pixels.size() + 20;
     }
     return (int)size;
 }
