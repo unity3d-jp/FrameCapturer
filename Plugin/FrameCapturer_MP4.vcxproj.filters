@@ -5,17 +5,8 @@
     <ClCompile Include="Encoder\fcMP4File.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="Foundation\Network.cpp">
-      <Filter>Foundation</Filter>
-    </ClCompile>
-    <ClCompile Include="Foundation\Compression.cpp">
-      <Filter>Foundation</Filter>
-    </ClCompile>
     <ClCompile Include="Encoder\fcMP4StreamWriter.cpp">
       <Filter>Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="Foundation\Misc.cpp">
-      <Filter>Foundation</Filter>
     </ClCompile>
     <ClCompile Include="Encoder\fcOpenH264Encoder.cpp">
       <Filter>Encoder</Filter>
@@ -42,15 +33,6 @@
     <ClInclude Include="Encoder\fcAACEncoder.h">
       <Filter>Encoder</Filter>
     </ClInclude>
-    <ClInclude Include="Foundation\Misc.h">
-      <Filter>Foundation</Filter>
-    </ClInclude>
-    <ClInclude Include="Foundation\Buffer.h">
-      <Filter>Foundation</Filter>
-    </ClInclude>
-    <ClInclude Include="Foundation\fcFoundation.h">
-      <Filter>Foundation</Filter>
-    </ClInclude>
     <ClInclude Include="Encoder\fcMP4Internal.h">
       <Filter>Encoder</Filter>
     </ClInclude>
@@ -61,9 +43,6 @@
   <ItemGroup>
     <Filter Include="Encoder">
       <UniqueIdentifier>{48802eb2-d965-4472-acfa-f45fccdf33ac}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Foundation">
-      <UniqueIdentifier>{4892a6a3-8561-4571-93db-60975b283444}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

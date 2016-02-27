@@ -27,11 +27,15 @@ void GifTestImpl(const char *filename)
 
 void GifTest()
 {
+    printf("GifTest begin\n");
+
     GifTestImpl<RGB>("RGB.gif");
     GifTestImpl<hRGB>("hRGB.gif");
     GifTestImpl<fRGB>("fRGB.gif");
     GifTestImpl<RGBA>("RGBA.gif");
     GifTestImpl<hRGBA>("hRGBA.gif");
     GifTestImpl<fRGBA>("fRGBA.gif");
+
+    printf("GifTest end\n");
 }
 

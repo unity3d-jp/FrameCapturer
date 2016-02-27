@@ -13,6 +13,8 @@ void PngTestImpl(fcIPngContext *ctx, const char *filename)
 
 void PngTest()
 {
+    printf("PngTest begin\n");
+
     fcPngConfig conf;
     fcIPngContext *ctx = fcPngCreateContext(&conf);
 
@@ -24,5 +26,6 @@ void PngTest()
     PngTestImpl<fRGBA>(ctx, "fRGBA.png");
 
     fcPngDestroyContext(ctx);
-}
 
+    printf("PngTest end\n");
+}

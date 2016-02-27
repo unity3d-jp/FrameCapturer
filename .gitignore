@@ -14,10 +14,15 @@
 *.tlog
 *.mp4
 *.h264
+*.aac
 *.exr
+*.gif
+*.png
+*.dll
 
 _out/
 _tmp/
+external/
 Library/
 Temp/
 Build/

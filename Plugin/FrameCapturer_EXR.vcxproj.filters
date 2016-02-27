@@ -6,9 +6,6 @@
       <Filter>Encoder</Filter>
     </ClCompile>
     <ClCompile Include="fcThreadPool.cpp" />
-    <ClCompile Include="Foundation\Misc.cpp">
-      <Filter>Foundation</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FrameCapturer.h" />
@@ -18,19 +15,10 @@
       <Filter>Encoder</Filter>
     </ClInclude>
     <ClInclude Include="fcThreadPool.h" />
-    <ClInclude Include="Foundation\Misc.h">
-      <Filter>Foundation</Filter>
-    </ClInclude>
-    <ClInclude Include="Foundation\fcFoundation.h">
-      <Filter>Foundation</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Encoder">
       <UniqueIdentifier>{48802eb2-d965-4472-acfa-f45fccdf33ac}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Foundation">
-      <UniqueIdentifier>{7855f090-05c2-4b32-bf28-25c6b4919c35}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
