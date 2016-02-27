@@ -29,7 +29,6 @@
   <ItemGroup>
     <ClCompile Include="Encoder\fcExrFile.cpp" />
     <ClCompile Include="fcThreadPool.cpp" />
-    <ClCompile Include="Foundation\Misc.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -43,10 +42,13 @@
     <ClInclude Include="Encoder\fcExrFile.h" />
     <ClInclude Include="fcFoundation.h" />
     <ClInclude Include="fcThreadPool.h" />
-    <ClInclude Include="Foundation\fcFoundation.h" />
-    <ClInclude Include="Foundation\Misc.h" />
     <ClInclude Include="FrameCapturer.h" />
     <ClInclude Include="pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Foundation.vcxproj">
+      <Project>{df113358-bdd3-418f-a350-43d63f249b45}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3A7D5CB3-3A06-418E-B457-86456A4EB2F0}</ProjectGuid>

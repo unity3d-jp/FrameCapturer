@@ -33,9 +33,6 @@
     <ClCompile Include="Encoder\fcMP4StreamWriter.cpp" />
     <ClCompile Include="Encoder\fcNVH264Encoder.cpp" />
     <ClCompile Include="Encoder\fcOpenH264Encoder.cpp" />
-    <ClCompile Include="Foundation\Compression.cpp" />
-    <ClCompile Include="Foundation\Misc.cpp" />
-    <ClCompile Include="Foundation\Network.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -51,11 +48,13 @@
     <ClInclude Include="Encoder\fcMP4File.h" />
     <ClInclude Include="Encoder\fcMP4Internal.h" />
     <ClInclude Include="Encoder\fcMP4StreamWriter.h" />
-    <ClInclude Include="Foundation\Buffer.h" />
-    <ClInclude Include="Foundation\fcFoundation.h" />
-    <ClInclude Include="Foundation\Misc.h" />
     <ClInclude Include="FrameCapturer.h" />
     <ClInclude Include="pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Foundation.vcxproj">
+      <Project>{df113358-bdd3-418f-a350-43d63f249b45}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{067FA9E2-32CD-4C66-BE1B-959EDF510CC8}</ProjectGuid>

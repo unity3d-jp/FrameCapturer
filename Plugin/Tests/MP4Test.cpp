@@ -9,6 +9,8 @@ size_t write(void *f, const void *data, size_t len) { return fwrite(data, 1, len
 
 void MP4Test()
 {
+    printf("MP4Test begin\n");
+
     using namespace std::literals;
 
     // download OpenH264 codec
@@ -89,5 +91,7 @@ void MP4Test()
     fcDestroyStream(mstream);
     fcDestroyStream(cstream);
     fclose(ofile);
+
+    printf("MP4Test end\n");
 }
 
