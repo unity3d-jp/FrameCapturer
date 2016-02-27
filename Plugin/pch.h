@@ -51,6 +51,7 @@
     #define fcSupportGIF
     #define fcSupportMP4
 
+    #define fcUseISPC
     #define fcSupportHalfPixelFormat
     #define fcSupportFAAC
     #define fcSupportOpenH264

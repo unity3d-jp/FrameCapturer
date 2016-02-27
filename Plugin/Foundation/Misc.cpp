@@ -199,3 +199,28 @@ fcPixelFormat fcGetPixelFormat(fcTextureFormat format)
     }
     return fcPixelFormat_Unknown;
 }
+
+
+
+#ifdef fcUseISPC
+    #include "ConvertKernel_ispc.h"
+#endif // fcUseISPC
+
+void fcScale(float *data, size_t datasize, float scale)
+{
+#ifdef fcUseISPC
+    ispc::ScaleFloatArray(data, datasize, scale);
+#else  // fcUseISPC
+    for (size_t i = 0; i < datasize; ++i) {
+        data[i] *= scale;
+    }
+#endif // fcUseISPC
+}
+
+void fcConvert(void *dst, size_t dstsize, fcPixelFormat dstfmt, const void *src, size_t srcsize, fcPixelFormat srcfmt)
+{
+#ifdef fcUseISPC
+#else  // fcUseISPC
+#endif // fcUseISPC
+}
+
