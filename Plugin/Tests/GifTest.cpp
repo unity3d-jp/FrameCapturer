@@ -5,6 +5,7 @@ void GifTestImpl(const char *filename)
 {
     const int Width = 320;
     const int Height = 240;
+    const int frame_count = 15;
 
     fcGifConfig conf;
     conf.width = Width;
@@ -13,7 +14,7 @@ void GifTestImpl(const char *filename)
 
     fcTime t = 0;
     std::vector<T> video_frame(Width * Height);
-    for (int i = 0; i < 15; ++i) {
+    for (int i = 0; i < frame_count; ++i) {
         CreateVideoData(&video_frame[0], Width, Height, i);
         fcGifAddFramePixels(ctx, &video_frame[0], GetPixelFormat<T>::value, false, t);
         t += 1.0 / 30.0;

@@ -29,4 +29,9 @@
       <UniqueIdentifier>{47963172-c16e-4913-80e1-422c83424a69}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Foundation\ConvertKernel.ispc">
+      <Filter>Foundation</Filter>
+    </None>
+  </ItemGroup>
 </Project>

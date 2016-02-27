@@ -29,8 +29,9 @@ double      GetCurrentTimeSec();
 // Compression
 // -------------------------------------------------------------
 
-// if dst.size() == 0, resize to 1024*1024 first.
-// while decompress failed because dst.size() is not enough, double it and retry.
+// while decompress failed because of dst.size() is not enough, double it and retry.
+// (if dst.size() == 0, resize to 1024*1024 before first try)
+// dst.size() will be size of decompressed buffer size if succeeded.
 bool    BZ2Decompress(std::vector<char> &dst, const void *src, size_t src_len);
 
 // return decompressed size if successfully decompressed and written to file. otherwise 0.
@@ -108,5 +109,8 @@ enum fcPixelFormat;
 int fcGetPixelSize(fcTextureFormat format);
 int fcGetPixelSize(fcPixelFormat format);
 fcPixelFormat fcGetPixelFormat(fcTextureFormat format);
+
+void fcScale(float *data, size_t datasize, float scale);
+void fcConvert(void *dst, size_t dstsize, fcPixelFormat dstfmt, const void *src, size_t srcsize, fcPixelFormat srcfmt);
 
 #endif // fcMisc_h
