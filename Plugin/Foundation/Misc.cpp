@@ -217,9 +217,206 @@ void fcScale(float *data, size_t datasize, float scale)
 #endif // fcUseISPC
 }
 
-void fcConvert(void *dst, size_t dstsize, fcPixelFormat dstfmt, const void *src, size_t srcsize, fcPixelFormat srcfmt)
+void fcConvert(void *dst, fcPixelFormat dstfmt, const void *src, fcPixelFormat srcfmt, size_t size)
 {
 #ifdef fcUseISPC
+    switch (srcfmt) {
+    case fcPixelFormat_RGBA8:
+        switch (dstfmt) {
+        case fcPixelFormat_RGBA8: break;
+        case fcPixelFormat_RGB8: ispc::RGBAu8ToRGBu8((uint8_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RG8: ispc::RGBAu8ToRGu8((uint8_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_R8: ispc::RGBAu8ToRu8((uint8_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGBAHalf: ispc::RGBAu8ToRGBAf16((int16_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGBHalf: ispc::RGBAu8ToRGBf16((int16_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGHalf: ispc::RGBAu8ToRGf16((int16_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RHalf: ispc::RGBAu8ToRf16((int16_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGBAFloat: ispc::RGBAu8ToRGBAf32((float*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGBFloat: ispc::RGBAu8ToRGBf32((float*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGFloat: ispc::RGBAu8ToRGf32((float*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RFloat: ispc::RGBAu8ToRf32((float*)dst, (uint8_t*)src, size); break;
+        }
+        break;
+    case fcPixelFormat_RGB8:
+        switch (dstfmt) {
+        case fcPixelFormat_RGBA8: ispc::RGBu8ToRGBAu8((uint8_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGB8: break;
+        case fcPixelFormat_RG8: ispc::RGBu8ToRGu8((uint8_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_R8: ispc::RGBu8ToRu8((uint8_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGBAHalf: ispc::RGBu8ToRGBAf16((int16_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGBHalf: ispc::RGBu8ToRGBf16((int16_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGHalf: ispc::RGBu8ToRGf16((int16_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RHalf: ispc::RGBu8ToRf16((int16_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGBAFloat: ispc::RGBu8ToRGBAf32((float*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGBFloat: ispc::RGBu8ToRGBf32((float*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGFloat: ispc::RGBu8ToRGf32((float*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RFloat: ispc::RGBu8ToRf32((float*)dst, (uint8_t*)src, size); break;
+        }
+        break;
+    case fcPixelFormat_RG8:
+        switch (dstfmt) {
+        case fcPixelFormat_RGBA8: ispc::RGu8ToRGBAu8((uint8_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGB8: ispc::RGu8ToRGBu8((uint8_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RG8: break;
+        case fcPixelFormat_R8: ispc::RGu8ToRu8((uint8_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGBAHalf: ispc::RGu8ToRGBAf16((int16_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGBHalf: ispc::RGu8ToRGBf16((int16_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGHalf: ispc::RGu8ToRGf16((int16_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RHalf: ispc::RGu8ToRf16((int16_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGBAFloat: ispc::RGu8ToRGBAf32((float*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGBFloat: ispc::RGu8ToRGBf32((float*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGFloat: ispc::RGu8ToRGf32((float*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RFloat: ispc::RGu8ToRf32((float*)dst, (uint8_t*)src, size); break;
+        }
+        break;
+    case fcPixelFormat_R8:
+        switch (dstfmt) {
+        case fcPixelFormat_RGBA8: ispc::Ru8ToRGBAu8((uint8_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGB8: ispc::Ru8ToRGBu8((uint8_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RG8: ispc::Ru8ToRGu8((uint8_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_R8: break;
+        case fcPixelFormat_RGBAHalf: ispc::Ru8ToRGBAf16((int16_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGBHalf: ispc::Ru8ToRGBf16((int16_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGHalf: ispc::Ru8ToRGf16((int16_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RHalf: ispc::Ru8ToRf16((int16_t*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGBAFloat: ispc::Ru8ToRGBAf32((float*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGBFloat: ispc::Ru8ToRGBf32((float*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RGFloat: ispc::Ru8ToRGf32((float*)dst, (uint8_t*)src, size); break;
+        case fcPixelFormat_RFloat: ispc::Ru8ToRf32((float*)dst, (uint8_t*)src, size); break;
+        }
+        break;
+
+    case fcPixelFormat_RGBAHalf:
+        switch (dstfmt) {
+        case fcPixelFormat_RGBA8: ispc::RGBAf16ToRGBAu8((uint8_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGB8: ispc::RGBAf16ToRGBu8((uint8_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RG8: ispc::RGBAf16ToRGu8((uint8_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_R8: ispc::RGBAf16ToRu8((uint8_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGBAHalf: break;
+        case fcPixelFormat_RGBHalf: ispc::RGBAf16ToRGBf16((int16_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGHalf: ispc::RGBAf16ToRGf16((int16_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RHalf: ispc::RGBAf16ToRf16((int16_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGBAFloat: ispc::RGBAf16ToRGBAf32((float*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGBFloat: ispc::RGBAf16ToRGBf32((float*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGFloat: ispc::RGBAf16ToRGf32((float*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RFloat: ispc::RGBAf16ToRf32((float*)dst, (int16_t*)src, size); break;
+        }
+        break;
+    case fcPixelFormat_RGBHalf:
+        switch (dstfmt) {
+        case fcPixelFormat_RGBA8: ispc::RGBf16ToRGBAu8((uint8_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGB8: ispc::RGBf16ToRGBu8((uint8_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RG8: ispc::RGBf16ToRGu8((uint8_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_R8: ispc::RGBf16ToRu8((uint8_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGBAHalf: ispc::RGBf16ToRGBAf16((int16_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGBHalf: break;
+        case fcPixelFormat_RGHalf: ispc::RGBf16ToRGf16((int16_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RHalf: ispc::RGBf16ToRf16((int16_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGBAFloat: ispc::RGBf16ToRGBAf32((float*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGBFloat: ispc::RGBf16ToRGBf32((float*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGFloat: ispc::RGBf16ToRGf32((float*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RFloat: ispc::RGBf16ToRf32((float*)dst, (int16_t*)src, size); break;
+        }
+        break;
+    case fcPixelFormat_RGHalf:
+        switch (dstfmt) {
+        case fcPixelFormat_RGBA8: ispc::RGf16ToRGBAu8((uint8_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGB8: ispc::RGf16ToRGBu8((uint8_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RG8: ispc::RGf16ToRGu8((uint8_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_R8: ispc::RGf16ToRu8((uint8_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGBAHalf: ispc::RGf16ToRGBAf16((int16_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGBHalf: ispc::RGf16ToRGBf16((int16_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGHalf: break;
+        case fcPixelFormat_RHalf: ispc::RGf16ToRf16((int16_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGBAFloat: ispc::RGf16ToRGBAf32((float*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGBFloat: ispc::RGf16ToRGBf32((float*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGFloat: ispc::RGf16ToRGf32((float*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RFloat: ispc::RGf16ToRf32((float*)dst, (int16_t*)src, size); break;
+        }
+        break;
+    case fcPixelFormat_RHalf:
+        switch (dstfmt) {
+        case fcPixelFormat_RGBA8: ispc::Rf16ToRGBAu8((uint8_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGB8: ispc::Rf16ToRGBu8((uint8_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RG8: ispc::Rf16ToRGu8((uint8_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_R8: ispc::Rf16ToRu8((uint8_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGBAHalf: ispc::Rf16ToRGBAf16((int16_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGBHalf: ispc::Rf16ToRGBf16((int16_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGHalf: ispc::Rf16ToRGf16((int16_t*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RHalf: break;
+        case fcPixelFormat_RGBAFloat: ispc::Rf16ToRGBAf32((float*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGBFloat: ispc::Rf16ToRGBf32((float*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RGFloat: ispc::Rf16ToRGf32((float*)dst, (int16_t*)src, size); break;
+        case fcPixelFormat_RFloat: ispc::Rf16ToRf32((float*)dst, (int16_t*)src, size); break;
+        }
+        break;
+
+    case fcPixelFormat_RGBAFloat:
+        switch (dstfmt) {
+        case fcPixelFormat_RGBA8: ispc::RGBAf32ToRGBAu8((uint8_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGB8: ispc::RGBAf32ToRGBu8((uint8_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RG8: ispc::RGBAf32ToRGu8((uint8_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_R8: ispc::RGBAf32ToRu8((uint8_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGBAHalf: ispc::RGBAf32ToRGBAf16((int16_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGBHalf: ispc::RGBAf32ToRGBf16((int16_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGHalf: ispc::RGBAf32ToRGf16((int16_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RHalf: ispc::RGBAf32ToRf16((int16_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGBAFloat: break;
+        case fcPixelFormat_RGBFloat: ispc::RGBAf32ToRGBf32((float*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGFloat: ispc::RGBAf32ToRGf32((float*)dst, (float*)src, size); break;
+        case fcPixelFormat_RFloat: ispc::RGBAf32ToRf32((float*)dst, (float*)src, size); break;
+        }
+        break;
+    case fcPixelFormat_RGBFloat:
+        switch (dstfmt) {
+        case fcPixelFormat_RGBA8: ispc::RGBf32ToRGBAu8((uint8_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGB8: ispc::RGBf32ToRGBu8((uint8_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RG8: ispc::RGBf32ToRGu8((uint8_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_R8: ispc::RGBf32ToRu8((uint8_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGBAHalf: ispc::RGBf32ToRGBAf16((int16_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGBHalf: ispc::RGBf32ToRGBf16((int16_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGHalf: ispc::RGBf32ToRGf16((int16_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RHalf: ispc::RGBf32ToRf16((int16_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGBAFloat: ispc::RGBf32ToRGBAf32((float*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGBFloat: break;
+        case fcPixelFormat_RGFloat: ispc::RGBf32ToRGf32((float*)dst, (float*)src, size); break;
+        case fcPixelFormat_RFloat: ispc::RGBf32ToRf32((float*)dst, (float*)src, size); break;
+        }
+        break;
+    case fcPixelFormat_RGFloat:
+        switch (dstfmt) {
+        case fcPixelFormat_RGBA8: ispc::RGf32ToRGBAu8((uint8_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGB8: ispc::RGf32ToRGBu8((uint8_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RG8: ispc::RGf32ToRGu8((uint8_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_R8: ispc::RGf32ToRu8((uint8_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGBAHalf: ispc::RGf32ToRGBAf16((int16_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGBHalf: ispc::RGf32ToRGBf16((int16_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGHalf: ispc::RGf32ToRGf16((int16_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RHalf: ispc::RGf32ToRf16((int16_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGBAFloat: ispc::RGf32ToRGBAf32((float*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGBFloat: ispc::RGf32ToRGBf32((float*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGFloat: break;
+        case fcPixelFormat_RFloat: ispc::RGf32ToRf32((float*)dst, (float*)src, size); break;
+        }
+        break;
+    case fcPixelFormat_RFloat:
+        switch (dstfmt) {
+        case fcPixelFormat_RGBA8: ispc::Rf32ToRGBAu8((uint8_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGB8: ispc::Rf32ToRGBu8((uint8_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RG8: ispc::Rf32ToRGu8((uint8_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_R8: ispc::Rf32ToRu8((uint8_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGBAHalf: ispc::Rf32ToRGBAf16((int16_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGBHalf: ispc::Rf32ToRGBf16((int16_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGHalf: ispc::Rf32ToRGf16((int16_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RHalf: ispc::Rf32ToRf16((int16_t*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGBAFloat: ispc::Rf32ToRGBAf32((float*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGBFloat: ispc::Rf32ToRGBf32((float*)dst, (float*)src, size); break;
+        case fcPixelFormat_RGFloat: ispc::Rf32ToRGf32((float*)dst, (float*)src, size); break;
+        case fcPixelFormat_RFloat: break;
+        }
+        break;
+
+    }
 #else  // fcUseISPC
 #endif // fcUseISPC
 }
