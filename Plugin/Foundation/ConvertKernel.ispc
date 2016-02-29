@@ -16,6 +16,18 @@ struct RGf32   { float r,g;     };
 struct RGBf32  { float r,g,b;   };
 struct RGBAf32 { float r,g,b,a; };
 
+byte to_byte(byte v) { return v; }
+byte to_byte(half v) { return (int)(half_to_float(v) * 255.0f) & 0xff; }
+byte to_byte(float v) { return (int)(v * 255.0f) & 0xff; }
+
+half to_half(byte v) { return float_to_half((float)((int)v) / 255.0f); }
+half to_half(half v) { return v; }
+half to_half(float v) { return float_to_half(v); }
+
+float to_float(byte v) { return (float)((int)v) / 255.0f; }
+float to_float(half v) { return half_to_float(v); }
+float to_float(float v) { return v; }
+
 
 export void ScaleHalfArray(uniform half data[], uniform int datasize, uniform float scale)
 {
@@ -33,38 +45,38 @@ export void ScaleFloatArray(uniform float data[], uniform int datasize, uniform 
 export void ByteToHalf(uniform half dst[], uniform byte src[], uniform int size)
 {
     foreach(i=0 ... size) {
-        dst[i] = float_to_half((float)((int)src[i]) / 255.0f);
+        dst[i] = to_half(src[i]);
     }
 }
 export void ByteToFloat(uniform float dst[], uniform byte src[], uniform int size)
 {
     foreach(i=0 ... size) {
-        dst[i] = (float)((int)src[i]) / 255.0f;
+        dst[i] = to_float(src[i]);
     }
 }
 
 export void HalfToByte(uniform byte dst[], uniform half src[], uniform int size)
 {
     foreach(i=0 ... size) {
-        dst[i] = (int)(half_to_float(src[i]) * 255.0f) & 0xff;
+        dst[i] = to_byte(src[i]);
     }
 }
 export void HalfToFloat(uniform float dst[], uniform half src[], uniform int size)
 {
     foreach(i=0 ... size) {
-        dst[i] = half_to_float(src[i]);
+        dst[i] = to_float(src[i]);
     }
 }
 
 export void FloatToByte(uniform byte dst[], uniform float src[], uniform int size)
 {
     foreach(i=0 ... size) {
-        dst[i] = (int)(src[i] * 255.0f) & 0xff;
+        dst[i] = to_byte(src[i]);
     }
 }
 export void FloatToHalf(uniform half dst[], uniform float src[], uniform int size)
 {
     foreach(i=0 ... size) {
-        dst[i] = float_to_half(src[i]);
+        dst[i] = to_half(src[i]);
     }
 }
