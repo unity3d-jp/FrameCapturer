@@ -30,8 +30,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Foundation\ConvertKernel.ispc">
+    <CustomBuild Include="Foundation\ConvertKernel.ispc">
       <Filter>Foundation</Filter>
-    </None>
+    </CustomBuild>
   </ItemGroup>
 </Project>
