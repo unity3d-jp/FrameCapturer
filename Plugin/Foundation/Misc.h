@@ -110,7 +110,7 @@ int fcGetPixelSize(fcTextureFormat format);
 int fcGetPixelSize(fcPixelFormat format);
 fcPixelFormat fcGetPixelFormat(fcTextureFormat format);
 
-void fcScale(float *data, size_t datasize, float scale);
-void fcConvert(void *dst, size_t dstsize, fcPixelFormat dstfmt, const void *src, size_t srcsize, fcPixelFormat srcfmt);
+void fcScale(float *data, size_t size, float scale);
+void fcConvert(void *dst, fcPixelFormat dstfmt, const void *src, fcPixelFormat srcfmt, size_t size);
 
 #endif // fcMisc_h

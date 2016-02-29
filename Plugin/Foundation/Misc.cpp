@@ -206,10 +206,10 @@ fcPixelFormat fcGetPixelFormat(fcTextureFormat format)
     #include "ConvertKernel_ispc.h"
 #endif // fcUseISPC
 
-void fcScale(float *data, size_t datasize, float scale)
+void fcScale(float *data, size_t size, float scale)
 {
 #ifdef fcUseISPC
-    ispc::ScaleFloatArray(data, datasize, scale);
+    ispc::ScaleFloatArray(data, (uint32_t)size, scale);
 #else  // fcUseISPC
     for (size_t i = 0; i < datasize; ++i) {
         data[i] *= scale;
@@ -217,8 +217,9 @@ void fcScale(float *data, size_t datasize, float scale)
 #endif // fcUseISPC
 }
 
-void fcConvert(void *dst, fcPixelFormat dstfmt, const void *src, fcPixelFormat srcfmt, size_t size)
+void fcConvert(void *dst, fcPixelFormat dstfmt, const void *src, fcPixelFormat srcfmt, size_t size_)
 {
+    uint32_t size = (uint32_t)size_;
 #ifdef fcUseISPC
     switch (srcfmt) {
     case fcPixelFormat_RGBA8:
