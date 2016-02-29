@@ -23,52 +23,52 @@ float to_float(half v) { return half_to_float(v); }
 float to_float(float v) { return v; }
 
 
-export void ScaleHalfArray(uniform half data[], uniform int datasize, uniform float scale)
+export void ScaleHalfArray(uniform half data[], uniform size_t size, uniform float scale)
 {
-    foreach(i=0 ... datasize) {
+    foreach(i=0 ... size) {
         data[i] = float_to_half(half_to_float(data[i]) * scale);
     }
 }
-export void ScaleFloatArray(uniform float data[], uniform int datasize, uniform float scale)
+export void ScaleFloatArray(uniform float data[], uniform size_t size, uniform float scale)
 {
-    foreach(i=0 ... datasize) {
+    foreach(i=0 ... size) {
         data[i] *= scale;
     }
 }
 
-export void ByteToHalf(uniform half dst[], uniform byte src[], uniform int size)
+export void ByteToHalf(uniform half dst[], uniform byte src[], uniform size_t size)
 {
     foreach(i=0 ... size) {
         dst[i] = to_half(src[i]);
     }
 }
-export void ByteToFloat(uniform float dst[], uniform byte src[], uniform int size)
+export void ByteToFloat(uniform float dst[], uniform byte src[], uniform size_t size)
 {
     foreach(i=0 ... size) {
         dst[i] = to_float(src[i]);
     }
 }
 
-export void HalfToByte(uniform byte dst[], uniform half src[], uniform int size)
+export void HalfToByte(uniform byte dst[], uniform half src[], uniform size_t size)
 {
     foreach(i=0 ... size) {
         dst[i] = to_byte(src[i]);
     }
 }
-export void HalfToFloat(uniform float dst[], uniform half src[], uniform int size)
+export void HalfToFloat(uniform float dst[], uniform half src[], uniform size_t size)
 {
     foreach(i=0 ... size) {
         dst[i] = to_float(src[i]);
     }
 }
 
-export void FloatToByte(uniform byte dst[], uniform float src[], uniform int size)
+export void FloatToByte(uniform byte dst[], uniform float src[], uniform size_t size)
 {
     foreach(i=0 ... size) {
         dst[i] = to_byte(src[i]);
     }
 }
-export void FloatToHalf(uniform half dst[], uniform float src[], uniform int size)
+export void FloatToHalf(uniform half dst[], uniform float src[], uniform size_t size)
 {
     foreach(i=0 ... size) {
         dst[i] = to_half(src[i]);
@@ -132,148 +132,148 @@ export void FloatToHalf(uniform half dst[], uniform float src[], uniform int siz
 
 
 
-export void RGBAu8ToRGBu8(uniform byte dst[], uniform byte src[], uniform int size) { Convert43(to_byte) }
-export void RGBAu8ToRGu8(uniform byte dst[], uniform byte src[], uniform int size) { Convert42(to_byte) }
-export void RGBAu8ToRu8(uniform byte dst[], uniform byte src[], uniform int size) { Convert41(to_byte) }
-export void RGBAu8ToRGBAf16(uniform half dst[], uniform byte src[], uniform int size) { Convert44(to_half) }
-export void RGBAu8ToRGBf16(uniform half dst[], uniform byte src[], uniform int size) { Convert43(to_half) }
-export void RGBAu8ToRGf16(uniform half dst[], uniform byte src[], uniform int size) { Convert42(to_half) }
-export void RGBAu8ToRf16(uniform half dst[], uniform byte src[], uniform int size) { Convert41(to_half) }
-export void RGBAu8ToRGBAf32(uniform float dst[], uniform byte src[], uniform int size) { Convert44(to_float) }
-export void RGBAu8ToRGBf32(uniform float dst[], uniform byte src[], uniform int size) { Convert43(to_float) }
-export void RGBAu8ToRGf32(uniform float dst[], uniform byte src[], uniform int size) { Convert42(to_float) }
-export void RGBAu8ToRf32(uniform float dst[], uniform byte src[], uniform int size) { Convert41(to_float) }
+export void RGBAu8ToRGBu8(uniform byte dst[], uniform byte src[], uniform size_t size) { Convert43(to_byte) }
+export void RGBAu8ToRGu8(uniform byte dst[], uniform byte src[], uniform size_t size) { Convert42(to_byte) }
+export void RGBAu8ToRu8(uniform byte dst[], uniform byte src[], uniform size_t size) { Convert41(to_byte) }
+export void RGBAu8ToRGBAf16(uniform half dst[], uniform byte src[], uniform size_t size) { Convert44(to_half) }
+export void RGBAu8ToRGBf16(uniform half dst[], uniform byte src[], uniform size_t size) { Convert43(to_half) }
+export void RGBAu8ToRGf16(uniform half dst[], uniform byte src[], uniform size_t size) { Convert42(to_half) }
+export void RGBAu8ToRf16(uniform half dst[], uniform byte src[], uniform size_t size) { Convert41(to_half) }
+export void RGBAu8ToRGBAf32(uniform float dst[], uniform byte src[], uniform size_t size) { Convert44(to_float) }
+export void RGBAu8ToRGBf32(uniform float dst[], uniform byte src[], uniform size_t size) { Convert43(to_float) }
+export void RGBAu8ToRGf32(uniform float dst[], uniform byte src[], uniform size_t size) { Convert42(to_float) }
+export void RGBAu8ToRf32(uniform float dst[], uniform byte src[], uniform size_t size) { Convert41(to_float) }
 
-export void RGBu8ToRGBAu8(uniform byte dst[], uniform byte src[], uniform int size) { Convert34(to_byte) }
-export void RGBu8ToRGu8(uniform byte dst[], uniform byte src[], uniform int size) { Convert32(to_byte) }
-export void RGBu8ToRu8(uniform byte dst[], uniform byte src[], uniform int size) { Convert31(to_byte) }
-export void RGBu8ToRGBAf16(uniform half dst[], uniform byte src[], uniform int size) { Convert34(to_half) }
-export void RGBu8ToRGBf16(uniform half dst[], uniform byte src[], uniform int size) { Convert33(to_half) }
-export void RGBu8ToRGf16(uniform half dst[], uniform byte src[], uniform int size) { Convert32(to_half) }
-export void RGBu8ToRf16(uniform half dst[], uniform byte src[], uniform int size) { Convert31(to_half) }
-export void RGBu8ToRGBAf32(uniform float dst[], uniform byte src[], uniform int size) { Convert34(to_float) }
-export void RGBu8ToRGBf32(uniform float dst[], uniform byte src[], uniform int size) { Convert33(to_float) }
-export void RGBu8ToRGf32(uniform float dst[], uniform byte src[], uniform int size) { Convert32(to_float) }
-export void RGBu8ToRf32(uniform float dst[], uniform byte src[], uniform int size) { Convert31(to_float) }
+export void RGBu8ToRGBAu8(uniform byte dst[], uniform byte src[], uniform size_t size) { Convert34(to_byte) }
+export void RGBu8ToRGu8(uniform byte dst[], uniform byte src[], uniform size_t size) { Convert32(to_byte) }
+export void RGBu8ToRu8(uniform byte dst[], uniform byte src[], uniform size_t size) { Convert31(to_byte) }
+export void RGBu8ToRGBAf16(uniform half dst[], uniform byte src[], uniform size_t size) { Convert34(to_half) }
+export void RGBu8ToRGBf16(uniform half dst[], uniform byte src[], uniform size_t size) { Convert33(to_half) }
+export void RGBu8ToRGf16(uniform half dst[], uniform byte src[], uniform size_t size) { Convert32(to_half) }
+export void RGBu8ToRf16(uniform half dst[], uniform byte src[], uniform size_t size) { Convert31(to_half) }
+export void RGBu8ToRGBAf32(uniform float dst[], uniform byte src[], uniform size_t size) { Convert34(to_float) }
+export void RGBu8ToRGBf32(uniform float dst[], uniform byte src[], uniform size_t size) { Convert33(to_float) }
+export void RGBu8ToRGf32(uniform float dst[], uniform byte src[], uniform size_t size) { Convert32(to_float) }
+export void RGBu8ToRf32(uniform float dst[], uniform byte src[], uniform size_t size) { Convert31(to_float) }
 
-export void RGu8ToRGBAu8(uniform byte dst[], uniform byte src[], uniform int size) { Convert24(to_byte) }
-export void RGu8ToRGBu8(uniform byte dst[], uniform byte src[], uniform int size) { Convert23(to_byte) }
-export void RGu8ToRu8(uniform byte dst[], uniform byte src[], uniform int size) { Convert21(to_byte) }
-export void RGu8ToRGBAf16(uniform half dst[], uniform byte src[], uniform int size) { Convert24(to_half) }
-export void RGu8ToRGBf16(uniform half dst[], uniform byte src[], uniform int size) { Convert23(to_half) }
-export void RGu8ToRGf16(uniform half dst[], uniform byte src[], uniform int size) { Convert22(to_half) }
-export void RGu8ToRf16(uniform half dst[], uniform byte src[], uniform int size) { Convert21(to_half) }
-export void RGu8ToRGBAf32(uniform float dst[], uniform byte src[], uniform int size) { Convert24(to_float) }
-export void RGu8ToRGBf32(uniform float dst[], uniform byte src[], uniform int size) { Convert23(to_float) }
-export void RGu8ToRGf32(uniform float dst[], uniform byte src[], uniform int size) { Convert22(to_float) }
-export void RGu8ToRf32(uniform float dst[], uniform byte src[], uniform int size) { Convert21(to_float) }
+export void RGu8ToRGBAu8(uniform byte dst[], uniform byte src[], uniform size_t size) { Convert24(to_byte) }
+export void RGu8ToRGBu8(uniform byte dst[], uniform byte src[], uniform size_t size) { Convert23(to_byte) }
+export void RGu8ToRu8(uniform byte dst[], uniform byte src[], uniform size_t size) { Convert21(to_byte) }
+export void RGu8ToRGBAf16(uniform half dst[], uniform byte src[], uniform size_t size) { Convert24(to_half) }
+export void RGu8ToRGBf16(uniform half dst[], uniform byte src[], uniform size_t size) { Convert23(to_half) }
+export void RGu8ToRGf16(uniform half dst[], uniform byte src[], uniform size_t size) { Convert22(to_half) }
+export void RGu8ToRf16(uniform half dst[], uniform byte src[], uniform size_t size) { Convert21(to_half) }
+export void RGu8ToRGBAf32(uniform float dst[], uniform byte src[], uniform size_t size) { Convert24(to_float) }
+export void RGu8ToRGBf32(uniform float dst[], uniform byte src[], uniform size_t size) { Convert23(to_float) }
+export void RGu8ToRGf32(uniform float dst[], uniform byte src[], uniform size_t size) { Convert22(to_float) }
+export void RGu8ToRf32(uniform float dst[], uniform byte src[], uniform size_t size) { Convert21(to_float) }
 
-export void Ru8ToRGBAu8(uniform byte dst[], uniform byte src[], uniform int size) { Convert14(to_byte) }
-export void Ru8ToRGBu8(uniform byte dst[], uniform byte src[], uniform int size) { Convert13(to_byte) }
-export void Ru8ToRGu8(uniform byte dst[], uniform byte src[], uniform int size) { Convert12(to_byte) }
-export void Ru8ToRGBAf16(uniform half dst[], uniform byte src[], uniform int size) { Convert14(to_half) }
-export void Ru8ToRGBf16(uniform half dst[], uniform byte src[], uniform int size) { Convert13(to_half) }
-export void Ru8ToRGf16(uniform half dst[], uniform byte src[], uniform int size) { Convert12(to_half) }
-export void Ru8ToRf16(uniform half dst[], uniform byte src[], uniform int size) { Convert11(to_half) }
-export void Ru8ToRGBAf32(uniform float dst[], uniform byte src[], uniform int size) { Convert14(to_float) }
-export void Ru8ToRGBf32(uniform float dst[], uniform byte src[], uniform int size) { Convert13(to_float) }
-export void Ru8ToRGf32(uniform float dst[], uniform byte src[], uniform int size) { Convert12(to_float) }
-export void Ru8ToRf32(uniform float dst[], uniform byte src[], uniform int size) { Convert11(to_float) }
-
-
-export void RGBAf16ToRGBAu8(uniform byte dst[], uniform half src[], uniform int size) { Convert44(to_byte) }
-export void RGBAf16ToRGBu8(uniform byte dst[], uniform half src[], uniform int size) { Convert43(to_byte) }
-export void RGBAf16ToRGu8(uniform byte dst[], uniform half src[], uniform int size) { Convert42(to_byte) }
-export void RGBAf16ToRu8(uniform byte dst[], uniform half src[], uniform int size) { Convert41(to_byte) }
-export void RGBAf16ToRGBf16(uniform half dst[], uniform half src[], uniform int size) { Convert43(to_half) }
-export void RGBAf16ToRGf16(uniform half dst[], uniform half src[], uniform int size) { Convert42(to_half) }
-export void RGBAf16ToRf16(uniform half dst[], uniform half src[], uniform int size) { Convert41(to_half) }
-export void RGBAf16ToRGBAf32(uniform float dst[], uniform half src[], uniform int size) { Convert44(to_float) }
-export void RGBAf16ToRGBf32(uniform float dst[], uniform half src[], uniform int size) { Convert43(to_float) }
-export void RGBAf16ToRGf32(uniform float dst[], uniform half src[], uniform int size) { Convert42(to_float) }
-export void RGBAf16ToRf32(uniform float dst[], uniform half src[], uniform int size) { Convert41(to_float) }
-
-export void RGBf16ToRGBAu8(uniform byte dst[], uniform half src[], uniform int size) { Convert34(to_byte) }
-export void RGBf16ToRGBu8(uniform byte dst[], uniform half src[], uniform int size) { Convert33(to_byte) }
-export void RGBf16ToRGu8(uniform byte dst[], uniform half src[], uniform int size) { Convert32(to_byte) }
-export void RGBf16ToRu8(uniform byte dst[], uniform half src[], uniform int size) { Convert31(to_byte) }
-export void RGBf16ToRGBAf16(uniform half dst[], uniform half src[], uniform int size) { Convert34(to_half) }
-export void RGBf16ToRGf16(uniform half dst[], uniform half src[], uniform int size) { Convert32(to_half) }
-export void RGBf16ToRf16(uniform half dst[], uniform half src[], uniform int size) { Convert31(to_half) }
-export void RGBf16ToRGBAf32(uniform float dst[], uniform half src[], uniform int size) { Convert34(to_float) }
-export void RGBf16ToRGBf32(uniform float dst[], uniform half src[], uniform int size) { Convert33(to_float) }
-export void RGBf16ToRGf32(uniform float dst[], uniform half src[], uniform int size) { Convert32(to_float) }
-export void RGBf16ToRf32(uniform float dst[], uniform half src[], uniform int size) { Convert31(to_float) }
-
-export void RGf16ToRGBAu8(uniform byte dst[], uniform half src[], uniform int size) { Convert24(to_byte) }
-export void RGf16ToRGBu8(uniform byte dst[], uniform half src[], uniform int size) { Convert23(to_byte) }
-export void RGf16ToRGu8(uniform byte dst[], uniform half src[], uniform int size) { Convert22(to_byte) }
-export void RGf16ToRu8(uniform byte dst[], uniform half src[], uniform int size) { Convert21(to_byte) }
-export void RGf16ToRGBAf16(uniform half dst[], uniform half src[], uniform int size) { Convert24(to_half) }
-export void RGf16ToRGBf16(uniform half dst[], uniform half src[], uniform int size) { Convert23(to_half) }
-export void RGf16ToRf16(uniform half dst[], uniform half src[], uniform int size) { Convert21(to_half) }
-export void RGf16ToRGBAf32(uniform float dst[], uniform half src[], uniform int size) { Convert24(to_float) }
-export void RGf16ToRGBf32(uniform float dst[], uniform half src[], uniform int size) { Convert23(to_float) }
-export void RGf16ToRGf32(uniform float dst[], uniform half src[], uniform int size) { Convert22(to_float) }
-export void RGf16ToRf32(uniform float dst[], uniform half src[], uniform int size) { Convert21(to_float) }
-
-export void Rf16ToRGBAu8(uniform byte dst[], uniform half src[], uniform int size) { Convert14(to_byte) }
-export void Rf16ToRGBu8(uniform byte dst[], uniform half src[], uniform int size) { Convert13(to_byte) }
-export void Rf16ToRGu8(uniform byte dst[], uniform half src[], uniform int size) { Convert12(to_byte) }
-export void Rf16ToRu8(uniform byte dst[], uniform half src[], uniform int size) { Convert11(to_byte) }
-export void Rf16ToRGBAf16(uniform half dst[], uniform half src[], uniform int size) { Convert14(to_half) }
-export void Rf16ToRGBf16(uniform half dst[], uniform half src[], uniform int size) { Convert13(to_half) }
-export void Rf16ToRGf16(uniform half dst[], uniform half src[], uniform int size) { Convert12(to_half) }
-export void Rf16ToRGBAf32(uniform float dst[], uniform half src[], uniform int size) { Convert14(to_float) }
-export void Rf16ToRGBf32(uniform float dst[], uniform half src[], uniform int size) { Convert13(to_float) }
-export void Rf16ToRGf32(uniform float dst[], uniform half src[], uniform int size) { Convert12(to_float) }
-export void Rf16ToRf32(uniform float dst[], uniform half src[], uniform int size) { Convert11(to_float) }
+export void Ru8ToRGBAu8(uniform byte dst[], uniform byte src[], uniform size_t size) { Convert14(to_byte) }
+export void Ru8ToRGBu8(uniform byte dst[], uniform byte src[], uniform size_t size) { Convert13(to_byte) }
+export void Ru8ToRGu8(uniform byte dst[], uniform byte src[], uniform size_t size) { Convert12(to_byte) }
+export void Ru8ToRGBAf16(uniform half dst[], uniform byte src[], uniform size_t size) { Convert14(to_half) }
+export void Ru8ToRGBf16(uniform half dst[], uniform byte src[], uniform size_t size) { Convert13(to_half) }
+export void Ru8ToRGf16(uniform half dst[], uniform byte src[], uniform size_t size) { Convert12(to_half) }
+export void Ru8ToRf16(uniform half dst[], uniform byte src[], uniform size_t size) { Convert11(to_half) }
+export void Ru8ToRGBAf32(uniform float dst[], uniform byte src[], uniform size_t size) { Convert14(to_float) }
+export void Ru8ToRGBf32(uniform float dst[], uniform byte src[], uniform size_t size) { Convert13(to_float) }
+export void Ru8ToRGf32(uniform float dst[], uniform byte src[], uniform size_t size) { Convert12(to_float) }
+export void Ru8ToRf32(uniform float dst[], uniform byte src[], uniform size_t size) { Convert11(to_float) }
 
 
-export void RGBAf32ToRGBAu8(uniform byte dst[], uniform float src[], uniform int size) { Convert44(to_byte) }
-export void RGBAf32ToRGBu8(uniform byte dst[], uniform float src[], uniform int size) { Convert43(to_byte) }
-export void RGBAf32ToRGu8(uniform byte dst[], uniform float src[], uniform int size) { Convert42(to_byte) }
-export void RGBAf32ToRu8(uniform byte dst[], uniform float src[], uniform int size) { Convert41(to_byte) }
-export void RGBAf32ToRGBAf16(uniform half dst[], uniform float src[], uniform int size) { Convert44(to_half) }
-export void RGBAf32ToRGBf16(uniform half dst[], uniform float src[], uniform int size) { Convert43(to_half) }
-export void RGBAf32ToRGf16(uniform half dst[], uniform float src[], uniform int size) { Convert42(to_half) }
-export void RGBAf32ToRf16(uniform half dst[], uniform float src[], uniform int size) { Convert41(to_half) }
-export void RGBAf32ToRGBf32(uniform float dst[], uniform float src[], uniform int size) { Convert43(to_float) }
-export void RGBAf32ToRGf32(uniform float dst[], uniform float src[], uniform int size) { Convert42(to_float) }
-export void RGBAf32ToRf32(uniform float dst[], uniform float src[], uniform int size) { Convert41(to_float) }
+export void RGBAf16ToRGBAu8(uniform byte dst[], uniform half src[], uniform size_t size) { Convert44(to_byte) }
+export void RGBAf16ToRGBu8(uniform byte dst[], uniform half src[], uniform size_t size) { Convert43(to_byte) }
+export void RGBAf16ToRGu8(uniform byte dst[], uniform half src[], uniform size_t size) { Convert42(to_byte) }
+export void RGBAf16ToRu8(uniform byte dst[], uniform half src[], uniform size_t size) { Convert41(to_byte) }
+export void RGBAf16ToRGBf16(uniform half dst[], uniform half src[], uniform size_t size) { Convert43(to_half) }
+export void RGBAf16ToRGf16(uniform half dst[], uniform half src[], uniform size_t size) { Convert42(to_half) }
+export void RGBAf16ToRf16(uniform half dst[], uniform half src[], uniform size_t size) { Convert41(to_half) }
+export void RGBAf16ToRGBAf32(uniform float dst[], uniform half src[], uniform size_t size) { Convert44(to_float) }
+export void RGBAf16ToRGBf32(uniform float dst[], uniform half src[], uniform size_t size) { Convert43(to_float) }
+export void RGBAf16ToRGf32(uniform float dst[], uniform half src[], uniform size_t size) { Convert42(to_float) }
+export void RGBAf16ToRf32(uniform float dst[], uniform half src[], uniform size_t size) { Convert41(to_float) }
 
-export void RGBf32ToRGBAu8(uniform byte dst[], uniform float src[], uniform int size) { Convert34(to_byte) }
-export void RGBf32ToRGBu8(uniform byte dst[], uniform float src[], uniform int size) { Convert33(to_byte) }
-export void RGBf32ToRGu8(uniform byte dst[], uniform float src[], uniform int size) { Convert32(to_byte) }
-export void RGBf32ToRu8(uniform byte dst[], uniform float src[], uniform int size) { Convert31(to_byte) }
-export void RGBf32ToRGBAf16(uniform half dst[], uniform float src[], uniform int size) { Convert34(to_half) }
-export void RGBf32ToRGBf16(uniform half dst[], uniform float src[], uniform int size) { Convert33(to_half) }
-export void RGBf32ToRGf16(uniform half dst[], uniform float src[], uniform int size) { Convert32(to_half) }
-export void RGBf32ToRf16(uniform half dst[], uniform float src[], uniform int size) { Convert31(to_half) }
-export void RGBf32ToRGBAf32(uniform float dst[], uniform float src[], uniform int size) { Convert34(to_float) }
-export void RGBf32ToRGf32(uniform float dst[], uniform float src[], uniform int size) { Convert32(to_float) }
-export void RGBf32ToRf32(uniform float dst[], uniform float src[], uniform int size) { Convert31(to_float) }
+export void RGBf16ToRGBAu8(uniform byte dst[], uniform half src[], uniform size_t size) { Convert34(to_byte) }
+export void RGBf16ToRGBu8(uniform byte dst[], uniform half src[], uniform size_t size) { Convert33(to_byte) }
+export void RGBf16ToRGu8(uniform byte dst[], uniform half src[], uniform size_t size) { Convert32(to_byte) }
+export void RGBf16ToRu8(uniform byte dst[], uniform half src[], uniform size_t size) { Convert31(to_byte) }
+export void RGBf16ToRGBAf16(uniform half dst[], uniform half src[], uniform size_t size) { Convert34(to_half) }
+export void RGBf16ToRGf16(uniform half dst[], uniform half src[], uniform size_t size) { Convert32(to_half) }
+export void RGBf16ToRf16(uniform half dst[], uniform half src[], uniform size_t size) { Convert31(to_half) }
+export void RGBf16ToRGBAf32(uniform float dst[], uniform half src[], uniform size_t size) { Convert34(to_float) }
+export void RGBf16ToRGBf32(uniform float dst[], uniform half src[], uniform size_t size) { Convert33(to_float) }
+export void RGBf16ToRGf32(uniform float dst[], uniform half src[], uniform size_t size) { Convert32(to_float) }
+export void RGBf16ToRf32(uniform float dst[], uniform half src[], uniform size_t size) { Convert31(to_float) }
 
-export void RGf32ToRGBAu8(uniform byte dst[], uniform float src[], uniform int size) { Convert24(to_byte) }
-export void RGf32ToRGBu8(uniform byte dst[], uniform float src[], uniform int size) { Convert23(to_byte) }
-export void RGf32ToRGu8(uniform byte dst[], uniform float src[], uniform int size) { Convert22(to_byte) }
-export void RGf32ToRu8(uniform byte dst[], uniform float src[], uniform int size) { Convert21(to_byte) }
-export void RGf32ToRGBAf16(uniform half dst[], uniform float src[], uniform int size) { Convert24(to_half) }
-export void RGf32ToRGBf16(uniform half dst[], uniform float src[], uniform int size) { Convert23(to_half) }
-export void RGf32ToRGf16(uniform half dst[], uniform float src[], uniform int size) { Convert22(to_half) }
-export void RGf32ToRf16(uniform half dst[], uniform float src[], uniform int size) { Convert21(to_half) }
-export void RGf32ToRGBAf32(uniform float dst[], uniform float src[], uniform int size) { Convert24(to_float) }
-export void RGf32ToRGBf32(uniform float dst[], uniform float src[], uniform int size) { Convert23(to_float) }
-export void RGf32ToRf32(uniform float dst[], uniform float src[], uniform int size) { Convert21(to_float) }
+export void RGf16ToRGBAu8(uniform byte dst[], uniform half src[], uniform size_t size) { Convert24(to_byte) }
+export void RGf16ToRGBu8(uniform byte dst[], uniform half src[], uniform size_t size) { Convert23(to_byte) }
+export void RGf16ToRGu8(uniform byte dst[], uniform half src[], uniform size_t size) { Convert22(to_byte) }
+export void RGf16ToRu8(uniform byte dst[], uniform half src[], uniform size_t size) { Convert21(to_byte) }
+export void RGf16ToRGBAf16(uniform half dst[], uniform half src[], uniform size_t size) { Convert24(to_half) }
+export void RGf16ToRGBf16(uniform half dst[], uniform half src[], uniform size_t size) { Convert23(to_half) }
+export void RGf16ToRf16(uniform half dst[], uniform half src[], uniform size_t size) { Convert21(to_half) }
+export void RGf16ToRGBAf32(uniform float dst[], uniform half src[], uniform size_t size) { Convert24(to_float) }
+export void RGf16ToRGBf32(uniform float dst[], uniform half src[], uniform size_t size) { Convert23(to_float) }
+export void RGf16ToRGf32(uniform float dst[], uniform half src[], uniform size_t size) { Convert22(to_float) }
+export void RGf16ToRf32(uniform float dst[], uniform half src[], uniform size_t size) { Convert21(to_float) }
 
-export void Rf32ToRGBAu8(uniform byte dst[], uniform float src[], uniform int size) { Convert14(to_byte) }
-export void Rf32ToRGBu8(uniform byte dst[], uniform float src[], uniform int size) { Convert13(to_byte) }
-export void Rf32ToRGu8(uniform byte dst[], uniform float src[], uniform int size) { Convert12(to_byte) }
-export void Rf32ToRu8(uniform byte dst[], uniform float src[], uniform int size) { Convert11(to_byte) }
-export void Rf32ToRGBAf16(uniform half dst[], uniform float src[], uniform int size) { Convert14(to_half) }
-export void Rf32ToRGBf16(uniform half dst[], uniform float src[], uniform int size) { Convert13(to_half) }
-export void Rf32ToRGf16(uniform half dst[], uniform float src[], uniform int size) { Convert12(to_half) }
-export void Rf32ToRf16(uniform half dst[], uniform float src[], uniform int size) { Convert11(to_half) }
-export void Rf32ToRGBAf32(uniform float dst[], uniform float src[], uniform int size) { Convert14(to_float) }
-export void Rf32ToRGBf32(uniform float dst[], uniform float src[], uniform int size) { Convert13(to_float) }
-export void Rf32ToRGf32(uniform float dst[], uniform float src[], uniform int size) { Convert12(to_float) }
+export void Rf16ToRGBAu8(uniform byte dst[], uniform half src[], uniform size_t size) { Convert14(to_byte) }
+export void Rf16ToRGBu8(uniform byte dst[], uniform half src[], uniform size_t size) { Convert13(to_byte) }
+export void Rf16ToRGu8(uniform byte dst[], uniform half src[], uniform size_t size) { Convert12(to_byte) }
+export void Rf16ToRu8(uniform byte dst[], uniform half src[], uniform size_t size) { Convert11(to_byte) }
+export void Rf16ToRGBAf16(uniform half dst[], uniform half src[], uniform size_t size) { Convert14(to_half) }
+export void Rf16ToRGBf16(uniform half dst[], uniform half src[], uniform size_t size) { Convert13(to_half) }
+export void Rf16ToRGf16(uniform half dst[], uniform half src[], uniform size_t size) { Convert12(to_half) }
+export void Rf16ToRGBAf32(uniform float dst[], uniform half src[], uniform size_t size) { Convert14(to_float) }
+export void Rf16ToRGBf32(uniform float dst[], uniform half src[], uniform size_t size) { Convert13(to_float) }
+export void Rf16ToRGf32(uniform float dst[], uniform half src[], uniform size_t size) { Convert12(to_float) }
+export void Rf16ToRf32(uniform float dst[], uniform half src[], uniform size_t size) { Convert11(to_float) }
+
+
+export void RGBAf32ToRGBAu8(uniform byte dst[], uniform float src[], uniform size_t size) { Convert44(to_byte) }
+export void RGBAf32ToRGBu8(uniform byte dst[], uniform float src[], uniform size_t size) { Convert43(to_byte) }
+export void RGBAf32ToRGu8(uniform byte dst[], uniform float src[], uniform size_t size) { Convert42(to_byte) }
+export void RGBAf32ToRu8(uniform byte dst[], uniform float src[], uniform size_t size) { Convert41(to_byte) }
+export void RGBAf32ToRGBAf16(uniform half dst[], uniform float src[], uniform size_t size) { Convert44(to_half) }
+export void RGBAf32ToRGBf16(uniform half dst[], uniform float src[], uniform size_t size) { Convert43(to_half) }
+export void RGBAf32ToRGf16(uniform half dst[], uniform float src[], uniform size_t size) { Convert42(to_half) }
+export void RGBAf32ToRf16(uniform half dst[], uniform float src[], uniform size_t size) { Convert41(to_half) }
+export void RGBAf32ToRGBf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert43(to_float) }
+export void RGBAf32ToRGf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert42(to_float) }
+export void RGBAf32ToRf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert41(to_float) }
+
+export void RGBf32ToRGBAu8(uniform byte dst[], uniform float src[], uniform size_t size) { Convert34(to_byte) }
+export void RGBf32ToRGBu8(uniform byte dst[], uniform float src[], uniform size_t size) { Convert33(to_byte) }
+export void RGBf32ToRGu8(uniform byte dst[], uniform float src[], uniform size_t size) { Convert32(to_byte) }
+export void RGBf32ToRu8(uniform byte dst[], uniform float src[], uniform size_t size) { Convert31(to_byte) }
+export void RGBf32ToRGBAf16(uniform half dst[], uniform float src[], uniform size_t size) { Convert34(to_half) }
+export void RGBf32ToRGBf16(uniform half dst[], uniform float src[], uniform size_t size) { Convert33(to_half) }
+export void RGBf32ToRGf16(uniform half dst[], uniform float src[], uniform size_t size) { Convert32(to_half) }
+export void RGBf32ToRf16(uniform half dst[], uniform float src[], uniform size_t size) { Convert31(to_half) }
+export void RGBf32ToRGBAf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert34(to_float) }
+export void RGBf32ToRGf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert32(to_float) }
+export void RGBf32ToRf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert31(to_float) }
+
+export void RGf32ToRGBAu8(uniform byte dst[], uniform float src[], uniform size_t size) { Convert24(to_byte) }
+export void RGf32ToRGBu8(uniform byte dst[], uniform float src[], uniform size_t size) { Convert23(to_byte) }
+export void RGf32ToRGu8(uniform byte dst[], uniform float src[], uniform size_t size) { Convert22(to_byte) }
+export void RGf32ToRu8(uniform byte dst[], uniform float src[], uniform size_t size) { Convert21(to_byte) }
+export void RGf32ToRGBAf16(uniform half dst[], uniform float src[], uniform size_t size) { Convert24(to_half) }
+export void RGf32ToRGBf16(uniform half dst[], uniform float src[], uniform size_t size) { Convert23(to_half) }
+export void RGf32ToRGf16(uniform half dst[], uniform float src[], uniform size_t size) { Convert22(to_half) }
+export void RGf32ToRf16(uniform half dst[], uniform float src[], uniform size_t size) { Convert21(to_half) }
+export void RGf32ToRGBAf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert24(to_float) }
+export void RGf32ToRGBf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert23(to_float) }
+export void RGf32ToRf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert21(to_float) }
+
+export void Rf32ToRGBAu8(uniform byte dst[], uniform float src[], uniform size_t size) { Convert14(to_byte) }
+export void Rf32ToRGBu8(uniform byte dst[], uniform float src[], uniform size_t size) { Convert13(to_byte) }
+export void Rf32ToRGu8(uniform byte dst[], uniform float src[], uniform size_t size) { Convert12(to_byte) }
+export void Rf32ToRu8(uniform byte dst[], uniform float src[], uniform size_t size) { Convert11(to_byte) }
+export void Rf32ToRGBAf16(uniform half dst[], uniform float src[], uniform size_t size) { Convert14(to_half) }
+export void Rf32ToRGBf16(uniform half dst[], uniform float src[], uniform size_t size) { Convert13(to_half) }
+export void Rf32ToRGf16(uniform half dst[], uniform float src[], uniform size_t size) { Convert12(to_half) }
+export void Rf32ToRf16(uniform half dst[], uniform float src[], uniform size_t size) { Convert11(to_half) }
+export void Rf32ToRGBAf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert14(to_float) }
+export void Rf32ToRGBf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert13(to_float) }
+export void Rf32ToRGf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert12(to_float) }
