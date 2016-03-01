@@ -28,7 +28,7 @@ struct fcExrFrameData
 {
     std::string path;
     int width, height;
-    std::list<std::string> raw_frames;
+    std::list<std::vector<char>> pixels;
     Imf::Header header;
     Imf::FrameBuffer frame_buffer;
 
@@ -51,6 +51,7 @@ public:
     bool endFrame() override;
 
 private:
+    bool addLayerImpl(char *pixels, fcPixelFormat fmt, int channel, const char *name);
     void endFrameTask(fcExrFrameData *exr);
 
 private:
@@ -60,7 +61,9 @@ private:
     fcTaskGroup m_tasks;
     std::atomic_int m_active_task_count;
 
-    const void *m_tex_prev;
+    const void *m_frame_prev;
+    std::vector<char> *m_src_prev;
+    fcPixelFormat m_fmt_prev;
 };
 
 
@@ -69,7 +72,9 @@ fcExrContext::fcExrContext(const fcExrConfig *conf, fcIGraphicsDevice *dev)
     , m_dev(dev)
     , m_exr(nullptr)
     , m_active_task_count(0)
-    , m_tex_prev(nullptr)
+    , m_frame_prev(nullptr)
+    , m_src_prev(nullptr)
+    , m_fmt_prev()
 {
     if (conf != nullptr) {
         m_conf = *conf;
@@ -122,117 +127,143 @@ static void fcImageFlipY(void *image_, int width, int height, int pitch)
     }
 }
 
-bool fcExrContext::addLayerTexture(void *tex, fcTextureFormat fmt, int channel, const char *name, bool flipY)
+bool fcExrContext::addLayerTexture(void *tex, fcTextureFormat fmt_, int channel, const char *name, bool flipY)
 {
-    std::string *raw_frame = nullptr;
+    if (m_exr == nullptr) {
+        fcDebugLog("fcExrContext::addLayerTexture(): maybe beginFrame() is not called.");
+        return false;
+    }
 
-    // フレームバッファの内容取得
-    if (tex == m_tex_prev)
+    fcPixelFormat fmt = fcGetPixelFormat(fmt_);
+    std::vector<char> *raw_frame = nullptr;
+
+    if (tex == m_frame_prev)
     {
-        // 前回取得した結果を使い回す
-        raw_frame = &m_exr->raw_frames.back();
+        raw_frame = m_src_prev;
+        fmt = m_fmt_prev;
     }
     else
     {
-        m_tex_prev = tex;
-        m_exr->raw_frames.push_back(std::string());
-        raw_frame = &m_exr->raw_frames.back();
+        m_frame_prev = tex;
+
+        m_exr->pixels.push_back(std::vector<char>());
+        raw_frame = &m_exr->pixels.back();
         raw_frame->resize(m_exr->width * m_exr->height * fcGetPixelSize(fmt));
-        if (!m_dev->readTexture(&(*raw_frame)[0], raw_frame->size(), tex, m_exr->width, m_exr->height, fmt))
+
+        // get frame buffer
+        if (!m_dev->readTexture(&(*raw_frame)[0], raw_frame->size(), tex, m_exr->width, m_exr->height, fmt_))
         {
-            m_exr->raw_frames.pop_back();
+            m_exr->pixels.pop_back();
             return false;
         }
         if (flipY) {
             fcImageFlipY(&(*raw_frame)[0], m_exr->width, m_exr->height, m_exr->width * fcGetPixelSize(fmt));
         }
-    }
+        m_src_prev = raw_frame;
 
-    {
-        Imf::PixelType pixel_type = Imf::HALF;
-        int channels = 0;
-        int tsize = 0;
-        switch (fmt)
-        {
-        case fcTextureFormat_ARGBHalf:  pixel_type = Imf::HALF; channels = 4; tsize = 2; break;
-        case fcTextureFormat_RGHalf:    pixel_type = Imf::HALF; channels = 2; tsize = 2; break;
-        case fcTextureFormat_RHalf:     pixel_type = Imf::HALF; channels = 1; tsize = 2; break;
-        case fcTextureFormat_ARGBFloat: pixel_type = Imf::FLOAT; channels = 4; tsize = 4; break;
-        case fcTextureFormat_RGFloat:   pixel_type = Imf::FLOAT; channels = 2; tsize = 4; break;
-        case fcTextureFormat_RFloat:    pixel_type = Imf::FLOAT; channels = 1; tsize = 4; break;
-        case fcTextureFormat_ARGBInt:   pixel_type = Imf::UINT; channels = 4; tsize = 4; break;
-        case fcTextureFormat_RGInt:     pixel_type = Imf::UINT; channels = 2; tsize = 4; break;
-        case fcTextureFormat_RInt:      pixel_type = Imf::UINT; channels = 1; tsize = 4; break;
-        default:
-            m_exr->raw_frames.pop_back();
-            return false;
+        // convert pixel format if it is not supported by exr
+        if ((fmt & fcPixelFormat_TypeMask) == fcPixelFormat_Type_u8) {
+            m_exr->pixels.push_back(std::vector<char>());
+            auto *buf = &m_exr->pixels.back();
+
+            int channels = fmt & fcPixelFormat_ChannelMask;
+            auto src_fmt = fmt;
+            fmt = fcPixelFormat(fcPixelFormat_Type_f16 | channels);
+            raw_frame->resize(m_exr->width * m_exr->height * fcGetPixelSize(fmt));
+            fcConvert(&(*buf)[0], fmt, &(*raw_frame)[0], src_fmt, m_exr->width * m_exr->height);
+
+            m_src_prev = raw_frame = buf;
         }
-        int psize = tsize * channels;
 
-        char *raw_data = &(*raw_frame)[0];
-        m_exr->header.channels().insert(name, Imf::Channel(pixel_type));
-        m_exr->frame_buffer.insert(name, Imf::Slice(pixel_type, raw_data + (tsize * channel), psize, psize * m_exr->width));
+        m_fmt_prev = fmt;
     }
-    return true;
+
+    return addLayerImpl(&(*raw_frame)[0], fmt, channel, name);
 }
 
 bool fcExrContext::addLayerPixels(const void *pixels, fcPixelFormat fmt, int channel, const char *name, bool flipY)
 {
-    std::string *raw_frame = nullptr;
+    std::vector<char> *raw_frame = nullptr;
 
-    // フレームバッファの内容取得
-    if (pixels == m_tex_prev)
+    if (pixels == m_frame_prev)
     {
-        // 前回取得した結果を使い回す
-        raw_frame = &m_exr->raw_frames.back();
+        raw_frame = m_src_prev;
+        fmt = m_fmt_prev;
     }
     else
     {
-        m_tex_prev = pixels;
-        m_exr->raw_frames.push_back(std::string());
-        raw_frame = &m_exr->raw_frames.back();
-        raw_frame->resize(m_exr->width * m_exr->height * fcGetPixelSize(fmt));
-        memcpy(&(*raw_frame)[0], pixels, raw_frame->size());
+        m_frame_prev = pixels;
+
+        m_exr->pixels.push_back(std::vector<char>());
+        raw_frame = &m_exr->pixels.back();
+
+        // convert pixel format if it is not supported by exr
+        if ((fmt & fcPixelFormat_TypeMask) == fcPixelFormat_Type_u8) {
+            int channels = fmt & fcPixelFormat_ChannelMask;
+            auto src_fmt = fmt;
+            fmt = fcPixelFormat(fcPixelFormat_Type_f16 | channels);
+            raw_frame->resize(m_exr->width * m_exr->height * (2 * channels));
+            fcConvert(&(*raw_frame)[0], fmt, pixels, src_fmt, m_exr->width * m_exr->height);
+        }
+        else {
+            raw_frame->resize(m_exr->width * m_exr->height * fcGetPixelSize(fmt));
+            memcpy(&(*raw_frame)[0], pixels, raw_frame->size());
+        }
         if (flipY) {
             fcImageFlipY(&(*raw_frame)[0], m_exr->width, m_exr->height, m_exr->width * fcGetPixelSize(fmt));
         }
+
+        m_src_prev = raw_frame;
+        m_fmt_prev = fmt;
     }
 
+    return addLayerImpl(&(*raw_frame)[0], fmt, channel, name);
+}
+
+bool fcExrContext::addLayerImpl(char *pixels, fcPixelFormat fmt, int channel, const char *name)
+{
+    if (m_exr == nullptr) {
+        fcDebugLog("fcExrContext::addLayerPixels(): maybe beginFrame() is not called.");
+        return false;
+    }
+
+    Imf::PixelType pixel_type = Imf::HALF;
+    int channels = fmt & fcPixelFormat_ChannelMask;
+    int tsize = 0;
+    switch (fmt & fcPixelFormat_TypeMask)
     {
-        Imf::PixelType pixel_type = Imf::HALF;
-        int channels = fmt & fcPixelFormat_ChannelMask;
-        int tsize = 0;
-        switch (fmt & fcPixelFormat_TypeMask)
-        {
-        case fcPixelFormat_Type_f16:
-            pixel_type = Imf::HALF;
-            tsize = 2;
-            break;
-        case fcPixelFormat_Type_f32:
-            pixel_type = Imf::FLOAT;
-            tsize = 4;
-            break;
-        case fcPixelFormat_Type_i32:
-            pixel_type = Imf::UINT;
-            tsize = 4;
-            break;
-        default:
-            fcDebugLog("fcExrContext::addLayerPixels(): this pixel format is not supported. exr only supports f16, f32 and i32");
-            return false;
-        }
-        int psize = tsize * channels;
-
-        char *raw_data = &(*raw_frame)[0];
-        m_exr->header.channels().insert(name, Imf::Channel(pixel_type));
-        m_exr->frame_buffer.insert(name, Imf::Slice(pixel_type, raw_data + (tsize * channel), psize, psize * m_exr->width));
+    case fcPixelFormat_Type_f16:
+        pixel_type = Imf::HALF;
+        tsize = 2;
+        break;
+    case fcPixelFormat_Type_f32:
+        pixel_type = Imf::FLOAT;
+        tsize = 4;
+        break;
+    case fcPixelFormat_Type_i32:
+        pixel_type = Imf::UINT;
+        tsize = 4;
+        break;
+    default:
+        fcDebugLog("fcExrContext::addLayerPixels(): this pixel format is not supported. exr only supports f16, f32 and i32");
+        return false;
     }
+    int psize = tsize * channels;
+
+    m_exr->header.channels().insert(name, Imf::Channel(pixel_type));
+    m_exr->frame_buffer.insert(name, Imf::Slice(pixel_type, pixels + (tsize * channel), psize, psize * m_exr->width));
     return true;
 }
 
+
 bool fcExrContext::endFrame()
 {
-    if (m_exr == nullptr) { return false; } // beginFrame() されてない
-    m_tex_prev = nullptr;
+    if (m_exr == nullptr) {
+        fcDebugLog("fcExrContext::endFrame(): maybe beginFrame() is not called.");
+        return false;
+    }
+
+    m_frame_prev = nullptr;
 
     fcExrFrameData *exr = m_exr;
     m_exr = nullptr;

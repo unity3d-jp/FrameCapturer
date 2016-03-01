@@ -22,7 +22,7 @@ void ExrTest()
     printf("ExrTest begin\n");
 
     fcIExrContext *ctx = fcExrCreateContext();
-    ExrTestImpl< RGBAu8>(ctx, "RGBAu8.exr"); // this will fail
+    ExrTestImpl<RGBAu8 >(ctx, "RGBAu8.exr");
     ExrTestImpl<RGBAf16>(ctx, "RGBAf16.exr");
     ExrTestImpl<RGBAf32>(ctx, "RGBAf32.exr");
     fcExrDestroyContext(ctx);
