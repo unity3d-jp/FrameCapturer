@@ -87,7 +87,6 @@ fcExrContext::~fcExrContext()
 }
 
 
-
 void fcExrContext::release()
 {
     delete this;
@@ -95,7 +94,10 @@ void fcExrContext::release()
 
 bool fcExrContext::beginFrame(const char *path, int width, int height)
 {
-    if (m_exr != nullptr) { return false; } // beginFrame() されたまま endFrame() されてない
+    if (m_exr != nullptr) {
+        fcDebugLog("fcExrContext::beginFrame(): beginFrame() is already called. maybe you forgot to call endFrame().");
+        return false;
+    }
 
     // 実行中のタスクの数が上限に達している場合適当に待つ
     if (m_active_task_count >= m_conf.max_active_tasks)
@@ -182,6 +184,11 @@ bool fcExrContext::addLayerTexture(void *tex, fcPixelFormat fmt, int channel, co
 
 bool fcExrContext::addLayerPixels(const void *pixels, fcPixelFormat fmt, int channel, const char *name, bool flipY)
 {
+    if (m_exr == nullptr) {
+        fcDebugLog("fcExrContext::addLayerPixels(): maybe beginFrame() is not called.");
+        return false;
+    }
+
     std::vector<char> *raw_frame = nullptr;
 
     if (pixels == m_frame_prev)
@@ -221,11 +228,6 @@ bool fcExrContext::addLayerPixels(const void *pixels, fcPixelFormat fmt, int cha
 
 bool fcExrContext::addLayerImpl(char *pixels, fcPixelFormat fmt, int channel, const char *name)
 {
-    if (m_exr == nullptr) {
-        fcDebugLog("fcExrContext::addLayerPixels(): maybe beginFrame() is not called.");
-        return false;
-    }
-
     Imf::PixelType pixel_type = Imf::HALF;
     int channels = fmt & fcPixelFormat_ChannelMask;
     int tsize = 0;
