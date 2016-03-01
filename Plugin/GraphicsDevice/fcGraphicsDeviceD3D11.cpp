@@ -14,12 +14,12 @@ public:
     ~fcGraphicsDeviceD3D11();
     void* getDevicePtr() override;
     int getDeviceType() override;
-    bool readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcTextureFormat format) override;
-    bool writeTexture(void *o_tex, int width, int height, fcTextureFormat format, const void *buf, size_t bufsize) override;
+    bool readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcPixelFormat format) override;
+    bool writeTexture(void *o_tex, int width, int height, fcPixelFormat format, const void *buf, size_t bufsize) override;
 
 private:
     void clearStagingTextures();
-    ID3D11Texture2D* findOrCreateStagingTexture(int width, int height, fcTextureFormat format);
+    ID3D11Texture2D* findOrCreateStagingTexture(int width, int height, fcPixelFormat format);
 
 private:
     ID3D11Device *m_device;
@@ -65,29 +65,29 @@ void* fcGraphicsDeviceD3D11::getDevicePtr() { return m_device; }
 int fcGraphicsDeviceD3D11::getDeviceType() { return kGfxRendererD3D11; }
 
 
-static DXGI_FORMAT fcGetInternalFormatD3D11(fcTextureFormat fmt)
+static DXGI_FORMAT fcGetInternalFormatD3D11(fcPixelFormat fmt)
 {
     switch (fmt)
     {
-    case fcTextureFormat_ARGB32:    return DXGI_FORMAT_R8G8B8A8_TYPELESS;
+    case fcPixelFormat_RGBAu8:  return DXGI_FORMAT_R8G8B8A8_TYPELESS;
 
-    case fcTextureFormat_ARGBHalf:  return DXGI_FORMAT_R16G16B16A16_FLOAT;
-    case fcTextureFormat_RGHalf:    return DXGI_FORMAT_R16G16_FLOAT;
-    case fcTextureFormat_RHalf:     return DXGI_FORMAT_R16_FLOAT;
+    case fcPixelFormat_RGBAf16: return DXGI_FORMAT_R16G16B16A16_FLOAT;
+    case fcPixelFormat_RGf16:   return DXGI_FORMAT_R16G16_FLOAT;
+    case fcPixelFormat_Rf16:    return DXGI_FORMAT_R16_FLOAT;
 
-    case fcTextureFormat_ARGBFloat: return DXGI_FORMAT_R32G32B32A32_FLOAT;
-    case fcTextureFormat_RGFloat:   return DXGI_FORMAT_R32G32_FLOAT;
-    case fcTextureFormat_RFloat:    return DXGI_FORMAT_R32_FLOAT;
+    case fcPixelFormat_RGBAf32: return DXGI_FORMAT_R32G32B32A32_FLOAT;
+    case fcPixelFormat_RGf32:   return DXGI_FORMAT_R32G32_FLOAT;
+    case fcPixelFormat_Rf32:    return DXGI_FORMAT_R32_FLOAT;
 
-    case fcTextureFormat_ARGBInt:   return DXGI_FORMAT_R32G32B32A32_SINT;
-    case fcTextureFormat_RGInt:     return DXGI_FORMAT_R32G32_SINT;
-    case fcTextureFormat_RInt:      return DXGI_FORMAT_R32_SINT;
+    case fcPixelFormat_RGBAi32: return DXGI_FORMAT_R32G32B32A32_SINT;
+    case fcPixelFormat_RGi32:   return DXGI_FORMAT_R32G32_SINT;
+    case fcPixelFormat_Ri32:    return DXGI_FORMAT_R32_SINT;
     }
     return DXGI_FORMAT_UNKNOWN;
 }
 
 
-ID3D11Texture2D* fcGraphicsDeviceD3D11::findOrCreateStagingTexture(int width, int height, fcTextureFormat format)
+ID3D11Texture2D* fcGraphicsDeviceD3D11::findOrCreateStagingTexture(int width, int height, fcPixelFormat format)
 {
     if (m_staging_textures.size() >= fcD3D11MaxStagingTextures) {
         clearStagingTextures();
@@ -125,7 +125,7 @@ void fcGraphicsDeviceD3D11::clearStagingTextures()
     m_staging_textures.clear();
 }
 
-bool fcGraphicsDeviceD3D11::readTexture(void *o_buf, size_t bufsize, void *tex_, int width, int height, fcTextureFormat format)
+bool fcGraphicsDeviceD3D11::readTexture(void *o_buf, size_t bufsize, void *tex_, int width, int height, fcPixelFormat format)
 {
     if (m_context == nullptr || tex_ == nullptr) { return false; }
     int psize = fcGetPixelSize(format);
@@ -174,7 +174,7 @@ bool fcGraphicsDeviceD3D11::readTexture(void *o_buf, size_t bufsize, void *tex_,
     return false;
 }
 
-bool fcGraphicsDeviceD3D11::writeTexture(void *o_tex, int width, int height, fcTextureFormat format, const void *buf, size_t bufsize)
+bool fcGraphicsDeviceD3D11::writeTexture(void *o_tex, int width, int height, fcPixelFormat format, const void *buf, size_t bufsize)
 {
     int psize = fcGetPixelSize(format);
     int pitch = psize * width;

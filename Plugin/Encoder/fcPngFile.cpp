@@ -29,7 +29,7 @@ public:
     fcPngContext(const fcPngConfig *conf, fcIGraphicsDevice *dev);
     ~fcPngContext() override;
     void release() override;
-    bool exportTexture(const char *path, void *tex, int width, int height, fcTextureFormat fmt, bool flipY) override;
+    bool exportTexture(const char *path, void *tex, int width, int height, fcPixelFormat fmt, bool flipY) override;
     bool exportPixels(const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, bool flipY) override;
 
 private:
@@ -61,7 +61,7 @@ void fcPngContext::release()
     delete this;
 }
 
-bool fcPngContext::exportTexture(const char *path_, void *tex, int width, int height, fcTextureFormat fmt, bool flipY)
+bool fcPngContext::exportTexture(const char *path_, void *tex, int width, int height, fcPixelFormat fmt, bool flipY)
 {
     waitSome();
 
@@ -69,7 +69,7 @@ bool fcPngContext::exportTexture(const char *path_, void *tex, int width, int he
     data->path = path_;
     data->width = width;
     data->height = height;
-    data->format = fcGetPixelFormat(fmt);
+    data->format = fmt;
 
     // get surface data
     data->pixels.resize(width * height * fcGetPixelSize(fmt));

@@ -65,6 +65,42 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern void         fcDestroyStream(fcStream s);
         [DllImport ("FrameCapturer")] public static extern ulong        fcStreamGetWrittenSize(fcStream s);
 
+        public static fcPixelFormat fcGetPixelFormat(RenderTextureFormat v)
+        {
+            switch (v)
+            {
+                case RenderTextureFormat.ARGB32:    return fcPixelFormat.RGBAu8;
+                case RenderTextureFormat.ARGBHalf:  return fcPixelFormat.RGBAf16;
+                case RenderTextureFormat.RGHalf:    return fcPixelFormat.RGf16;
+                case RenderTextureFormat.RHalf:     return fcPixelFormat.Rf16;
+                case RenderTextureFormat.ARGBFloat: return fcPixelFormat.RGBAf32;
+                case RenderTextureFormat.RGFloat:   return fcPixelFormat.RGf32;
+                case RenderTextureFormat.RFloat:    return fcPixelFormat.Rf32;
+                case RenderTextureFormat.ARGBInt:   return fcPixelFormat.RGBAi32;
+                case RenderTextureFormat.RGInt:     return fcPixelFormat.RGi32;
+                case RenderTextureFormat.RInt:      return fcPixelFormat.Ri32;
+            }
+            return fcPixelFormat.Unknown;
+        }
+
+        public static fcPixelFormat fcGetPixelFormat(TextureFormat v)
+        {
+            switch (v)
+            {
+                case TextureFormat.Alpha8:      return fcPixelFormat.Ru8;
+                case TextureFormat.RGB24:       return fcPixelFormat.RGBu8;
+                case TextureFormat.RGBA32:      return fcPixelFormat.RGBAu8;
+                case TextureFormat.ARGB32:      return fcPixelFormat.RGBAu8;
+                case TextureFormat.RGBAHalf:    return fcPixelFormat.RGBAf16;
+                case TextureFormat.RGHalf:      return fcPixelFormat.RGf16;
+                case TextureFormat.RHalf:       return fcPixelFormat.Rf16;
+                case TextureFormat.RGBAFloat:   return fcPixelFormat.RGBAf32;
+                case TextureFormat.RGFloat:     return fcPixelFormat.RGf32;
+                case TextureFormat.RFloat:      return fcPixelFormat.Rf32;
+            }
+            return fcPixelFormat.Unknown;
+        }
+
 
         // -------------------------------------------------------------
         // PNG Exporter
@@ -89,12 +125,12 @@ namespace UTJ
 
         [DllImport ("FrameCapturer")] public static extern fcPNGContext fcPngCreateContext(ref fcPngConfig conf);
         [DllImport ("FrameCapturer")] public static extern void         fcPngDestroyContext(fcPNGContext ctx);
-        [DllImport ("FrameCapturer")] public static extern bool         fcPngExportTexture(fcPNGContext ctx, string path, IntPtr tex, int width, int height, RenderTextureFormat f, bool flipY);
+        [DllImport ("FrameCapturer")] public static extern bool         fcPngExportTexture(fcPNGContext ctx, string path, IntPtr tex, int width, int height, fcPixelFormat f, bool flipY);
         [DllImport ("FrameCapturer")] public static extern bool         fcPngExportPixels(fcPNGContext ctx, string path, IntPtr pixels, int width, int height, fcPixelFormat f, bool flipY);
 
         public static bool fcPngExportTexture(fcPNGContext ctx, string path, RenderTexture tex, bool flipY)
         {
-            return fcPngExportTexture(ctx, path, tex.GetNativeTexturePtr(), tex.width, tex.height, tex.format, flipY);
+            return fcPngExportTexture(ctx, path, tex.GetNativeTexturePtr(), tex.width, tex.height, fcGetPixelFormat(tex.format), flipY);
         }
 
 
@@ -122,13 +158,13 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern fcEXRContext fcExrCreateContext(ref fcExrConfig conf);
         [DllImport ("FrameCapturer")] public static extern void         fcExrDestroyContext(fcEXRContext ctx);
         [DllImport ("FrameCapturer")] public static extern bool         fcExrBeginFrame(fcEXRContext ctx, string path, int width, int height);
-        [DllImport ("FrameCapturer")] public static extern bool         fcExrAddLayerTexture(fcEXRContext ctx, IntPtr tex, RenderTextureFormat f, int ch, string name, bool flipY);
+        [DllImport ("FrameCapturer")] public static extern bool         fcExrAddLayerTexture(fcEXRContext ctx, IntPtr tex, fcPixelFormat f, int ch, string name, bool flipY);
         [DllImport ("FrameCapturer")] public static extern bool         fcExrAddLayerPixels(fcEXRContext ctx, IntPtr pixels, fcPixelFormat f, int ch, string name, bool flipY);
         [DllImport ("FrameCapturer")] public static extern bool         fcExrEndFrame(fcEXRContext ctx);
 
         public static bool fcExrAddLayerTexture(fcEXRContext ctx, RenderTexture tex, int ch, string name, bool flipY)
         {
-            return fcExrAddLayerTexture(ctx, tex.GetNativeTexturePtr(), tex.format, ch, name, flipY);
+            return fcExrAddLayerTexture(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), ch, name, flipY);
         }
 
 
@@ -161,7 +197,7 @@ namespace UTJ
 
         [DllImport ("FrameCapturer")] public static extern fcGIFContext fcGifCreateContext(ref fcGifConfig conf);
         [DllImport ("FrameCapturer")] public static extern void         fcGifDestroyContext(fcGIFContext ctx);
-        [DllImport ("FrameCapturer")] public static extern bool         fcGifAddFrameTexture(fcGIFContext ctx, IntPtr tex, RenderTextureFormat fmt, bool keyframe = false, double timestamp = -1.0);
+        [DllImport ("FrameCapturer")] public static extern bool         fcGifAddFrameTexture(fcGIFContext ctx, IntPtr tex, fcPixelFormat fmt, bool keyframe = false, double timestamp = -1.0);
         [DllImport ("FrameCapturer")] public static extern bool         fcGifAddFramePixels(fcGIFContext ctx, IntPtr pixels, fcPixelFormat fmt, bool keyframe = false, double timestamp = -1.0);
         [DllImport ("FrameCapturer")] public static extern bool         fcGifWrite(fcGIFContext ctx, fcStream stream, int begin_frame=0, int end_frame=-1);
 
@@ -173,7 +209,7 @@ namespace UTJ
 
         public static bool fcGifAddFrameTexture(fcGIFContext ctx, RenderTexture tex, bool keyframe = false, double timestamp = -1.0)
         {
-            return fcGifAddFrameTexture(ctx, tex.GetNativeTexturePtr(), tex.format, keyframe, timestamp);
+            return fcGifAddFrameTexture(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), keyframe, timestamp);
         }
 
         public static bool fcGifWriteFile(fcGIFContext ctx, string path, int begin_frame = 0, int end_frame = -1)
@@ -235,13 +271,13 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern fcMP4Context     fcMP4CreateContext(ref fcMP4Config conf);
         [DllImport ("FrameCapturer")] public static extern void             fcMP4DestroyContext(fcMP4Context ctx);
         [DllImport ("FrameCapturer")] public static extern void             fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);
-        [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddVideoFrameTexture(fcMP4Context ctx, IntPtr tex, RenderTextureFormat fmt, double time = -1.0);
+        [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddVideoFrameTexture(fcMP4Context ctx, IntPtr tex, fcPixelFormat fmt, double time = -1.0);
         [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddVideoFramePixels(fcMP4Context ctx, IntPtr pixels, fcPixelFormat fmt, double time = -1.0);
         [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddAudioFrame(fcMP4Context ctx, float[] samples, int num_samples, double time = -1.0);
 
         public static bool fcMP4AddVideoFrameTexture(fcMP4Context ctx, RenderTexture tex, double time = -1.0)
         {
-            return fcMP4AddVideoFrameTexture(ctx, tex.GetNativeTexturePtr(), tex.format, time);
+            return fcMP4AddVideoFrameTexture(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), time);
         }
     }
 

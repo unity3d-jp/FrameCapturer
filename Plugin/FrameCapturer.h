@@ -60,29 +60,6 @@ enum fcPixelFormat
     fcPixelFormat_I420      = 0x10 << 4,
 };
 
-enum fcTextureFormat
-{
-    fcTextureFormat_ARGB32 = 0,
-    fcTextureFormat_Depth = 1,
-    fcTextureFormat_ARGBHalf = 2,
-    fcTextureFormat_Shadowmap = 3,
-    fcTextureFormat_RGB565 = 4,
-    fcTextureFormat_ARGB4444 = 5,
-    fcTextureFormat_ARGB1555 = 6,
-    fcTextureFormat_Default = 7,
-    fcTextureFormat_ARGB2101010 = 8,
-    fcTextureFormat_DefaultHDR = 9,
-    fcTextureFormat_ARGBFloat = 11,
-    fcTextureFormat_RGFloat = 12,
-    fcTextureFormat_RGHalf = 13,
-    fcTextureFormat_RFloat = 14,
-    fcTextureFormat_RHalf = 15,
-    fcTextureFormat_R8 = 16,
-    fcTextureFormat_ARGBInt = 17,
-    fcTextureFormat_RGInt = 18,
-    fcTextureFormat_RInt = 19,
-};
-
 
 // -------------------------------------------------------------
 // Foundation
@@ -126,7 +103,7 @@ struct fcPngConfig
 };
 fcCLinkage fcExport fcIPngContext*  fcPngCreateContext(const fcPngConfig *conf = nullptr);
 fcCLinkage fcExport void            fcPngDestroyContext(fcIPngContext *ctx);
-fcCLinkage fcExport bool            fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcTextureFormat fmt, bool flipY = false);
+fcCLinkage fcExport bool            fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, bool flipY = false);
 fcCLinkage fcExport bool            fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, bool flipY = false);
 
 
@@ -142,7 +119,7 @@ struct fcExrConfig
 fcCLinkage fcExport fcIExrContext*  fcExrCreateContext(const fcExrConfig *conf = nullptr);
 fcCLinkage fcExport void            fcExrDestroyContext(fcIExrContext *ctx);
 fcCLinkage fcExport bool            fcExrBeginFrame(fcIExrContext *ctx, const char *path, int width, int height);
-fcCLinkage fcExport bool            fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcTextureFormat fmt, int ch, const char *name, bool flipY = false);
+fcCLinkage fcExport bool            fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name, bool flipY = false);
 fcCLinkage fcExport bool            fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name, bool flipY = false);
 fcCLinkage fcExport bool            fcExrEndFrame(fcIExrContext *ctx);
 
@@ -164,7 +141,7 @@ fcCLinkage fcExport fcIGifContext*  fcGifCreateContext(const fcGifConfig *conf);
 fcCLinkage fcExport void            fcGifDestroyContext(fcIGifContext *ctx);
 fcCLinkage fcExport bool            fcGifAddFrame(fcIGifContext *ctx, void *tex);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcTextureFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
+fcCLinkage fcExport bool            fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
 fcCLinkage fcExport bool            fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
 fcCLinkage fcExport bool            fcGifWrite(fcIGifContext *ctx, fcStream *stream, int begin_frame = 0, int end_frame = -1);
@@ -217,7 +194,7 @@ fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
 fcCLinkage fcExport void            fcMP4DestroyContext(fcIMP4Context *ctx);
 fcCLinkage fcExport void            fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcTextureFormat fmt, fcTime timestamp = -1);
+fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1);
 // timestamp=-1 is treated as current time.
 fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.

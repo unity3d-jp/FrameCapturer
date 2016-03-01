@@ -33,7 +33,7 @@ public:
     ~fcGifContext();
     void release() override;
 
-    bool addFrameTexture(void *tex, fcTextureFormat fmt, bool keyframe, fcTime timestamp) override;
+    bool addFrameTexture(void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp) override;
     bool addFramePixels(const void *pixels, fcPixelFormat fmt, bool keyframe, fcTime timestamp) override;
     bool write(fcStream& stream, int begin_frame, int end_frame) override;
 
@@ -169,7 +169,7 @@ void fcGifContext::kickTask(fcGifTaskData& data)
     }
 }
 
-bool fcGifContext::addFrameTexture(void *tex, fcTextureFormat fmt, bool keyframe, fcTime timestamp)
+bool fcGifContext::addFrameTexture(void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
 {
     fcGifTaskData& data = getTempraryVideoFrame();
     data.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeSec();
@@ -177,7 +177,7 @@ bool fcGifContext::addFrameTexture(void *tex, fcTextureFormat fmt, bool keyframe
 
     // フレームバッファの内容取得
     data.raw_pixels.resize(m_conf.width * m_conf.height * fcGetPixelSize(fmt));
-    data.raw_pixel_format = fcGetPixelFormat(fmt);
+    data.raw_pixel_format = fmt;
     if (!m_dev->readTexture(&data.raw_pixels[0], data.raw_pixels.size(), tex, m_conf.width, m_conf.height, fmt))
     {
         return false;
@@ -280,7 +280,7 @@ void fcGifContext::getFrameData(void *tex, int frame)
     std::string raw_pixels;
     raw_pixels.resize(m_conf.width * m_conf.height * 4);
     jo_gif_decode(&raw_pixels[0], fdata, palette);
-    m_dev->writeTexture(tex, m_gif.width, m_gif.height, fcTextureFormat_ARGB32, &raw_pixels[0], raw_pixels.size());
+    m_dev->writeTexture(tex, m_gif.width, m_gif.height, fcPixelFormat_RGBAu8, &raw_pixels[0], raw_pixels.size());
 }
 
 

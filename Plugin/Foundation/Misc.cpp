@@ -131,27 +131,6 @@ double GetCurrentTimeSec()
 
 
 
-int fcGetPixelSize(fcTextureFormat format)
-{
-    switch (format)
-    {
-    case fcTextureFormat_ARGB32:    return 4;
-
-    case fcTextureFormat_ARGBHalf:  return 8;
-    case fcTextureFormat_RGHalf:    return 4;
-    case fcTextureFormat_RHalf:     return 2;
-
-    case fcTextureFormat_ARGBFloat: return 16;
-    case fcTextureFormat_RGFloat:   return 8;
-    case fcTextureFormat_RFloat:    return 4;
-
-    case fcTextureFormat_ARGBInt:   return 16;
-    case fcTextureFormat_RGInt:     return 8;
-    case fcTextureFormat_RInt:      return 4;
-    }
-    return 0;
-}
-
 int fcGetPixelSize(fcPixelFormat format)
 {
     switch (format)
@@ -180,27 +159,6 @@ int fcGetPixelSize(fcPixelFormat format)
     case fcPixelFormat_Ri32:    return 4;
     }
     return 0;
-}
-
-fcPixelFormat fcGetPixelFormat(fcTextureFormat format)
-{
-    switch (format)
-    {
-    case fcTextureFormat_ARGB32:    return fcPixelFormat_RGBAu8;
-
-    case fcTextureFormat_ARGBHalf:  return fcPixelFormat_RGBAf16;
-    case fcTextureFormat_RGHalf:    return fcPixelFormat_RGf16;
-    case fcTextureFormat_RHalf:     return fcPixelFormat_Rf16;
-
-    case fcTextureFormat_ARGBFloat: return fcPixelFormat_RGBAf32;
-    case fcTextureFormat_RGFloat:   return fcPixelFormat_RGf32;
-    case fcTextureFormat_RFloat:    return fcPixelFormat_Rf32;
-
-    case fcTextureFormat_ARGBInt:   return fcPixelFormat_RGBAi32;
-    case fcTextureFormat_RGInt:     return fcPixelFormat_RGi32;
-    case fcTextureFormat_RInt:      return fcPixelFormat_Ri32;
-    }
-    return fcPixelFormat_Unknown;
 }
 
 
