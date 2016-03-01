@@ -22,8 +22,8 @@ public:
     ~fcGraphicsDeviceOpenGL();
     void* getDevicePtr() override;
     int getDeviceType() override;
-    bool readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcTextureFormat format) override;
-    bool writeTexture(void *o_tex, int width, int height, fcTextureFormat format, const void *buf, size_t bufsize) override;
+    bool readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcPixelFormat format) override;
+    bool writeTexture(void *o_tex, int width, int height, fcPixelFormat format, const void *buf, size_t bufsize) override;
 
 private:
     void *m_device;
@@ -50,29 +50,28 @@ fcGraphicsDeviceOpenGL::~fcGraphicsDeviceOpenGL()
 }
 
 
-static void fcGetInternalFormatOpenGL(fcTextureFormat format, GLenum &o_fmt, GLenum &o_type)
+static void fcGetInternalFormatOpenGL(fcPixelFormat format, GLenum &o_fmt, GLenum &o_type)
 {
     switch (format)
     {
-    case fcTextureFormat_ARGB32:    o_fmt = GL_RGBA; o_type = GL_UNSIGNED_BYTE; return;
+    case fcPixelFormat_RGBAu8:    o_fmt = GL_RGBA; o_type = GL_UNSIGNED_BYTE; return;
 
-    case fcTextureFormat_ARGBHalf:  o_fmt = GL_RGBA; o_type = GL_HALF_FLOAT; return;
-    case fcTextureFormat_RGHalf:    o_fmt = GL_RG; o_type = GL_HALF_FLOAT; return;
-    case fcTextureFormat_RHalf:     o_fmt = GL_RED; o_type = GL_HALF_FLOAT; return;
+    case fcPixelFormat_RGBAf16:  o_fmt = GL_RGBA; o_type = GL_HALF_FLOAT; return;
+    case fcPixelFormat_RGf16:    o_fmt = GL_RG; o_type = GL_HALF_FLOAT; return;
+    case fcPixelFormat_Rf16:     o_fmt = GL_RED; o_type = GL_HALF_FLOAT; return;
 
-    case fcTextureFormat_ARGBFloat: o_fmt = GL_RGBA; o_type = GL_FLOAT; return;
-    case fcTextureFormat_RGFloat:   o_fmt = GL_RG; o_type = GL_FLOAT; return;
-    case fcTextureFormat_RFloat:    o_fmt = GL_RED; o_type = GL_FLOAT; return;
+    case fcPixelFormat_RGBAf32: o_fmt = GL_RGBA; o_type = GL_FLOAT; return;
+    case fcPixelFormat_RGf32:   o_fmt = GL_RG; o_type = GL_FLOAT; return;
+    case fcPixelFormat_Rf32:    o_fmt = GL_RED; o_type = GL_FLOAT; return;
 
-    case fcTextureFormat_ARGBInt:   o_fmt = GL_RGBA_INTEGER; o_type = GL_INT; return;
-    case fcTextureFormat_RGInt:     o_fmt = GL_RG_INTEGER; o_type = GL_INT; return;
-    case fcTextureFormat_RInt:      o_fmt = GL_RED_INTEGER; o_type = GL_INT; return;
-    default:
-        break;
+    case fcPixelFormat_RGBAi32:   o_fmt = GL_RGBA_INTEGER; o_type = GL_INT; return;
+    case fcPixelFormat_RGi32:     o_fmt = GL_RG_INTEGER; o_type = GL_INT; return;
+    case fcPixelFormat_Ri32:      o_fmt = GL_RED_INTEGER; o_type = GL_INT; return;
+    default: break;
     }
 }
 
-bool fcGraphicsDeviceOpenGL::readTexture(void *o_buf, size_t, void *tex, int, int, fcTextureFormat format)
+bool fcGraphicsDeviceOpenGL::readTexture(void *o_buf, size_t, void *tex, int, int, fcPixelFormat format)
 {
     GLenum internal_format = 0;
     GLenum internal_type = 0;
@@ -88,7 +87,7 @@ bool fcGraphicsDeviceOpenGL::readTexture(void *o_buf, size_t, void *tex, int, in
     return true;
 }
 
-bool fcGraphicsDeviceOpenGL::writeTexture(void *o_tex, int width, int height, fcTextureFormat format, const void *buf, size_t)
+bool fcGraphicsDeviceOpenGL::writeTexture(void *o_tex, int width, int height, fcPixelFormat format, const void *buf, size_t)
 {
     GLenum internal_format = 0;
     GLenum internal_type = 0;

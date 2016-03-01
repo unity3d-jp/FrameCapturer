@@ -103,12 +103,8 @@ inline IntType ceildiv(IntType a, IntType b)
 }
 
 
-enum fcTextureFormat;
 enum fcPixelFormat;
-
-int fcGetPixelSize(fcTextureFormat format);
 int fcGetPixelSize(fcPixelFormat format);
-fcPixelFormat fcGetPixelFormat(fcTextureFormat format);
 
 void fcScale(float *data, size_t size, float scale);
 const void* fcConvert(void *dst, fcPixelFormat dstfmt, const void *src, fcPixelFormat srcfmt, size_t size);

@@ -46,7 +46,7 @@ public:
     ~fcExrContext();
     void release() override;
     bool beginFrame(const char *path, int width, int height) override;
-    bool addLayerTexture(void *tex, fcTextureFormat fmt, int channel, const char *name, bool flipY) override;
+    bool addLayerTexture(void *tex, fcPixelFormat fmt, int channel, const char *name, bool flipY) override;
     bool addLayerPixels(const void *pixels, fcPixelFormat fmt, int channel, const char *name, bool flipY) override;
     bool endFrame() override;
 
@@ -127,14 +127,13 @@ static void fcImageFlipY(void *image_, int width, int height, int pitch)
     }
 }
 
-bool fcExrContext::addLayerTexture(void *tex, fcTextureFormat fmt_, int channel, const char *name, bool flipY)
+bool fcExrContext::addLayerTexture(void *tex, fcPixelFormat fmt, int channel, const char *name, bool flipY)
 {
     if (m_exr == nullptr) {
         fcDebugLog("fcExrContext::addLayerTexture(): maybe beginFrame() is not called.");
         return false;
     }
 
-    fcPixelFormat fmt = fcGetPixelFormat(fmt_);
     std::vector<char> *raw_frame = nullptr;
 
     if (tex == m_frame_prev)
@@ -151,7 +150,7 @@ bool fcExrContext::addLayerTexture(void *tex, fcTextureFormat fmt_, int channel,
         raw_frame->resize(m_exr->width * m_exr->height * fcGetPixelSize(fmt));
 
         // get frame buffer
-        if (!m_dev->readTexture(&(*raw_frame)[0], raw_frame->size(), tex, m_exr->width, m_exr->height, fmt_))
+        if (!m_dev->readTexture(&(*raw_frame)[0], raw_frame->size(), tex, m_exr->width, m_exr->height, fmt))
         {
             m_exr->pixels.pop_back();
             return false;

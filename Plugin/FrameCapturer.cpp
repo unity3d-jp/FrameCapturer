@@ -101,7 +101,7 @@ fcCLinkage fcExport void fcPngDestroyContext(fcIPngContext *ctx)
     ctx->release();
 }
 
-fcCLinkage fcExport bool fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcTextureFormat fmt, bool flipY)
+fcCLinkage fcExport bool fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, bool flipY)
 {
     return ctx->exportTexture(path, tex, width, height, fmt, flipY);
 }
@@ -157,7 +157,7 @@ fcCLinkage fcExport bool fcExrBeginFrame(fcIExrContext *ctx, const char *path, i
     return ctx->beginFrame(path, width, height);
 }
 
-fcCLinkage fcExport bool fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcTextureFormat fmt, int ch, const char *name, bool flipY)
+fcCLinkage fcExport bool fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name, bool flipY)
 {
     if (!ctx) { return false; }
     return ctx->addLayerTexture(tex, fmt, ch, name, flipY);
@@ -217,9 +217,9 @@ fcCLinkage fcExport void fcGifDestroyContext(fcIGifContext *ctx)
 fcCLinkage fcExport bool fcGifAddFrame(fcIGifContext *ctx, void *tex)
 {
     if (!ctx) { return false; }
-    return ctx->addFrameTexture(tex, fcTextureFormat_ARGB32, false);
+    return ctx->addFrameTexture(tex, fcPixelFormat_RGBAu8, false);
 }
-fcCLinkage fcExport bool fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcTextureFormat fmt, bool keyframe, fcTime timestamp)
+fcCLinkage fcExport bool fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
 {
     if (!ctx) { return false; }
     return ctx->addFrameTexture(tex, fmt, keyframe, timestamp);
@@ -354,7 +354,7 @@ fcCLinkage fcExport void fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stre
     ctx->addOutputStream(stream);
 }
 
-fcCLinkage fcExport bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcTextureFormat fmt, fcTime timestamp)
+fcCLinkage fcExport bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp)
 {
     if (!ctx) { return false; }
     return ctx->addVideoFrameTexture(tex, fmt, timestamp);

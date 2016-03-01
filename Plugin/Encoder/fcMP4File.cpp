@@ -22,7 +22,7 @@ public:
     void release() override;
 
     void addOutputStream(fcStream *s) override;
-    bool addVideoFrameTexture(void *tex, fcTextureFormat fmt, fcTime timestamp) override;
+    bool addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp) override;
     bool addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamps) override;
     bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp) override;
 
@@ -359,7 +359,7 @@ void fcMP4Context::encodeVideoFrame(VideoFrame& vf, bool rgba2i420)
 }
 
 
-bool fcMP4Context::addVideoFrameTexture(void *tex, fcTextureFormat fmt, fcTime timestamp)
+bool fcMP4Context::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp)
 {
     if (!m_h264_encoder) { return false; }
 
@@ -369,7 +369,7 @@ bool fcMP4Context::addVideoFrameTexture(void *tex, fcTextureFormat fmt, fcTime t
     raw.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeSec();
 
     // フレームバッファの内容取得
-    if (fmt == fcTextureFormat_ARGB32) {
+    if (fmt == fcPixelFormat_RGBAu8) {
         if (!m_dev->readTexture(&raw.rgba[0], raw.rgba.size(), tex, m_conf.video_width, m_conf.video_height, fmt))
         {
             returnTempraryVideoFrame(vf);
@@ -384,7 +384,7 @@ bool fcMP4Context::addVideoFrameTexture(void *tex, fcTextureFormat fmt, fcTime t
             returnTempraryVideoFrame(vf);
             return false;
         }
-        fcConvert(raw.rgba.ptr(), fcPixelFormat_RGBAu8, &raw.raw[0], fcGetPixelFormat(fmt), m_conf.video_width * m_conf.video_height);
+        fcConvert(raw.rgba.ptr(), fcPixelFormat_RGBAu8, &raw.raw[0], fmt, m_conf.video_width * m_conf.video_height);
     }
 
     // h264 データを生成
