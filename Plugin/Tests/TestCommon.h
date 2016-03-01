@@ -16,9 +16,22 @@
 
 
 typedef uint8_t u8;
+typedef int16_t i16;
 typedef half    f16;
 typedef float   f32;
 
+template<class T> struct TR {
+    T r;
+
+    TR() : r() {}
+    TR(T _r) : r(_r) {}
+};
+template<class T> struct TRG {
+    T r, g;
+
+    TRG() : r(), g() {}
+    TRG(T _r, T _g, T _b) : r(_r), g(_g) {}
+};
 template<class T> struct TRGB {
     T r, g, b;
 
@@ -32,20 +45,45 @@ template<class T> struct TRGBA {
     TRGBA(T _r, T _g, T _b, T _a) : r(_r), g(_g), b(_b), a(_a) {}
 };
 
-typedef TRGB<u8>    RGB;
-typedef TRGB<f16>   hRGB;
-typedef TRGB<f32>   fRGB;
-typedef TRGBA<u8>   RGBA;
-typedef TRGBA<f16>  hRGBA;
-typedef TRGBA<f32>  fRGBA;
+typedef TR<u8>      Ru8;
+typedef TR<i16>     Ri16;
+typedef TR<f16>     Rf16;
+typedef TR<f32>     Rf32;
+
+typedef TRG<u8>     RGu8;
+typedef TRG<i16>    RGi16;
+typedef TRG<f16>    RGf16;
+typedef TRG<f32>    RGf32;
+
+typedef TRGB<u8>    RGBu8;
+typedef TRGB<i16>   RGBi16;
+typedef TRGB<f16>   RGBf16;
+typedef TRGB<f32>   RGBf32;
+
+typedef TRGBA<u8>   RGBAu8;
+typedef TRGBA<i16>  RGBAi16;
+typedef TRGBA<f16>  RGBAf16;
+typedef TRGBA<f32>  RGBAf32;
 
 template<class T> struct GetPixelFormat;
-template<> struct GetPixelFormat<RGB>  { static const fcPixelFormat value = fcPixelFormat_RGB8; };
-template<> struct GetPixelFormat<hRGB> { static const fcPixelFormat value = fcPixelFormat_RGBHalf; };
-template<> struct GetPixelFormat<fRGB> { static const fcPixelFormat value = fcPixelFormat_RGBFloat; };
-template<> struct GetPixelFormat<RGBA> { static const fcPixelFormat value = fcPixelFormat_RGBA8; };
-template<> struct GetPixelFormat<hRGBA>{ static const fcPixelFormat value = fcPixelFormat_RGBAHalf; };
-template<> struct GetPixelFormat<fRGBA>{ static const fcPixelFormat value = fcPixelFormat_RGBAFloat; };
+#define def(T, E) template<> struct GetPixelFormat<T>  { static const fcPixelFormat value = E; static const char* getName() { return #T; } };
+def(Ru8, fcPixelFormat_Ru8)
+def(RGu8, fcPixelFormat_RGu8)
+def(RGBu8, fcPixelFormat_RGBu8)
+def(RGBAu8, fcPixelFormat_RGBu8)
+def(Ri16, fcPixelFormat_Ri16)
+def(RGi16, fcPixelFormat_RGi16)
+def(RGBi16, fcPixelFormat_RGBi16)
+def(RGBAi16, fcPixelFormat_RGBAi16)
+def(Rf16, fcPixelFormat_Rf16)
+def(RGf16, fcPixelFormat_RGf16)
+def(RGBf16, fcPixelFormat_RGBf16)
+def(RGBAf16, fcPixelFormat_RGBAf16)
+def(Rf32, fcPixelFormat_Rf32)
+def(RGf32, fcPixelFormat_RGf32)
+def(RGBf32, fcPixelFormat_RGBf32)
+def(RGBAf32, fcPixelFormat_RGBAf32)
+#undef def
 
 template<class T> void CreateVideoData(T *rgba, int width, int height, int frame);
 void CreateAudioData(float *samples, int num_samples, int frame);

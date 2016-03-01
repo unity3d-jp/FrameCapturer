@@ -53,7 +53,7 @@ void MP4Test()
     {
         // add video frames
         std::thread video_thread = std::thread([&]() {
-            std::vector<RGBA> video_frame(Width * Height);
+            std::vector<RGBAu8> video_frame(Width * Height);
             fcTime t = 0;
             for (int i = 0; i < DurationInSeconds * FrameRate; ++i) {
                 CreateVideoData(&video_frame[0], Width, Height, i);

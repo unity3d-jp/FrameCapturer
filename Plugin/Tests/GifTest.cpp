@@ -30,12 +30,12 @@ void GifTest()
 {
     printf("GifTest begin\n");
 
-    GifTestImpl<RGB>("RGB.gif");
-    GifTestImpl<hRGB>("hRGB.gif");
-    GifTestImpl<fRGB>("fRGB.gif");
-    GifTestImpl<RGBA>("RGBA.gif");
-    GifTestImpl<hRGBA>("hRGBA.gif");
-    GifTestImpl<fRGBA>("fRGBA.gif");
+    GifTestImpl<RGBu8>("RGB.gif");
+    GifTestImpl<RGBf16>("hRGB.gif");
+    GifTestImpl<RGBf32>("fRGB.gif");
+    GifTestImpl<RGBAu8>("RGBA.gif");
+    GifTestImpl<RGBAf16>("hRGBA.gif");
+    GifTestImpl<RGBAf32>("fRGBA.gif");
 
     printf("GifTest end\n");
 }

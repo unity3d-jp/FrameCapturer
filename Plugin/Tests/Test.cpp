@@ -4,6 +4,8 @@ void PngTest();
 void ExrTest();
 void GifTest();
 void MP4Test();
+void ConvertTest();
+
 
 int main(int argc, char *argv[])
 {
@@ -11,6 +13,7 @@ int main(int argc, char *argv[])
     bool exr = false;
     bool gif = false;
     bool mp4 = false;
+    bool convert = false;
 
     if (argc <= 1) {
         png = exr = gif = mp4 = true;
@@ -21,6 +24,7 @@ int main(int argc, char *argv[])
             else if (strstr(argv[i], "exr")) { exr = true; }
             else if (strstr(argv[i], "gif")) { gif = true; }
             else if (strstr(argv[i], "mp4")) { mp4 = true; }
+            else if (strstr(argv[i], "convert")) { convert = true; }
         }
     }
 
@@ -28,4 +32,5 @@ int main(int argc, char *argv[])
     if (exr) ExrTest();
     if (gif) GifTest();
     if (mp4) MP4Test();
+    if (convert) ConvertTest();
 }
