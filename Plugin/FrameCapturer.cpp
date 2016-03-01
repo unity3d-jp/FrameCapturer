@@ -354,16 +354,16 @@ fcCLinkage fcExport void fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stre
     ctx->addOutputStream(stream);
 }
 
-fcCLinkage fcExport bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcTime timestamp)
+fcCLinkage fcExport bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcTextureFormat fmt, fcTime timestamp)
 {
     if (!ctx) { return false; }
-    return ctx->addVideoFrameTexture(tex, timestamp);
+    return ctx->addVideoFrameTexture(tex, fmt, timestamp);
 }
 
-fcCLinkage fcExport bool fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcColorSpace cs, fcTime timestamp)
+fcCLinkage fcExport bool fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp)
 {
     if (!ctx) { return false; }
-    return ctx->addVideoFramePixels(pixels, cs, timestamp);
+    return ctx->addVideoFramePixels(pixels, fmt, timestamp);
 }
 
 fcCLinkage fcExport bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp)
