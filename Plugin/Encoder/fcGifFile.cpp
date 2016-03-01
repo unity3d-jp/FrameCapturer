@@ -74,7 +74,7 @@ fcGifContext::fcGifContext(const fcGifConfig &conf, fcIGraphicsDevice *dev)
     m_buffers.resize(m_conf.max_active_tasks);
     for (auto& buf : m_buffers)
     {
-        buf.rgba8_pixels.resize(m_conf.width * m_conf.height * fcGetPixelSize(fcTextureFormat_ARGB32));
+        buf.rgba8_pixels.resize(m_conf.width * m_conf.height * fcGetPixelSize(fcPixelFormat_RGBAu8));
         m_buffers_unused.push_back(&buf);
     }
 }
@@ -139,54 +139,8 @@ void fcGifContext::addGifFrame(fcGifTaskData& data)
     }
     else {
         // convert pixel format
-
-        size_t psize = fcGetPixelSize(data.raw_pixel_format);
-        size_t n = data.raw_pixels.size() / psize;
-
-        switch (data.raw_pixel_format) {
-        case fcPixelFormat_RGBu8:
-            for (size_t i = 0; i < n; ++i) {
-                data.rgba8_pixels[i * 4 + 0] = data.raw_pixels[i * 3 + 0];
-                data.rgba8_pixels[i * 4 + 1] = data.raw_pixels[i * 3 + 1];
-                data.rgba8_pixels[i * 4 + 2] = data.raw_pixels[i * 3 + 2];
-                data.rgba8_pixels[i * 4 + 3] = 255;
-            }
-            break;
-        case fcPixelFormat_RGBf32:
-            for (size_t i = 0; i < n; ++i) {
-                data.rgba8_pixels[i * 4 + 0] = uint8_t((float&)data.raw_pixels[i * 12 + 0] * 255.0f);
-                data.rgba8_pixels[i * 4 + 1] = uint8_t((float&)data.raw_pixels[i * 12 + 4] * 255.0f);
-                data.rgba8_pixels[i * 4 + 2] = uint8_t((float&)data.raw_pixels[i * 12 + 8] * 255.0f);
-                data.rgba8_pixels[i * 4 + 3] = 255;
-            }
-            break;
-        case fcPixelFormat_RGBAf32:
-            for (size_t i = 0; i < n; ++i) {
-                data.rgba8_pixels[i * 4 + 0] = uint8_t((float&)data.raw_pixels[i * 16 + 0] * 255.0f);
-                data.rgba8_pixels[i * 4 + 1] = uint8_t((float&)data.raw_pixels[i * 16 + 4] * 255.0f);
-                data.rgba8_pixels[i * 4 + 2] = uint8_t((float&)data.raw_pixels[i * 16 + 8] * 255.0f);
-                data.rgba8_pixels[i * 4 + 3] = uint8_t((float&)data.raw_pixels[i * 16 +12] * 255.0f);
-            }
-            break;
-#ifdef fcSupportHalfPixelFormat
-        case fcPixelFormat_RGBf16:
-            for (size_t i = 0; i < n; ++i) {
-                data.rgba8_pixels[i * 4 + 0] = uint8_t((half&)data.raw_pixels[i * 6 + 0] * 255.0f);
-                data.rgba8_pixels[i * 4 + 1] = uint8_t((half&)data.raw_pixels[i * 6 + 2] * 255.0f);
-                data.rgba8_pixels[i * 4 + 2] = uint8_t((half&)data.raw_pixels[i * 6 + 4] * 255.0f);
-                data.rgba8_pixels[i * 4 + 3] = 255;
-            }
-            break;
-        case fcPixelFormat_RGBAf16:
-            for (size_t i = 0; i < n; ++i) {
-                data.rgba8_pixels[i * 4 + 0] = uint8_t((half&)data.raw_pixels[i * 8 + 0] * 255.0f);
-                data.rgba8_pixels[i * 4 + 1] = uint8_t((half&)data.raw_pixels[i * 8 + 2] * 255.0f);
-                data.rgba8_pixels[i * 4 + 2] = uint8_t((half&)data.raw_pixels[i * 8 + 4] * 255.0f);
-                data.rgba8_pixels[i * 4 + 3] = uint8_t((half&)data.raw_pixels[i * 8 + 6] * 255.0f);
-            }
-            break;
-#endif // fcSupportHalfPixelFormat
-        }
+        size_t npixels = data.raw_pixels.size() / fcGetPixelSize(data.raw_pixel_format);
+        fcConvert(&data.rgba8_pixels[0], fcPixelFormat_RGBAu8, &data.raw_pixels[0], data.raw_pixel_format, npixels);
         src = (unsigned char*)&data.rgba8_pixels[0];
     }
 

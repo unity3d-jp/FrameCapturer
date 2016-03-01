@@ -5,7 +5,7 @@ void GifTestImpl(const char *filename)
 {
     const int Width = 320;
     const int Height = 240;
-    const int frame_count = 15;
+    const int frame_count = 10;
 
     fcGifConfig conf;
     conf.width = Width;
@@ -30,12 +30,12 @@ void GifTest()
 {
     printf("GifTest begin\n");
 
-    GifTestImpl<RGBu8>("RGB.gif");
-    GifTestImpl<RGBf16>("hRGB.gif");
-    GifTestImpl<RGBf32>("fRGB.gif");
-    GifTestImpl<RGBAu8>("RGBA.gif");
-    GifTestImpl<RGBAf16>("hRGBA.gif");
-    GifTestImpl<RGBAf32>("fRGBA.gif");
+    GifTestImpl<RGBu8>("RGBu8.gif");
+    GifTestImpl<RGBf16>("RGBf16.gif");
+    GifTestImpl<RGBf32>("RGBf32.gif");
+    GifTestImpl<RGBAu8>("RGBAu8.gif");
+    GifTestImpl<RGBAf16>("RGBAf16.gif");
+    GifTestImpl<RGBAf32>("RGBAf32.gif");
 
     printf("GifTest end\n");
 }
