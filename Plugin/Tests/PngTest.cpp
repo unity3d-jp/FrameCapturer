@@ -18,12 +18,12 @@ void PngTest()
     fcPngConfig conf;
     fcIPngContext *ctx = fcPngCreateContext(&conf);
 
-    PngTestImpl<RGBu8>(ctx, "RGB.png");
-    PngTestImpl<RGBf16>(ctx, "hRGB.png");
-    PngTestImpl<RGBf32>(ctx, "fRGB.png");
-    PngTestImpl<RGBAu8>(ctx, "RGBA.png");
-    PngTestImpl<RGBAf16>(ctx, "hRGBA.png");
-    PngTestImpl<RGBAf32>(ctx, "fRGBA.png");
+    PngTestImpl<RGBu8>(ctx, "RGBu8.png");
+    PngTestImpl<RGBf16>(ctx, "RGBf16.png");
+    PngTestImpl<RGBf32>(ctx, "RGBf32.png");
+    PngTestImpl<RGBAu8>(ctx, "RGBAu8.png");
+    PngTestImpl<RGBAf16>(ctx, "RGBAf16.png");
+    PngTestImpl<RGBAf32>(ctx, "RGBAf32.png");
 
     fcPngDestroyContext(ctx);
 
