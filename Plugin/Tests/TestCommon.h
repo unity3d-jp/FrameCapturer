@@ -30,7 +30,7 @@ template<class T> struct TRG {
     T r, g;
 
     TRG() : r(), g() {}
-    TRG(T _r, T _g, T _b) : r(_r), g(_g) {}
+    TRG(T _r, T _g) : r(_r), g(_g) {}
 };
 template<class T> struct TRGB {
     T r, g, b;
@@ -70,7 +70,7 @@ template<class T> struct GetPixelFormat;
 def(Ru8, fcPixelFormat_Ru8)
 def(RGu8, fcPixelFormat_RGu8)
 def(RGBu8, fcPixelFormat_RGBu8)
-def(RGBAu8, fcPixelFormat_RGBu8)
+def(RGBAu8, fcPixelFormat_RGBAu8)
 def(Ri16, fcPixelFormat_Ri16)
 def(RGi16, fcPixelFormat_RGi16)
 def(RGBi16, fcPixelFormat_RGBi16)

@@ -16,7 +16,8 @@ int main(int argc, char *argv[])
     bool convert = false;
 
     if (argc <= 1) {
-        png = exr = gif = mp4 = true;
+        png = exr = gif = mp4 = convert = true;
+        //convert = true;
     }
     else {
         for (int i = 1; i < argc; ++i) {
