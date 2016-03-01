@@ -200,24 +200,24 @@ bool fcExrContext::addLayerPixels(const void *pixels, fcPixelFormat fmt, int cha
 
     {
         Imf::PixelType pixel_type = Imf::HALF;
-        int channels = 0;
+        int channels = fmt & fcPixelFormat_ChannelMask;
         int tsize = 0;
-        switch (fmt)
+        switch (fmt & fcPixelFormat_TypeMask)
         {
-        case fcPixelFormat_RGBAf16:  pixel_type = Imf::HALF; channels = 4; tsize = 2; break;
-        case fcPixelFormat_RGBf16:   pixel_type = Imf::HALF; channels = 3; tsize = 2; break;
-        case fcPixelFormat_RGf16:    pixel_type = Imf::HALF; channels = 2; tsize = 2; break;
-        case fcPixelFormat_Rf16:     pixel_type = Imf::HALF; channels = 1; tsize = 2; break;
-        case fcPixelFormat_RGBAf32: pixel_type = Imf::FLOAT; channels = 4; tsize = 4; break;
-        case fcPixelFormat_RGBf32:  pixel_type = Imf::FLOAT; channels = 3; tsize = 4; break;
-        case fcPixelFormat_RGf32:   pixel_type = Imf::FLOAT; channels = 2; tsize = 4; break;
-        case fcPixelFormat_Rf32:    pixel_type = Imf::FLOAT; channels = 1; tsize = 4; break;
-        case fcPixelFormat_RGBAi32:   pixel_type = Imf::UINT; channels = 4; tsize = 4; break;
-        case fcPixelFormat_RGBi32:    pixel_type = Imf::UINT; channels = 3; tsize = 4; break;
-        case fcPixelFormat_RGi32:     pixel_type = Imf::UINT; channels = 2; tsize = 4; break;
-        case fcPixelFormat_Ri32:      pixel_type = Imf::UINT; channels = 1; tsize = 4; break;
+        case fcPixelFormat_Type_f16:
+            pixel_type = Imf::HALF;
+            tsize = 2;
+            break;
+        case fcPixelFormat_Type_f32:
+            pixel_type = Imf::FLOAT;
+            tsize = 4;
+            break;
+        case fcPixelFormat_Type_i32:
+            pixel_type = Imf::UINT;
+            tsize = 4;
+            break;
         default:
-            m_exr->raw_frames.pop_back();
+            fcDebugLog("fcExrContext::addLayerPixels(): this pixel format is not supported. exr only supports f16, f32 and i32");
             return false;
         }
         int psize = tsize * channels;
@@ -246,10 +246,15 @@ bool fcExrContext::endFrame()
 
 void fcExrContext::endFrameTask(fcExrFrameData *exr)
 {
-    Imf::OutputFile fout(exr->path.c_str(), exr->header);
-    fout.setFrameBuffer(exr->frame_buffer);
-    fout.writePixels(exr->height);
-    delete exr;
+    try {
+        Imf::OutputFile fout(exr->path.c_str(), exr->header);
+        fout.setFrameBuffer(exr->frame_buffer);
+        fout.writePixels(exr->height);
+        delete exr;
+    }
+    catch (std::string &e) {
+        fcDebugLog(e.c_str());
+    }
 }
 
 
