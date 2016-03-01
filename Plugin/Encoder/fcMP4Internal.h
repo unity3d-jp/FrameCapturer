@@ -17,6 +17,7 @@ struct fcI420Image
 struct fcVideoFrame
 {
     fcTime timestamp;
+    Buffer raw;
     Buffer rgba;
     fcI420Image i420;
 

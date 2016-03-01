@@ -189,11 +189,6 @@ namespace UTJ
         // MP4 Exporter
         // -------------------------------------------------------------
 
-        public enum fcColorSpace
-        {
-            RGBA,
-            I420
-        }
         public struct fcMP4Config
         {
             [MarshalAs(UnmanagedType.U1)] public bool video;
@@ -240,13 +235,13 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern fcMP4Context     fcMP4CreateContext(ref fcMP4Config conf);
         [DllImport ("FrameCapturer")] public static extern void             fcMP4DestroyContext(fcMP4Context ctx);
         [DllImport ("FrameCapturer")] public static extern void             fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);
-        [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddVideoFrameTexture(fcMP4Context ctx, IntPtr tex, double time = -1.0);
-        [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddVideoFramePixels(fcMP4Context ctx, IntPtr pixels, fcColorSpace cs, double time = -1.0);
+        [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddVideoFrameTexture(fcMP4Context ctx, IntPtr tex, RenderTextureFormat fmt, double time = -1.0);
+        [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddVideoFramePixels(fcMP4Context ctx, IntPtr pixels, fcPixelFormat fmt, double time = -1.0);
         [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddAudioFrame(fcMP4Context ctx, float[] samples, int num_samples, double time = -1.0);
 
         public static bool fcMP4AddVideoFrameTexture(fcMP4Context ctx, RenderTexture tex, double time = -1.0)
         {
-            return fcMP4AddVideoFrameTexture(ctx, tex.GetNativeTexturePtr(), time);
+            return fcMP4AddVideoFrameTexture(ctx, tex.GetNativeTexturePtr(), tex.format, time);
         }
     }
 

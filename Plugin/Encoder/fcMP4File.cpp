@@ -22,8 +22,8 @@ public:
     void release() override;
 
     void addOutputStream(fcStream *s) override;
-    bool addVideoFrameTexture(void *tex, fcTime timestamp) override;
-    bool addVideoFramePixels(const void *pixels, fcColorSpace c, fcTime timestamps) override;
+    bool addVideoFrameTexture(void *tex, fcTextureFormat fmt, fcTime timestamp) override;
+    bool addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamps) override;
     bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp) override;
 
 private:
@@ -359,7 +359,7 @@ void fcMP4Context::encodeVideoFrame(VideoFrame& vf, bool rgba2i420)
 }
 
 
-bool fcMP4Context::addVideoFrameTexture(void *tex, fcTime timestamp)
+bool fcMP4Context::addVideoFrameTexture(void *tex, fcTextureFormat fmt, fcTime timestamp)
 {
     if (!m_h264_encoder) { return false; }
 
@@ -369,10 +369,22 @@ bool fcMP4Context::addVideoFrameTexture(void *tex, fcTime timestamp)
     raw.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeSec();
 
     // フレームバッファの内容取得
-    if (!m_dev->readTexture(&raw.rgba[0], raw.rgba.size(), tex, m_conf.video_width, m_conf.video_height, fcTextureFormat_ARGB32))
-    {
-        returnTempraryVideoFrame(vf);
-        return false;
+    if (fmt == fcTextureFormat_ARGB32) {
+        if (!m_dev->readTexture(&raw.rgba[0], raw.rgba.size(), tex, m_conf.video_width, m_conf.video_height, fmt))
+        {
+            returnTempraryVideoFrame(vf);
+            return false;
+        }
+    }
+    else {
+        size_t psize = fcGetPixelSize(fmt);
+        raw.raw.resize(m_conf.video_width * m_conf.video_height * psize);
+        if (!m_dev->readTexture(&raw.raw[0], raw.raw.size(), tex, m_conf.video_width, m_conf.video_height, fmt))
+        {
+            returnTempraryVideoFrame(vf);
+            return false;
+        }
+        fcConvert(raw.rgba.ptr(), fcPixelFormat_RGBAu8, &raw.raw[0], fcGetPixelFormat(fmt), m_conf.video_width * m_conf.video_height);
     }
 
     // h264 データを生成
@@ -386,7 +398,7 @@ bool fcMP4Context::addVideoFrameTexture(void *tex, fcTime timestamp)
     return true;
 }
 
-bool fcMP4Context::addVideoFramePixels(const void *pixels, fcColorSpace cs, fcTime timestamp)
+bool fcMP4Context::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp)
 {
     if (!m_h264_encoder) { return false; }
 
@@ -396,10 +408,7 @@ bool fcMP4Context::addVideoFramePixels(const void *pixels, fcColorSpace cs, fcTi
     raw.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeSec();
 
     bool rgba2i420 = true;
-    if (cs == fcColorSpace_RGBA) {
-        memcpy(raw.rgba.ptr(), pixels, raw.rgba.size());
-    }
-    else if (cs == fcColorSpace_I420) {
+    if (fmt == fcPixelFormat_I420) {
         rgba2i420 = false;
 
         int frame_size = m_conf.video_width * m_conf.video_height;
@@ -409,6 +418,12 @@ bool fcMP4Context::addVideoFramePixels(const void *pixels, fcColorSpace cs, fcTi
         memcpy(raw.i420.y, src_y, frame_size);
         memcpy(raw.i420.u, src_u, frame_size >> 2);
         memcpy(raw.i420.v, src_v, frame_size >> 2);
+    }
+    else if (fmt == fcPixelFormat_RGBAu8) {
+        memcpy(raw.rgba.ptr(), pixels, raw.rgba.size());
+    }
+    else {
+        fcConvert(raw.rgba.ptr(), fcPixelFormat_RGBAu8, pixels, fmt, m_conf.video_width * m_conf.video_height);
     }
 
     // h264 データを生成

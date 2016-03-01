@@ -57,7 +57,7 @@ void MP4Test()
             fcTime t = 0;
             for (int i = 0; i < DurationInSeconds * FrameRate; ++i) {
                 CreateVideoData(&video_frame[0], Width, Height, i);
-                fcMP4AddVideoFramePixels(ctx, &video_frame[0], fcColorSpace_RGBA, t);
+                fcMP4AddVideoFramePixels(ctx, &video_frame[0], fcPixelFormat_RGBAu8, t);
                 t += 1.0 / FrameRate;
             }
         });

@@ -25,12 +25,6 @@ class fcIGifContext;
 class fcIMP4Context;
 typedef double fcTime;
 
-enum fcColorSpace
-{
-    fcColorSpace_RGBA,
-    fcColorSpace_I420,
-};
-
 enum fcPixelFormat
 {
     fcPixelFormat_Unknown = 0,
@@ -63,6 +57,7 @@ enum fcPixelFormat
     fcPixelFormat_RGi32     = fcPixelFormat_Type_i32 | 2,
     fcPixelFormat_RGBi32    = fcPixelFormat_Type_i32 | 3,
     fcPixelFormat_RGBAi32   = fcPixelFormat_Type_i32 | 4,
+    fcPixelFormat_I420      = 0x10 << 4,
 };
 
 enum fcTextureFormat
@@ -222,9 +217,9 @@ fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
 fcCLinkage fcExport void            fcMP4DestroyContext(fcIMP4Context *ctx);
 fcCLinkage fcExport void            fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcTime timestamp = -1);
+fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcTextureFormat fmt, fcTime timestamp = -1);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcColorSpace cs, fcTime timestamp = -1.0);
+fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
 fcCLinkage fcExport bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
 
