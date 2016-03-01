@@ -204,18 +204,18 @@ bool fcExrContext::addLayerPixels(const void *pixels, fcPixelFormat fmt, int cha
         int tsize = 0;
         switch (fmt)
         {
-        case fcPixelFormat_RGBAHalf:  pixel_type = Imf::HALF; channels = 4; tsize = 2; break;
-        case fcPixelFormat_RGBHalf:   pixel_type = Imf::HALF; channels = 3; tsize = 2; break;
-        case fcPixelFormat_RGHalf:    pixel_type = Imf::HALF; channels = 2; tsize = 2; break;
-        case fcPixelFormat_RHalf:     pixel_type = Imf::HALF; channels = 1; tsize = 2; break;
-        case fcPixelFormat_RGBAFloat: pixel_type = Imf::FLOAT; channels = 4; tsize = 4; break;
-        case fcPixelFormat_RGBFloat:  pixel_type = Imf::FLOAT; channels = 3; tsize = 4; break;
-        case fcPixelFormat_RGFloat:   pixel_type = Imf::FLOAT; channels = 2; tsize = 4; break;
-        case fcPixelFormat_RFloat:    pixel_type = Imf::FLOAT; channels = 1; tsize = 4; break;
-        case fcPixelFormat_RGBAInt:   pixel_type = Imf::UINT; channels = 4; tsize = 4; break;
-        case fcPixelFormat_RGBInt:    pixel_type = Imf::UINT; channels = 3; tsize = 4; break;
-        case fcPixelFormat_RGInt:     pixel_type = Imf::UINT; channels = 2; tsize = 4; break;
-        case fcPixelFormat_RInt:      pixel_type = Imf::UINT; channels = 1; tsize = 4; break;
+        case fcPixelFormat_RGBAf16:  pixel_type = Imf::HALF; channels = 4; tsize = 2; break;
+        case fcPixelFormat_RGBf16:   pixel_type = Imf::HALF; channels = 3; tsize = 2; break;
+        case fcPixelFormat_RGf16:    pixel_type = Imf::HALF; channels = 2; tsize = 2; break;
+        case fcPixelFormat_Rf16:     pixel_type = Imf::HALF; channels = 1; tsize = 2; break;
+        case fcPixelFormat_RGBAf32: pixel_type = Imf::FLOAT; channels = 4; tsize = 4; break;
+        case fcPixelFormat_RGBf32:  pixel_type = Imf::FLOAT; channels = 3; tsize = 4; break;
+        case fcPixelFormat_RGf32:   pixel_type = Imf::FLOAT; channels = 2; tsize = 4; break;
+        case fcPixelFormat_Rf32:    pixel_type = Imf::FLOAT; channels = 1; tsize = 4; break;
+        case fcPixelFormat_RGBAi32:   pixel_type = Imf::UINT; channels = 4; tsize = 4; break;
+        case fcPixelFormat_RGBi32:    pixel_type = Imf::UINT; channels = 3; tsize = 4; break;
+        case fcPixelFormat_RGi32:     pixel_type = Imf::UINT; channels = 2; tsize = 4; break;
+        case fcPixelFormat_Ri32:      pixel_type = Imf::UINT; channels = 1; tsize = 4; break;
         default:
             m_exr->raw_frames.pop_back();
             return false;

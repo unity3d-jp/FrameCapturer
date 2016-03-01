@@ -17,6 +17,7 @@ struct fcPngTaskData
 {
     std::string path;
     std::vector<char> pixels;
+    std::vector<char> buf; // buffer for conversion
     int width;
     int height;
     fcPixelFormat format;
@@ -124,46 +125,108 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
     png_bytep pixels = (png_bytep)&data.pixels[0];
     fcPixelFormat fmt = data.format;
 
+    int npixels = data.width * data.height;
     int bit_depth = 0;
     int num_channels = 0;
     int color_type = 0;
 
-    if (fmt == fcPixelFormat_RGBA8 || fmt == fcPixelFormat_RGBAHalf || fmt == fcPixelFormat_RGBAFloat) {
-        color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+    switch (fmt) {
+        // u8
+    case fcPixelFormat_RGBAu8:
+        bit_depth = 8;
         num_channels = 4;
-    }
-    else if (fmt == fcPixelFormat_RGB8 || fmt == fcPixelFormat_RGBHalf || fmt == fcPixelFormat_RGBFloat) {
-        color_type = PNG_COLOR_TYPE_RGB;
+        color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+        break;
+    case fcPixelFormat_RGBu8:
+        bit_depth = 8;
         num_channels = 3;
-    }
-    else {
+        color_type = PNG_COLOR_TYPE_RGB;
+        break;
+    case fcPixelFormat_RGu8:
+        data.buf.resize(npixels * 3);
+        fcConvert(&data.buf[0], fcPixelFormat_RGBu8, &data.pixels[0], fmt, npixels);
+        pixels = (png_bytep)&data.buf[0];
+        bit_depth = 8;
+        num_channels = 3;
+        color_type = PNG_COLOR_TYPE_RGB;
+        break;
+    case fcPixelFormat_Ru8:
+        bit_depth = 8;
+        num_channels = 1;
+        color_type = PNG_COLOR_TYPE_GRAY;
+        break;
+
+        // f16 -> i16
+    case fcPixelFormat_RGBAf16:
+        data.buf.resize(npixels * 8);
+        fcConvert(&data.buf[0], fcPixelFormat_RGBAi16, &data.pixels[0], fmt, npixels);
+        pixels = (png_bytep)&data.buf[0];
+        bit_depth = 16;
+        num_channels = 4;
+        color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+        break;
+    case fcPixelFormat_RGBf16:
+        data.buf.resize(npixels * 6);
+        fcConvert(&data.buf[0], fcPixelFormat_RGBi16, &data.pixels[0], fmt, npixels);
+        pixels = (png_bytep)&data.buf[0];
+        bit_depth = 16;
+        num_channels = 3;
+        color_type = PNG_COLOR_TYPE_RGB;
+        break;
+    case fcPixelFormat_RGf16:
+        data.buf.resize(npixels * 6);
+        fcConvert(&data.buf[0], fcPixelFormat_RGBi16, &data.pixels[0], fmt, npixels);
+        pixels = (png_bytep)&data.buf[0];
+        bit_depth = 16;
+        num_channels = 3;
+        color_type = PNG_COLOR_TYPE_RGB;
+        break;
+    case fcPixelFormat_Rf16:
+        data.buf.resize(npixels * 2);
+        fcConvert(&data.buf[0], fcPixelFormat_Ri16, &data.pixels[0], fmt, npixels);
+        pixels = (png_bytep)&data.buf[0];
+        bit_depth = 16;
+        num_channels = 1;
+        color_type = PNG_COLOR_TYPE_GRAY;
+        break;
+
+        // f32 -> i16 (png doesn't support 32bit color :( )
+    case fcPixelFormat_RGBAf32:
+        data.buf.resize(npixels * 8);
+        fcConvert(&data.buf[0], fcPixelFormat_RGBAi16, &data.pixels[0], fmt, npixels);
+        pixels = (png_bytep)&data.buf[0];
+        bit_depth = 16;
+        num_channels = 4;
+        color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+        break;
+    case fcPixelFormat_RGBf32:
+        data.buf.resize(npixels * 6);
+        fcConvert(&data.buf[0], fcPixelFormat_RGBi16, &data.pixels[0], fmt, npixels);
+        pixels = (png_bytep)&data.buf[0];
+        bit_depth = 16;
+        num_channels = 3;
+        color_type = PNG_COLOR_TYPE_RGB;
+        break;
+    case fcPixelFormat_RGf32:
+        data.buf.resize(npixels * 6);
+        fcConvert(&data.buf[0], fcPixelFormat_RGBi16, &data.pixels[0], fmt, npixels);
+        pixels = (png_bytep)&data.buf[0];
+        bit_depth = 16;
+        num_channels = 3;
+        color_type = PNG_COLOR_TYPE_RGB;
+        break;
+    case fcPixelFormat_Rf32:
+        data.buf.resize(npixels * 2);
+        fcConvert(&data.buf[0], fcPixelFormat_Ri16, &data.pixels[0], fmt, npixels);
+        pixels = (png_bytep)&data.buf[0];
+        bit_depth = 16;
+        num_channels = 1;
+        color_type = PNG_COLOR_TYPE_GRAY;
+        break;
+
+    default:
         fcDebugLog("fcPngContext::exportPixelsBody(): unsupported pixel format");
         return false;
-    }
-
-    if (fmt == fcPixelFormat_RGB8 || fmt == fcPixelFormat_RGBA8) {
-        bit_depth = 8;
-    }
-    else if (fmt == fcPixelFormat_RGBAHalf || fmt == fcPixelFormat_RGBHalf) {
-        bit_depth = 16;
-
-        const half *fpixels = (const half*)pixels;
-        int16_t *ipixels = (int16_t*)pixels;
-        int n = (data.width * data.height * fcGetPixelSize(fmt)) / sizeof(half);
-        for (int i = 0; i < n; ++i) {
-            ipixels[i] = int16_t(fpixels[i] * 255.0f);
-        }
-    }
-    else if (fmt == fcPixelFormat_RGBAFloat || fmt == fcPixelFormat_RGBFloat) {
-        // png doesn't support 32bit color. convert to 16bit color.
-        bit_depth = 16;
-
-        const float *fpixels = (const float*)pixels;
-        int16_t *ipixels = (int16_t*)pixels;
-        int n = (data.width * data.height * fcGetPixelSize(fmt)) / sizeof(float);
-        for (int i = 0; i < n; ++i) {
-            ipixels[i] = int16_t(fpixels[i] * 255.0f);
-        }
     }
 
     png_structp png_ptr = ::png_create_write_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);

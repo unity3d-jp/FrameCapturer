@@ -134,7 +134,7 @@ void fcGifContext::returnTempraryVideoFrame(fcGifTaskData& v)
 void fcGifContext::addGifFrame(fcGifTaskData& data)
 {
     unsigned char *src = nullptr;
-    if (data.raw_pixel_format == fcPixelFormat_RGBA8) {
+    if (data.raw_pixel_format == fcPixelFormat_RGBAu8) {
         src = (unsigned char*)&data.raw_pixels[0];
     }
     else {
@@ -144,7 +144,7 @@ void fcGifContext::addGifFrame(fcGifTaskData& data)
         size_t n = data.raw_pixels.size() / psize;
 
         switch (data.raw_pixel_format) {
-        case fcPixelFormat_RGB8:
+        case fcPixelFormat_RGBu8:
             for (size_t i = 0; i < n; ++i) {
                 data.rgba8_pixels[i * 4 + 0] = data.raw_pixels[i * 3 + 0];
                 data.rgba8_pixels[i * 4 + 1] = data.raw_pixels[i * 3 + 1];
@@ -152,7 +152,7 @@ void fcGifContext::addGifFrame(fcGifTaskData& data)
                 data.rgba8_pixels[i * 4 + 3] = 255;
             }
             break;
-        case fcPixelFormat_RGBFloat:
+        case fcPixelFormat_RGBf32:
             for (size_t i = 0; i < n; ++i) {
                 data.rgba8_pixels[i * 4 + 0] = uint8_t((float&)data.raw_pixels[i * 12 + 0] * 255.0f);
                 data.rgba8_pixels[i * 4 + 1] = uint8_t((float&)data.raw_pixels[i * 12 + 4] * 255.0f);
@@ -160,7 +160,7 @@ void fcGifContext::addGifFrame(fcGifTaskData& data)
                 data.rgba8_pixels[i * 4 + 3] = 255;
             }
             break;
-        case fcPixelFormat_RGBAFloat:
+        case fcPixelFormat_RGBAf32:
             for (size_t i = 0; i < n; ++i) {
                 data.rgba8_pixels[i * 4 + 0] = uint8_t((float&)data.raw_pixels[i * 16 + 0] * 255.0f);
                 data.rgba8_pixels[i * 4 + 1] = uint8_t((float&)data.raw_pixels[i * 16 + 4] * 255.0f);
@@ -169,7 +169,7 @@ void fcGifContext::addGifFrame(fcGifTaskData& data)
             }
             break;
 #ifdef fcSupportHalfPixelFormat
-        case fcPixelFormat_RGBHalf:
+        case fcPixelFormat_RGBf16:
             for (size_t i = 0; i < n; ++i) {
                 data.rgba8_pixels[i * 4 + 0] = uint8_t((half&)data.raw_pixels[i * 6 + 0] * 255.0f);
                 data.rgba8_pixels[i * 4 + 1] = uint8_t((half&)data.raw_pixels[i * 6 + 2] * 255.0f);
@@ -177,7 +177,7 @@ void fcGifContext::addGifFrame(fcGifTaskData& data)
                 data.rgba8_pixels[i * 4 + 3] = 255;
             }
             break;
-        case fcPixelFormat_RGBAHalf:
+        case fcPixelFormat_RGBAf16:
             for (size_t i = 0; i < n; ++i) {
                 data.rgba8_pixels[i * 4 + 0] = uint8_t((half&)data.raw_pixels[i * 8 + 0] * 255.0f);
                 data.rgba8_pixels[i * 4 + 1] = uint8_t((half&)data.raw_pixels[i * 8 + 2] * 255.0f);

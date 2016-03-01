@@ -7,19 +7,19 @@
 template<class T> T White();
 template<class T> T Black();
 
-template<> RGB     White() { return RGB(255, 255, 255); }
-template<> hRGB    White() { return hRGB(1.0f, 1.0f, 1.0f); }
-template<> fRGB    White() { return fRGB(1.0f, 1.0f, 1.0f); }
-template<> RGBA    White() { return RGBA(255, 255, 255, 255); }
-template<> hRGBA   White() { return hRGBA(1.0f, 1.0f, 1.0f, 1.0f); }
-template<> fRGBA   White() { return fRGBA(1.0f, 1.0f, 1.0f, 1.0f); }
+template<> RGBu8     White() { return RGBu8(255, 255, 255); }
+template<> RGBf16    White() { return RGBf16(1.0f, 1.0f, 1.0f); }
+template<> RGBf32    White() { return RGBf32(1.0f, 1.0f, 1.0f); }
+template<> RGBAu8    White() { return RGBAu8(255, 255, 255, 255); }
+template<> RGBAf16   White() { return RGBAf16(1.0f, 1.0f, 1.0f, 1.0f); }
+template<> RGBAf32   White() { return RGBAf32(1.0f, 1.0f, 1.0f, 1.0f); }
 
-template<> RGB     Black() { return RGB(0, 0, 0); }
-template<> hRGB    Black() { return hRGB(0.0f, 0.0f, 0.0f); }
-template<> fRGB    Black() { return fRGB(0.0f, 0.0f, 0.0f); }
-template<> RGBA    Black() { return RGBA(0, 0, 0, 255); }
-template<> hRGBA   Black() { return hRGBA(0.0f, 0.0f, 0.0f, 1.0f); }
-template<> fRGBA   Black() { return fRGBA(0.0f, 0.0f, 0.0f, 1.0f); }
+template<> RGBu8     Black() { return RGBu8(0, 0, 0); }
+template<> RGBf16    Black() { return RGBf16(0.0f, 0.0f, 0.0f); }
+template<> RGBf32    Black() { return RGBf32(0.0f, 0.0f, 0.0f); }
+template<> RGBAu8    Black() { return RGBAu8(0, 0, 0, 255); }
+template<> RGBAf16   Black() { return RGBAf16(0.0f, 0.0f, 0.0f, 1.0f); }
+template<> RGBAf32   Black() { return RGBAf32(0.0f, 0.0f, 0.0f, 1.0f); }
 
 
 template<class T>
@@ -42,12 +42,12 @@ void CreateVideoData(T *pixels, int width, int height, int frame)
     }
 }
 
-template void CreateVideoData<  RGB>(  RGB *pixels, int width, int height, int frame);
-template void CreateVideoData< hRGB>( hRGB *pixels, int width, int height, int frame);
-template void CreateVideoData< fRGB>( fRGB *pixels, int width, int height, int frame);
-template void CreateVideoData< RGBA>( RGBA *pixels, int width, int height, int frame);
-template void CreateVideoData<hRGBA>(hRGBA *pixels, int width, int height, int frame);
-template void CreateVideoData<fRGBA>(fRGBA *pixels, int width, int height, int frame);
+template void CreateVideoData<  RGBu8>(  RGBu8 *pixels, int width, int height, int frame);
+template void CreateVideoData< RGBf16>( RGBf16 *pixels, int width, int height, int frame);
+template void CreateVideoData< RGBf32>( RGBf32 *pixels, int width, int height, int frame);
+template void CreateVideoData< RGBAu8>( RGBAu8 *pixels, int width, int height, int frame);
+template void CreateVideoData<RGBAf16>(RGBAf16 *pixels, int width, int height, int frame);
+template void CreateVideoData<RGBAf32>(RGBAf32 *pixels, int width, int height, int frame);
 
 
 void CreateAudioData(float *samples, int num_samples, int frame)

@@ -19,11 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Foundation.vcxproj">
+      <Project>{df113358-bdd3-418f-a350-43d63f249b45}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\FrameCapturer.vcxproj">
       <Project>{08361722-5520-47ac-a0c2-31e8a062b73f}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ConvertTest.cpp" />
     <ClCompile Include="ExrTest.cpp" />
     <ClCompile Include="GifTest.cpp" />
     <ClCompile Include="MP4Test.cpp" />
