@@ -18,8 +18,8 @@ typedef jo_gif_frame_t fcGifFrame;
 struct fcGifTaskData
 {
     fcPixelFormat raw_pixel_format;
-    std::vector<uint8_t> raw_pixels;
-    std::vector<uint8_t> rgba8_pixels;
+    Buffer raw_pixels;
+    Buffer rgba8_pixels;
     fcGifFrame *gif_frame;
     int frame;
     bool local_palette;
@@ -193,7 +193,7 @@ bool fcGifContext::addFramePixels(const void *pixels, fcPixelFormat fmt, bool ke
     data.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeSec();
     data.local_palette = data.frame == 0 || keyframe;
     data.raw_pixel_format = fmt;
-    data.raw_pixels.assign((char*)pixels, (char*)pixels + (m_conf.width * m_conf.height * fcGetPixelSize(fmt)));
+    data.raw_pixels.assign((char*)pixels, m_conf.width * m_conf.height * fcGetPixelSize(fmt));
 
     kickTask(data);
     return true;

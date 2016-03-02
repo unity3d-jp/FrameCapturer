@@ -16,8 +16,8 @@
 struct fcPngTaskData
 {
     std::string path;
-    std::vector<char> pixels;
-    std::vector<char> buf; // buffer for conversion
+    Buffer pixels;
+    Buffer buf; // buffer for conversion
     int width;
     int height;
     fcPixelFormat format;
@@ -98,7 +98,7 @@ bool fcPngContext::exportPixels(const char *path_, const void *pixels_, int widt
     data->width = width;
     data->height = height;
     data->format = fmt;
-    data->pixels.assign((char*)pixels_, (char*)pixels_ + (width * height * fcGetPixelSize(fmt)));
+    data->pixels.assign((char*)pixels_, width * height * fcGetPixelSize(fmt));
 
     // kick export task
     ++m_active_task_count;

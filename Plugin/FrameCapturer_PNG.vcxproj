@@ -28,7 +28,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Encoder\fcPngFile.cpp" />
-    <ClCompile Include="fcThreadPool.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -40,8 +39,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Encoder\fcPngFile.h" />
-    <ClInclude Include="fcFoundation.h" />
-    <ClInclude Include="fcThreadPool.h" />
     <ClInclude Include="FrameCapturer.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>

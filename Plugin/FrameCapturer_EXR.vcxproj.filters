@@ -5,7 +5,6 @@
     <ClCompile Include="Encoder\fcExrFile.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="fcThreadPool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FrameCapturer.h" />
@@ -14,7 +13,6 @@
     <ClInclude Include="Encoder\fcExrFile.h">
       <Filter>Encoder</Filter>
     </ClInclude>
-    <ClInclude Include="fcThreadPool.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Encoder">

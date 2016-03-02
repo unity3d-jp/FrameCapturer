@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="fcThreadPool.cpp" />
     <ClCompile Include="Encoder\fcPngFile.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
@@ -10,8 +9,6 @@
   <ItemGroup>
     <ClInclude Include="FrameCapturer.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="fcFoundation.h" />
-    <ClInclude Include="fcThreadPool.h" />
     <ClInclude Include="Encoder\fcPngFile.h">
       <Filter>Encoder</Filter>
     </ClInclude>

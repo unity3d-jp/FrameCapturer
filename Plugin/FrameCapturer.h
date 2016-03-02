@@ -99,7 +99,7 @@ fcCLinkage fcExport uint64_t        fcStreamGetWrittenSize(fcStream *s);
 struct fcPngConfig
 {
     int max_active_tasks;
-    fcPngConfig() : max_active_tasks(4) {}
+    fcPngConfig() : max_active_tasks(8) {}
 };
 fcCLinkage fcExport fcIPngContext*  fcPngCreateContext(const fcPngConfig *conf = nullptr);
 fcCLinkage fcExport void            fcPngDestroyContext(fcIPngContext *ctx);
@@ -114,7 +114,7 @@ fcCLinkage fcExport bool            fcPngExportPixels(fcIPngContext *ctx, const 
 struct fcExrConfig
 {
     int max_active_tasks;
-    fcExrConfig() : max_active_tasks(4) {}
+    fcExrConfig() : max_active_tasks(8) {}
 };
 fcCLinkage fcExport fcIExrContext*  fcExrCreateContext(const fcExrConfig *conf = nullptr);
 fcCLinkage fcExport void            fcExrDestroyContext(fcIExrContext *ctx);

@@ -14,6 +14,9 @@
     <ClCompile Include="Foundation\PixelFormat.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
+    <ClCompile Include="Foundation\fcThreadPool.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -27,6 +30,9 @@
       <Filter>Foundation</Filter>
     </ClInclude>
     <ClInclude Include="Foundation\PixelFormat.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="Foundation\fcThreadPool.h">
       <Filter>Foundation</Filter>
     </ClInclude>
   </ItemGroup>
