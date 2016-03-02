@@ -6,18 +6,21 @@ class fcIMP4Context
 public:
     virtual void release() = 0;
 
+    virtual const char* getAudioEncoderInfo() = 0;
+    virtual const char* getVideoEncoderInfo() = 0;
+
     virtual void addOutputStream(fcStream *s) = 0;
 
     // assume texture format is RGBA8.
     // timestamp=-1 is treated as current time.
-    virtual bool    addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp = 0) = 0;
+    virtual bool addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp = 0) = 0;
 
     // assume pixel format is RGBA8 or I420 (color_space indicates)
     // timestamp=-1 is treated as current time.
-    virtual bool    addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1) = 0;
+    virtual bool addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1) = 0;
 
     // timestamp=-1 is treated as current time.
-    virtual bool    addAudioFrame(const float *samples, int num_samples, fcTime timestamp = -1) = 0;
+    virtual bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp = -1) = 0;
 
 protected:
     virtual ~fcIMP4Context() {}

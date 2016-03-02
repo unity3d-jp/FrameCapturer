@@ -13,8 +13,8 @@ class fcFAACEncoder : public fcIAACEncoder
 public:
     fcFAACEncoder(const fcAACEncoderConfig& conf);
     ~fcFAACEncoder() override;
-    const char* getEncoderName() override;
-    const Buffer& getEncoderInfo() override;
+    const char* getEncoderInfo() override;
+    const Buffer& getDecoderSpecificInfo() override;
     bool encode(fcAACFrame& dst, const float *samples, size_t num_samples) override;
 
 private:
@@ -92,7 +92,7 @@ fcFAACEncoder::~fcFAACEncoder()
     faacEncClose_i(m_handle);
     m_handle = nullptr;
 }
-const char* fcFAACEncoder::getEncoderName() { return "fcFAACEncoder"; }
+const char* fcFAACEncoder::getEncoderInfo() { return "FAAC"; }
 
 bool fcFAACEncoder::encode(fcAACFrame& dst, const float *samples, size_t num_samples)
 {
@@ -115,7 +115,7 @@ bool fcFAACEncoder::encode(fcAACFrame& dst, const float *samples, size_t num_sam
     return true;
 }
 
-const Buffer& fcFAACEncoder::getEncoderInfo()
+const Buffer& fcFAACEncoder::getDecoderSpecificInfo()
 {
     if (m_aac_header.empty()) {
         unsigned char *buf;
