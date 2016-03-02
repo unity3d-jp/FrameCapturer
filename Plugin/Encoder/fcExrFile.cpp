@@ -171,7 +171,7 @@ bool fcExrContext::addLayerTexture(void *tex, fcPixelFormat fmt, int channel, co
             auto src_fmt = fmt;
             fmt = fcPixelFormat(fcPixelFormat_Type_f16 | channels);
             raw_frame->resize(m_exr->width * m_exr->height * fcGetPixelSize(fmt));
-            fcConvert(&(*buf)[0], fmt, &(*raw_frame)[0], src_fmt, m_exr->width * m_exr->height);
+            fcConvertPixelFormat(&(*buf)[0], fmt, &(*raw_frame)[0], src_fmt, m_exr->width * m_exr->height);
 
             m_src_prev = raw_frame = buf;
         }
@@ -209,7 +209,7 @@ bool fcExrContext::addLayerPixels(const void *pixels, fcPixelFormat fmt, int cha
             auto src_fmt = fmt;
             fmt = fcPixelFormat(fcPixelFormat_Type_f16 | channels);
             raw_frame->resize(m_exr->width * m_exr->height * (2 * channels));
-            fcConvert(&(*raw_frame)[0], fmt, pixels, src_fmt, m_exr->width * m_exr->height);
+            fcConvertPixelFormat(&(*raw_frame)[0], fmt, pixels, src_fmt, m_exr->width * m_exr->height);
         }
         else {
             raw_frame->resize(m_exr->width * m_exr->height * fcGetPixelSize(fmt));

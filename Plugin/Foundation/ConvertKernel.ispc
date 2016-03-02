@@ -53,47 +53,47 @@ export void ScaleFloatArray(uniform float data[], uniform size_t size, uniform f
     }
 }
 
-export void u8_to_f16(uniform f16 dst[], uniform u8 src[], uniform size_t size)
+export void U8ToI16(uniform f16 dst[], uniform u8 src[], uniform size_t size)
 {
-    foreach(i=0 ... size) {
-        dst[i] = to_f16(src[i]);
-    }
+    foreach(i=0 ... size) { dst[i] = to_i16(src[i]); }
 }
-export void u8_to_f32(uniform float dst[], uniform u8 src[], uniform size_t size)
+export void U8ToF16(uniform f16 dst[], uniform u8 src[], uniform size_t size)
 {
-    foreach(i=0 ... size) {
-        dst[i] = to_f32(src[i]);
-    }
+    foreach(i=0 ... size) { dst[i] = to_f16(src[i]); }
 }
-
-export void f16_to_u8(uniform u8 dst[], uniform f16 src[], uniform size_t size)
+export void U8ToF32(uniform float dst[], uniform u8 src[], uniform size_t size)
 {
-    foreach(i=0 ... size) {
-        dst[i] = to_u8(src[i]);
-    }
-}
-export void f16_to_f32(uniform float dst[], uniform f16 src[], uniform size_t size)
-{
-    foreach(i=0 ... size) {
-        dst[i] = to_f32(src[i]);
-    }
+    foreach(i=0 ... size) { dst[i] = to_f32(src[i]); }
 }
 
-export void f32_to_u8(uniform u8 dst[], uniform float src[], uniform size_t size)
+export void F16ToU8(uniform u8 dst[], uniform f16 src[], uniform size_t size)
 {
-    foreach(i=0 ... size) {
-        dst[i] = to_u8(src[i]);
-    }
+    foreach(i=0 ... size) { dst[i] = to_u8(src[i]); }
 }
-export void f32_to_f16(uniform f16 dst[], uniform float src[], uniform size_t size)
+export void F16ToI16(uniform u8 dst[], uniform f16 src[], uniform size_t size)
 {
-    foreach(i=0 ... size) {
-        dst[i] = to_f16(src[i]);
-    }
+    foreach(i=0 ... size) { dst[i] = to_i16(src[i]); }
+}
+export void F16ToF32(uniform float dst[], uniform f16 src[], uniform size_t size)
+{
+    foreach(i=0 ... size) { dst[i] = to_f32(src[i]); }
+}
+
+export void F32ToU8(uniform u8 dst[], uniform float src[], uniform size_t size)
+{
+    foreach(i=0 ... size) { dst[i] = to_u8(src[i]); }
+}
+export void F32ToI16(uniform u8 dst[], uniform float src[], uniform size_t size)
+{
+    foreach(i=0 ... size) { dst[i] = to_i16(src[i]); }
+}
+export void F32ToF16(uniform f16 dst[], uniform float src[], uniform size_t size)
+{
+    foreach(i=0 ... size) { dst[i] = to_f16(src[i]); }
 }
 
 
-#define Convert44(C) for(uniform int i=0; i<size; ++i) { foreach(j=0 ... 4) { dst[i*4 + j] = C(src[i*4 + j]); }}
+#define Convert44(C) foreach(j=0 ... size*4) { dst[j] = C(src[j]); }
 #define Convert43(C) for(uniform int i=0; i<size; ++i) { foreach(j=0 ... 3) { dst[i*3 + j] = C(src[i*4 + j]); }}
 #define Convert42(C) for(uniform int i=0; i<size; ++i) { foreach(j=0 ... 2) { dst[i*2 + j] = C(src[i*4 + j]); }}
 #define Convert41(C) for(uniform int i=0; i<size; ++i) { foreach(j=0 ... 1) { dst[i*1 + j] = C(src[i*4 + j]); }}
@@ -105,7 +105,7 @@ export void f32_to_f16(uniform f16 dst[], uniform float src[], uniform size_t si
         dst[i*4 + 2] = C(src[i*3 + 2]);\
         dst[i*4 + 3] = C(1.0);\
     }
-#define Convert33(C) for(uniform int i=0; i<size; ++i) { foreach(j=0 ... 3) { dst[i*3 + j] = C(src[i*3 + j]); }}
+#define Convert33(C) foreach(j=0 ... size*3) { dst[j] = C(src[j]); }
 #define Convert32(C) for(uniform int i=0; i<size; ++i) { foreach(j=0 ... 2) { dst[i*2 + j] = C(src[i*3 + j]); }}
 #define Convert31(C) for(uniform int i=0; i<size; ++i) { foreach(j=0 ... 1) { dst[i*1 + j] = C(src[i*3 + j]); }}
 
@@ -123,7 +123,7 @@ export void f32_to_f16(uniform f16 dst[], uniform float src[], uniform size_t si
         dst[i*3 + 1] = C(src[i*2 + 1]);\
         dst[i*3 + 2] = C(0.0);\
     }
-#define Convert22(C) for(uniform int i=0; i<size; ++i) { foreach(j=0 ... 2) { dst[i*2 + j] = C(src[i*2 + j]); }}
+#define Convert22(C) foreach(j=0 ... size*2) { dst[j] = C(src[j]); }
 #define Convert21(C) for(uniform int i=0; i<size; ++i) { foreach(j=0 ... 1) { dst[i*1 + j] = C(src[i*2 + j]); }}
 
 
@@ -145,10 +145,7 @@ export void f32_to_f16(uniform f16 dst[], uniform float src[], uniform size_t si
         dst[i*2 + 0] = C(src[i]);\
         dst[i*2 + 1] = C(0.0);\
     }
-#define Convert11(C)\
-    for(uniform int i=0; i<size; ++i) {\
-        dst[i] = C(src[i]);\
-    }
+#define Convert11(C) foreach(i=0 ... size) { dst[i] = C(src[i]); }
 
 
 

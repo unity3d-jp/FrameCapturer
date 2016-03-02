@@ -102,11 +102,4 @@ inline IntType ceildiv(IntType a, IntType b)
     return a / b + (a%b == 0 ? 0 : 1);
 }
 
-
-enum fcPixelFormat;
-int fcGetPixelSize(fcPixelFormat format);
-
-void fcScale(float *data, size_t size, float scale);
-const void* fcConvert(void *dst, fcPixelFormat dstfmt, const void *src, fcPixelFormat srcfmt, size_t size);
-
 #endif // fcMisc_h

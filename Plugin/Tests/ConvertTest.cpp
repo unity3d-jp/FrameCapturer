@@ -1,6 +1,6 @@
 #include "TestCommon.h"
 
-const void* fcConvert(void *dst, fcPixelFormat dstfmt, const void *src, fcPixelFormat srcfmt, size_t size);
+const void* fcConvertPixelFormat(void *dst, fcPixelFormat dstfmt, const void *src, fcPixelFormat srcfmt, size_t size);
 
 const int Width = 320;
 const int Height = 240;
@@ -14,7 +14,7 @@ void ConvertTestImpl(fcIPngContext *ctx, std::vector<Src>& src)
 
     std::vector<Dst> dst;
     dst.resize(Width * Height);
-    auto data = fcConvert(&dst[0], GetPixelFormat<Dst>::value, &src[0], GetPixelFormat<Src>::value, src.size());
+    auto data = fcConvertPixelFormat(&dst[0], GetPixelFormat<Dst>::value, &src[0], GetPixelFormat<Src>::value, src.size());
     fcPngExportPixels(ctx, filename, data, Width, Height, GetPixelFormat<Dst>::value);
 }
 

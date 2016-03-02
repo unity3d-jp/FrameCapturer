@@ -140,7 +140,7 @@ void fcGifContext::addGifFrame(fcGifTaskData& data)
     else {
         // convert pixel format
         size_t npixels = data.raw_pixels.size() / fcGetPixelSize(data.raw_pixel_format);
-        fcConvert(&data.rgba8_pixels[0], fcPixelFormat_RGBAu8, &data.raw_pixels[0], data.raw_pixel_format, npixels);
+        fcConvertPixelFormat(&data.rgba8_pixels[0], fcPixelFormat_RGBAu8, &data.raw_pixels[0], data.raw_pixel_format, npixels);
         src = (unsigned char*)&data.rgba8_pixels[0];
     }
 

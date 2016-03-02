@@ -11,6 +11,9 @@
     <ClCompile Include="Foundation\Misc.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
+    <ClCompile Include="Foundation\PixelFormat.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -21,6 +24,9 @@
       <Filter>Foundation</Filter>
     </ClInclude>
     <ClInclude Include="Foundation\fcFoundation.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="Foundation\PixelFormat.h">
       <Filter>Foundation</Filter>
     </ClInclude>
   </ItemGroup>
