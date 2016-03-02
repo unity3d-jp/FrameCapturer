@@ -384,7 +384,7 @@ bool fcMP4Context::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime tim
             returnTempraryVideoFrame(vf);
             return false;
         }
-        fcConvert(raw.rgba.ptr(), fcPixelFormat_RGBAu8, &raw.raw[0], fmt, m_conf.video_width * m_conf.video_height);
+        fcConvertPixelFormat(raw.rgba.ptr(), fcPixelFormat_RGBAu8, &raw.raw[0], fmt, m_conf.video_width * m_conf.video_height);
     }
 
     // h264 データを生成
@@ -423,7 +423,7 @@ bool fcMP4Context::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fc
         memcpy(raw.rgba.ptr(), pixels, raw.rgba.size());
     }
     else {
-        fcConvert(raw.rgba.ptr(), fcPixelFormat_RGBAu8, pixels, fmt, m_conf.video_width * m_conf.video_height);
+        fcConvertPixelFormat(raw.rgba.ptr(), fcPixelFormat_RGBAu8, pixels, fmt, m_conf.video_width * m_conf.video_height);
     }
 
     // h264 データを生成
