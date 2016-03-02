@@ -53,6 +53,7 @@ public:
 
 
     TBuffer() {}
+    TBuffer(size_t size) { resize(size); }
     TBuffer(const void *src, size_t len) : m_data((const_pointer)src, (const_pointer)src+len) {}
     TBuffer(const TDataRef<T> &buf) : m_data(buf.begin(), buf.end()) {}
     TBuffer(container&& src) : m_data(src) {}

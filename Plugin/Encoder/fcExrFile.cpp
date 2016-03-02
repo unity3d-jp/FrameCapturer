@@ -28,7 +28,7 @@ struct fcExrFrameData
 {
     std::string path;
     int width, height;
-    std::list<std::vector<char>> pixels;
+    std::list<Buffer> pixels;
     Imf::Header header;
     Imf::FrameBuffer frame_buffer;
 
@@ -62,7 +62,7 @@ private:
     std::atomic_int m_active_task_count;
 
     const void *m_frame_prev;
-    std::vector<char> *m_src_prev;
+    Buffer *m_src_prev;
     fcPixelFormat m_fmt_prev;
 };
 
@@ -117,7 +117,7 @@ bool fcExrContext::beginFrame(const char *path, int width, int height)
 // pitch: width * pixel size
 static void fcImageFlipY(void *image_, int width, int height, int pitch)
 {
-    std::vector<char> buf_(pitch);
+    Buffer buf_((size_t)pitch);
     char *image = (char*)image_;
     char *buf = &buf_[0];
 
@@ -136,7 +136,7 @@ bool fcExrContext::addLayerTexture(void *tex, fcPixelFormat fmt, int channel, co
         return false;
     }
 
-    std::vector<char> *raw_frame = nullptr;
+    Buffer *raw_frame = nullptr;
 
     if (tex == m_frame_prev)
     {
@@ -147,7 +147,7 @@ bool fcExrContext::addLayerTexture(void *tex, fcPixelFormat fmt, int channel, co
     {
         m_frame_prev = tex;
 
-        m_exr->pixels.push_back(std::vector<char>());
+        m_exr->pixels.push_back(Buffer());
         raw_frame = &m_exr->pixels.back();
         raw_frame->resize(m_exr->width * m_exr->height * fcGetPixelSize(fmt));
 
@@ -189,7 +189,7 @@ bool fcExrContext::addLayerPixels(const void *pixels, fcPixelFormat fmt, int cha
         return false;
     }
 
-    std::vector<char> *raw_frame = nullptr;
+    Buffer *raw_frame = nullptr;
 
     if (pixels == m_frame_prev)
     {
@@ -246,7 +246,7 @@ bool fcExrContext::addLayerImpl(char *pixels, fcPixelFormat fmt, int channel, co
         tsize = 4;
         break;
     default:
-        fcDebugLog("fcExrContext::addLayerPixels(): this pixel format is not supported. exr only supports f16, f32 and i32");
+        fcDebugLog("fcExrContext::addLayerPixels(): this pixel format is not supported");
         return false;
     }
     int psize = tsize * channels;

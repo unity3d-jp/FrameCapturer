@@ -1,4 +1,5 @@
 #include "TestCommon.h"
+using namespace std::literals;
 
 
 // custom stream functions (just a wrapper of FILE)
@@ -11,7 +12,6 @@ void MP4Test()
 {
     printf("MP4Test begin\n");
 
-    using namespace std::literals;
 
     // download OpenH264 codec
     fcMP4DownloadCodecBegin();

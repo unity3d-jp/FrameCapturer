@@ -13,6 +13,7 @@
 #include <thread>
 #include <half.h>
 #include "../FrameCapturer.h"
+#include "../Foundation/fcThreadPool.h"
 
 
 typedef uint8_t u8;
