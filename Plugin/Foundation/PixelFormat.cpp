@@ -34,239 +34,17 @@ int fcGetPixelSize(fcPixelFormat format)
 
 
 #define fcEnableISPCConverter
-#define fcEnableCppConverter
 
 
 #ifdef fcEnableISPCConverter
 #include "ConvertKernel_ispc.h"
-#endif // fcEnableISPCConverter
 
+void fcScaleArray(uint8_t *data, size_t size, float scale)  { ispc::ScaleU8(data, (uint32_t)size, scale); }
+void fcScaleArray(uint16_t *data, size_t size, float scale) { ispc::ScaleI16(data, (uint32_t)size, scale); }
+void fcScaleArray(int32_t *data, size_t size, float scale)  { ispc::ScaleI32(data, (uint32_t)size, scale); }
+void fcScaleArray(half *data, size_t size, float scale)     { ispc::ScaleF16((int16_t*)data, (uint32_t)size, scale); }
+void fcScaleArray(float *data, size_t size, float scale)    { ispc::ScaleF32(data, (uint32_t)size, scale); }
 
-void fcScaleArray(float *data, size_t size, float scale)
-{
-#ifdef fcEnableISPCConverter
-    ispc::ScaleFloatArray(data, (uint32_t)size, scale);
-#else  // fcEnableISPCConverter
-    for (size_t i = 0; i < datasize; ++i) {
-        data[i] *= scale;
-    }
-#endif // fcEnableISPCConverter
-}
-
-
-
-#ifdef fcEnableCppConverter
-template<class T> struct tvec1;
-template<class T> struct tvec2;
-template<class T> struct tvec3;
-template<class T> struct tvec4;
-
-template<class T> struct tvec1
-{
-    T x;
-    tvec1() {} // !not clear members!
-    tvec1(T a) : x(a) {}
-    operator T&() { return x; }
-    template<class U> tvec1(const tvec1<U>& src);
-    template<class U> tvec1(const tvec2<U>& src);
-    template<class U> tvec1(const tvec3<U>& src);
-    template<class U> tvec1(const tvec4<U>& src);
-};
-
-template<class T> struct tvec2
-{
-    T x, y;
-    tvec2() {} // !not clear members!
-    tvec2(T a) : x(a), y(a) {}
-    tvec2(T a, T b) : x(a), y(b) {}
-    template<class U> tvec2(const tvec1<U>& src);
-    template<class U> tvec2(const tvec2<U>& src);
-    template<class U> tvec2(const tvec3<U>& src);
-    template<class U> tvec2(const tvec4<U>& src);
-};
-
-template<class T> struct tvec3
-{
-    T x, y, z;
-    tvec3() {} // !not clear members!
-    tvec3(T a) : x(a), y(a), z(a) {}
-    tvec3(T a, T b, T c) : x(a), y(b), z(c) {}
-    template<class U> tvec3(const tvec1<U>& src);
-    template<class U> tvec3(const tvec2<U>& src);
-    template<class U> tvec3(const tvec3<U>& src);
-    template<class U> tvec3(const tvec4<U>& src);
-};
-
-template<class T> struct tvec4
-{
-    T x, y, z, w;
-    tvec4() {} // !not clear members!
-    tvec4(T a) : x(a), y(a), z(a), w(a) {}
-    tvec4(T a, T b, T c, T d) : x(a), y(b), z(c), w(d) {}
-    template<class U> tvec4(const tvec1<U>& src);
-    template<class U> tvec4(const tvec2<U>& src);
-    template<class U> tvec4(const tvec3<U>& src);
-    template<class U> tvec4(const tvec4<U>& src);
-};
-
-template<class DstType, class SrcType> inline DstType tScalar(SrcType src) { return DstType(src); }
-
-template<class T> template<class U> tvec1<T>::tvec1(const tvec1<U>& src) : x(tScalar<T>(src.x)) {}
-template<class T> template<class U> tvec1<T>::tvec1(const tvec2<U>& src) : x(tScalar<T>(src.x)) {}
-template<class T> template<class U> tvec1<T>::tvec1(const tvec3<U>& src) : x(tScalar<T>(src.x)) {}
-template<class T> template<class U> tvec1<T>::tvec1(const tvec4<U>& src) : x(tScalar<T>(src.x)) {}
-
-template<class T> template<class U> tvec2<T>::tvec2(const tvec1<U>& src) : x(tScalar<T>(src.x)), y() {}
-template<class T> template<class U> tvec2<T>::tvec2(const tvec2<U>& src) : x(tScalar<T>(src.x)), y(tScalar<T>(src.y)) {}
-template<class T> template<class U> tvec2<T>::tvec2(const tvec3<U>& src) : x(tScalar<T>(src.x)), y(tScalar<T>(src.y)) {}
-template<class T> template<class U> tvec2<T>::tvec2(const tvec4<U>& src) : x(tScalar<T>(src.x)), y(tScalar<T>(src.y)) {}
-
-template<class T> template<class U> tvec3<T>::tvec3(const tvec1<U>& src) : x(tScalar<T>(src.x)), y(), z() {}
-template<class T> template<class U> tvec3<T>::tvec3(const tvec2<U>& src) : x(tScalar<T>(src.x)), y(tScalar<T>(src.y)), z() {}
-template<class T> template<class U> tvec3<T>::tvec3(const tvec3<U>& src) : x(tScalar<T>(src.x)), y(tScalar<T>(src.y)), z(tScalar<T>(src.z)) {}
-template<class T> template<class U> tvec3<T>::tvec3(const tvec4<U>& src) : x(tScalar<T>(src.x)), y(tScalar<T>(src.y)), z(tScalar<T>(src.z)) {}
-
-template<class T> template<class U> tvec4<T>::tvec4(const tvec1<U>& src) : x(tScalar<T>(src.x)), y(), z(), w() {}
-template<class T> template<class U> tvec4<T>::tvec4(const tvec2<U>& src) : x(tScalar<T>(src.x)), y(tScalar<T>(src.y)), z(), w() {}
-template<class T> template<class U> tvec4<T>::tvec4(const tvec3<U>& src) : x(tScalar<T>(src.x)), y(tScalar<T>(src.y)), z(tScalar<T>(src.z)), w() {}
-template<class T> template<class U> tvec4<T>::tvec4(const tvec4<U>& src) : x(tScalar<T>(src.x)), y(tScalar<T>(src.y)), z(tScalar<T>(src.z)), w(tScalar<T>(src.w)) {}
-
-template<class T> tvec3<T> operator+(const tvec3<T> &a, const tvec3<T> &b) { return tvec3<T>(a.x + b.x, a.y + b.y, a.z + b.z); }
-template<class T> tvec3<T> operator-(const tvec3<T> &a, const tvec3<T> &b) { return tvec3<T>(a.x - b.x, a.y - b.y, a.z - b.z); }
-template<class T> tvec3<T> operator*(const tvec3<T> &a, const tvec3<T> &b) { return tvec3<T>(a.x * b.x, a.y * b.y, a.z * b.z); }
-template<class T> tvec3<T> operator/(const tvec3<T> &a, const tvec3<T> &b) { return tvec3<T>(a.x / b.x, a.y / b.y, a.z / b.z); }
-template<class T> tvec3<T> operator*(const tvec3<T> &a, T b) { return tvec3<T>(a.x * b, a.y * b, a.z * b); }
-template<class T> tvec3<T> operator/(const tvec3<T> &a, T b) { return tvec3<T>(a.x / b, a.y / b, a.z / b); }
-
-#include <half.h>
-#pragma comment(lib, "Half.lib")
-
-typedef tvec1<uint8_t> byte1;
-typedef tvec2<uint8_t> byte2;
-typedef tvec3<uint8_t> byte3;
-typedef tvec4<uint8_t> byte4;
-typedef tvec1<int16_t> short1;
-typedef tvec2<int16_t> short2;
-typedef tvec3<int16_t> short3;
-typedef tvec4<int16_t> short4;
-typedef tvec1<int32_t> int1;
-typedef tvec2<int32_t> int2;
-typedef tvec3<int32_t> int3;
-typedef tvec4<int32_t> int4;
-typedef tvec1<int64_t> long1;
-typedef tvec2<int64_t> long2;
-typedef tvec3<int64_t> long3;
-typedef tvec4<int64_t> long4;
-typedef tvec1<half>    half1;
-typedef tvec2<half>    half2;
-typedef tvec3<half>    half3;
-typedef tvec4<half>    half4;
-typedef tvec1<float>   float1;
-typedef tvec2<float>   float2;
-typedef tvec3<float>   float3;
-typedef tvec4<float>   float4;
-
-template<int I> struct tGetPixelFormatType;
-#define def(I, T) template<> struct tGetPixelFormatType<I>  { typedef T type; };
-def(fcPixelFormat_Ru8, byte1)
-def(fcPixelFormat_RGu8, byte2)
-def(fcPixelFormat_RGBu8, byte3)
-def(fcPixelFormat_RGBAu8, byte4)
-def(fcPixelFormat_Ri16, short1)
-def(fcPixelFormat_RGi16, short2)
-def(fcPixelFormat_RGBi16, short3)
-def(fcPixelFormat_RGBAi16, short4)
-def(fcPixelFormat_Rf16, half1)
-def(fcPixelFormat_RGf16, half2)
-def(fcPixelFormat_RGBf16, half3)
-def(fcPixelFormat_RGBAf16, half4)
-def(fcPixelFormat_Rf32, float1)
-def(fcPixelFormat_RGf32, float2)
-def(fcPixelFormat_RGBf32, float3)
-def(fcPixelFormat_RGBAf32, float4)
-#undef def
-
-template<> inline half tScalar(int32_t src) { return half((float)src); }
-template<> inline half tScalar(int64_t src) { return half((float)src); }
-
-
-template<class DstType, class SrcType>
-struct tConvertArrayImpl
-{
-    void operator()(void *&dst_, const void *src_, size_t num_elements)
-    {
-        DstType *dst = (DstType*)dst_;
-        const SrcType *src = (const SrcType*)src_;
-        for (size_t i = 0; i < num_elements; ++i) {
-            dst[i] = DstType(src[i]);
-        }
-    }
-};
-template<class T>
-struct tConvertArrayImpl<T, T>
-{
-    void operator()(void *&dst, const void *src, size_t num_elements)
-    {
-        dst = (void*)src;
-    }
-};
-
-template<class DstType, class SrcType> inline void tConvertArray(void *&dst, const void *src, size_t size)
-{
-    tConvertArrayImpl<DstType, SrcType>()(dst, src, size);
-}
-const void* fcConvertPixelFormat_Cpp(void *dst, fcPixelFormat dst_fmt, const void *src, fcPixelFormat src_fmt, size_t size)
-{
-#define TCase(Dst, Src)\
-    case Src: tConvertArray<tGetPixelFormatType<Dst>::type, tGetPixelFormatType<Src>::type>(dst, src, size);
-
-#define TBlock(Dst)\
-    case Dst:\
-        switch (src_fmt) {\
-        TCase(Dst, fcPixelFormat_Ru8    )\
-        TCase(Dst, fcPixelFormat_RGu8   )\
-        TCase(Dst, fcPixelFormat_RGBu8  )\
-        TCase(Dst, fcPixelFormat_RGBAu8 )\
-        TCase(Dst, fcPixelFormat_Ri16   )\
-        TCase(Dst, fcPixelFormat_RGi16  )\
-        TCase(Dst, fcPixelFormat_RGBi16 )\
-        TCase(Dst, fcPixelFormat_RGBAi16)\
-        TCase(Dst, fcPixelFormat_Rf16   )\
-        TCase(Dst, fcPixelFormat_RGf16  )\
-        TCase(Dst, fcPixelFormat_RGBf16 )\
-        TCase(Dst, fcPixelFormat_RGBAf16)\
-        TCase(Dst, fcPixelFormat_Rf32   )\
-        TCase(Dst, fcPixelFormat_RGf32  )\
-        TCase(Dst, fcPixelFormat_RGBf32 )\
-        TCase(Dst, fcPixelFormat_RGBAf32)\
-        } break;
-
-    switch (dst_fmt) {
-        TBlock(fcPixelFormat_Ru8)
-        TBlock(fcPixelFormat_RGu8)
-        TBlock(fcPixelFormat_RGBu8)
-        TBlock(fcPixelFormat_RGBAu8)
-        TBlock(fcPixelFormat_Ri16)
-        TBlock(fcPixelFormat_RGi16)
-        TBlock(fcPixelFormat_RGBi16)
-        TBlock(fcPixelFormat_RGBAi16)
-        TBlock(fcPixelFormat_Rf16)
-        TBlock(fcPixelFormat_RGf16)
-        TBlock(fcPixelFormat_RGBf16)
-        TBlock(fcPixelFormat_RGBAf16)
-        TBlock(fcPixelFormat_Rf32)
-        TBlock(fcPixelFormat_RGf32)
-        TBlock(fcPixelFormat_RGBf32)
-        TBlock(fcPixelFormat_RGBAf32)
-    }
-
-#undef TBlock
-#undef TCase
-    return dst;
-}
-#endif // fcEnableCppConverter
-
-#ifdef fcEnableISPCConverter
 const void* fcConvertPixelFormat_ISPC(void *dst, fcPixelFormat dstfmt, const void *src, fcPixelFormat srcfmt, size_t size_)
 {
     uint32_t size = (uint32_t)size_;
@@ -500,16 +278,9 @@ const void* fcConvertPixelFormat_ISPC(void *dst, fcPixelFormat dstfmt, const voi
     }
     return dst;
 }
-#endif // fcEnableISPCConverter
-
-
 
 const void* fcConvertPixelFormat(void *dst, fcPixelFormat dstfmt, const void *src, fcPixelFormat srcfmt, size_t size)
 {
-#ifdef fcEnableISPCConverter
     return fcConvertPixelFormat_ISPC(dst, dstfmt, src, srcfmt, size);
-#elif fcEnableCppConverter
-    return fcConvertPixelFormat_Cpp(dst, dstfmt, src, srcfmt, size);
-#endif
 }
-
+#endif // fcEnableISPCConverter
