@@ -22,8 +22,8 @@ namespace UTJ
             Type_f16 = 0x1 << 4,
             Type_f32 = 0x2 << 4,
             Type_u8  = 0x3 << 4,
-            Type_i32 = 0x4 << 4,
-            Type_i16 = 0x5 << 4,
+            Type_i16 = 0x4 << 4,
+            Type_i32 = 0x5 << 4,
 
             Rf16     = Type_f16 | 1,
             RGf16    = Type_f16 | 2,
@@ -270,10 +270,22 @@ namespace UTJ
 
         [DllImport ("FrameCapturer")] public static extern fcMP4Context     fcMP4CreateContext(ref fcMP4Config conf);
         [DllImport ("FrameCapturer")] public static extern void             fcMP4DestroyContext(fcMP4Context ctx);
+        [DllImport ("FrameCapturer")] private static extern IntPtr          fcMP4GetAudioEncoderInfo(fcMP4Context ctx);
+        [DllImport ("FrameCapturer")] private static extern IntPtr          fcMP4GetVideoEncoderInfo(fcMP4Context ctx);
         [DllImport ("FrameCapturer")] public static extern void             fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);
         [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddVideoFrameTexture(fcMP4Context ctx, IntPtr tex, fcPixelFormat fmt, double time = -1.0);
         [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddVideoFramePixels(fcMP4Context ctx, IntPtr pixels, fcPixelFormat fmt, double time = -1.0);
         [DllImport ("FrameCapturer")] public static extern bool             fcMP4AddAudioFrame(fcMP4Context ctx, float[] samples, int num_samples, double time = -1.0);
+
+        public static string fcMP4GetAudioEncoderInfoS(fcMP4Context ctx)
+        {
+            return Marshal.PtrToStringAnsi(fcMP4GetAudioEncoderInfo(ctx));
+        }
+
+        public static string fcMP4GetVideoEncoderInfoS(fcMP4Context ctx)
+        {
+            return Marshal.PtrToStringAnsi(fcMP4GetVideoEncoderInfo(ctx));
+        }
 
         public static bool fcMP4AddVideoFrameTexture(fcMP4Context ctx, RenderTexture tex, double time = -1.0)
         {

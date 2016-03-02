@@ -34,8 +34,8 @@ enum fcPixelFormat
     fcPixelFormat_Type_f16 = 0x1 << 4,
     fcPixelFormat_Type_f32 = 0x2 << 4,
     fcPixelFormat_Type_u8  = 0x3 << 4,
-    fcPixelFormat_Type_i32 = 0x4 << 4,
-    fcPixelFormat_Type_i16 = 0x5 << 4,
+    fcPixelFormat_Type_i16 = 0x4 << 4,
+    fcPixelFormat_Type_i32 = 0x5 << 4,
 
     fcPixelFormat_Rf16      = fcPixelFormat_Type_f16 | 1,
     fcPixelFormat_RGf16     = fcPixelFormat_Type_f16 | 2,
@@ -192,6 +192,8 @@ fcCLinkage fcExport fcDownloadState fcMP4DownloadCodecGetState();
 
 fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
 fcCLinkage fcExport void            fcMP4DestroyContext(fcIMP4Context *ctx);
+fcCLinkage fcExport const char*     fcMP4GetAudioEncoderInfo(fcIMP4Context *ctx);
+fcCLinkage fcExport const char*     fcMP4GetVideoEncoderInfo(fcIMP4Context *ctx);
 fcCLinkage fcExport void            fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream);
 // timestamp=-1 is treated as current time.
 fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1);

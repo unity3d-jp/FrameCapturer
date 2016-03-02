@@ -21,6 +21,9 @@ public:
     ~fcMP4Context();
     void release() override;
 
+    const char* getAudioEncoderInfo() override;
+    const char* getVideoEncoderInfo() override;
+
     void addOutputStream(fcStream *s) override;
     bool addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp) override;
     bool addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamps) override;
@@ -177,7 +180,7 @@ void fcMP4Context::resetEncoders()
             }
         }
         if (enc == nullptr) {
-            // fall back to software encoder (OpenH264)
+            // fallback to software encoder (OpenH264)
             enc = fcCreateOpenH264Encoder(h264conf);
         }
         m_h264_encoder.reset(enc);
@@ -318,11 +321,23 @@ void fcMP4Context::release()
     delete this;
 }
 
+const char* fcMP4Context::getAudioEncoderInfo()
+{
+    if (!m_aac_encoder) { return ""; }
+    return m_aac_encoder->getEncoderInfo();
+}
+
+const char* fcMP4Context::getVideoEncoderInfo()
+{
+    if (!m_h264_encoder) { return ""; }
+    return m_h264_encoder->getEncoderInfo();
+}
+
 void fcMP4Context::addOutputStream(fcStream *s)
 {
     auto writer = new fcMP4StreamWriter(*s, m_conf);
     if (m_aac_encoder) {
-        writer->setAACEncoderInfo(m_aac_encoder->getEncoderInfo());
+        writer->setAACEncoderInfo(m_aac_encoder->getDecoderSpecificInfo());
     }
     m_streams.emplace_back(StreamWriterPtr(writer));
 }

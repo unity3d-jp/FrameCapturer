@@ -28,6 +28,7 @@ class fcOpenH264Encoder : public fcIH264Encoder
 public:
     fcOpenH264Encoder(const fcH264EncoderConfig& conf);
     ~fcOpenH264Encoder();
+    const char* getEncoderInfo() override;
     bool encode(fcH264Frame& dst, const fcI420Image& image, fcTime timestamp, bool force_keyframe) override;
 
 private:
@@ -100,6 +101,7 @@ fcOpenH264Encoder::~fcOpenH264Encoder()
 
     WelsDestroySVCEncoder_i(m_encoder);
 }
+const char* fcOpenH264Encoder::getEncoderInfo() { return "OpenH264 (by Cisco Systems, Inc)"; }
 
 bool fcOpenH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, fcTime timestamp, bool /*force_keyframe*/)
 {

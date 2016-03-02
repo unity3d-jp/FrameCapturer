@@ -16,6 +16,7 @@ class fcIH264Encoder
 {
 public:
     virtual ~fcIH264Encoder() {}
+    virtual const char* getEncoderInfo() = 0;
     virtual bool encode(fcH264Frame& dst, const fcI420Image& image, fcTime timestamp, bool force_keyframe = false) = 0;
 };
 

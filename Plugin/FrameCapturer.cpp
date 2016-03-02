@@ -348,6 +348,17 @@ fcCLinkage fcExport void fcMP4DestroyContext(fcIMP4Context *ctx)
     ctx->release();
 }
 
+fcCLinkage fcExport const char* fcMP4GetAudioEncoderInfo(fcIMP4Context *ctx)
+{
+    if (!ctx) { return ""; }
+    return ctx->getAudioEncoderInfo();
+}
+fcCLinkage fcExport const char* fcMP4GetVideoEncoderInfo(fcIMP4Context *ctx)
+{
+    if (!ctx) { return ""; }
+    return ctx->getVideoEncoderInfo();
+}
+
 fcCLinkage fcExport void fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream)
 {
     if (!ctx) { return; }

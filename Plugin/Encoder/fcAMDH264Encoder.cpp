@@ -20,6 +20,7 @@ class fcAMDH264Encoder : public fcIH264Encoder
 public:
     fcAMDH264Encoder(const fcH264EncoderConfig& conf);
     ~fcAMDH264Encoder();
+    const char* getEncoderInfo() override;
     bool encode(fcH264Frame& dst, const fcI420Image& image, fcTime timestamp, bool force_keyframe) override;
 
 private:
@@ -51,6 +52,7 @@ fcAMDH264Encoder::fcAMDH264Encoder(const fcH264EncoderConfig& conf)
 fcAMDH264Encoder::~fcAMDH264Encoder()
 {
 }
+const char* fcAMDH264Encoder::getEncoderInfo() { return "VCE (by AMD)"; }
 
 bool fcAMDH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, fcTime timestamp, bool force_keyframe)
 {
