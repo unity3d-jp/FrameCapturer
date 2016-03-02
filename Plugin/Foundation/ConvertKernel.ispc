@@ -1,5 +1,6 @@
 typedef unsigned int8   u8;
 typedef unsigned int16  i16;
+typedef int32           i32;
 typedef int16           f16;
 typedef float           f32;
 
@@ -39,14 +40,32 @@ float to_f32(i16 v) { return (float)((int)v) / 255.0f; }
 float to_f32(f16 v) { return half_to_float(v); }
 float to_f32(float v) { return v; }
 
-
-export void ScaleHalfArray(uniform f16 data[], uniform size_t size, uniform float scale)
+export void ScaleU8(uniform u8 data[], uniform size_t size, uniform float scale)
+{
+    foreach(i=0 ... size) {
+        data[i] = min((int)((float)((int)data[i]) * scale), 0xff);
+    }
+}
+export void ScaleI16(uniform i16 data[], uniform size_t size, uniform float scale)
+{
+    foreach(i=0 ... size) {
+        float t = (float)((int)data[i]) * scale;
+        data[i] = ((int)t & 0x7fff) | (signbits(t) >> 16);
+    }
+}
+export void ScaleI32(uniform i32 data[], uniform size_t size, uniform float scale)
+{
+    foreach(i=0 ... size) {
+        data[i] = (int)((float)data[i] * scale);
+    }
+}
+export void ScaleF16(uniform f16 data[], uniform size_t size, uniform float scale)
 {
     foreach(i=0 ... size) {
         data[i] = float_to_half(half_to_float(data[i]) * scale);
     }
 }
-export void ScaleFloatArray(uniform float data[], uniform size_t size, uniform float scale)
+export void ScaleF32(uniform float data[], uniform size_t size, uniform float scale)
 {
     foreach(i=0 ... size) {
         data[i] *= scale;
