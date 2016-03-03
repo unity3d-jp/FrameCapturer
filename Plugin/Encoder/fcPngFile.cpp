@@ -26,7 +26,7 @@ struct fcPngTaskData
 class fcPngContext : public fcIPngContext
 {
 public:
-    fcPngContext(const fcPngConfig *conf, fcIGraphicsDevice *dev);
+    fcPngContext(const fcPngConfig& conf, fcIGraphicsDevice *dev);
     ~fcPngContext() override;
     void release() override;
     bool exportTexture(const char *path, void *tex, int width, int height, fcPixelFormat fmt, bool flipY) override;
@@ -43,11 +43,12 @@ private:
     std::atomic_int m_active_task_count;
 };
 
-fcPngContext::fcPngContext(const fcPngConfig *conf, fcIGraphicsDevice *dev)
+fcPngContext::fcPngContext(const fcPngConfig& conf, fcIGraphicsDevice *dev)
     : m_conf(), m_dev(dev), m_active_task_count()
 {
-    if (conf != nullptr) {
-        m_conf = *conf;
+    m_conf = conf;
+    if (m_conf.max_active_tasks <= 0) {
+        m_conf.max_active_tasks = std::thread::hardware_concurrency();
     }
 }
 
@@ -270,5 +271,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
 
 fcCLinkage fcExport fcIPngContext* fcPngCreateContextImpl(const fcPngConfig *conf, fcIGraphicsDevice *dev)
 {
-    return new fcPngContext(conf, dev);
+    fcPngConfig default_cont;
+    if (conf == nullptr) { conf = &default_cont; }
+    return new fcPngContext(*conf, dev);
 }

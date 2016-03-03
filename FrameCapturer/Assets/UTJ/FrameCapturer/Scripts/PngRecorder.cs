@@ -10,18 +10,10 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/PngRecorder")]
     [RequireComponent(typeof(Camera))]
-    public class PngRecorder : MonoBehaviour
+    public class PngRecorder : IImageSequenceRecorder
     {
-        public enum DepthFormat
-        {
-            Half,
-            Float,
-        }
-
-
         public bool m_captureFramebuffer = true;
         public bool m_captureGBuffer = true;
-        public DepthFormat m_depthFormat = DepthFormat.Float;
 
         [Tooltip("output directory. filename is generated automatically.")]
         public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "ExrOutput");
@@ -43,6 +35,19 @@ namespace UTJ
         RenderTexture m_depth;
         RenderBuffer[] m_rt_gbuffer;
         Camera m_cam;
+
+
+        public override int beginFrame
+        {
+            get { return m_beginFrame; }
+            set { m_beginFrame = value; }
+        }
+
+        public override int endFrame
+        {
+            get { return m_endFrame; }
+            set { m_endFrame = value; }
+        }
 
 
 #if UNITY_EDITOR
@@ -100,8 +105,7 @@ namespace UTJ
                     m_rt_gbuffer[i] = m_gbuffer[i].colorBuffer;
                 }
                 {
-                    RenderTextureFormat format = m_depthFormat == DepthFormat.Half ? RenderTextureFormat.RHalf : RenderTextureFormat.RFloat;
-                    m_depth = new RenderTexture(m_cam.pixelWidth, m_cam.pixelHeight, 0, format);
+                    m_depth = new RenderTexture(m_cam.pixelWidth, m_cam.pixelHeight, 0, RenderTextureFormat.RHalf);
                     m_depth.filterMode = FilterMode.Point;
                     m_depth.Create();
                 }
