@@ -214,11 +214,6 @@ fcCLinkage fcExport void fcGifDestroyContext(fcIGifContext *ctx)
     ctx->release();
 }
 
-fcCLinkage fcExport bool fcGifAddFrame(fcIGifContext *ctx, void *tex)
-{
-    if (!ctx) { return false; }
-    return ctx->addFrameTexture(tex, fcPixelFormat_RGBAu8, false);
-}
 fcCLinkage fcExport bool fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
 {
     if (!ctx) { return false; }

@@ -7,7 +7,7 @@ namespace UTJ
 
     public class MovieRecorderEditorUI : IMovieRecoerderUI
     {
-        public IEditableMovieRecorder m_recorder;
+        public IMovieRecorder m_recorder;
         public Text m_textInfo;
         public RawImage m_imagePreview;
         public Slider m_timeSlider;
@@ -22,18 +22,20 @@ namespace UTJ
 
         public override bool record
         {
-            get { return m_recorder.record; }
+            get { return m_recorder.recording; }
             set
             {
-                m_recorder.record = value;
                 m_updateStatus = true;
                 if (value)
                 {
+                    m_recorder.BeginRecording();
+                    m_recorder.recording = true;
                     GetComponent<Image>().color = new Color(1.0f, 0.5f, 0.5f, 0.5f);
                     UpdatePreviewImage(m_recorder.GetScratchBuffer());
                 }
                 else
                 {
+                    m_recorder.recording = false;
                     GetComponent<Image>().color = new Color(1.0f, 1.0f, 1.0f, 0.5f);
                     m_endFrame = -1;
                 }
@@ -50,19 +52,16 @@ namespace UTJ
             return m_recorder.GetOutputPath();
         }
 
-        public override void FlushFile()
+        public override void Flush()
         {
-            m_recorder.FlushFile(m_beginFrame, m_endFrame);
+            m_recorder.Flush(m_beginFrame, m_endFrame);
         }
 
-        public override void ResetRecordingState()
+        public override void Restart()
         {
-            m_recorder.ResetRecordingState();
-            if (record)
-            {
-                UpdatePreviewImage(m_recorder.GetScratchBuffer());
-            }
+            m_recorder.EndRecording();
             m_updateStatus = true;
+            m_updatePreview = true;
         }
 
 
@@ -161,9 +160,12 @@ namespace UTJ
             if (m_rt == null)
             {
                 var gif = m_recorder.GetScratchBuffer();
-                m_rt = new RenderTexture(gif.width, gif.height, 0, RenderTextureFormat.ARGB32);
-                m_rt.wrapMode = TextureWrapMode.Repeat;
-                m_rt.Create();
+                if (gif != null)
+                {
+                    m_rt = new RenderTexture(gif.width, gif.height, 0, RenderTextureFormat.ARGB32);
+                    m_rt.wrapMode = TextureWrapMode.Repeat;
+                    m_rt.Create();
+                }
             }
             if (m_updatePreview)
             {

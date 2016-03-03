@@ -39,58 +39,46 @@ namespace UTJ
         RenderTexture m_scratch_buffer;
         Camera m_cam;
         int m_num_video_frames;
-        bool m_record = false;
+        bool m_recording = false;
 
-
-
-        public override bool record
+        void UpdateScratchBuffer()
         {
-            get { return m_record; }
-            set
-            {
-                m_record = value;
-                if (m_record && m_ctx.ptr == IntPtr.Zero)
-                {
-                    ResetRecordingState();
-                }
-            }
-        }
-
-        public override string GetOutputPath()
-        {
-            string ret = m_outputDir.GetPath();
-            if(ret.Length > 0) { ret += "/"; }
-            ret += m_output_file;
-            return ret;
-        }
-        public override RenderTexture GetScratchBuffer() { return m_scratch_buffer; }
-        public override int GetFrameCount() { return m_num_video_frames; }
-
-        public override bool FlushFile()
-        {
-            fcAPI.fcMP4DestroyContext(m_ctx);
-            fcAPI.fcDestroyStream(m_ostream);
-            m_ctx.ptr = IntPtr.Zero;
-            m_ostream.ptr = IntPtr.Zero;
-            return true;
-        }
-
-        public override void ResetRecordingState()
-        {
-            FlushFile();
-
-            m_ctx.ptr = IntPtr.Zero;
-            if (m_scratch_buffer != null)
-            {
-                m_scratch_buffer.Release();
-                m_scratch_buffer = null;
-            }
-
             int capture_width = m_resolutionWidth;
             int capture_height = (int)((float)m_resolutionWidth / ((float)m_cam.pixelWidth / (float)m_cam.pixelHeight));
+
+            if( m_scratch_buffer != null)
+            {
+                // update is not needed
+                if( m_scratch_buffer.IsCreated() &&
+                    m_scratch_buffer.width == capture_width && m_scratch_buffer.height == capture_height)
+                {
+                    return;
+                }
+                else
+                {
+                    ReleaseScratchBuffer();
+                }
+            }
+
             m_scratch_buffer = new RenderTexture(capture_width, capture_height, 0, RenderTextureFormat.ARGB32);
             m_scratch_buffer.wrapMode = TextureWrapMode.Repeat;
             m_scratch_buffer.Create();
+        }
+
+        void ReleaseScratchBuffer()
+        {
+            m_scratch_buffer.Release();
+            m_scratch_buffer = null;
+        }
+
+        public override bool IsSeekable() { return false; }
+        public override bool IsEditable() { return false; }
+
+        public override bool BeginRecording()
+        {
+            if (m_recording) { return false; }
+
+            UpdateScratchBuffer();
 
             m_num_video_frames = 0;
             m_mp4conf = fcAPI.fcMP4Config.default_value;
@@ -104,22 +92,89 @@ namespace UTJ
             m_mp4conf.audio_sampling_rate = AudioSettings.outputSampleRate;
             switch (AudioSettings.speakerMode)
             {
-                case AudioSpeakerMode.Mono: m_mp4conf.audio_num_channels = 1; break;
-                case AudioSpeakerMode.Stereo: m_mp4conf.audio_num_channels = 2; break;
-                case AudioSpeakerMode.Quad: m_mp4conf.audio_num_channels = 4; break;
-                case AudioSpeakerMode.Surround: m_mp4conf.audio_num_channels = 5; break;
-                case AudioSpeakerMode.Mode5point1: m_mp4conf.audio_num_channels = 6; break;
-                case AudioSpeakerMode.Mode7point1: m_mp4conf.audio_num_channels = 8; break;
-                case AudioSpeakerMode.Prologic: m_mp4conf.audio_num_channels = 6; break;
+                case AudioSpeakerMode.Mono:         m_mp4conf.audio_num_channels = 1; break;
+                case AudioSpeakerMode.Stereo:       m_mp4conf.audio_num_channels = 2; break;
+                case AudioSpeakerMode.Quad:         m_mp4conf.audio_num_channels = 4; break;
+                case AudioSpeakerMode.Surround:     m_mp4conf.audio_num_channels = 5; break;
+                case AudioSpeakerMode.Mode5point1:  m_mp4conf.audio_num_channels = 6; break;
+                case AudioSpeakerMode.Mode7point1:  m_mp4conf.audio_num_channels = 8; break;
+                case AudioSpeakerMode.Prologic:     m_mp4conf.audio_num_channels = 6; break;
             }
             m_ctx = fcAPI.fcMP4CreateContext(ref m_mp4conf);
-
 
             m_output_file = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
             m_ostream = fcAPI.fcCreateFileStream(GetOutputPath());
             fcAPI.fcMP4AddOutputStream(m_ctx, m_ostream);
-            Debug.Log("MP4Capturer: created stream " + GetOutputPath());
+
+            m_cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
+
+            Debug.Log("MP4Capturer.BeginRecording(): " + GetOutputPath()); return true;
         }
+
+        public override bool EndRecording()
+        {
+            if (!m_recording) { return false; }
+            m_recording = false;
+
+            m_cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb);
+            if (m_ctx.ptr != IntPtr.Zero)
+            {
+                fcAPI.fcMP4DestroyContext(m_ctx);
+                m_ctx.ptr = IntPtr.Zero;
+            }
+            if (m_ostream.ptr != IntPtr.Zero)
+            {
+                fcAPI.fcDestroyStream(m_ostream);
+                m_ostream.ptr = IntPtr.Zero;
+            }
+
+            Debug.Log("MP4Capturer.EndRecording(): " + GetOutputPath());
+            return true;
+        }
+
+        public override bool recording
+        {
+            get { return m_recording; }
+            set { m_recording = value; }
+        }
+
+
+        public override string GetOutputPath()
+        {
+            string ret = m_outputDir.GetPath();
+            if(ret.Length > 0) { ret += "/"; }
+            ret += m_output_file;
+            return ret;
+        }
+        public override RenderTexture GetScratchBuffer() { return m_scratch_buffer; }
+        public override int GetFrameCount() { return m_num_video_frames; }
+
+        public override bool Flush()
+        {
+            return EndRecording();
+        }
+
+        public override bool Flush(int begin_frame, int end_frame)
+        {
+            return EndRecording();
+        }
+
+        // N/A
+        public override int GetExpectedFileSize(int begin_frame, int end_frame)
+        {
+            return 0;
+        }
+
+        // N/A
+        public override void GetFrameData(RenderTexture rt, int frame)
+        {
+        }
+
+        // N/A
+        public override void EraseFrame(int begin_frame, int end_frame)
+        {
+        }
+
 
         public fcAPI.fcMP4Context GetMP4Context() { return m_ctx; }
 
@@ -153,27 +208,24 @@ namespace UTJ
                 m_cb.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Point);
                 m_cb.Blit(BuiltinRenderTextureType.CurrentActive, tid);
                 // tid は意図的に開放しない
-                m_cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
             }
         }
 
         void OnDisable()
         {
-            fcAPI.fcMP4DestroyContext(m_ctx);
-            fcAPI.fcDestroyStream(m_ostream);
-            m_ctx.ptr = IntPtr.Zero;
+            EndRecording();
+            ReleaseScratchBuffer();
 
-            m_cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb);
-            m_cb.Release();
-            m_cb = null;
-
-            m_scratch_buffer.Release();
-            m_scratch_buffer = null;
+            if (m_cb != null)
+            {
+                m_cb.Release();
+                m_cb = null;
+            }
         }
 
         IEnumerator OnPostRender()
         {
-            if (m_record && m_captureVideo)
+            if (m_recording && m_captureVideo)
             {
                 yield return new WaitForEndOfFrame();
 
@@ -197,7 +249,7 @@ namespace UTJ
 
         void OnAudioFilterRead(float[] samples, int channels)
         {
-            if (m_record && m_captureAudio)
+            if (m_recording && m_captureAudio)
             {
                 if(channels != m_mp4conf.audio_num_channels) {
                     Debug.LogError("MP4Capturer: audio channels mismatch!");

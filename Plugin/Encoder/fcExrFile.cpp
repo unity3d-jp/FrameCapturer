@@ -42,7 +42,7 @@ struct fcExrFrameData
 class fcExrContext : public fcIExrContext
 {
 public:
-    fcExrContext(const fcExrConfig *conf, fcIGraphicsDevice *dev);
+    fcExrContext(const fcExrConfig& conf, fcIGraphicsDevice *dev);
     ~fcExrContext();
     void release() override;
     bool beginFrame(const char *path, int width, int height) override;
@@ -67,7 +67,7 @@ private:
 };
 
 
-fcExrContext::fcExrContext(const fcExrConfig *conf, fcIGraphicsDevice *dev)
+fcExrContext::fcExrContext(const fcExrConfig& conf, fcIGraphicsDevice *dev)
     : m_conf()
     , m_dev(dev)
     , m_exr(nullptr)
@@ -76,8 +76,9 @@ fcExrContext::fcExrContext(const fcExrConfig *conf, fcIGraphicsDevice *dev)
     , m_src_prev(nullptr)
     , m_fmt_prev()
 {
-    if (conf != nullptr) {
-        m_conf = *conf;
+    m_conf = conf;
+    if (m_conf.max_active_tasks <= 0) {
+        m_conf.max_active_tasks = std::thread::hardware_concurrency();
     }
 }
 
@@ -292,5 +293,7 @@ void fcExrContext::endFrameTask(fcExrFrameData *exr)
 
 fcCLinkage fcExport fcIExrContext* fcExrCreateContextImpl(const fcExrConfig *conf, fcIGraphicsDevice *dev)
 {
-    return new fcExrContext(conf, dev);
+    fcExrConfig default_cont;
+    if (conf == nullptr) { conf = &default_cont; }
+    return new fcExrContext(*conf, dev);
 }

@@ -139,7 +139,6 @@ struct fcGifConfig
 };
 fcCLinkage fcExport fcIGifContext*  fcGifCreateContext(const fcGifConfig *conf);
 fcCLinkage fcExport void            fcGifDestroyContext(fcIGifContext *ctx);
-fcCLinkage fcExport bool            fcGifAddFrame(fcIGifContext *ctx, void *tex);
 // timestamp=-1 is treated as current time.
 fcCLinkage fcExport bool            fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.

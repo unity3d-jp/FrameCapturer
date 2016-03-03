@@ -14,18 +14,20 @@ namespace UTJ
 
         public override bool record
         {
-            get { return m_recorder.record; }
+            get { return m_recorder.recording; }
             set
             {
-                m_recorder.record = value;
                 m_updateStatus = true;
                 if (value)
                 {
+                    m_recorder.BeginRecording();
+                    m_recorder.recording = true;
                     GetComponent<Image>().color = new Color(1.0f, 0.5f, 0.5f, 0.5f);
                     UpdatePreviewImage(m_recorder.GetScratchBuffer());
                 }
                 else
                 {
+                    m_recorder.EndRecording();
                     GetComponent<Image>().color = new Color(1.0f, 1.0f, 1.0f, 0.5f);
                 }
             }
@@ -41,24 +43,20 @@ namespace UTJ
             return m_recorder.GetOutputPath();
         }
 
-        public override void FlushFile()
+        public override void Flush()
         {
-            m_recorder.FlushFile();
+            m_recorder.Flush();
         }
 
-        public override void ResetRecordingState()
+        public override void Restart()
         {
-            m_recorder.ResetRecordingState();
-            if (record)
-            {
-                UpdatePreviewImage(m_recorder.GetScratchBuffer());
-            }
-            m_updateStatus = true;
         }
 
 
         void UpdatePreviewImage(RenderTexture rt)
         {
+            if(rt == null) { return; }
+
             const float MaxXScale = 1.8f;
             m_imagePreview.texture = rt;
             float s = (float)rt.width / (float)rt.height;

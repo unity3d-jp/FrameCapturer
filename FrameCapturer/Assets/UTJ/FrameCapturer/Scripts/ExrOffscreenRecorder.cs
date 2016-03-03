@@ -6,7 +6,7 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/ExrOffscreenRecorder")]
     [RequireComponent(typeof(Camera))]
-    public class ExrOffscreenRecorder : MonoBehaviour
+    public class ExrOffscreenRecorder : IImageSequenceRecorder
     {
         [System.Serializable]
         public class ChannelData
@@ -38,6 +38,18 @@ namespace UTJ
         Mesh m_quad;
         RenderTexture[] m_scratch_buffers;
 
+
+        public override int beginFrame
+        {
+            get { return m_beginFrame; }
+            set { m_beginFrame = value; }
+        }
+
+        public override int endFrame
+        {
+            get { return m_endFrame; }
+            set { m_endFrame = value; }
+        }
 
 #if UNITY_EDITOR
         void Reset()

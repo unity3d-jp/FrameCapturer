@@ -10,7 +10,7 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/ExrRecorder")]
     [RequireComponent(typeof(Camera))]
-    public class ExrRecorder : MonoBehaviour
+    public class ExrRecorder : IImageSequenceRecorder
     {
         public enum DepthFormat
         {
@@ -42,6 +42,19 @@ namespace UTJ
         RenderTexture m_depth;
         RenderBuffer[] m_rt_gbuffer;
         Camera m_cam;
+
+
+        public override int beginFrame
+        {
+            get { return m_beginFrame; }
+            set { m_beginFrame = value; }
+        }
+
+        public override int endFrame
+        {
+            get { return m_endFrame; }
+            set { m_endFrame = value; }
+        }
 
 
 #if UNITY_EDITOR
