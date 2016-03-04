@@ -37,7 +37,7 @@ namespace UTJ
             RGu8     = Type_u8  | 2,
             RGBu8    = Type_u8  | 3,
             RGBAu8   = Type_u8  | 4,
-            Ri16     = Type_i16 | 1 ,
+            Ri16     = Type_i16 | 1,
             RGi16    = Type_i16 | 2,
             RGBi16   = Type_i16 | 3,
             RGBAi16  = Type_i16 | 4,
@@ -54,15 +54,6 @@ namespace UTJ
             Error,
             InProgress,
         };
-
-        public struct Bool
-        {
-            byte v;
-            public static implicit operator bool(Bool v) { return v.v != 0; }
-            public static implicit operator Bool(bool v) { Bool r; r.v = v ? (byte)1 : (byte)0; return r; }
-
-            public static Bool True { get { Bool r; r.v = (byte)1;  return r; } }
-        }
 
 
         [DllImport ("FrameCapturer")] public static extern void         fcSetModulePath(string path);
