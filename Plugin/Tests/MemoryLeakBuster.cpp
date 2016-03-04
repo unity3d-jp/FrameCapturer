@@ -53,21 +53,11 @@ const size_t MaxCallstackDepth = 64;
 // EnumProcessModules でロードされている全モジュールに仕掛けることもできるが、色々誤判定されるので絞ったほうがいいと思われる。
 // /MT や /MTd でビルドされたモジュールのリークチェックをしたい場合、このリストに対象モジュールを書けばいけるはず。
 const char *g_target_modules[] = {
-    "msvcr140.dll",
-    "msvcr140d.dll",
-    "msvcr130.dll",
-    "msvcr130d.dll",
-    "msvcr120.dll",
-    "msvcr120d.dll",
-    "msvcr110.dll",
-    "msvcr110d.dll",
-    "msvcr100.dll",
-    "msvcr100d.dll",
-    "msvcr90.dll",
-    "msvcr90d.dll",
-    "msvcr80.dll",
-    "msvcr80d.dll",
-    "msvcrt.dll",
+    "Test.exe",
+    "FrameCapturer.dll",
+    "FrameCapturer_EXR.dll",
+    "FrameCapturer_MP4.dll",
+    "FrameCapturer_PNG.dll",
 };
 
 // 以下の関数群はリーク判定しないようにする。
@@ -207,16 +197,16 @@ void AddressToSymbolName(String &out_text, void *address, HANDLE proc=::GetCurre
         sprintf_s(buf, "[0x%p]\n", address);
     }
     else if(!::SymGetSymFromAddr(process, (DWORDX)address, &dispSym, imageSymbol)) {
-        sprintf_s(buf, "%s + 0x%p [0x%p]\n", imageModule.ModuleName,
-            (void*)((size_t)address-(size_t)imageModule.BaseOfImage), address);
+        sprintf_s(buf, "%s + 0x%x [0x%p]\n", imageModule.ModuleName,
+            (uint32_t)((size_t)address - (size_t)imageModule.BaseOfImage), address);
     }
     else if(!::SymGetLineFromAddr(process, (DWORDX)address, &dispLine, &line)) {
-        sprintf_s(buf, "%s!%s + 0x%p [0x%p]\n", imageModule.ModuleName, imageSymbol->Name,
-            (void*)((size_t)address-(size_t)imageSymbol->Address), address);
+        sprintf_s(buf, "%s!%s + 0x%x [0x%p]\n", imageModule.ModuleName, imageSymbol->Name,
+            (uint32_t)((size_t)address-(size_t)imageSymbol->Address), address);
     }
     else {
-        sprintf_s(buf, "%s(%d): %s!%s + 0x%p [0x%p]\n", line.FileName, line.LineNumber,
-            imageModule.ModuleName, imageSymbol->Name, (void*)((size_t)address-(size_t)imageSymbol->Address), address);
+        sprintf_s(buf, "%s(%d): %s!%s + 0x%x [0x%p]\n", line.FileName, line.LineNumber,
+            imageModule.ModuleName, imageSymbol->Name, (uint32_t)((size_t)address-(size_t)imageSymbol->Address), address);
     }
     out_text += buf;
 }
