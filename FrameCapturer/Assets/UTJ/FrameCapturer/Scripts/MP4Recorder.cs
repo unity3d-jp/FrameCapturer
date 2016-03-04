@@ -67,8 +67,11 @@ namespace UTJ
 
         void ReleaseScratchBuffer()
         {
-            m_scratch_buffer.Release();
-            m_scratch_buffer = null;
+            if (m_scratch_buffer != null)
+            {
+                m_scratch_buffer.Release();
+                m_scratch_buffer = null;
+            }
         }
 
         public override bool IsSeekable() { return false; }
@@ -90,16 +93,7 @@ namespace UTJ
             m_mp4conf.video_bitrate = m_videoBitrate;
             m_mp4conf.audio_bitrate = m_audioBitrate;
             m_mp4conf.audio_sampling_rate = AudioSettings.outputSampleRate;
-            switch (AudioSettings.speakerMode)
-            {
-                case AudioSpeakerMode.Mono:         m_mp4conf.audio_num_channels = 1; break;
-                case AudioSpeakerMode.Stereo:       m_mp4conf.audio_num_channels = 2; break;
-                case AudioSpeakerMode.Quad:         m_mp4conf.audio_num_channels = 4; break;
-                case AudioSpeakerMode.Surround:     m_mp4conf.audio_num_channels = 5; break;
-                case AudioSpeakerMode.Mode5point1:  m_mp4conf.audio_num_channels = 6; break;
-                case AudioSpeakerMode.Mode7point1:  m_mp4conf.audio_num_channels = 8; break;
-                case AudioSpeakerMode.Prologic:     m_mp4conf.audio_num_channels = 6; break;
-            }
+            m_mp4conf.audio_num_channels = fcAPI.fcGetNumAudioChannels();
             m_ctx = fcAPI.fcMP4CreateContext(ref m_mp4conf);
 
             m_output_file = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";

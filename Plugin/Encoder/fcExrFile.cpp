@@ -155,7 +155,7 @@ bool fcExrContext::addLayerTexture(void *tex, fcPixelFormat fmt, int channel, co
             int channels = fmt & fcPixelFormat_ChannelMask;
             auto src_fmt = fmt;
             fmt = fcPixelFormat(fcPixelFormat_Type_f16 | channels);
-            raw_frame->resize(m_task->width * m_task->height * fcGetPixelSize(fmt));
+            buf->resize(m_task->width * m_task->height * fcGetPixelSize(fmt));
             fcConvertPixelFormat(&(*buf)[0], fmt, &(*raw_frame)[0], src_fmt, m_task->width * m_task->height);
 
             m_src_prev = raw_frame = buf;

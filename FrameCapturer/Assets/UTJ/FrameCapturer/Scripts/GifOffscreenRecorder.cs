@@ -64,8 +64,11 @@ namespace UTJ
 
         void ReleaseScratchBuffer()
         {
-            m_scratch_buffer.Release();
-            m_scratch_buffer = null;
+            if(m_scratch_buffer != null)
+            {
+                m_scratch_buffer.Release();
+                m_scratch_buffer = null;
+            }
         }
 
         public override bool IsSeekable() { return true; }
@@ -130,7 +133,7 @@ namespace UTJ
                 m_output_file = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
                 var path = GetOutputPath();
                 ret = fcAPI.fcGifWriteFile(m_ctx, path, begin_frame, end_frame);
-                Debug.Log("GifCapturer.FlushFile(" + begin_frame + ", " + end_frame + "): " + path);
+                Debug.Log("GifOffscreenRecorder.Flush(" + begin_frame + ", " + end_frame + "): " + path);
             }
             return ret;
         }
@@ -175,7 +178,6 @@ namespace UTJ
         void OnEnable()
         {
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
-            m_mat_copy = new Material(m_sh_copy);
         }
 
         void OnDisable()

@@ -138,6 +138,7 @@ namespace UTJ
             }
 
             fcAPI.fcPngDestroyContext(m_ctx);
+            m_ctx.ptr = System.IntPtr.Zero;
         }
 
         IEnumerator OnPostRender()
@@ -167,10 +168,12 @@ namespace UTJ
                     Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                     Graphics.SetRenderTarget(null);
 
-                    string path_gb0 = m_outputDir.GetPath() + "/AlbedoOcclusion_" + frame.ToString("0000") + ".png";
-                    string path_gb1 = m_outputDir.GetPath() + "/SpecularSmoothness_" + frame.ToString("0000") + ".png";
-                    string path_gb2 = m_outputDir.GetPath() + "/Normal_" + frame.ToString("0000") + ".png";
-                    string path_gb3 = m_outputDir.GetPath() + "/Emission_" + frame.ToString("0000") + ".png";
+                    string dir = m_outputDir.GetPath();
+                    string ext = frame.ToString("0000") + ".png";
+                    string path_gb0 = dir + "/AlbedoOcclusion_" + ext;
+                    string path_gb1 = dir + "/SpecularSmoothness_" + ext;
+                    string path_gb2 = dir + "/Normal_" + ext;
+                    string path_gb3 = dir + "/Emission_" + ext;
                     fcAPI.fcPngExportTexture(m_ctx, path_gb0, m_gbuffer[0], false);
                     fcAPI.fcPngExportTexture(m_ctx, path_gb1, m_gbuffer[1], false);
                     fcAPI.fcPngExportTexture(m_ctx, path_gb2, m_gbuffer[2], false);
@@ -186,7 +189,7 @@ namespace UTJ
                     Graphics.SetRenderTarget(null);
 
                     string path = m_outputDir.GetPath() + "/FrameBuffer_" + frame.ToString("0000") + ".png";
-                    fcAPI.fcPngExportTexture(m_ctx, path, m_frame_buffer, false);
+                    fcAPI.fcPngExportTexture(m_ctx, path, m_frame_buffer);
                 }
             }
         }

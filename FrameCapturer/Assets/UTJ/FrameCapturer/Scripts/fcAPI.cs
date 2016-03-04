@@ -101,6 +101,21 @@ namespace UTJ
             return fcPixelFormat.Unknown;
         }
 
+        public static int fcGetNumAudioChannels()
+        {
+            switch (AudioSettings.speakerMode)
+            {
+                case AudioSpeakerMode.Mono:         return 1;
+                case AudioSpeakerMode.Stereo:       return 2;
+                case AudioSpeakerMode.Quad:         return 4;
+                case AudioSpeakerMode.Surround:     return 5;
+                case AudioSpeakerMode.Mode5point1:  return 6;
+                case AudioSpeakerMode.Mode7point1:  return 8;
+                case AudioSpeakerMode.Prologic:     return 6;
+            }
+            return 0;
+        }
+
 
         // -------------------------------------------------------------
         // PNG Exporter
@@ -128,7 +143,7 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern bool         fcPngExportTexture(fcPNGContext ctx, string path, IntPtr tex, int width, int height, fcPixelFormat f, bool flipY);
         [DllImport ("FrameCapturer")] public static extern bool         fcPngExportPixels(fcPNGContext ctx, string path, IntPtr pixels, int width, int height, fcPixelFormat f, bool flipY);
 
-        public static bool fcPngExportTexture(fcPNGContext ctx, string path, RenderTexture tex, bool flipY)
+        public static bool fcPngExportTexture(fcPNGContext ctx, string path, RenderTexture tex, bool flipY = false)
         {
             return fcPngExportTexture(ctx, path, tex.GetNativeTexturePtr(), tex.width, tex.height, fcGetPixelFormat(tex.format), flipY);
         }
@@ -162,7 +177,7 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern bool         fcExrAddLayerPixels(fcEXRContext ctx, IntPtr pixels, fcPixelFormat f, int ch, string name, bool flipY);
         [DllImport ("FrameCapturer")] public static extern bool         fcExrEndFrame(fcEXRContext ctx);
 
-        public static bool fcExrAddLayerTexture(fcEXRContext ctx, RenderTexture tex, int ch, string name, bool flipY)
+        public static bool fcExrAddLayerTexture(fcEXRContext ctx, RenderTexture tex, int ch, string name, bool flipY = false)
         {
             return fcExrAddLayerTexture(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), ch, name, flipY);
         }

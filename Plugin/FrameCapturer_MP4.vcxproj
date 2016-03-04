@@ -98,37 +98,37 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>Foundation;external;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\x86_64;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>Foundation;external;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\x86;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterDLL|x64'">
     <IncludePath>Foundation;external;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\x86_64;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterLib|x64'">
     <IncludePath>Foundation;external;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\x86_64;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterDLL|Win32'">
     <IncludePath>Foundation;external;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\x86;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterLib|Win32'">
     <IncludePath>Foundation;external;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\x86;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
