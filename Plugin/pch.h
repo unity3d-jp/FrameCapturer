@@ -70,7 +70,9 @@
     #define fcSupportNVH264
 #endif
 
-//#define fcGIFSplitModule
-#define fcPNGSplitModule
-#define fcEXRSplitModule
-#define fcMP4SplitModule
+#ifndef fcStaticLink
+    //#define fcGIFSplitModule
+    #define fcPNGSplitModule
+    #define fcEXRSplitModule
+    #define fcMP4SplitModule
+#endif // fcStaticLink
