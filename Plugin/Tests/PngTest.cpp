@@ -1,14 +1,14 @@
 #include "TestCommon.h"
 
 template<class T>
-void PngTestImpl(fcIPngContext *ctx, const char *filename)
+void PngTestImpl(fcIPngContext *ctx, const char *filename, bool flipY=false)
 {
     const int Width = 320;
     const int Height = 240;
 
     std::vector<T> video_frame(Width * Height);
     CreateVideoData(&video_frame[0], Width, Height, 0);
-    fcPngExportPixels(ctx, filename, &video_frame[0], Width, Height, GetPixelFormat<T>::value);
+    fcPngExportPixels(ctx, filename, &video_frame[0], Width, Height, GetPixelFormat<T>::value, flipY);
 }
 
 void PngTest()
@@ -24,6 +24,7 @@ void PngTest()
     PngTestImpl<RGBAu8>(ctx, "RGBAu8.png");
     PngTestImpl<RGBAf16>(ctx, "RGBAf16.png");
     PngTestImpl<RGBAf32>(ctx, "RGBAf32.png");
+    PngTestImpl<RGBAf32>(ctx, "RGBAf32_Flip.png", true);
 
     fcPngDestroyContext(ctx);
 

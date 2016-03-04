@@ -24,7 +24,7 @@
 
 
 
-struct fcExrFrameData
+struct fcExrTaskData
 {
     std::string path;
     int width, height;
@@ -32,7 +32,7 @@ struct fcExrFrameData
     Imf::Header header;
     Imf::FrameBuffer frame_buffer;
 
-    fcExrFrameData(const char *p, int w, int h)
+    fcExrTaskData(const char *p, int w, int h)
         : path(p), width(w), height(h), header(w, h)
     {
         header.compression() = Imf::ZIPS_COMPRESSION;
@@ -52,12 +52,12 @@ public:
 
 private:
     bool addLayerImpl(char *pixels, fcPixelFormat fmt, int channel, const char *name);
-    void endFrameTask(fcExrFrameData *exr);
+    void endFrameTask(fcExrTaskData *exr);
 
 private:
     fcExrConfig m_conf;
     fcIGraphicsDevice *m_dev;
-    fcExrFrameData *m_exr;
+    fcExrTaskData *m_task;
     fcTaskGroup m_tasks;
     std::atomic_int m_active_task_count;
 
@@ -70,7 +70,7 @@ private:
 fcExrContext::fcExrContext(const fcExrConfig& conf, fcIGraphicsDevice *dev)
     : m_conf()
     , m_dev(dev)
-    , m_exr(nullptr)
+    , m_task(nullptr)
     , m_active_task_count(0)
     , m_frame_prev(nullptr)
     , m_src_prev(nullptr)
@@ -95,7 +95,7 @@ void fcExrContext::release()
 
 bool fcExrContext::beginFrame(const char *path, int width, int height)
 {
-    if (m_exr != nullptr) {
+    if (m_task != nullptr) {
         fcDebugLog("fcExrContext::beginFrame(): beginFrame() is already called. maybe you forgot to call endFrame().");
         return false;
     }
@@ -110,29 +110,13 @@ bool fcExrContext::beginFrame(const char *path, int width, int height)
         }
     }
 
-    m_exr = new fcExrFrameData(path, width, height);
+    m_task = new fcExrTaskData(path, width, height);
     return true;
-}
-
-
-// pitch: width * pixel size
-static void fcImageFlipY(void *image_, int width, int height, int pitch)
-{
-    Buffer buf_((size_t)pitch);
-    char *image = (char*)image_;
-    char *buf = &buf_[0];
-
-    for (int y = 0; y < height / 2; ++y) {
-        int iy = height - y - 1;
-        memcpy(buf, image + (pitch*y), pitch);
-        memcpy(image + (pitch*y), image + (pitch*iy), pitch);
-        memcpy(image + (pitch*iy), buf, pitch);
-    }
 }
 
 bool fcExrContext::addLayerTexture(void *tex, fcPixelFormat fmt, int channel, const char *name, bool flipY)
 {
-    if (m_exr == nullptr) {
+    if (m_task == nullptr) {
         fcDebugLog("fcExrContext::addLayerTexture(): maybe beginFrame() is not called.");
         return false;
     }
@@ -148,31 +132,31 @@ bool fcExrContext::addLayerTexture(void *tex, fcPixelFormat fmt, int channel, co
     {
         m_frame_prev = tex;
 
-        m_exr->pixels.push_back(Buffer());
-        raw_frame = &m_exr->pixels.back();
-        raw_frame->resize(m_exr->width * m_exr->height * fcGetPixelSize(fmt));
+        m_task->pixels.push_back(Buffer());
+        raw_frame = &m_task->pixels.back();
+        raw_frame->resize(m_task->width * m_task->height * fcGetPixelSize(fmt));
 
         // get frame buffer
-        if (!m_dev->readTexture(&(*raw_frame)[0], raw_frame->size(), tex, m_exr->width, m_exr->height, fmt))
+        if (!m_dev->readTexture(&(*raw_frame)[0], raw_frame->size(), tex, m_task->width, m_task->height, fmt))
         {
-            m_exr->pixels.pop_back();
+            m_task->pixels.pop_back();
             return false;
         }
         if (flipY) {
-            fcImageFlipY(&(*raw_frame)[0], m_exr->width, m_exr->height, m_exr->width * fcGetPixelSize(fmt));
+            fcImageFlipY(&(*raw_frame)[0], m_task->width, m_task->height, fmt);
         }
         m_src_prev = raw_frame;
 
         // convert pixel format if it is not supported by exr
         if ((fmt & fcPixelFormat_TypeMask) == fcPixelFormat_Type_u8) {
-            m_exr->pixels.push_back(std::vector<char>());
-            auto *buf = &m_exr->pixels.back();
+            m_task->pixels.push_back(std::vector<char>());
+            auto *buf = &m_task->pixels.back();
 
             int channels = fmt & fcPixelFormat_ChannelMask;
             auto src_fmt = fmt;
             fmt = fcPixelFormat(fcPixelFormat_Type_f16 | channels);
-            raw_frame->resize(m_exr->width * m_exr->height * fcGetPixelSize(fmt));
-            fcConvertPixelFormat(&(*buf)[0], fmt, &(*raw_frame)[0], src_fmt, m_exr->width * m_exr->height);
+            raw_frame->resize(m_task->width * m_task->height * fcGetPixelSize(fmt));
+            fcConvertPixelFormat(&(*buf)[0], fmt, &(*raw_frame)[0], src_fmt, m_task->width * m_task->height);
 
             m_src_prev = raw_frame = buf;
         }
@@ -185,7 +169,7 @@ bool fcExrContext::addLayerTexture(void *tex, fcPixelFormat fmt, int channel, co
 
 bool fcExrContext::addLayerPixels(const void *pixels, fcPixelFormat fmt, int channel, const char *name, bool flipY)
 {
-    if (m_exr == nullptr) {
+    if (m_task == nullptr) {
         fcDebugLog("fcExrContext::addLayerPixels(): maybe beginFrame() is not called.");
         return false;
     }
@@ -201,23 +185,23 @@ bool fcExrContext::addLayerPixels(const void *pixels, fcPixelFormat fmt, int cha
     {
         m_frame_prev = pixels;
 
-        m_exr->pixels.push_back(std::vector<char>());
-        raw_frame = &m_exr->pixels.back();
+        m_task->pixels.push_back(std::vector<char>());
+        raw_frame = &m_task->pixels.back();
 
         // convert pixel format if it is not supported by exr
         if ((fmt & fcPixelFormat_TypeMask) == fcPixelFormat_Type_u8) {
             int channels = fmt & fcPixelFormat_ChannelMask;
             auto src_fmt = fmt;
             fmt = fcPixelFormat(fcPixelFormat_Type_f16 | channels);
-            raw_frame->resize(m_exr->width * m_exr->height * (2 * channels));
-            fcConvertPixelFormat(&(*raw_frame)[0], fmt, pixels, src_fmt, m_exr->width * m_exr->height);
+            raw_frame->resize(m_task->width * m_task->height * (2 * channels));
+            fcConvertPixelFormat(&(*raw_frame)[0], fmt, pixels, src_fmt, m_task->width * m_task->height);
         }
         else {
-            raw_frame->resize(m_exr->width * m_exr->height * fcGetPixelSize(fmt));
+            raw_frame->resize(m_task->width * m_task->height * fcGetPixelSize(fmt));
             memcpy(&(*raw_frame)[0], pixels, raw_frame->size());
         }
         if (flipY) {
-            fcImageFlipY(&(*raw_frame)[0], m_exr->width, m_exr->height, m_exr->width * fcGetPixelSize(fmt));
+            fcImageFlipY(&(*raw_frame)[0], m_task->width, m_task->height, fmt);
         }
 
         m_src_prev = raw_frame;
@@ -252,23 +236,23 @@ bool fcExrContext::addLayerImpl(char *pixels, fcPixelFormat fmt, int channel, co
     }
     int psize = tsize * channels;
 
-    m_exr->header.channels().insert(name, Imf::Channel(pixel_type));
-    m_exr->frame_buffer.insert(name, Imf::Slice(pixel_type, pixels + (tsize * channel), psize, psize * m_exr->width));
+    m_task->header.channels().insert(name, Imf::Channel(pixel_type));
+    m_task->frame_buffer.insert(name, Imf::Slice(pixel_type, pixels + (tsize * channel), psize, psize * m_task->width));
     return true;
 }
 
 
 bool fcExrContext::endFrame()
 {
-    if (m_exr == nullptr) {
+    if (m_task == nullptr) {
         fcDebugLog("fcExrContext::endFrame(): maybe beginFrame() is not called.");
         return false;
     }
 
     m_frame_prev = nullptr;
 
-    fcExrFrameData *exr = m_exr;
-    m_exr = nullptr;
+    fcExrTaskData *exr = m_task;
+    m_task = nullptr;
     ++m_active_task_count;
     m_tasks.run([this, exr](){
         endFrameTask(exr);
@@ -277,7 +261,7 @@ bool fcExrContext::endFrame()
     return true;
 }
 
-void fcExrContext::endFrameTask(fcExrFrameData *exr)
+void fcExrContext::endFrameTask(fcExrTaskData *exr)
 {
     try {
         Imf::OutputFile fout(exr->path.c_str(), exr->header);
