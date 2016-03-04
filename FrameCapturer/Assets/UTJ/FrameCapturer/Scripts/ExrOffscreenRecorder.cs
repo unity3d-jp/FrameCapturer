@@ -96,7 +96,7 @@ namespace UTJ
                     fcAPI.fcExrBeginFrame(m_ctx, path, target.width, target.height);
                     for (int i=0; i<num_channels; ++i)
                     {
-                        fcAPI.fcExrAddLayerTexture(m_ctx, target, i, channel_names[i]);
+                        fcAPI.fcExrAddLayerTexture(m_ctx, scratch, i, channel_names[i]);
                     }
                     fcAPI.fcExrEndFrame(m_ctx);
                 }

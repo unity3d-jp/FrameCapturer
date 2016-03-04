@@ -174,10 +174,10 @@ namespace UTJ
                     string path_gb1 = dir + "/SpecularSmoothness_" + ext;
                     string path_gb2 = dir + "/Normal_" + ext;
                     string path_gb3 = dir + "/Emission_" + ext;
-                    fcAPI.fcPngExportTexture(m_ctx, path_gb0, m_gbuffer[0], false);
-                    fcAPI.fcPngExportTexture(m_ctx, path_gb1, m_gbuffer[1], false);
-                    fcAPI.fcPngExportTexture(m_ctx, path_gb2, m_gbuffer[2], false);
-                    fcAPI.fcPngExportTexture(m_ctx, path_gb3, m_gbuffer[3], false);
+                    fcAPI.fcPngExportTexture(m_ctx, path_gb0, m_gbuffer[0]);
+                    fcAPI.fcPngExportTexture(m_ctx, path_gb1, m_gbuffer[1]);
+                    fcAPI.fcPngExportTexture(m_ctx, path_gb2, m_gbuffer[2]);
+                    fcAPI.fcPngExportTexture(m_ctx, path_gb3, m_gbuffer[3]);
                 }
 
                 yield return new WaitForEndOfFrame();

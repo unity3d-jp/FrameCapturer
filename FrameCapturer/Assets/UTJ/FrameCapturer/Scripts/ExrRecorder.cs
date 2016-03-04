@@ -242,7 +242,7 @@ namespace UTJ
 
         void AddLayer(RenderTexture rt, int ch, string name)
         {
-            fcAPI.fcExrAddLayerTexture(m_ctx, rt, ch, name, false);
+            fcAPI.fcExrAddLayerTexture(m_ctx, rt, ch, name);
         }
     }
 }

@@ -187,6 +187,7 @@ namespace UTJ
 
         void OnEnable()
         {
+            m_outputDir.CreateDirectory();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
             m_mat_copy = new Material(m_sh_copy);
             if (GetComponent<Camera>().targetTexture != null)
