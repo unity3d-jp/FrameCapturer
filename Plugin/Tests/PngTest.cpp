@@ -6,7 +6,7 @@ void PngTestImpl(fcIPngContext *ctx, const char *filename, bool flipY=false)
     const int Width = 320;
     const int Height = 240;
 
-    std::vector<T> video_frame(Width * Height);
+    TBuffer<T> video_frame(Width * Height);
     CreateVideoData(&video_frame[0], Width, Height, 0);
     fcPngExportPixels(ctx, filename, &video_frame[0], Width, Height, GetPixelFormat<T>::value, flipY);
 }

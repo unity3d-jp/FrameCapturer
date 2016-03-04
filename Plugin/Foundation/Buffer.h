@@ -4,6 +4,8 @@
 #include <vector>
 #include <algorithm>
 
+void*       AlignedAlloc(size_t size, size_t align);
+void        AlignedFree(void *p);
 
 template<class T>
 class TDataRef
@@ -40,65 +42,74 @@ private:
 typedef TDataRef<char> DataRef;
 
 
+// low-level vector<>. T must be POD type
 template<class T>
 class TBuffer
 {
 public:
-    typedef T value_type;
-    typedef std::vector<value_type>     container;
-    typedef typename container::iterator         iterator;
-    typedef typename container::const_iterator   const_iterator;
-    typedef typename container::pointer          pointer;
-    typedef typename container::const_pointer    const_pointer;
+    typedef T           value_type;
+    typedef T*          iterator;
+    typedef const T*    const_iterator;
+    typedef T*          pointer;
+    typedef const T*    const_pointer;
 
-
-    TBuffer() {}
-    TBuffer(size_t size) { resize(size); }
-    TBuffer(const void *src, size_t len) : m_data((const_pointer)src, (const_pointer)src+len) {}
-    TBuffer(const TDataRef<T> &buf) : m_data(buf.begin(), buf.end()) {}
-    TBuffer(container&& src) : m_data(src) {}
+    TBuffer() : m_data(), m_size() {}
+    explicit TBuffer(size_t size) : m_data(), m_size() { resize(size); }
+    TBuffer(const void *src, size_t len) : m_data(), m_size() { assign(src, len); }
+    TBuffer(TBuffer& v) : m_data(), m_size() { assign(v.ptr(), v.size()); }
+    TBuffer(TBuffer&& v) : m_data(v.ptr()), m_size(v.size()) {}
+    TBuffer& operator=(TBuffer& v) { assign(v.ptr(), v.size()); return *this; }
+    ~TBuffer() { clear(); }
 
     value_type&         operator[](size_t i) { return m_data[i]; }
     const value_type&   operator[](size_t i) const { return m_data[i]; }
 
-    container&      get()           { return m_data; }
-    container&&     move()          { return std::move(m_data); }
-    size_t          size() const    { return m_data.size(); }
-    bool            empty() const   { return m_data.empty(); }
-    iterator        begin()         { return m_data.begin(); }
-    iterator        end()           { return m_data.end(); }
-    const_iterator  begin() const   { return m_data.begin(); }
-    const_iterator  end() const     { return m_data.end(); }
-    pointer         ptr()           { return m_data.empty() ? nullptr : &m_data[0]; }
-    const_pointer   ptr() const     { return m_data.empty() ? nullptr : &m_data[0]; }
+    size_t          size() const    { return m_size; }
+    bool            empty() const   { return m_size == 0; }
+    iterator        begin()         { return m_data; }
+    const_iterator  begin() const   { return m_data; }
+    iterator        end()           { return m_data + m_size; }
+    const_iterator  end() const     { return m_data + m_size; }
+    pointer         ptr()           { return m_data; }
+    const_pointer   ptr() const     { return m_data; }
 
+    // src must not be part of this container
     void assign(const void *src, size_t len)
     {
-        m_data.assign((const_pointer)src, (const_pointer)src + len);
+        resize(len);
+        memcpy(ptr(), src, sizeof(T) * len);
     }
 
+    // src must not be part of this container
     void append(const void *src, size_t len)
     {
-        m_data.insert(m_data.end(), (const_pointer)src, (const_pointer)src + len);
+        size_t pos = size();
+        resize(pos + len);
+        memcpy(ptr() + pos, src, sizeof(T) * len);
     }
 
     void resize(size_t newsize)
     {
-        m_data.resize(newsize);
+        T *new_data = (T*)AlignedAlloc(sizeof(T) * newsize, 0x20);
+        if (m_data) {
+            memcpy(new_data, m_data, std::min<size_t>(sizeof(T) * m_size, sizeof(T) * newsize));
+        }
+
+        clear();
+        m_data = new_data;
+        m_size = newsize;
     }
 
     void clear()
     {
-        m_data.clear();
-    }
-
-    void reserve(size_t newsize)
-    {
-        m_data.reserve(newsize);
+        AlignedFree(m_data);
+        m_data = nullptr;
+        m_size = 0;
     }
 
 protected:
-    container m_data;
+    T *m_data;
+    size_t m_size;
 };
 typedef TBuffer<char> Buffer;
 

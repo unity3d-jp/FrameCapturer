@@ -4,8 +4,8 @@
 class BinaryStream;
 typedef BinaryStream fcStream;
 
-#include "Buffer.h"
 #include "Misc.h"
+#include "Buffer.h"
 #include "PixelFormat.h"
 #include "FrameCapturer.h"
 

@@ -7,12 +7,12 @@ const int Height = 240;
 
 
 template<class Src, class Dst>
-void ConvertTestImpl(fcIPngContext *ctx, std::vector<Src>& src)
+void ConvertTestImpl(fcIPngContext *ctx, TBuffer<Src>& src)
 {
     char filename[128];
     sprintf(filename, "%s_to_%s.png", GetPixelFormat<Src>::getName(), GetPixelFormat<Dst>::getName());
 
-    std::vector<Dst> dst;
+    TBuffer<Dst> dst;
     dst.resize(Width * Height);
     auto data = fcConvertPixelFormat(&dst[0], GetPixelFormat<Dst>::value, &src[0], GetPixelFormat<Src>::value, src.size());
     fcPngExportPixels(ctx, filename, data, Width, Height, GetPixelFormat<Dst>::value);
@@ -27,7 +27,7 @@ void ConvertTest()
 
 #define TestCases(SrcT)\
 {\
-    std::vector<SrcT> video_frame(Width * Height);\
+    TBuffer<SrcT> video_frame(Width * Height);\
     CreateVideoData(&video_frame[0], Width, Height, 0);\
     ConvertTestImpl<SrcT, RGBAu8>(ctx, video_frame);\
     ConvertTestImpl<SrcT, RGBu8>(ctx, video_frame);\
