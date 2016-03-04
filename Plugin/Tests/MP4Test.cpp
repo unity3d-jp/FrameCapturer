@@ -53,7 +53,7 @@ void MP4Test()
     {
         // add video frames
         std::thread video_thread = std::thread([&]() {
-            std::vector<RGBAu8> video_frame(Width * Height);
+            TBuffer<RGBAu8> video_frame(Width * Height);
             fcTime t = 0;
             for (int i = 0; i < DurationInSeconds * FrameRate; ++i) {
                 CreateVideoData(&video_frame[0], Width, Height, i);
@@ -64,7 +64,7 @@ void MP4Test()
 
         // add audio frames
         std::thread audio_thread = std::thread([&]() {
-            std::vector<float> audio_sample(SamplingRate);
+            TBuffer<float> audio_sample(SamplingRate);
             fcTime t = 0;
             for (int i = 0; i < DurationInSeconds; ++i) {
                 CreateAudioData(&audio_sample[0], (int)audio_sample.size(), i);

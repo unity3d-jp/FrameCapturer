@@ -149,7 +149,7 @@ bool fcExrContext::addLayerTexture(void *tex, fcPixelFormat fmt, int channel, co
 
         // convert pixel format if it is not supported by exr
         if ((fmt & fcPixelFormat_TypeMask) == fcPixelFormat_Type_u8) {
-            m_task->pixels.push_back(std::vector<char>());
+            m_task->pixels.emplace_back(Buffer());
             auto *buf = &m_task->pixels.back();
 
             int channels = fmt & fcPixelFormat_ChannelMask;
@@ -185,7 +185,7 @@ bool fcExrContext::addLayerPixels(const void *pixels, fcPixelFormat fmt, int cha
     {
         m_frame_prev = pixels;
 
-        m_task->pixels.push_back(std::vector<char>());
+        m_task->pixels.emplace_back(Buffer());
         raw_frame = &m_task->pixels.back();
 
         // convert pixel format if it is not supported by exr
