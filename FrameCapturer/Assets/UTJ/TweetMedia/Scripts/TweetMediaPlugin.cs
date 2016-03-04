@@ -121,8 +121,12 @@ namespace UTJ
                     ret += Application.dataPath;
                     break;
             }
-            ret += "/";
-            return ret + m_leaf;
+            if(m_leaf.Length > 0)
+            {
+                ret += "/";
+                ret += m_leaf;
+            }
+            return ret;
         }
 
         public void CreateDirectory()

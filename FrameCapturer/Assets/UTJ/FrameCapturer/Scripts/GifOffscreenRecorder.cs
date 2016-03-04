@@ -9,18 +9,19 @@ namespace UTJ
     [RequireComponent(typeof(Camera))]
     public class GifOffscreenRecorder : IMovieRecorder
     {
-        public enum FramerateMode
+        public enum FrameRateMode
         {
             Variable,
             Constant,
         }
+
         [Tooltip("output directory. filename is generated automatically.")]
         public DataPath m_outputDir = new DataPath(DataPath.Root.PersistentDataPath, "");
         public RenderTexture m_target;
         public int m_resolutionWidth = 300;
         public int m_numColors = 256;
-        public FramerateMode m_framerateMode = FramerateMode.Variable;
-        [Tooltip("relevant only if Framerate Mode is Constant")]
+        public FrameRateMode m_frameRateMode = FrameRateMode.Constant;
+        [Tooltip("relevant only if FrameRateMode is Constant")]
         public int m_framerate = 30;
         public int m_captureEveryNthFrame = 2;
         public int m_keyframe = 30;
@@ -84,7 +85,7 @@ namespace UTJ
             fcAPI.fcGifConfig conf;
             conf.width = m_scratch_buffer.width;
             conf.height = m_scratch_buffer.height;
-            conf.num_colors = m_numColors;
+            conf.num_colors = Mathf.Clamp(m_numColors, 1, 255);
             conf.max_active_tasks = m_maxTasks;
             m_ctx = fcAPI.fcGifCreateContext(ref conf);
 
@@ -193,7 +194,7 @@ namespace UTJ
                 {
                     bool keyframe = m_keyframe > 0 && m_num_frames % m_keyframe == 0;
                     double timestamp = -1.0;
-                    if (m_framerateMode == FramerateMode.Constant)
+                    if (m_frameRateMode == FrameRateMode.Constant)
                     {
                         timestamp = 1.0 / m_framerate * m_num_frames;
                     }
