@@ -141,7 +141,7 @@ fcCLinkage fcExport fcIExrContext* fcExrCreateContext(const fcExrConfig *conf)
     }
     return fcExrCreateContextImpl ? fcExrCreateContextImpl(conf, fcGetGraphicsDevice()) : nullptr;
 #else
-    return fcExrCreateContextImpl(*conf, fcGetGraphicsDevice());
+    return fcExrCreateContextImpl(conf, fcGetGraphicsDevice());
 #endif
 }
 

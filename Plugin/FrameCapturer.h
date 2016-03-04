@@ -65,6 +65,10 @@ enum fcPixelFormat
 // Foundation
 // -------------------------------------------------------------
 
+fcCLinkage fcExport void            fcInitializeOpenGL();
+fcCLinkage fcExport void            fcInitializeD3D9(void *device);
+fcCLinkage fcExport void            fcInitializeD3D11(void *device);
+
 fcCLinkage fcExport void            fcSetModulePath(const char *path);
 fcCLinkage fcExport const char*     fcGetModulePath();
 fcCLinkage fcExport fcTime          fcGetTime();
