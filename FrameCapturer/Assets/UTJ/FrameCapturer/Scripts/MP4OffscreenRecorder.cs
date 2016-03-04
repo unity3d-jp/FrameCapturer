@@ -42,11 +42,10 @@ namespace UTJ
 
         void UpdateScratchBuffer()
         {
-            var cam = GetComponent<Camera>();
             int capture_width = m_resolutionWidth;
-            int capture_height = (int)((float)m_resolutionWidth / ((float)cam.pixelWidth / (float)cam.pixelHeight));
+            int capture_height = (int)(m_resolutionWidth / ((float)m_target.width / (float)m_target.height));
 
-            if( m_scratch_buffer != null)
+            if ( m_scratch_buffer != null)
             {
                 // update is not needed
                 if( m_scratch_buffer.IsCreated() &&
