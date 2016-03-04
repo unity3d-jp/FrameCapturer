@@ -49,6 +49,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -86,37 +87,37 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(SolutionDir)external;$(SolutionDir)external\OpenEXR;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)external\libs\x86_64;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(SolutionDir)external;$(SolutionDir)external\OpenEXR;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)external\libs\x86;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterDLL|x64'">
     <IncludePath>$(SolutionDir)external;$(SolutionDir)external\OpenEXR;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)external\libs\x86_64;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterLib|x64'">
     <IncludePath>$(SolutionDir)external;$(SolutionDir)external\OpenEXR;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)external\libs\x86_64;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterDLL|Win32'">
     <IncludePath>$(SolutionDir)external;$(SolutionDir)external\OpenEXR;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)external\libs\x86;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MasterLib|Win32'">
     <IncludePath>$(SolutionDir)external;$(SolutionDir)external\OpenEXR;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)external\libs\x86;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\FrameCapturer_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

@@ -21,7 +21,7 @@ namespace UTJ
 
         public bool m_captureFramebuffer = true;
         public bool m_captureGBuffer = true;
-        public DepthFormat m_depthFormat = DepthFormat.Float;
+        public DepthFormat m_depthFormat = DepthFormat.Half;
 
         [Tooltip("output directory. filename is generated automatically.")]
         public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "ExrOutput");
@@ -29,7 +29,7 @@ namespace UTJ
         public int m_endFrame = 100;
         public Shader m_sh_copy;
 
-        fcAPI.fcEXRContext m_exr;
+        fcAPI.fcEXRContext m_ctx;
         int m_frame;
         Material m_mat_copy;
         Mesh m_quad;
@@ -117,7 +117,7 @@ namespace UTJ
             }
 
             fcAPI.fcExrConfig conf = fcAPI.fcExrConfig.default_value;
-            m_exr = fcAPI.fcExrCreateContext(ref conf);
+            m_ctx = fcAPI.fcExrCreateContext(ref conf);
         }
 
         void OnDisable()
@@ -145,7 +145,8 @@ namespace UTJ
                 m_rt_gbuffer = null;
             }
 
-            fcAPI.fcExrDestroyContext(m_exr);
+            fcAPI.fcExrDestroyContext(m_ctx);
+            m_ctx.ptr = System.IntPtr.Zero;
         }
 
         IEnumerator OnPostRender()
@@ -166,56 +167,57 @@ namespace UTJ
                     Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                     Graphics.SetRenderTarget(null);
 
+                    string dir = m_outputDir.GetPath();
                     string ext = frame.ToString("0000") + ".exr";
                     {
-                        string path = m_outputDir.GetPath() + "/Albedo_" + ext;
-                        fcAPI.fcExrBeginFrame(m_exr, path, m_gbuffer[0].width, m_gbuffer[0].height);
+                        string path = dir + "/Albedo_" + ext;
+                        fcAPI.fcExrBeginFrame(m_ctx, path, m_gbuffer[0].width, m_gbuffer[0].height);
                         AddLayer(m_gbuffer[0], 0, "R");
                         AddLayer(m_gbuffer[0], 1, "G");
                         AddLayer(m_gbuffer[0], 2, "B");
-                        fcAPI.fcExrEndFrame(m_exr);
+                        fcAPI.fcExrEndFrame(m_ctx);
                     }
                     {
-                        string path = m_outputDir.GetPath() + "/Occlusion_" + ext;
-                        fcAPI.fcExrBeginFrame(m_exr, path, m_gbuffer[0].width, m_gbuffer[0].height);
-                        AddLayer(m_gbuffer[0], 3, "A");
-                        fcAPI.fcExrEndFrame(m_exr);
+                        string path = dir + "/Occlusion_" + ext;
+                        fcAPI.fcExrBeginFrame(m_ctx, path, m_gbuffer[0].width, m_gbuffer[0].height);
+                        AddLayer(m_gbuffer[0], 3, "R");
+                        fcAPI.fcExrEndFrame(m_ctx);
                     }
                     {
-                        string path = m_outputDir.GetPath() + "/Specular_" + ext;
-                        fcAPI.fcExrBeginFrame(m_exr, path, m_gbuffer[0].width, m_gbuffer[0].height);
+                        string path = dir + "/Specular_" + ext;
+                        fcAPI.fcExrBeginFrame(m_ctx, path, m_gbuffer[0].width, m_gbuffer[0].height);
                         AddLayer(m_gbuffer[1], 0, "R");
                         AddLayer(m_gbuffer[1], 1, "G");
                         AddLayer(m_gbuffer[1], 2, "B");
-                        fcAPI.fcExrEndFrame(m_exr);
+                        fcAPI.fcExrEndFrame(m_ctx);
                     }
                     {
-                        string path = m_outputDir.GetPath() + "/Smoothness_" + ext;
-                        fcAPI.fcExrBeginFrame(m_exr, path, m_gbuffer[0].width, m_gbuffer[0].height);
-                        AddLayer(m_gbuffer[1], 3, "A");
-                        fcAPI.fcExrEndFrame(m_exr);
+                        string path = dir + "/Smoothness_" + ext;
+                        fcAPI.fcExrBeginFrame(m_ctx, path, m_gbuffer[0].width, m_gbuffer[0].height);
+                        AddLayer(m_gbuffer[1], 3, "R");
+                        fcAPI.fcExrEndFrame(m_ctx);
                     }
                     {
-                        string path = m_outputDir.GetPath() + "/Normal_" + ext;
-                        fcAPI.fcExrBeginFrame(m_exr, path, m_gbuffer[0].width, m_gbuffer[0].height);
+                        string path = dir + "/Normal_" + ext;
+                        fcAPI.fcExrBeginFrame(m_ctx, path, m_gbuffer[0].width, m_gbuffer[0].height);
                         AddLayer(m_gbuffer[2], 0, "R");
                         AddLayer(m_gbuffer[2], 1, "G");
                         AddLayer(m_gbuffer[2], 2, "B");
-                        fcAPI.fcExrEndFrame(m_exr);
+                        fcAPI.fcExrEndFrame(m_ctx);
                     }
                     {
-                        string path = m_outputDir.GetPath() + "/Emission_" + ext;
-                        fcAPI.fcExrBeginFrame(m_exr, path, m_gbuffer[0].width, m_gbuffer[0].height);
+                        string path = dir + "/Emission_" + ext;
+                        fcAPI.fcExrBeginFrame(m_ctx, path, m_gbuffer[0].width, m_gbuffer[0].height);
                         AddLayer(m_gbuffer[3], 0, "R");
                         AddLayer(m_gbuffer[3], 1, "G");
                         AddLayer(m_gbuffer[3], 2, "B");
-                        fcAPI.fcExrEndFrame(m_exr);
+                        fcAPI.fcExrEndFrame(m_ctx);
                     }
                     {
-                        string path = m_outputDir.GetPath() + "/Depth_" + ext;
-                        fcAPI.fcExrBeginFrame(m_exr, path, m_gbuffer[0].width, m_gbuffer[0].height);
-                        AddLayer(m_depth, 0, "A");
-                        fcAPI.fcExrEndFrame(m_exr);
+                        string path = dir + "/Depth_" + ext;
+                        fcAPI.fcExrBeginFrame(m_ctx, path, m_gbuffer[0].width, m_gbuffer[0].height);
+                        AddLayer(m_depth, 0, "R");
+                        fcAPI.fcExrEndFrame(m_ctx);
                     }
                 }
 
@@ -228,19 +230,19 @@ namespace UTJ
                     Graphics.SetRenderTarget(null);
 
                     string path = m_outputDir.GetPath() + "/FrameBuffer_" + frame.ToString("0000") + ".exr";
-                    fcAPI.fcExrBeginFrame(m_exr, path, m_frame_buffer.width, m_frame_buffer.height);
+                    fcAPI.fcExrBeginFrame(m_ctx, path, m_frame_buffer.width, m_frame_buffer.height);
                     AddLayer(m_frame_buffer, 0, "R");
                     AddLayer(m_frame_buffer, 1, "G");
                     AddLayer(m_frame_buffer, 2, "B");
                     //AddLayer(m_frame_buffer, 3, "A");
-                    fcAPI.fcExrEndFrame(m_exr);
+                    fcAPI.fcExrEndFrame(m_ctx);
                 }
             }
         }
 
         void AddLayer(RenderTexture rt, int ch, string name)
         {
-            fcAPI.fcExrAddLayerTexture(m_exr, rt, ch, name, false);
+            fcAPI.fcExrAddLayerTexture(m_ctx, rt, ch, name, false);
         }
     }
 }

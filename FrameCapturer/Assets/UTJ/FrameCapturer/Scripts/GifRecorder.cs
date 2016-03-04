@@ -66,8 +66,11 @@ namespace UTJ
 
         void ReleaseScratchBuffer()
         {
-            m_scratch_buffer.Release();
-            m_scratch_buffer = null;
+            if (m_scratch_buffer != null)
+            {
+                m_scratch_buffer.Release();
+                m_scratch_buffer = null;
+            }
         }
 
         public override bool IsSeekable() { return true; }
