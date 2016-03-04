@@ -48,7 +48,6 @@ namespace UTJ
             m_outputDir.CreateDirectory();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
             m_mat_copy = new Material(m_sh_copy);
-            m_mat_copy.EnableKeyword("OFFSCREEN");
 
             m_scratch_buffers = new RenderTexture[m_targets.Length];
             for (int i = 0; i < m_scratch_buffers.Length; ++i)
@@ -77,8 +76,6 @@ namespace UTJ
 
                 Debug.Log("PngOffscreenRecorder: frame " + frame);
 
-                string[] channel_names = new string[] {"R", "G", "B", "A"};
-
                 for (int ti = 0; ti < m_targets.Length; ++ti)
                 {
                     var target = m_targets[ti];
@@ -95,7 +92,7 @@ namespace UTJ
                     Graphics.SetRenderTarget(null);
 
                     string path = m_outputDir.GetPath() + "/" + m_outputFilename + "[" + ti + "]_" + frame.ToString("0000") + ".png";
-                    fcAPI.fcPngExportTexture(m_ctx, path, target);
+                    fcAPI.fcPngExportTexture(m_ctx, path, scratch);
                 }
             }
         }

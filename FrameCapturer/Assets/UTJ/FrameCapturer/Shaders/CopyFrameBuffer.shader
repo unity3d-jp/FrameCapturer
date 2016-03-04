@@ -16,8 +16,6 @@ sampler2D _CameraGBufferTexture2;
 sampler2D _CameraGBufferTexture3;
 sampler2D_float _CameraDepthTexture;
 sampler2D _TmpRenderTarget;
-int _InvertY;
-
 
 struct v2f {
     float4 pos : POSITION;
@@ -42,7 +40,7 @@ float2 get_texcoord_gb(v2f i)
 {
     float2 t = i.spos.xy * 0.5 + 0.5;
 #if !defined(UNITY_UV_STARTS_AT_TOP)
-    t.y = 1.0-t.y;
+    t.y = 1.0 - t.y;
 #endif
     return t;
 }
@@ -52,7 +50,7 @@ half4 copy_framebuffer(v2f i) : SV_Target
 {
     float2 t = get_texcoord(i);
 #if !defined(OFFSCREEN) || !defined(UNITY_UV_STARTS_AT_TOP)
-    t.y = 1.0-t.y;
+    t.y = 1.0 - t.y;
 #endif
     half4 r = tex2D(_TmpFrameBuffer, t);
     r.a = 1.0;

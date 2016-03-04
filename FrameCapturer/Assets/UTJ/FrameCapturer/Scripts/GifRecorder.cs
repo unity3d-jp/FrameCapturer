@@ -133,7 +133,7 @@ namespace UTJ
         public override bool Flush(int begin_frame, int end_frame)
         {
             bool ret = false;
-            if (m_ctx.ptr != IntPtr.Zero)
+            if (m_ctx.ptr != IntPtr.Zero && m_num_frames > 0)
             {
                 m_output_file = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
                 var path = GetOutputPath();
@@ -182,6 +182,7 @@ namespace UTJ
 
         void OnEnable()
         {
+            m_outputDir.CreateDirectory();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
             m_mat_copy = new Material(m_sh_copy);
             if (GetComponent<Camera>().targetTexture != null)
