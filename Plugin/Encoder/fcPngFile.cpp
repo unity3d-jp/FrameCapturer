@@ -21,6 +21,9 @@ struct fcPngTaskData
     int width;
     int height;
     fcPixelFormat format;
+    bool flipY;
+
+    fcPngTaskData() : width(), height(), format(), flipY() {}
 };
 
 class fcPngContext : public fcIPngContext
@@ -71,6 +74,7 @@ bool fcPngContext::exportTexture(const char *path_, void *tex, int width, int he
     data->width = width;
     data->height = height;
     data->format = fmt;
+    data->flipY = flipY;
 
     // get surface data
     data->pixels.resize(width * height * fcGetPixelSize(fmt));
@@ -99,6 +103,7 @@ bool fcPngContext::exportPixels(const char *path_, const void *pixels_, int widt
     data->width = width;
     data->height = height;
     data->format = fmt;
+    data->flipY = flipY;
     data->pixels.assign((char*)pixels_, width * height * fcGetPixelSize(fmt));
 
     // kick export task
@@ -124,14 +129,17 @@ void fcPngContext::waitSome()
 bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
 {
     png_bytep pixels = (png_bytep)&data.pixels[0];
-    fcPixelFormat fmt = data.format;
 
     int npixels = data.width * data.height;
     int bit_depth = 0;
     int num_channels = 0;
     int color_type = 0;
 
-    switch (fmt) {
+    if (data.flipY) {
+        fcImageFlipY(&data.pixels[0], data.width, data.height, data.format);
+    }
+
+    switch (data.format) {
         // u8
     case fcPixelFormat_RGBAu8:
         bit_depth = 8;
@@ -145,7 +153,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
         break;
     case fcPixelFormat_RGu8:
         data.buf.resize(npixels * 3);
-        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBu8, &data.pixels[0], fmt, npixels);
+        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBu8, &data.pixels[0], data.format, npixels);
         pixels = (png_bytep)&data.buf[0];
         bit_depth = 8;
         num_channels = 3;
@@ -160,7 +168,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
         // f16 -> i16
     case fcPixelFormat_RGBAf16:
         data.buf.resize(npixels * 8);
-        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBAi16, &data.pixels[0], fmt, npixels);
+        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBAi16, &data.pixels[0], data.format, npixels);
         pixels = (png_bytep)&data.buf[0];
         bit_depth = 16;
         num_channels = 4;
@@ -168,7 +176,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
         break;
     case fcPixelFormat_RGBf16:
         data.buf.resize(npixels * 6);
-        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBi16, &data.pixels[0], fmt, npixels);
+        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBi16, &data.pixels[0], data.format, npixels);
         pixels = (png_bytep)&data.buf[0];
         bit_depth = 16;
         num_channels = 3;
@@ -176,7 +184,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
         break;
     case fcPixelFormat_RGf16:
         data.buf.resize(npixels * 6);
-        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBi16, &data.pixels[0], fmt, npixels);
+        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBi16, &data.pixels[0], data.format, npixels);
         pixels = (png_bytep)&data.buf[0];
         bit_depth = 16;
         num_channels = 3;
@@ -184,7 +192,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
         break;
     case fcPixelFormat_Rf16:
         data.buf.resize(npixels * 2);
-        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_Ri16, &data.pixels[0], fmt, npixels);
+        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_Ri16, &data.pixels[0], data.format, npixels);
         pixels = (png_bytep)&data.buf[0];
         bit_depth = 16;
         num_channels = 1;
@@ -194,7 +202,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
         // f32 -> i16 (png doesn't support 32bit color :( )
     case fcPixelFormat_RGBAf32:
         data.buf.resize(npixels * 8);
-        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBAi16, &data.pixels[0], fmt, npixels);
+        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBAi16, &data.pixels[0], data.format, npixels);
         pixels = (png_bytep)&data.buf[0];
         bit_depth = 16;
         num_channels = 4;
@@ -202,7 +210,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
         break;
     case fcPixelFormat_RGBf32:
         data.buf.resize(npixels * 6);
-        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBi16, &data.pixels[0], fmt, npixels);
+        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBi16, &data.pixels[0], data.format, npixels);
         pixels = (png_bytep)&data.buf[0];
         bit_depth = 16;
         num_channels = 3;
@@ -210,7 +218,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
         break;
     case fcPixelFormat_RGf32:
         data.buf.resize(npixels * 6);
-        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBi16, &data.pixels[0], fmt, npixels);
+        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBi16, &data.pixels[0], data.format, npixels);
         pixels = (png_bytep)&data.buf[0];
         bit_depth = 16;
         num_channels = 3;
@@ -218,7 +226,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
         break;
     case fcPixelFormat_Rf32:
         data.buf.resize(npixels * 2);
-        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_Ri16, &data.pixels[0], fmt, npixels);
+        fcConvertPixelFormat(&data.buf[0], fcPixelFormat_Ri16, &data.pixels[0], data.format, npixels);
         pixels = (png_bytep)&data.buf[0];
         bit_depth = 16;
         num_channels = 1;

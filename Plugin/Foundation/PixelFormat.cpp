@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "fcFoundation.h"
 
+#define fcEnableISPCKernel
+
 
 int fcGetPixelSize(fcPixelFormat format)
 {
@@ -33,10 +35,23 @@ int fcGetPixelSize(fcPixelFormat format)
 }
 
 
-#define fcEnableISPCConverter
+void fcImageFlipY(void *image_, int width, int height, fcPixelFormat fmt)
+{
+    size_t pitch = width * fcGetPixelSize(fmt);
+    Buffer buf_((size_t)pitch);
+    char *image = (char*)image_;
+    char *buf = &buf_[0];
+
+    for (int y = 0; y < height / 2; ++y) {
+        int iy = height - y - 1;
+        memcpy(buf, image + (pitch*y), pitch);
+        memcpy(image + (pitch*y), image + (pitch*iy), pitch);
+        memcpy(image + (pitch*iy), buf, pitch);
+    }
+}
 
 
-#ifdef fcEnableISPCConverter
+#ifdef fcEnableISPCKernel
 #include "ConvertKernel_ispc.h"
 
 void fcScaleArray(uint8_t *data, size_t size, float scale)  { ispc::ScaleU8(data, (uint32_t)size, scale); }
@@ -283,4 +298,4 @@ const void* fcConvertPixelFormat(void *dst, fcPixelFormat dstfmt, const void *sr
 {
     return fcConvertPixelFormat_ISPC(dst, dstfmt, src, srcfmt, size);
 }
-#endif // fcEnableISPCConverter
+#endif // fcEnableISPCKernel
