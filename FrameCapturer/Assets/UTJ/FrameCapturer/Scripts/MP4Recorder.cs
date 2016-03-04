@@ -102,7 +102,7 @@ namespace UTJ
 
             GetComponent<Camera>().AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
 
-            Debug.Log("MP4Capturer.BeginRecording(): " + GetOutputPath()); return true;
+            Debug.Log("MP4Recorder.BeginRecording(): " + GetOutputPath()); return true;
         }
 
         public override bool EndRecording()
@@ -122,7 +122,7 @@ namespace UTJ
                 m_ostream.ptr = IntPtr.Zero;
             }
 
-            Debug.Log("MP4Capturer.EndRecording(): " + GetOutputPath());
+            Debug.Log("MP4Recorder.EndRecording(): " + GetOutputPath());
             return true;
         }
 
@@ -246,7 +246,7 @@ namespace UTJ
             if (m_recording && m_captureAudio)
             {
                 if(channels != m_mp4conf.audio_num_channels) {
-                    Debug.LogError("MP4Capturer: audio channels mismatch!");
+                    Debug.LogError("MP4Recorder: audio channels mismatch!");
                     return;
                 }
 
