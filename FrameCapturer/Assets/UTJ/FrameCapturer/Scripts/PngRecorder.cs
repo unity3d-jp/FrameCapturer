@@ -16,13 +16,10 @@ namespace UTJ
         public bool m_captureGBuffer = true;
 
         [Tooltip("output directory. filename is generated automatically.")]
-        public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "ExrOutput");
-        public string m_filenameFramebuffer = "FrameBuffer";
-        public string m_filenameGBuffer = "GBuffer";
+        public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "PngOutput");
         public int m_beginFrame = 0;
         public int m_endFrame = 100;
         public bool m_fillAlpha = false;
-        public int m_maxTasks = 1;
         public Shader m_sh_copy;
 
         fcAPI.fcPNGContext m_ctx;
@@ -34,7 +31,6 @@ namespace UTJ
         RenderTexture[] m_gbuffer;
         RenderTexture m_depth;
         RenderBuffer[] m_rt_gbuffer;
-        Camera m_cam;
 
 
         public override int beginFrame
@@ -60,10 +56,11 @@ namespace UTJ
         void OnEnable()
         {
             m_outputDir.CreateDirectory();
-            m_cam = GetComponent<Camera>();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
             m_mat_copy = new Material(m_sh_copy);
-            if (m_cam.targetTexture != null)
+
+            var cam = GetComponent<Camera>();
+            if (cam.targetTexture != null)
             {
                 m_mat_copy.EnableKeyword("OFFSCREEN");
             }
@@ -76,17 +73,17 @@ namespace UTJ
                 m_cb.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Point);
                 m_cb.Blit(BuiltinRenderTextureType.CurrentActive, tid);
                 // tid は意図的に開放しない
-                m_cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
+                cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
 
-                m_frame_buffer = new RenderTexture(m_cam.pixelWidth, m_cam.pixelHeight, 0, RenderTextureFormat.ARGBHalf);
+                m_frame_buffer = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0, RenderTextureFormat.ARGBHalf);
                 m_frame_buffer.wrapMode = TextureWrapMode.Repeat;
                 m_frame_buffer.Create();
             }
 
 #if UNITY_EDITOR
             if (m_captureGBuffer &&
-                m_cam.renderingPath != RenderingPath.DeferredShading &&
-                (m_cam.renderingPath == RenderingPath.UsePlayerSettings && PlayerSettings.renderingPath != RenderingPath.DeferredShading))
+                cam.renderingPath != RenderingPath.DeferredShading &&
+                (cam.renderingPath == RenderingPath.UsePlayerSettings && PlayerSettings.renderingPath != RenderingPath.DeferredShading))
             {
                 Debug.Log("ExrCapturer: Rendering path must be deferred to use capture_gbuffer mode.");
                 m_captureGBuffer = false;
@@ -99,20 +96,19 @@ namespace UTJ
                 m_rt_gbuffer = new RenderBuffer[4];
                 for (int i = 0; i < m_gbuffer.Length; ++i)
                 {
-                    m_gbuffer[i] = new RenderTexture(m_cam.pixelWidth, m_cam.pixelHeight, 0, RenderTextureFormat.ARGBHalf);
+                    m_gbuffer[i] = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0, RenderTextureFormat.ARGBHalf);
                     m_gbuffer[i].filterMode = FilterMode.Point;
                     m_gbuffer[i].Create();
                     m_rt_gbuffer[i] = m_gbuffer[i].colorBuffer;
                 }
                 {
-                    m_depth = new RenderTexture(m_cam.pixelWidth, m_cam.pixelHeight, 0, RenderTextureFormat.RHalf);
+                    m_depth = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0, RenderTextureFormat.RHalf);
                     m_depth.filterMode = FilterMode.Point;
                     m_depth.Create();
                 }
             }
 
-            fcAPI.fcPngConfig conf;
-            conf.max_active_tasks = m_maxTasks;
+            fcAPI.fcPngConfig conf = fcAPI.fcPngConfig.default_value;
             m_ctx = fcAPI.fcPngCreateContext(ref conf);
         }
 
@@ -120,7 +116,7 @@ namespace UTJ
         {
             if (m_cb != null)
             {
-                m_cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb);
+                GetComponent<Camera>().RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb);
                 m_cb.Release();
                 m_cb = null;
             }
@@ -171,10 +167,10 @@ namespace UTJ
                     Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                     Graphics.SetRenderTarget(null);
 
-                    string path_gb0 = m_outputDir.GetPath() + "/" + m_filenameGBuffer + "_AlbedoOcclusion" + frame.ToString("0000") + ".png";
-                    string path_gb1 = m_outputDir.GetPath() + "/" + m_filenameGBuffer + "_SpecularSmoothness" + frame.ToString("0000") + ".png";
-                    string path_gb2 = m_outputDir.GetPath() + "/" + m_filenameGBuffer + "_Normal" + frame.ToString("0000") + ".png";
-                    string path_gb3 = m_outputDir.GetPath() + "/" + m_filenameGBuffer + "_Emission" + frame.ToString("0000") + ".png";
+                    string path_gb0 = m_outputDir.GetPath() + "/AlbedoOcclusion_" + frame.ToString("0000") + ".png";
+                    string path_gb1 = m_outputDir.GetPath() + "/SpecularSmoothness_" + frame.ToString("0000") + ".png";
+                    string path_gb2 = m_outputDir.GetPath() + "/Normal_" + frame.ToString("0000") + ".png";
+                    string path_gb3 = m_outputDir.GetPath() + "/Emission_" + frame.ToString("0000") + ".png";
                     fcAPI.fcPngExportTexture(m_ctx, path_gb0, m_gbuffer[0], false);
                     fcAPI.fcPngExportTexture(m_ctx, path_gb1, m_gbuffer[1], false);
                     fcAPI.fcPngExportTexture(m_ctx, path_gb2, m_gbuffer[2], false);
@@ -189,7 +185,7 @@ namespace UTJ
                     Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
                     Graphics.SetRenderTarget(null);
 
-                    string path = m_outputDir.GetPath() + "/" + m_filenameFramebuffer + "_" + frame.ToString("0000") + ".png";
+                    string path = m_outputDir.GetPath() + "/FrameBuffer_" + frame.ToString("0000") + ".png";
                     fcAPI.fcPngExportTexture(m_ctx, path, m_frame_buffer, false);
                 }
             }

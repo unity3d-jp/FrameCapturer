@@ -9,7 +9,7 @@ namespace UTJ
     [RequireComponent(typeof(Camera))]
     public class MP4Recorder : IMovieRecorder
     {
-        public enum FramerateMode
+        public enum FrameRateMode
         {
             Variable,
             Constant,
@@ -20,8 +20,8 @@ namespace UTJ
         public bool m_captureVideo = true;
         public bool m_captureAudio = true;
         public int m_resolutionWidth = 300;
-        public FramerateMode m_framerateMode = FramerateMode.Variable;
-        [Tooltip("relevant only if Framerate Mode is Constant")]
+        public FrameRateMode m_frameRateMode = FrameRateMode.Variable;
+        [Tooltip("relevant only if FrameRateMode is Constant")]
         public int m_framerate = 30;
         public int m_captureEveryNthFrame = 1;
         public int m_videoBitrate = 1024000;
@@ -37,14 +37,14 @@ namespace UTJ
         Mesh m_quad;
         CommandBuffer m_cb;
         RenderTexture m_scratch_buffer;
-        Camera m_cam;
         int m_num_video_frames;
         bool m_recording = false;
 
         void UpdateScratchBuffer()
         {
+            var cam = GetComponent<Camera>();
             int capture_width = m_resolutionWidth;
-            int capture_height = (int)((float)m_resolutionWidth / ((float)m_cam.pixelWidth / (float)m_cam.pixelHeight));
+            int capture_height = (int)((float)m_resolutionWidth / ((float)cam.pixelWidth / (float)cam.pixelHeight));
 
             if( m_scratch_buffer != null)
             {
@@ -106,7 +106,7 @@ namespace UTJ
             m_ostream = fcAPI.fcCreateFileStream(GetOutputPath());
             fcAPI.fcMP4AddOutputStream(m_ctx, m_ostream);
 
-            m_cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
+            GetComponent<Camera>().AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
 
             Debug.Log("MP4Capturer.BeginRecording(): " + GetOutputPath()); return true;
         }
@@ -116,7 +116,7 @@ namespace UTJ
             if (!m_recording) { return false; }
             m_recording = false;
 
-            m_cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb);
+            GetComponent<Camera>().RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb);
             if (m_ctx.ptr != IntPtr.Zero)
             {
                 fcAPI.fcMP4DestroyContext(m_ctx);
@@ -193,10 +193,9 @@ namespace UTJ
 
         void OnEnable()
         {
-            m_cam = GetComponent<Camera>();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
             m_mat_copy = new Material(m_sh_copy);
-            if (m_cam.targetTexture != null)
+            if (GetComponent<Camera>().targetTexture != null)
             {
                 m_mat_copy.EnableKeyword("OFFSCREEN");
             }
@@ -232,7 +231,7 @@ namespace UTJ
                 if (Time.frameCount % m_captureEveryNthFrame == 0)
                 {
                     double timestamp = -1.0;
-                    if(m_framerateMode == FramerateMode.Constant)
+                    if(m_frameRateMode == FrameRateMode.Constant)
                     {
                         timestamp = 1.0 / m_framerate * m_num_video_frames;
                     }

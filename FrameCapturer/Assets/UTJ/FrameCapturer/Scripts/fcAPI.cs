@@ -116,7 +116,7 @@ namespace UTJ
                 {
                     return new fcPngConfig
                     {
-                        max_active_tasks = 8,
+                        max_active_tasks = 0,
                     };
                 }
             }
@@ -148,7 +148,7 @@ namespace UTJ
                 {
                     return new fcExrConfig
                     {
-                        max_active_tasks = 8,
+                        max_active_tasks = 0,
                     };
                 }
             }
@@ -188,7 +188,7 @@ namespace UTJ
                         width = 320,
                         height = 240,
                         num_colors = 256,
-                        max_active_tasks = 8,
+                        max_active_tasks = 0,
                     };
                 }
             }
