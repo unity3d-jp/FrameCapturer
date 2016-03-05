@@ -63,7 +63,7 @@ fcGraphicsDeviceD3D11::~fcGraphicsDeviceD3D11()
 }
 
 void* fcGraphicsDeviceD3D11::getDevicePtr() { return m_device; }
-int fcGraphicsDeviceD3D11::getDeviceType() { return kGfxRendererD3D11; }
+int fcGraphicsDeviceD3D11::getDeviceType() { return kUnityGfxRendererD3D11; }
 
 
 static DXGI_FORMAT fcGetInternalFormatD3D11(fcPixelFormat fmt)

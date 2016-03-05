@@ -38,7 +38,7 @@ fcIGraphicsDevice* fcCreateGraphicsDeviceOpenGL(void *device)
 
 
 void* fcGraphicsDeviceOpenGL::getDevicePtr() { return m_device; }
-int fcGraphicsDeviceOpenGL::getDeviceType() { return kGfxRendererOpenGL; }
+int fcGraphicsDeviceOpenGL::getDeviceType() { return kUnityGfxRendererOpenGL; }
 
 fcGraphicsDeviceOpenGL::fcGraphicsDeviceOpenGL(void *device)
     : m_device(device)

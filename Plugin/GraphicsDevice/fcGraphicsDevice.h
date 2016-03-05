@@ -1,30 +1,31 @@
 ﻿#include "pch.h"
 
 
-// Graphics device identifiers in Unity
-enum GfxDeviceRenderer
+typedef enum UnityGfxRenderer
 {
-    kGfxRendererOpenGL = 0,          // OpenGL
-    kGfxRendererD3D9,                // Direct3D 9
-    kGfxRendererD3D11,               // Direct3D 11
-    kGfxRendererGCM,                 // Sony PlayStation 3 GCM
-    kGfxRendererNull,                // "null" device (used in batch mode)
-    kGfxRendererHollywood,           // Nintendo Wii
-    kGfxRendererXenon,               // Xbox 360
-    kGfxRendererOpenGLES,            // OpenGL ES 1.1
-    kGfxRendererOpenGLES20Mobile,    // OpenGL ES 2.0 mobile variant
-    kGfxRendererMolehill,            // Flash 11 Stage3D
-    kGfxRendererOpenGLES20Desktop,   // OpenGL ES 2.0 desktop variant (i.e. NaCl)
-    kGfxRendererCount
-};
+    kUnityGfxRendererOpenGL            =  0, // Legacy OpenGL
+    kUnityGfxRendererD3D9              =  1, // Direct3D 9
+    kUnityGfxRendererD3D11             =  2, // Direct3D 11
+    kUnityGfxRendererGCM               =  3, // PlayStation 3
+    kUnityGfxRendererNull              =  4, // "null" device (used in batch mode)
+    kUnityGfxRendererXenon             =  6, // Xbox 360
+    kUnityGfxRendererOpenGLES20        =  8, // OpenGL ES 2.0
+    kUnityGfxRendererOpenGLES30        = 11, // OpenGL ES 3.0
+    kUnityGfxRendererGXM               = 12, // PlayStation Vita
+    kUnityGfxRendererPS4               = 13, // PlayStation 4
+    kUnityGfxRendererXboxOne           = 14, // Xbox One        
+    kUnityGfxRendererMetal             = 16, // iOS Metal
+    kUnityGfxRendererOpenGLCore        = 17, // OpenGL core
+    kUnityGfxRendererD3D12             = 18, // Direct3D 12
+} UnityGfxRenderer;
 
-// Event types for UnitySetGraphicsDevice
-enum GfxDeviceEventType {
-    kGfxDeviceEventInitialize = 0,
-    kGfxDeviceEventShutdown,
-    kGfxDeviceEventBeforeReset,
-    kGfxDeviceEventAfterReset,
-};
+typedef enum UnityGfxDeviceEventType
+{
+    kUnityGfxDeviceEventInitialize     = 0,
+    kUnityGfxDeviceEventShutdown       = 1,
+    kUnityGfxDeviceEventBeforeReset    = 2,
+    kUnityGfxDeviceEventAfterReset     = 3,
+} UnityGfxDeviceEventType;
 
 
 class fcIGraphicsDevice

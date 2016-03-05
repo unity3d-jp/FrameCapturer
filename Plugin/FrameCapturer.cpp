@@ -403,7 +403,7 @@ BOOL WINAPI DllMain(HINSTANCE module_handle, DWORD reason_for_call, LPVOID reser
             if (proc) {
                 fcIGraphicsDevice *dev = proc();
                 if (dev) {
-                    UnitySetGraphicsDevice(dev->getDevicePtr(), dev->getDeviceType(), kGfxDeviceEventInitialize);
+                    UnitySetGraphicsDevice(dev->getDevicePtr(), dev->getDeviceType(), kUnityGfxDeviceEventInitialize);
                 }
             }
         }
