@@ -12,7 +12,7 @@
 - [Png Recorder](#png-recorder)
 
 その他、履歴や補足情報など。
-- [C++ Interface](#C++-interface)
+- [C++ Interface](#c-interface)
 - [History](#history)
 - [Thanks](#thanks)
 - [License](#license)

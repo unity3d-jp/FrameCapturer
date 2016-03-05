@@ -22,6 +22,7 @@ public:
     ~fcGraphicsDeviceOpenGL();
     void* getDevicePtr() override;
     int getDeviceType() override;
+    void sync() override;
     bool readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcPixelFormat format) override;
     bool writeTexture(void *o_tex, int width, int height, fcPixelFormat format, const void *buf, size_t bufsize) override;
 
@@ -71,6 +72,11 @@ static void fcGetInternalFormatOpenGL(fcPixelFormat format, GLenum &o_fmt, GLenu
     }
 }
 
+void fcGraphicsDeviceOpenGL::sync()
+{
+    glFinish();
+}
+
 bool fcGraphicsDeviceOpenGL::readTexture(void *o_buf, size_t, void *tex, int, int, fcPixelFormat format)
 {
     GLenum internal_format = 0;
@@ -80,7 +86,7 @@ bool fcGraphicsDeviceOpenGL::readTexture(void *o_buf, size_t, void *tex, int, in
     //// glGetTextureImage() is available only OpenGL 4.5 or later...
     // glGetTextureImage((GLuint)(size_t)tex, 0, internal_format, internal_type, bufsize, o_buf);
 
-    glFinish();
+    sync();
     glBindTexture(GL_TEXTURE_2D, (GLuint)(size_t)tex);
     glGetTexImage(GL_TEXTURE_2D, 0, internal_format, internal_type, o_buf);
     glBindTexture(GL_TEXTURE_2D, 0);

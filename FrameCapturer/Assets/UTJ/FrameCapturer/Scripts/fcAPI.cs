@@ -65,6 +65,9 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern void         fcDestroyStream(fcStream s);
         [DllImport ("FrameCapturer")] public static extern ulong        fcStreamGetWrittenSize(fcStream s);
 
+        [DllImport ("FrameCapturer")] public static extern void         fcGfxSync();
+
+
         public static fcPixelFormat fcGetPixelFormat(RenderTextureFormat v)
         {
             switch (v)
