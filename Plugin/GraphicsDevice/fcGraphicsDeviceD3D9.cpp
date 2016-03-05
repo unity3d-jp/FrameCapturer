@@ -13,6 +13,7 @@ public:
     ~fcGraphicsDeviceD3D9();
     void* getDevicePtr() override;
     int getDeviceType() override;
+    void sync() override;
     bool readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcPixelFormat format) override;
     bool writeTexture(void *o_tex, int width, int height, fcPixelFormat format, const void *buf, size_t bufsize) override;
 
@@ -22,6 +23,7 @@ private:
 
 private:
     IDirect3DDevice9 *m_device;
+    IDirect3DQuery9 *m_query_event;
     std::map<uint64_t, IDirect3DSurface9*> m_staging_textures;
 };
 
@@ -34,7 +36,12 @@ fcIGraphicsDevice* fcCreateGraphicsDeviceD3D9(void *device)
 
 fcGraphicsDeviceD3D9::fcGraphicsDeviceD3D9(void *device)
     : m_device((IDirect3DDevice9*)device)
+    , m_query_event(nullptr)
 {
+    if (m_device != nullptr)
+    {
+        m_device->CreateQuery(D3DQUERYTYPE_EVENT, &m_query_event);
+    }
 }
 
 fcGraphicsDeviceD3D9::~fcGraphicsDeviceD3D9()
@@ -129,6 +136,15 @@ inline void copy_with_BGRA_RGBA_conversion(RGBA<T> *dst, const RGBA<T> *src, int
     }
 }
 
+void fcGraphicsDeviceD3D9::sync()
+{
+    m_query_event->Issue(D3DISSUE_END);
+    auto hr = m_query_event->GetData(nullptr, 0, D3DGETDATA_FLUSH);
+    if (hr != S_OK) {
+        fcDebugLog("fcGraphicsDeviceD3D9::sync(): GetData() failed\n");
+    }
+}
+
 bool fcGraphicsDeviceD3D9::readTexture(void *o_buf, size_t bufsize, void *tex_, int width, int height, fcPixelFormat format)
 {
     HRESULT hr;
@@ -142,6 +158,8 @@ bool fcGraphicsDeviceD3D9::readTexture(void *o_buf, size_t bufsize, void *tex_, 
     IDirect3DSurface9* surf_src = nullptr;
     hr = tex->GetSurfaceLevel(0, &surf_src);
     if (FAILED(hr)){ return false; }
+
+    sync();
 
     bool ret = false;
     hr = m_device->GetRenderTargetData(surf_src, surf_dst);

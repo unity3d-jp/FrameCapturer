@@ -73,3 +73,10 @@ fcCLinkage fcExport void fcFinalizeGraphicsDevice()
     UnitySetGraphicsDevice(nullptr, kGfxRendererNull, kGfxDeviceEventShutdown);
 }
 
+fcCLinkage fcExport void fcGfxSync()
+{
+    if (g_the_graphics_device) {
+        g_the_graphics_device->sync();
+    }
+}
+

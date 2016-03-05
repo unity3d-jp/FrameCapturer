@@ -1,7 +1,7 @@
 namespace UTJ
 {
     // bool is marshal as int (4 byte) by default and you need ugly [MarshalAs(UnmanagedType.U1)] to pass to (or receive from) C++ code.
-    // this struct emulates bool and marshal as byte (1 byte) by default. this makes things bit easier in some cases.
+    // this struct emulates bool and marshal as byte (1 byte). this makes things bit easier in some cases.
     public struct Bool
     {
         byte v;

@@ -14,6 +14,7 @@ public:
     ~fcGraphicsDeviceD3D11();
     void* getDevicePtr() override;
     int getDeviceType() override;
+    void sync() override;
     bool readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcPixelFormat format) override;
     bool writeTexture(void *o_tex, int width, int height, fcPixelFormat format, const void *buf, size_t bufsize) override;
 
@@ -125,6 +126,14 @@ void fcGraphicsDeviceD3D11::clearStagingTextures()
     m_staging_textures.clear();
 }
 
+void fcGraphicsDeviceD3D11::sync()
+{
+    m_context->End(m_query_event);
+    while (m_context->GetData(m_query_event, nullptr, 0, 0) == S_FALSE) {
+        std::this_thread::sleep_for(std::chrono::microseconds(100));
+    }
+}
+
 bool fcGraphicsDeviceD3D11::readTexture(void *o_buf, size_t bufsize, void *tex_, int width, int height, fcPixelFormat format)
 {
     if (m_context == nullptr || tex_ == nullptr) { return false; }
@@ -138,10 +147,7 @@ bool fcGraphicsDeviceD3D11::readTexture(void *o_buf, size_t bufsize, void *tex_,
 
     // ID3D11DeviceContext::Map() はその時点までのコマンドの終了を待ってくれないっぽくて、
     // ↑の CopyResource() が終わるのを手動で待たないといけない。
-    m_context->End(m_query_event);
-    while (m_context->GetData(m_query_event, nullptr, 0, 0) == S_FALSE) {
-        std::this_thread::sleep_for(std::chrono::microseconds(100));
-    }
+    sync();
 
     D3D11_MAPPED_SUBRESOURCE mapped = { 0 };
     HRESULT hr = m_context->Map(tmp, 0, D3D11_MAP_READ, 0, &mapped);

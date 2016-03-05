@@ -33,6 +33,7 @@ public:
     virtual ~fcIGraphicsDevice() {}
     virtual void* getDevicePtr() = 0;
     virtual int getDeviceType() = 0;
+    virtual void sync() = 0;
     virtual bool readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcPixelFormat format) = 0;
     virtual bool writeTexture(void *o_tex, int width, int height, fcPixelFormat format, const void *buf, size_t bufsize) = 0;
 };
