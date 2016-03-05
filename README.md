@@ -11,6 +11,12 @@
 - [Exr Recorder](#exr-recorder)
 - [Png Recorder](#png-recorder)
 
+その他、履歴や補足情報など。
+- [C++ Interface](#C++-interface)
+- [History](#history)
+- [Thanks](#thanks)
+- [License](#license)
+
 
 ## Gif Recorder
 ゲーム画面をキャプチャしてアニメ gif としてエクスポートします。
@@ -45,9 +51,8 @@ TweetScreenshot.prefab はこちらのパッケージにしかない prefab で�
 ## MP4 Recorder
 ゲーム画面をキャプチャして mp4 動画で出力します。
 
-
 動画のエンコーダ (OpenH264) はパッケージには含んでおらず、実行時にダウンロードして展開するようになっています。
-ダウンロード＆展開は通常すぐ終わるはずですが、ダウンロードが終わっていない場合や、何らかの事情で失敗した場合は録画できない状態になってしまいます。  
+ダウンロード＆展開は通常すぐ終わるはずですが、ダウンロードが終わっていない時や何らかの事情で失敗した場合は録画できない状態になってしまいます。  
 パッケージに含めていないのにはライセンス的な理由があります。
 MP4 の使用には通常ライセンス料が課せられます。しかし、OpenH264 は特定の条件を満たしていればこのライセンス料を免除できるようになっています。その条件は以下のようなものです。
 
@@ -58,8 +63,6 @@ MP4 の使用には通常ライセンス料が課せられます。しかし、O
 
 (より正確には原文の方を参照ください: http://www.openh264.org/faq.html)  
 OpenH264 を使ったゲームをリリースしたい場合も、上記条件を満たさないとライセンス料を課せられる可能性が生じるため、このような仕様にしています。
-
-
 
 ## Exr Recorder  
 Exr は主に映像業界で使われる画像フォーマットで、float や half のピクセルデータで構成された画像、いわゆる HDR 画像を保持できます。  
@@ -77,16 +80,14 @@ Exr エクスポートは非常に重く、リアルタイムで行うのは厳�
 ![ExrCapturer](Screenshots/ExrCapturer.png)  
 
 Depth_format は、depth を 16 bit で書き出す場合 Half、32 bit で書き出す場合 Float を指定します。
-depth は元データが 24 bit のため Float が望ましいのですが、編集ソフトが対応していない場合などに Half で書き出す必要性が生じます。
+Float の方が高精度ですが、対応していないソフトウェアもあるようです。
 
 出力例:  
 ![exr_example1](Screenshots/exr_example1.png)    
 ![exr_example1](Screenshots/ExrLayers.png)  
 
-ファイル構成やレイヤー名の変更などを行いたい場合、ExrRecorder.cs の OnPostRender() 内のエクスポート部分を書き換えることで対応可能です。
-
-
----
+ファイル構成やレイヤー名は現状決め打ちになっています。
+変更したい場合、ExrRecorder.cs の OnPostRender() 内のエクスポート部分を書き換えることで対応可能です。
 
 #### RenderTexture のキャプチャ (ExrOffscreenRecorder)
 1. 録画したいカメラに ExrOffscreenCapturer コンポーネントを追加
@@ -96,20 +97,41 @@ depth は元データが 24 bit のため Float が望ましいのですが、�
 大体 ExrRecorder と同じです。
 ExrOffscreenCapturer の Targets には複数の RenderTexture を設定可能で、ここで設定したものの内容を .exr として書き出します。
 
-
-
 ## Png Recorder
 ゲーム画面を連番 PNG でキャプチャします。  
-こちらも想定している用途は映像のコンポジット用で、使い方もほぼ ExrRecorder と同じです。
-指定したフレーム間の G-Buffer やフレームバッファの各要素を連番 png で書き出します。
-任意の RenderTexture をキャプチャする PngOffscreenRecorder が用意されているのも同様です。
+こちらも想定している用途は映像のコンポジットです。
+指定したフレーム間の G-Buffer やフレームバッファの各要素を連番 png で書き出せることや、任意の RenderTexture をキャプチャする PngOffscreenRecorder が用意されていることなど、使用手順は Exr Recorder とほぼ同様です。
 
-png は 16 bit 整数のカラーをサポートしており、half や float の RenderTexture は 16 bit モードで書き出します。
-16 bit 整数カラーの場合、1.0 以上のカラーは 256 以上になる、という挙動になります。
-つまり **0.0 - 1.0 の範囲しか扱わない場合は 8 bit カラーと変わらないので注意が必要です**。
+png は 16 bit 整数カラーをサポートしており、half や float の RenderTexture は 16 bit モードで書き出します。
+16 bit 整数カラーの場合、0.0 - 1.0 -> 0 - 255 の変換ルールはそのまま、1.0 より大きな色が 256 以上になる、という挙動になります。
+つまり **0.0 - 1.0 の範囲しか扱わない場合精度は 8 bit カラーと変わりません**。ご注意ください。  
+以上のことからコンポジット用途としては exr の方が望ましいのですが、exr はインポート/エクスポートが遅く、png で精度が足りる場合はそちらが使われるケースもあるそうで、Png Recorder も用意されています。
 
-コンポジット用途としては exr の方が望ましいと思われますが、exr の読み込みの遅さから png の方が好まれるケースもあるそうで、png も用意しています。
+## C++ Interface
+本プラグインは、画面のキャプチャ (テクスチャデータの取得) から各種ファイルへのエクスポートはネイティブコードの DLL として実装されています。この DLL は Unity への依存はなく、非 Unity のアプリケーションへも容易に組み込めるようになっています。使い方は [テストコード](Plugin/Tests) と [FrameCapturer.h](Plugin/FrameCapturer.h) を読むと大体わかると思います。  
+ソースからビルドすればスタティックリンクライブラリを作ることもできます。ビルドの手順は、このリポジトリを pull して setup.bat を実行した後、Plugin/FrameCapturer.sln をビルドするだけです。MasterLib がスタティックリンクライブラリをビルドする設定になっています。
 
+## Todo
+- MP4: 使える環境ではハードウェアエンコーダを使う
+  -  GeForce の 600 系以降などを使用時にエンコードの大幅な高速化が見込める
+- MP4: RTMP ストリーミング対応
+  - Twitch など各種配信サイトへの対応
+
+## History
+- 2016/03/05
+  - MP4 Recorder
+  - PNG Recorder
+  - ファイルフォーマットがサポートしていない入力データも変換してエクスポートできるようにした  
+    - gif や mp4 の場合 16/32bit カラーは 8bit カラーに変換してエンコード、Exr の場合 8bit カラーは 16bit カラーに変換してエクスポート、など
+  - C++ インターフェースの整備
+- 2016/01/07
+  - MP4 Recorder beta
+- 2015/06/10
+  - Twitter 投稿機能
+- 2015/06/05
+  - Exr Recorder
+- 2015/06/01
+  - Gif Recorder
 
 ## Thanks
 - gif エクスポートに Jon Olick 氏の GIF Writer に手を加えたものを使用しています。オリジナルからの主な変更点は、出力先をファイルからメモリに変えたことです。  
@@ -132,7 +154,7 @@ png は 16 bit 整数のカラーをサポートしており、half や float �
 ## License
 MIT License:
 
-  Copyright (C) 2015 Unity Technologies Japan, G.K.
+  Copyright (C) 2015-2016 Unity Technologies Japan, G.K.
 
   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
