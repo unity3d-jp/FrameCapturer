@@ -12,7 +12,7 @@ public:
     fcGraphicsDeviceD3D9(void *device);
     ~fcGraphicsDeviceD3D9();
     void* getDevicePtr() override;
-    int getDeviceType() override;
+    fcGfxDeviceType getDeviceType() override;
     void sync() override;
     bool readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcPixelFormat format) override;
     bool writeTexture(void *o_tex, int width, int height, fcPixelFormat format, const void *buf, size_t bufsize) override;
@@ -50,7 +50,7 @@ fcGraphicsDeviceD3D9::~fcGraphicsDeviceD3D9()
 }
 
 void* fcGraphicsDeviceD3D9::getDevicePtr() { return m_device; }
-int fcGraphicsDeviceD3D9::getDeviceType() { return kUnityGfxRendererD3D9; }
+fcGfxDeviceType fcGraphicsDeviceD3D9::getDeviceType() { return fcGfxDeviceType_D3D9; }
 
 
 void fcGraphicsDeviceD3D9::clearStagingTextures()

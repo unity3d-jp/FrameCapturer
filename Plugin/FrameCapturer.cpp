@@ -7,8 +7,19 @@
 // Foundation
 // -------------------------------------------------------------
 
+struct fcCallbackData
+{
+    fcCallback callback;
+    void *userdata;
+
+    fcCallbackData(fcCallback cb = nullptr, void *ud = nullptr) : callback(cb), userdata(ud) {}
+    bool operator==(const fcCallbackData &v) const { return callback == v.callback && userdata == v.userdata; }
+    void operator()() { callback(userdata); }
+};
+
 namespace {
     std::string g_fcModulePath;
+    std::vector<fcCallbackData> g_callbacks;
 }
 
 fcCLinkage fcExport void fcSetModulePath(const char *path)
@@ -64,6 +75,35 @@ fcCLinkage fcExport uint64_t fcStreamGetWrittenSize(fcStream *s)
 {
     return s->tellp();
 }
+
+
+
+fcCLinkage fcExport int fcAddCallback(fcCallback cb, void *userdata)
+{
+    // search empty object and return its position if found
+    for (int i = 0; i < (int)g_callbacks.size(); ++i) {
+        if (g_callbacks[i].callback == nullptr) {
+            g_callbacks[i] = fcCallbackData(cb, userdata);
+            return i;
+        }
+    }
+
+    // allocate new one
+    g_callbacks.emplace_back(fcCallbackData(cb, userdata));
+    return (int)g_callbacks.size() - 1;
+}
+
+fcCLinkage fcExport void fcEraseCallback(int id)
+{
+    g_callbacks[id] = fcCallbackData();
+}
+
+fcCLinkage fcExport void fcCallCallback(int id)
+{
+    auto& cb = g_callbacks[id];
+    if (cb.callback) { cb(); }
+}
+
 
 
 // -------------------------------------------------------------
@@ -381,11 +421,9 @@ fcCLinkage fcExport bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *sam
 
 
 #ifdef fcWindows
-
 #include <windows.h>
 
-fcCLinkage fcExport void UnitySetGraphicsDevice(void* device, int deviceType, int eventType);
-typedef fcIGraphicsDevice* (*fcGetGraphicsDeviceT)();
+void fcGfxForceInitialize();
 
 BOOL WINAPI DllMain(HINSTANCE module_handle, DWORD reason_for_call, LPVOID reserved)
 {
@@ -394,20 +432,8 @@ BOOL WINAPI DllMain(HINSTANCE module_handle, DWORD reason_for_call, LPVOID reser
         // add dll search path to load additional modules (FrameCapturer_MP4.dll etc).
         DLLAddSearchPath(DLLGetDirectoryOfCurrentModule());
 
-#ifndef fcMaster
-        // PatchLibrary で突っ込まれたモジュールは UnitySetGraphicsDevice() が呼ばれないので、
-        // DLL_PROCESS_ATTACH のタイミングで先にロードされているモジュールからデバイスをもらって同等の処理を行う。
-        HMODULE m = ::GetModuleHandleA("FrameCapturer.dll");
-        if (m) {
-            auto proc = (fcGetGraphicsDeviceT)::GetProcAddress(m, "fcGetGraphicsDevice");
-            if (proc) {
-                fcIGraphicsDevice *dev = proc();
-                if (dev) {
-                    UnitySetGraphicsDevice(dev->getDevicePtr(), dev->getDeviceType(), kUnityGfxDeviceEventInitialize);
-                }
-            }
-        }
-#endif // fcMaster
+        // initialize graphics device
+        fcGfxForceInitialize();
     }
     return TRUE;
 }

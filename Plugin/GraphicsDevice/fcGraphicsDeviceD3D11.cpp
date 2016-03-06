@@ -13,7 +13,7 @@ public:
     fcGraphicsDeviceD3D11(void *device);
     ~fcGraphicsDeviceD3D11();
     void* getDevicePtr() override;
-    int getDeviceType() override;
+    fcGfxDeviceType getDeviceType() override;
     void sync() override;
     bool readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcPixelFormat format) override;
     bool writeTexture(void *o_tex, int width, int height, fcPixelFormat format, const void *buf, size_t bufsize) override;
@@ -63,7 +63,7 @@ fcGraphicsDeviceD3D11::~fcGraphicsDeviceD3D11()
 }
 
 void* fcGraphicsDeviceD3D11::getDevicePtr() { return m_device; }
-int fcGraphicsDeviceD3D11::getDeviceType() { return kUnityGfxRendererD3D11; }
+fcGfxDeviceType fcGraphicsDeviceD3D11::getDeviceType() { return fcGfxDeviceType_D3D11; }
 
 
 static DXGI_FORMAT fcGetInternalFormatD3D11(fcPixelFormat fmt)
