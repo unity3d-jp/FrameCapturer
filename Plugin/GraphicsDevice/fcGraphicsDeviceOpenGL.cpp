@@ -18,30 +18,26 @@
 class fcGraphicsDeviceOpenGL : public fcIGraphicsDevice
 {
 public:
-    fcGraphicsDeviceOpenGL(void *device);
+    fcGraphicsDeviceOpenGL();
     ~fcGraphicsDeviceOpenGL();
     void* getDevicePtr() override;
-    int getDeviceType() override;
+    fcGfxDeviceType getDeviceType() override;
     void sync() override;
     bool readTexture(void *o_buf, size_t bufsize, void *tex, int width, int height, fcPixelFormat format) override;
     bool writeTexture(void *o_tex, int width, int height, fcPixelFormat format, const void *buf, size_t bufsize) override;
-
-private:
-    void *m_device;
 };
 
 
-fcIGraphicsDevice* fcCreateGraphicsDeviceOpenGL(void *device)
+fcIGraphicsDevice* fcCreateGraphicsDeviceOpenGL()
 {
-    return new fcGraphicsDeviceOpenGL(device);
+    return new fcGraphicsDeviceOpenGL();
 }
 
 
-void* fcGraphicsDeviceOpenGL::getDevicePtr() { return m_device; }
-int fcGraphicsDeviceOpenGL::getDeviceType() { return kUnityGfxRendererOpenGL; }
+void* fcGraphicsDeviceOpenGL::getDevicePtr() { return nullptr; }
+fcGfxDeviceType fcGraphicsDeviceOpenGL::getDeviceType() { return fcGfxDeviceType_OpenGL; }
 
-fcGraphicsDeviceOpenGL::fcGraphicsDeviceOpenGL(void *device)
-    : m_device(device)
+fcGraphicsDeviceOpenGL::fcGraphicsDeviceOpenGL()
 {
     glewInit();
 }
