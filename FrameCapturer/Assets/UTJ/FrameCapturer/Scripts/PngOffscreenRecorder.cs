@@ -92,7 +92,7 @@ namespace UTJ
                     Graphics.SetRenderTarget(null);
 
                     string path = m_outputDir.GetPath() + "/" + m_outputFilename + "[" + ti + "]_" + frame.ToString("0000") + ".png";
-                    fcAPI.fcPngExportTexture(m_ctx, path, scratch);
+                    //fcAPI.fcPngExportTexture(m_ctx, path, scratch);
                 }
             }
         }

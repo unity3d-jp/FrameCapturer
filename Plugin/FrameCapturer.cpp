@@ -73,9 +73,9 @@ namespace {
     std::vector<fcDeferredCall> g_deferred_calls;
 }
 
-fcCLinkage fcExport int fcAddDeferredCall(const fcDeferredCall& dc, int index = -1)
+fcCLinkage fcExport int fcAddDeferredCall(const fcDeferredCall& dc, int index = 0)
 {
-    if (index == -1) {
+    if (index == 0) {
         // search empty object and return its position if found
         for (int i = 1; i < (int)g_deferred_calls.size(); ++i) {
             if (!g_deferred_calls[i]) {
