@@ -65,7 +65,8 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern void         fcDestroyStream(fcStream s);
         [DllImport ("FrameCapturer")] public static extern ulong        fcStreamGetWrittenSize(fcStream s);
 
-        [DllImport ("FrameCapturer")] public static extern void         fcGfxSync();
+        [DllImport ("FrameCapturer")] public static extern void         fcEraseDeferredCall(int id);
+        [DllImport ("FrameCapturer")] public static extern IntPtr       fcGetRenderEventFunc();
 
 
         public static fcPixelFormat fcGetPixelFormat(RenderTextureFormat v)
@@ -143,12 +144,13 @@ namespace UTJ
 
         [DllImport ("FrameCapturer")] public static extern fcPNGContext fcPngCreateContext(ref fcPngConfig conf);
         [DllImport ("FrameCapturer")] public static extern void         fcPngDestroyContext(fcPNGContext ctx);
-        [DllImport ("FrameCapturer")] public static extern Bool         fcPngExportTexture(fcPNGContext ctx, string path, IntPtr tex, int width, int height, fcPixelFormat f, Bool flipY);
         [DllImport ("FrameCapturer")] public static extern Bool         fcPngExportPixels(fcPNGContext ctx, string path, IntPtr pixels, int width, int height, fcPixelFormat f, Bool flipY);
+        [DllImport ("FrameCapturer")] public static extern int          fcPngExportTextureDeferred(fcPNGContext ctx, string path, IntPtr tex, int width, int height, fcPixelFormat f, Bool flipY, int pos);
 
-        public static Bool fcPngExportTexture(fcPNGContext ctx, string path, RenderTexture tex)
+        public static int fcPngExportTexture(fcPNGContext ctx, string path, RenderTexture tex, int pos)
         {
-            return fcPngExportTexture(ctx, path, tex.GetNativeTexturePtr(), tex.width, tex.height, fcGetPixelFormat(tex.format), false);
+            return fcPngExportTextureDeferred(ctx, path,
+                tex.GetNativeTexturePtr(), tex.width, tex.height, fcGetPixelFormat(tex.format), false, pos);
         }
 
 

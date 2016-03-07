@@ -76,7 +76,7 @@ namespace UTJ
             {
                 int tid = Shader.PropertyToID("_TmpFrameBuffer");
                 m_cb = new CommandBuffer();
-                m_cb.name = "ExrCapturer: copy frame buffer";
+                m_cb.name = "ExrRecorder: copy frame buffer";
                 m_cb.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Point);
                 m_cb.Blit(BuiltinRenderTextureType.CurrentActive, tid);
                 // tid は意図的に開放しない
@@ -92,7 +92,7 @@ namespace UTJ
                 cam.renderingPath != RenderingPath.DeferredShading &&
                 (cam.renderingPath == RenderingPath.UsePlayerSettings && PlayerSettings.renderingPath != RenderingPath.DeferredShading))
             {
-                Debug.Log("ExrCapturer: Rendering path must be deferred to use capture_gbuffer mode.");
+                Debug.Log("ExrRecorder: Rendering path must be deferred to use capture_gbuffer mode.");
                 m_captureGBuffer = false;
             }
 #endif // UNITY_EDITOR
@@ -154,7 +154,7 @@ namespace UTJ
             int frame = m_frame++;
             if (frame >= m_beginFrame && frame <= m_endFrame)
             {
-                Debug.Log("ExrCapturer: frame " + frame);
+                Debug.Log("ExrRecorder: frame " + frame);
 
                 if (m_captureGBuffer)
                 {

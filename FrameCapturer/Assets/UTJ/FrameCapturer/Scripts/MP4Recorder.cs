@@ -198,7 +198,7 @@ namespace UTJ
             {
                 int tid = Shader.PropertyToID("_TmpFrameBuffer");
                 m_cb = new CommandBuffer();
-                m_cb.name = "GifCapturer: copy frame buffer";
+                m_cb.name = "MP4Recorder: copy frame buffer";
                 m_cb.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Point);
                 m_cb.Blit(BuiltinRenderTextureType.CurrentActive, tid);
                 // tid は意図的に開放しない

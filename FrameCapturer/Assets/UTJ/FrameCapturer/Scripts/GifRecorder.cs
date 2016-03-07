@@ -138,7 +138,7 @@ namespace UTJ
                 m_output_file = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
                 var path = GetOutputPath();
                 ret = fcAPI.fcGifWriteFile(m_ctx, path, begin_frame, end_frame);
-                Debug.Log("GifCapturer.FlushFile(" + begin_frame + ", " + end_frame + "): " + path);
+                Debug.Log("GifRecorder.FlushFile(" + begin_frame + ", " + end_frame + "): " + path);
             }
             return ret;
         }
@@ -193,7 +193,7 @@ namespace UTJ
             {
                 int tid = Shader.PropertyToID("_TmpFrameBuffer");
                 m_cb = new CommandBuffer();
-                m_cb.name = "GifCapturer: copy frame buffer";
+                m_cb.name = "GifRecorder: copy frame buffer";
                 m_cb.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Point);
                 m_cb.Blit(BuiltinRenderTextureType.CurrentActive, tid);
                 // tid は意図的に開放しない
