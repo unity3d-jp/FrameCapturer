@@ -7,19 +7,8 @@
 // Foundation
 // -------------------------------------------------------------
 
-struct fcCallbackData
-{
-    fcCallback callback;
-    void *userdata;
-
-    fcCallbackData(fcCallback cb = nullptr, void *ud = nullptr) : callback(cb), userdata(ud) {}
-    bool operator==(const fcCallbackData &v) const { return callback == v.callback && userdata == v.userdata; }
-    void operator()() { callback(userdata); }
-};
-
 namespace {
     std::string g_fcModulePath;
-    std::vector<fcCallbackData> g_callbacks;
 }
 
 fcCLinkage fcExport void fcSetModulePath(const char *path)
@@ -77,32 +66,49 @@ fcCLinkage fcExport uint64_t fcStreamGetWrittenSize(fcStream *s)
 }
 
 
+#ifndef fcStaticLink
 
-fcCLinkage fcExport int fcAddCallback(fcCallback cb, void *userdata)
+typedef std::function<void()> fcDeferredCall;
+namespace {
+    std::vector<fcDeferredCall> g_deferred_calls;
+}
+
+fcCLinkage fcExport int fcAddDeferredCall(const fcDeferredCall& dc, int index = -1)
 {
-    // search empty object and return its position if found
-    for (int i = 0; i < (int)g_callbacks.size(); ++i) {
-        if (g_callbacks[i].callback == nullptr) {
-            g_callbacks[i] = fcCallbackData(cb, userdata);
-            return i;
+    if (index == -1) {
+        // search empty object and return its position if found
+        for (int i = 1; i < (int)g_deferred_calls.size(); ++i) {
+            if (!g_deferred_calls[i]) {
+                g_deferred_calls[i] = dc;
+                return i;
+            }
         }
+
+        // 0th is "null" object
+        if (g_deferred_calls.empty()) { g_deferred_calls.emplace_back(fcDeferredCall()); }
+
+        // allocate new one
+        g_deferred_calls.emplace_back(dc);
+        return (int)g_deferred_calls.size() - 1;
     }
-
-    // allocate new one
-    g_callbacks.emplace_back(fcCallbackData(cb, userdata));
-    return (int)g_callbacks.size() - 1;
+    else {
+        g_deferred_calls[index] = dc;
+        return index;
+    }
 }
 
-fcCLinkage fcExport void fcEraseCallback(int id)
+fcCLinkage fcExport void fcEraseDeferredCall(int id)
 {
-    g_callbacks[id] = fcCallbackData();
+    g_deferred_calls[id] = fcDeferredCall();
 }
 
-fcCLinkage fcExport void fcCallCallback(int id)
+fcCLinkage fcExport void fcCallDeferredCall(int id)
 {
-    auto& cb = g_callbacks[id];
-    if (cb.callback) { cb(); }
+    auto& dc = g_deferred_calls[id];
+    if (dc) { dc(); }
 }
+
+#endif // fcStaticLink
 
 
 
@@ -141,17 +147,27 @@ fcCLinkage fcExport void fcPngDestroyContext(fcIPngContext *ctx)
     ctx->release();
 }
 
-fcCLinkage fcExport bool fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, bool flipY)
-{
-    return ctx->exportTexture(path, tex, width, height, fmt, flipY);
-}
-
 fcCLinkage fcExport bool fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, bool flipY)
 {
     return ctx->exportPixels(path, pixels, width, height, fmt, flipY);
 }
 
-#endif // #fcSupportPNG
+fcCLinkage fcExport bool fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, bool flipY)
+{
+    return ctx->exportTexture(path, tex, width, height, fmt, flipY);
+}
+
+#ifndef fcStaticLink
+fcCLinkage fcExport int fcPngExportTextureDeferred(fcIPngContext *ctx, const char *path_, void *tex, int width, int height, fcPixelFormat fmt, bool flipY, int index=-1)
+{
+    std::string path = path_;
+    return fcAddDeferredCall([=]() {
+        fcPngExportTexture(ctx, path.c_str(), tex, width, height, fmt, flipY);
+    }, index);
+}
+#endif // fcStaticLink
+
+#endif // fcSupportPNG
 
 
 // -------------------------------------------------------------

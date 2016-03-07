@@ -73,12 +73,7 @@ fcCLinkage fcExport void            fcGfxSync();
 
 fcCLinkage fcExport void            fcSetModulePath(const char *path);
 fcCLinkage fcExport const char*     fcGetModulePath();
-fcCLinkage fcExport fcTime          fcGetTime();
-
-typedef void(__stdcall *fcCallback)(void *userdata);
-fcCLinkage fcExport int             fcAddCallback(fcCallback cb, void *userdata);
-fcCLinkage fcExport void            fcEraseCallback(int id);
-fcCLinkage fcExport void            fcCallCallback(int id);
+fcCLinkage fcExport fcTime          fcGetTime(); // current time in seconds
 
 
 #ifndef fcImpl
@@ -115,8 +110,8 @@ struct fcPngConfig
 };
 fcCLinkage fcExport fcIPngContext*  fcPngCreateContext(const fcPngConfig *conf = nullptr);
 fcCLinkage fcExport void            fcPngDestroyContext(fcIPngContext *ctx);
-fcCLinkage fcExport bool            fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, bool flipY = false);
 fcCLinkage fcExport bool            fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, bool flipY = false);
+fcCLinkage fcExport bool            fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, bool flipY = false);
 
 
 // -------------------------------------------------------------
@@ -131,8 +126,8 @@ struct fcExrConfig
 fcCLinkage fcExport fcIExrContext*  fcExrCreateContext(const fcExrConfig *conf = nullptr);
 fcCLinkage fcExport void            fcExrDestroyContext(fcIExrContext *ctx);
 fcCLinkage fcExport bool            fcExrBeginFrame(fcIExrContext *ctx, const char *path, int width, int height);
-fcCLinkage fcExport bool            fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name, bool flipY = false);
 fcCLinkage fcExport bool            fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name, bool flipY = false);
+fcCLinkage fcExport bool            fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name, bool flipY = false);
 fcCLinkage fcExport bool            fcExrEndFrame(fcIExrContext *ctx);
 
 
@@ -152,9 +147,9 @@ struct fcGifConfig
 fcCLinkage fcExport fcIGifContext*  fcGifCreateContext(const fcGifConfig *conf);
 fcCLinkage fcExport void            fcGifDestroyContext(fcIGifContext *ctx);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
-// timestamp=-1 is treated as current time.
 fcCLinkage fcExport bool            fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
+// timestamp=-1 is treated as current time.
+fcCLinkage fcExport bool            fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
 fcCLinkage fcExport bool            fcGifWrite(fcIGifContext *ctx, fcStream *stream, int begin_frame = 0, int end_frame = -1);
 
 fcCLinkage fcExport void            fcGifClearFrame(fcIGifContext *ctx);
@@ -207,9 +202,9 @@ fcCLinkage fcExport const char*     fcMP4GetAudioEncoderInfo(fcIMP4Context *ctx)
 fcCLinkage fcExport const char*     fcMP4GetVideoEncoderInfo(fcIMP4Context *ctx);
 fcCLinkage fcExport void            fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1);
-// timestamp=-1 is treated as current time.
 fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0);
+// timestamp=-1 is treated as current time.
+fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1);
 // timestamp=-1 is treated as current time.
 fcCLinkage fcExport bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
 
