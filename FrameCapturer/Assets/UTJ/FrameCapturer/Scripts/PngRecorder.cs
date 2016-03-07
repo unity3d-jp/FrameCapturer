@@ -146,6 +146,10 @@ namespace UTJ
             }
 #endif // UNITY_EDITOR
 
+            // initialize png context
+            fcAPI.fcPngConfig conf = fcAPI.fcPngConfig.default_value;
+            m_ctx = fcAPI.fcPngCreateContext(ref conf);
+
             // initialize render targets
             {
                 m_frame_buffer = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0, RenderTextureFormat.ARGBHalf);
@@ -190,9 +194,6 @@ namespace UTJ
                     m_cb_copy_gb.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacks_gb[i]);
                 }
             }
-
-            fcAPI.fcPngConfig conf = fcAPI.fcPngConfig.default_value;
-            m_ctx = fcAPI.fcPngCreateContext(ref conf);
         }
 
         void OnDisable()

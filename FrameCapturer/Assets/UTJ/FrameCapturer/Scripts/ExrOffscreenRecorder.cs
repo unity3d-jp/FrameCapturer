@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 
 namespace UTJ
@@ -18,10 +19,11 @@ namespace UTJ
         public Shader m_sh_copy;
 
         fcAPI.fcEXRContext m_ctx;
-        int m_frame;
         Material m_mat_copy;
         Mesh m_quad;
+        CommandBuffer m_cb_copy;
         RenderTexture[] m_scratch_buffers;
+        int[] m_callbacks;
 
 
         public override int beginFrame
@@ -36,6 +38,50 @@ namespace UTJ
             set { m_endFrame = value; }
         }
 
+        void UpdateCallbacks()
+        {
+            string dir = m_outputDir.GetPath();
+            string ext = Time.frameCount.ToString("0000") + ".exr";
+
+            if (m_callbacks == null)
+            {
+                m_callbacks = new int[m_scratch_buffers.Length * 6];
+            }
+            for (int i = 0; i < m_scratch_buffers.Length; ++i)
+            {
+                int i6 = i * 6;
+                string path = dir + "/" + m_outputFilename + "[" + i + "]_" + ext;
+                var rt = m_scratch_buffers[i];
+
+                m_callbacks[i6 + 0] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks[i6 + 0]);
+                m_callbacks[i6 + 1] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 0, "R", m_callbacks[i6 + 1]);
+                m_callbacks[i6 + 2] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 1, "G", m_callbacks[i6 + 2]);
+                m_callbacks[i6 + 3] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 2, "B", m_callbacks[i6 + 3]);
+                m_callbacks[i6 + 4] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 3, "A", m_callbacks[i6 + 4]);
+                m_callbacks[i6 + 5] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks[i6 + 5]);
+            }
+        }
+
+        void EraseCallbacks()
+        {
+            for (int i = 0; i < m_callbacks.Length; ++i)
+            {
+                fcAPI.fcEraseDeferredCall(m_callbacks[i]);
+            }
+            m_callbacks = null;
+        }
+
+        void AddCommandBuffers()
+        {
+            GetComponent<Camera>().AddCommandBuffer(CameraEvent.AfterEverything, m_cb_copy);
+        }
+
+        void RemoveCommandBuffers()
+        {
+            GetComponent<Camera>().RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb_copy);
+        }
+
+
 #if UNITY_EDITOR
         void Reset()
         {
@@ -49,57 +95,76 @@ namespace UTJ
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
             m_mat_copy = new Material(m_sh_copy);
 
+            // initialize exr context
+            fcAPI.fcExrConfig conf = fcAPI.fcExrConfig.default_value;
+            m_ctx = fcAPI.fcExrCreateContext(ref conf);
+
+            // initialize render targets
             m_scratch_buffers = new RenderTexture[m_targets.Length];
             for (int i = 0; i < m_scratch_buffers.Length; ++i)
             {
                 var rt = m_targets[i];
                 m_scratch_buffers[i] = new RenderTexture(rt.width, rt.height, 0, rt.format);
+                m_scratch_buffers[i].Create();
             }
 
-            fcAPI.fcExrConfig conf = fcAPI.fcExrConfig.default_value;
-            m_ctx = fcAPI.fcExrCreateContext(ref conf);
+            // initialize callbacks
+            UpdateCallbacks();
+
+            // initialize command buffers
+            {
+                m_cb_copy = new CommandBuffer();
+                m_cb_copy.name = "PngOffscreenRecorder: Copy";
+                for (int i = 0; i < m_targets.Length; ++i)
+                {
+                    m_cb_copy.SetRenderTarget(m_scratch_buffers[i]);
+                    m_cb_copy.SetGlobalTexture("_TmpRenderTarget", m_targets[i]);
+                    m_cb_copy.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 3);
+                }
+                for (int i = 0; i < m_callbacks.Length; ++i)
+                {
+                    m_cb_copy.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacks[i]);
+                }
+            }
         }
 
         void OnDisable()
         {
+            RemoveCommandBuffers();
+            EraseCallbacks();
+
+            if (m_cb_copy != null)
+            {
+                m_cb_copy.Release();
+                m_cb_copy = null;
+            }
+
+            for (int i = 0; i < m_scratch_buffers.Length; ++i)
+            {
+                m_scratch_buffers[i].Release();
+            }
+            m_scratch_buffers = null;
+
             fcAPI.fcExrDestroyContext(m_ctx);
             m_ctx.ptr = System.IntPtr.Zero;
         }
 
-
-        IEnumerator OnPostRender()
+        void Update()
         {
-            int frame = m_frame++;
+            int frame = Time.frameCount;
+
+            if (frame == m_beginFrame)
+            {
+                AddCommandBuffers();
+            }
+            if (frame == m_endFrame + 1)
+            {
+                RemoveCommandBuffers();
+            }
+
             if (frame >= m_beginFrame && frame <= m_endFrame)
             {
-                yield return new WaitForEndOfFrame();
-
-                Debug.Log("ExrOffscreenRecorder: frame " + frame);
-
-                string[] channel_names = new string[] {"R", "G", "B", "A"};
-
-                for (int ti = 0; ti < m_targets.Length; ++ti)
-                {
-                    var target = m_targets[ti];
-                    var scratch = m_scratch_buffers[ti];
-                    var fmt = fcAPI.fcGetPixelFormat(target.format);
-                    if (fmt == fcAPI.fcPixelFormat.Unknown) { continue; }
-
-                    m_mat_copy.SetTexture("_TmpRenderTarget", target);
-                    m_mat_copy.SetPass(3);
-                    Graphics.SetRenderTarget(scratch);
-                    Graphics.DrawMeshNow(m_quad, Matrix4x4.identity);
-                    Graphics.SetRenderTarget(null);
-
-                    string path = m_outputDir.GetPath() + "/" + m_outputFilename + "[" + ti + "]_" + frame.ToString("0000") + ".exr";
-                    int num_channels = (int)fmt & (int)fcAPI.fcPixelFormat.ChannelMask;
-                    fcAPI.fcExrBeginFrame(m_ctx, path, target.width, target.height);
-                    for (int i=0; i<num_channels; ++i)
-                    {
-                        fcAPI.fcExrAddLayerTexture(m_ctx, scratch, i, channel_names[i]);
-                    }
-                    fcAPI.fcExrEndFrame(m_ctx);
-                }
+                UpdateCallbacks();
             }
         }
     }

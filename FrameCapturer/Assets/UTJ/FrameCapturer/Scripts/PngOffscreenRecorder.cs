@@ -90,12 +90,17 @@ namespace UTJ
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
             m_mat_copy = new Material(m_sh_copy);
 
+            // initialize png context
+            fcAPI.fcPngConfig conf = fcAPI.fcPngConfig.default_value;
+            m_ctx = fcAPI.fcPngCreateContext(ref conf);
+
             // initialize render targets
             m_scratch_buffers = new RenderTexture[m_targets.Length];
             for (int i = 0; i < m_scratch_buffers.Length; ++i)
             {
                 var rt = m_targets[i];
                 m_scratch_buffers[i] = new RenderTexture(rt.width, rt.height, 0, rt.format);
+                m_scratch_buffers[i].Create();
             }
 
             // initialize callbacks
@@ -111,14 +116,11 @@ namespace UTJ
                     m_cb_copy.SetGlobalTexture("_TmpRenderTarget", m_targets[i]);
                     m_cb_copy.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 3);
                 }
-                for (int i = 0; i < m_targets.Length; ++i)
+                for (int i = 0; i < m_callbacks.Length; ++i)
                 {
                     m_cb_copy.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacks[i]);
                 }
             }
-
-            fcAPI.fcPngConfig conf = fcAPI.fcPngConfig.default_value;
-            m_ctx = fcAPI.fcPngCreateContext(ref conf);
         }
 
         void OnDisable()

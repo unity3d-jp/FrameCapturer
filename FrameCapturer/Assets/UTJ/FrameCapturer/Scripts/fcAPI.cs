@@ -144,8 +144,7 @@ namespace UTJ
 
         [DllImport ("FrameCapturer")] public static extern fcPNGContext fcPngCreateContext(ref fcPngConfig conf);
         [DllImport ("FrameCapturer")] public static extern void         fcPngDestroyContext(fcPNGContext ctx);
-        [DllImport ("FrameCapturer")] public static extern Bool         fcPngExportPixels(fcPNGContext ctx, string path, IntPtr pixels, int width, int height, fcPixelFormat f, Bool flipY);
-        [DllImport ("FrameCapturer")] public static extern int          fcPngExportTextureDeferred(fcPNGContext ctx, string path, IntPtr tex, int width, int height, fcPixelFormat f, Bool flipY, int pos);
+        [DllImport ("FrameCapturer")] private static extern int         fcPngExportTextureDeferred(fcPNGContext ctx, string path, IntPtr tex, int width, int height, fcPixelFormat f, Bool flipY, int id);
 
         public static int fcPngExportTexture(fcPNGContext ctx, string path, RenderTexture tex, int pos)
         {
@@ -177,14 +176,23 @@ namespace UTJ
 
         [DllImport ("FrameCapturer")] public static extern fcEXRContext fcExrCreateContext(ref fcExrConfig conf);
         [DllImport ("FrameCapturer")] public static extern void         fcExrDestroyContext(fcEXRContext ctx);
-        [DllImport ("FrameCapturer")] public static extern Bool         fcExrBeginFrame(fcEXRContext ctx, string path, int width, int height);
-        [DllImport ("FrameCapturer")] public static extern Bool         fcExrAddLayerTexture(fcEXRContext ctx, IntPtr tex, fcPixelFormat f, int ch, string name, Bool flipY);
-        [DllImport ("FrameCapturer")] public static extern Bool         fcExrAddLayerPixels(fcEXRContext ctx, IntPtr pixels, fcPixelFormat f, int ch, string name, Bool flipY);
-        [DllImport ("FrameCapturer")] public static extern Bool         fcExrEndFrame(fcEXRContext ctx);
+        [DllImport ("FrameCapturer")] private static extern int         fcExrBeginFrameDeferred(fcEXRContext ctx, string path, int width, int height, int id);
+        [DllImport ("FrameCapturer")] private static extern int         fcExrAddLayerTextureDeferred(fcEXRContext ctx, IntPtr tex, fcPixelFormat f, int ch, string name, Bool flipY, int id);
+        [DllImport ("FrameCapturer")] private static extern int         fcExrEndFrameDeferred(fcEXRContext ctx, int id);
 
-        public static Bool fcExrAddLayerTexture(fcEXRContext ctx, RenderTexture tex, int ch, string name)
+        public static int fcExrBeginFrame(fcEXRContext ctx, string path, int width, int height, int id)
         {
-            return fcExrAddLayerTexture(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), ch, name, false);
+            return fcExrBeginFrameDeferred(ctx, path, width, height, id);
+        }
+
+        public static int fcExrEndFrame(fcEXRContext ctx, int id)
+        {
+            return fcExrEndFrameDeferred(ctx, id);
+        }
+
+        public static int fcExrAddLayerTexture(fcEXRContext ctx, RenderTexture tex, int ch, string name, int id)
+        {
+            return fcExrAddLayerTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), ch, name, false, id);
         }
 
 
