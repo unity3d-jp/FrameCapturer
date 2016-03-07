@@ -332,7 +332,20 @@ namespace UTJ
             return r;
         }
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
+        public static bool WarnIfRenderingPassIsNotDeferred(Camera cam, string message)
+        {
+            if (cam.renderingPath != RenderingPath.DeferredShading &&
+                (cam.renderingPath == RenderingPath.UsePlayerSettings && PlayerSettings.renderingPath != RenderingPath.DeferredShading))
+            {
+                Debug.Log(message);
+                return true;
+            }
+            return false;
+        }
+#endif // UNITY_EDITOR
+
+#if UNITY_EDITOR
         public static Shader GetFrameBufferCopyShader()
         {
             return AssetDatabase.LoadAssetAtPath<Shader>(AssetDatabase.GUIDToAssetPath("2283fb92223c7914c9096670e29202c8"));

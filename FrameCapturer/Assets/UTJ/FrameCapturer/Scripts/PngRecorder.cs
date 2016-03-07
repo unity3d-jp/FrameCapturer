@@ -19,7 +19,7 @@ namespace UTJ
 
         [Tooltip("output directory. filename is generated automatically.")]
         public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "PngOutput");
-        public int m_beginFrame = 0;
+        public int m_beginFrame = 1;
         public int m_endFrame = 100;
         public bool m_fillAlpha = false;
         public Shader m_sh_copy;
@@ -70,13 +70,25 @@ namespace UTJ
                 };
                 if(m_callbacks_gb == null)
                 {
-                    m_callbacks_gb = new int[5];
+                    m_callbacks_gb = new int[m_gbuffer.Length];
                 }
                 for (int i = 0; i < m_callbacks_gb.Length; ++i)
                 {
                     m_callbacks_gb[i] = fcAPI.fcPngExportTexture(m_ctx, path[i], m_gbuffer[i], m_callbacks_gb[i]);
                 }
             }
+        }
+
+        void EraseCallbacks()
+        {
+            fcAPI.fcEraseDeferredCall(m_callback_fb);
+            m_callback_fb = 0;
+
+            for (int i = 0; i < m_callbacks_gb.Length; ++i)
+            {
+                fcAPI.fcEraseDeferredCall(m_callbacks_gb[i]);
+            }
+            m_callbacks_gb = null;
         }
 
         void AddCommandBuffers()
@@ -127,10 +139,9 @@ namespace UTJ
 
 #if UNITY_EDITOR
             if (m_captureGBuffer &&
-                cam.renderingPath != RenderingPath.DeferredShading &&
-                (cam.renderingPath == RenderingPath.UsePlayerSettings && PlayerSettings.renderingPath != RenderingPath.DeferredShading))
+                FrameCapturerUtils.WarnIfRenderingPassIsNotDeferred(cam,
+                "PngRecorder: Rendering Path must be deferred to use Capture GBuffer mode."))
             {
-                Debug.Log("PngRecorder: Rendering path must be deferred to use Capture GBuffer mode.");
                 m_captureGBuffer = false;
             }
 #endif // UNITY_EDITOR
@@ -156,18 +167,21 @@ namespace UTJ
 
             // initialize command buffers
             {
+                int tid = Shader.PropertyToID("_TmpFrameBuffer");
+
                 m_cb_copy_fb = new CommandBuffer();
                 m_cb_copy_fb.name = "PngRecorder: Copy FrameBuffer";
+                m_cb_copy_fb.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Point);
+                m_cb_copy_fb.Blit(BuiltinRenderTextureType.CurrentActive, tid);
                 m_cb_copy_fb.SetRenderTarget(m_frame_buffer);
-                m_cb_copy_fb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 1);
+                m_cb_copy_fb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 0);
+                m_cb_copy_fb.ReleaseTemporaryRT(tid);
                 m_cb_copy_fb.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callback_fb);
 
-                RenderTargetIdentifier[] rts_gb = new RenderTargetIdentifier[] {
-                    m_gbuffer[0], m_gbuffer[1], m_gbuffer[2], m_gbuffer[3],
-                };
                 m_cb_copy_gb = new CommandBuffer();
                 m_cb_copy_gb.name = "PngRecorder: Copy G-Buffer";
-                m_cb_copy_gb.SetRenderTarget(rts_gb, m_gbuffer[0]);
+                m_cb_copy_gb.SetRenderTarget(
+                    new RenderTargetIdentifier[] { m_gbuffer[0], m_gbuffer[1], m_gbuffer[2], m_gbuffer[3] }, m_gbuffer[0]);
                 m_cb_copy_gb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 1);
                 m_cb_copy_gb.SetRenderTarget(m_gbuffer[4]); // depth
                 m_cb_copy_gb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 2);
@@ -184,6 +198,7 @@ namespace UTJ
         void OnDisable()
         {
             RemoveCommandBuffers();
+            EraseCallbacks();
 
             if (m_cb_copy_gb != null)
             {

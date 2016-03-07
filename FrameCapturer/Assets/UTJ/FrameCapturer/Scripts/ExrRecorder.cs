@@ -25,7 +25,7 @@ namespace UTJ
 
         [Tooltip("output directory. filename is generated automatically.")]
         public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "ExrOutput");
-        public int m_beginFrame = 0;
+        public int m_beginFrame = 1;
         public int m_endFrame = 100;
         public Shader m_sh_copy;
 
