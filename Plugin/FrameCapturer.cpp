@@ -144,26 +144,31 @@ fcCLinkage fcExport fcIPngContext* fcPngCreateContext(const fcPngConfig *conf)
 
 fcCLinkage fcExport void fcPngDestroyContext(fcIPngContext *ctx)
 {
+    if (!ctx) { return; }
     ctx->release();
 }
 
 fcCLinkage fcExport bool fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, bool flipY)
 {
+    if (!ctx) { return false; }
     return ctx->exportPixels(path, pixels, width, height, fmt, flipY);
 }
 
 fcCLinkage fcExport bool fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, bool flipY)
 {
+    if (!ctx) { return false; }
     return ctx->exportTexture(path, tex, width, height, fmt, flipY);
 }
 
 #ifndef fcStaticLink
-fcCLinkage fcExport int fcPngExportTextureDeferred(fcIPngContext *ctx, const char *path_, void *tex, int width, int height, fcPixelFormat fmt, bool flipY, int index=-1)
+fcCLinkage fcExport int fcPngExportTextureDeferred(fcIPngContext *ctx, const char *path_, void *tex, int width, int height, fcPixelFormat fmt, bool flipY, int id)
 {
+    if (!ctx) { return 0; }
+
     std::string path = path_;
     return fcAddDeferredCall([=]() {
-        fcPngExportTexture(ctx, path.c_str(), tex, width, height, fmt, flipY);
-    }, index);
+        ctx->exportTexture(path.c_str(), tex, width, height, fmt, flipY);
+    }, id);
 }
 #endif // fcStaticLink
 
@@ -213,16 +218,16 @@ fcCLinkage fcExport bool fcExrBeginFrame(fcIExrContext *ctx, const char *path, i
     return ctx->beginFrame(path, width, height);
 }
 
-fcCLinkage fcExport bool fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name, bool flipY)
-{
-    if (!ctx) { return false; }
-    return ctx->addLayerTexture(tex, fmt, ch, name, flipY);
-}
-
 fcCLinkage fcExport bool fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name, bool flipY)
 {
     if (!ctx) { return false; }
     return ctx->addLayerPixels(pixels, fmt, ch, name, flipY);
+}
+
+fcCLinkage fcExport bool fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name, bool flipY)
+{
+    if (!ctx) { return false; }
+    return ctx->addLayerTexture(tex, fmt, ch, name, flipY);
 }
 
 fcCLinkage fcExport bool fcExrEndFrame(fcIExrContext *ctx)
@@ -230,6 +235,34 @@ fcCLinkage fcExport bool fcExrEndFrame(fcIExrContext *ctx)
     if (!ctx) { return false; }
     return ctx->endFrame();
 }
+
+#ifndef fcStaticLink
+fcCLinkage fcExport int fcExrBeginFrameDeferred(fcIExrContext *ctx, const char *path_, int width, int height, int id)
+{
+    if (!ctx) { return 0; }
+    std::string path = path_;
+    return fcAddDeferredCall([=]() {
+        return ctx->beginFrame(path.c_str(), width, height);
+    }, id);
+}
+
+fcCLinkage fcExport int fcExrAddLayerTextureDeferred(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name_, bool flipY, int id)
+{
+    if (!ctx) { return 0; }
+    std::string name = name_;
+    return fcAddDeferredCall([=]() {
+        return ctx->addLayerTexture(tex, fmt, ch, name.c_str(), flipY);
+    }, id);
+}
+
+fcCLinkage fcExport int fcExrEndFrameDeferred(fcIExrContext *ctx, int id)
+{
+    if (!ctx) { return 0; }
+    return fcAddDeferredCall([=]() {
+        return ctx->endFrame();
+    }, id);
+}
+#endif // fcStaticLink
 #endif // fcSupportEXR
 
 
@@ -270,16 +303,25 @@ fcCLinkage fcExport void fcGifDestroyContext(fcIGifContext *ctx)
     ctx->release();
 }
 
-fcCLinkage fcExport bool fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
-{
-    if (!ctx) { return false; }
-    return ctx->addFrameTexture(tex, fmt, keyframe, timestamp);
-}
 fcCLinkage fcExport bool fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
 {
     if (!ctx) { return false; }
     return ctx->addFramePixels(pixels, fmt, keyframe, timestamp);
 }
+fcCLinkage fcExport bool fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
+{
+    if (!ctx) { return false; }
+    return ctx->addFrameTexture(tex, fmt, keyframe, timestamp);
+}
+#ifndef fcStaticLink
+fcCLinkage fcExport int fcGifAddFrameTextureDeferred(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp, int id)
+{
+    if (!ctx) { return 0; }
+    return fcAddDeferredCall([=]() {
+        return ctx->addFrameTexture(tex, fmt, keyframe, timestamp);
+    }, id);
+}
+#endif // fcStaticLink
 
 fcCLinkage fcExport bool fcGifWrite(fcIGifContext *ctx, fcStream *stream, int begin_frame, int end_frame)
 {
@@ -416,17 +458,25 @@ fcCLinkage fcExport void fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stre
     ctx->addOutputStream(stream);
 }
 
-fcCLinkage fcExport bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp)
-{
-    if (!ctx) { return false; }
-    return ctx->addVideoFrameTexture(tex, fmt, timestamp);
-}
-
 fcCLinkage fcExport bool fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp)
 {
     if (!ctx) { return false; }
     return ctx->addVideoFramePixels(pixels, fmt, timestamp);
 }
+fcCLinkage fcExport bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp)
+{
+    if (!ctx) { return false; }
+    return ctx->addVideoFrameTexture(tex, fmt, timestamp);
+}
+#ifndef fcStaticLink
+fcCLinkage fcExport int fcMP4AddVideoFrameTextureDeferred(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp, int id)
+{
+    if (!ctx) { return 0; }
+    return fcAddDeferredCall([=]() {
+        return ctx->addVideoFrameTexture(tex, fmt, timestamp);
+    }, id);
+}
+#endif // fcStaticLink
 
 fcCLinkage fcExport bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp)
 {
