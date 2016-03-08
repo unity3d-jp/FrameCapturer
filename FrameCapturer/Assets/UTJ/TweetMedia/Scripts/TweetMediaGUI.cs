@@ -18,9 +18,6 @@ namespace UTJ
         public Button m_button_pin;
         public InputField m_input_message;
         public Button m_button_tweet;
-        Action<TweetMedia.AuthStateCode> m_auth_event_handler;
-        Action<TweetMedia.TweetStateCode> m_tweet_event_handler;
-
 
 
         string status_text

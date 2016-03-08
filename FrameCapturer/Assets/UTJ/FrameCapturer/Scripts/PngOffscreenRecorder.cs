@@ -39,21 +39,20 @@ namespace UTJ
             set { m_endFrame = value; }
         }
 
-        void UpdateCallbacks()
+        void DoExport()
         {
+            if (m_callbacks == null)
+            {
+                m_callbacks = new int[m_scratch_buffers.Length];
+            }
+
             string dir = m_outputDir.GetPath();
             string ext = Time.frameCount.ToString("0000") + ".png";
-
+            for (int i = 0; i < m_callbacks.Length; ++i)
             {
-                if (m_callbacks == null)
-                {
-                    m_callbacks = new int[m_scratch_buffers.Length];
-                }
-                for (int i = 0; i < m_callbacks.Length; ++i)
-                {
-                    string path = dir + "/" + m_outputFilename + "[" + i + "]_" + ext;
-                    m_callbacks[i] = fcAPI.fcPngExportTexture(m_ctx, path, m_scratch_buffers[i], m_callbacks[i]);
-                }
+                string path = dir + "/" + m_outputFilename + "[" + i + "]_" + ext;
+                m_callbacks[i] = fcAPI.fcPngExportTexture(m_ctx, path, m_scratch_buffers[i], m_callbacks[i]);
+                GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacks[i]);
             }
         }
 
@@ -82,6 +81,11 @@ namespace UTJ
         {
             m_sh_copy = FrameCapturerUtils.GetFrameBufferCopyShader();
         }
+
+        void OnValidate()
+        {
+            m_beginFrame = Mathf.Max(1, m_beginFrame);
+        }
 #endif // UNITY_EDITOR
 
         void OnEnable()
@@ -89,6 +93,15 @@ namespace UTJ
             m_outputDir.CreateDirectory();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
             m_mat_copy = new Material(m_sh_copy);
+
+            if (m_fillAlpha)
+            {
+                m_mat_copy.EnableKeyword("FILL_ALPHA");
+            }
+            else
+            {
+                m_mat_copy.DisableKeyword("FILL_ALPHA");
+            }
 
             // initialize png context
             fcAPI.fcPngConfig conf = fcAPI.fcPngConfig.default_value;
@@ -103,9 +116,6 @@ namespace UTJ
                 m_scratch_buffers[i].Create();
             }
 
-            // initialize callbacks
-            UpdateCallbacks();
-
             // initialize command buffers
             {
                 m_cb_copy = new CommandBuffer();
@@ -115,10 +125,6 @@ namespace UTJ
                     m_cb_copy.SetRenderTarget(m_scratch_buffers[i]);
                     m_cb_copy.SetGlobalTexture("_TmpRenderTarget", m_targets[i]);
                     m_cb_copy.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 3);
-                }
-                for (int i = 0; i < m_callbacks.Length; ++i)
-                {
-                    m_cb_copy.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacks[i]);
                 }
             }
         }
@@ -156,22 +162,17 @@ namespace UTJ
             {
                 RemoveCommandBuffers();
             }
-
-            if (frame >= m_beginFrame && frame <= m_endFrame)
-            {
-                UpdateCallbacks();
-
-                if (m_fillAlpha)
-                {
-                    m_mat_copy.EnableKeyword("FILL_ALPHA");
-                }
-                else
-                {
-                    m_mat_copy.DisableKeyword("FILL_ALPHA");
-                }
-            }
         }
 
+        IEnumerator OnPostRender()
+        {
+            int frame = Time.frameCount;
+            if (frame >= m_beginFrame && frame <= m_endFrame)
+            {
+                yield return new WaitForEndOfFrame();
+                DoExport();
+            }
+        }
     }
 }
 

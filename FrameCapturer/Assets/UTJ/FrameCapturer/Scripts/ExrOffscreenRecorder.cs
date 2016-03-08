@@ -38,7 +38,26 @@ namespace UTJ
             set { m_endFrame = value; }
         }
 
-        void UpdateCallbacks()
+        void EraseCallbacks()
+        {
+            for (int i = 0; i < m_callbacks.Length; ++i)
+            {
+                fcAPI.fcEraseDeferredCall(m_callbacks[i]);
+            }
+            m_callbacks = null;
+        }
+
+        void AddCommandBuffers()
+        {
+            GetComponent<Camera>().AddCommandBuffer(CameraEvent.AfterEverything, m_cb_copy);
+        }
+
+        void RemoveCommandBuffers()
+        {
+            GetComponent<Camera>().RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb_copy);
+        }
+
+        void DoExport()
         {
             string dir = m_outputDir.GetPath();
             string ext = Time.frameCount.ToString("0000") + ".exr";
@@ -60,25 +79,10 @@ namespace UTJ
                 m_callbacks[i6 + 4] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 3, "A", m_callbacks[i6 + 4]);
                 m_callbacks[i6 + 5] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks[i6 + 5]);
             }
-        }
-
-        void EraseCallbacks()
-        {
             for (int i = 0; i < m_callbacks.Length; ++i)
             {
-                fcAPI.fcEraseDeferredCall(m_callbacks[i]);
+                GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacks[i]);
             }
-            m_callbacks = null;
-        }
-
-        void AddCommandBuffers()
-        {
-            GetComponent<Camera>().AddCommandBuffer(CameraEvent.AfterEverything, m_cb_copy);
-        }
-
-        void RemoveCommandBuffers()
-        {
-            GetComponent<Camera>().RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb_copy);
         }
 
 
@@ -86,6 +90,11 @@ namespace UTJ
         void Reset()
         {
             m_sh_copy = FrameCapturerUtils.GetFrameBufferCopyShader();
+        }
+
+        void OnValidate()
+        {
+            m_beginFrame = Mathf.Max(1, m_beginFrame);
         }
 #endif // UNITY_EDITOR
 
@@ -108,9 +117,6 @@ namespace UTJ
                 m_scratch_buffers[i].Create();
             }
 
-            // initialize callbacks
-            UpdateCallbacks();
-
             // initialize command buffers
             {
                 m_cb_copy = new CommandBuffer();
@@ -120,10 +126,6 @@ namespace UTJ
                     m_cb_copy.SetRenderTarget(m_scratch_buffers[i]);
                     m_cb_copy.SetGlobalTexture("_TmpRenderTarget", m_targets[i]);
                     m_cb_copy.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 3);
-                }
-                for (int i = 0; i < m_callbacks.Length; ++i)
-                {
-                    m_cb_copy.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacks[i]);
                 }
             }
         }
@@ -161,10 +163,15 @@ namespace UTJ
             {
                 RemoveCommandBuffers();
             }
+        }
 
+        IEnumerator OnPostRender()
+        {
+            int frame = Time.frameCount;
             if (frame >= m_beginFrame && frame <= m_endFrame)
             {
-                UpdateCallbacks();
+                yield return new WaitForEndOfFrame();
+                DoExport();
             }
         }
     }

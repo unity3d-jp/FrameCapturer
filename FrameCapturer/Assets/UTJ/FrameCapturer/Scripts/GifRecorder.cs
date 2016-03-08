@@ -42,7 +42,6 @@ namespace UTJ
 
         void InitializeContext()
         {
-            var cam = GetComponent<Camera>();
             m_num_video_frames = 0;
 
             // initialize scratch buffer
@@ -237,26 +236,22 @@ namespace UTJ
             ReleaseScratchBuffer();
         }
 
-
         IEnumerator OnPostRender()
         {
-            if (m_recording)
+            if (m_recording && Time.frameCount % m_captureEveryNthFrame == 0)
             {
                 yield return new WaitForEndOfFrame();
 
-                if (Time.frameCount % m_captureEveryNthFrame == 0)
+                bool keyframe = m_keyframe > 0 && m_num_video_frames % m_keyframe == 0;
+                double timestamp = Time.unscaledTime;
+                if (m_frameRateMode == FrameRateMode.Constant)
                 {
-                    bool keyframe = m_keyframe > 0 && m_num_video_frames % m_keyframe == 0;
-                    double timestamp = Time.unscaledTime;
-                    if (m_frameRateMode == FrameRateMode.Constant)
-                    {
-                        timestamp = 1.0 / m_framerate * m_num_video_frames;
-                    }
-
-                    m_callback = fcAPI.fcGifAddFrameTexture(m_ctx, m_scratch_buffer, keyframe, timestamp, m_callback);
-                    GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callback);
-                    m_num_video_frames++;
+                    timestamp = 1.0 / m_framerate * m_num_video_frames;
                 }
+
+                m_callback = fcAPI.fcGifAddFrameTexture(m_ctx, m_scratch_buffer, keyframe, timestamp, m_callback);
+                GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callback);
+                m_num_video_frames++;
             }
         }
     }

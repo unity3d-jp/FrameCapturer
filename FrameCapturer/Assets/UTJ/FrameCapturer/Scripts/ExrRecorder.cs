@@ -44,91 +44,6 @@ namespace UTJ
             set { m_endFrame = value; }
         }
 
-
-        void UpdateCallbacks()
-        {
-            string dir = m_outputDir.GetPath();
-            string ext = Time.frameCount.ToString("0000") + ".exr";
-
-            // callback for frame buffer
-            if (m_callbacks_fb == null)
-            {
-                m_callbacks_fb = new int[5];
-            }
-            {
-                string path = dir + "/FrameBuffer_" + ext;
-                var rt = m_frame_buffer;
-                m_callbacks_fb[0] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks_fb[0]);
-                m_callbacks_fb[1] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 0, "R", m_callbacks_fb[1]);
-                m_callbacks_fb[2] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 1, "G", m_callbacks_fb[2]);
-                m_callbacks_fb[3] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 2, "B", m_callbacks_fb[3]);
-                m_callbacks_fb[4] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks_fb[4]);
-            }
-
-            // callbacks for gbuffer
-            if (m_callbacks_gb == null)
-            {
-                m_callbacks_gb = new int[29];
-            }
-            {
-                string path = dir + "/Albedo_" + ext;
-                var rt = m_gbuffer[0];
-                m_callbacks_gb[0] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks_gb[0]);
-                m_callbacks_gb[1] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 0, "R", m_callbacks_gb[1]);
-                m_callbacks_gb[2] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 1, "G", m_callbacks_gb[2]);
-                m_callbacks_gb[3] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 2, "B", m_callbacks_gb[3]);
-                m_callbacks_gb[4] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks_gb[4]);
-            }
-            {
-                string path = dir + "/Occlusion_" + ext;
-                var rt = m_gbuffer[0];
-                m_callbacks_gb[5] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks_gb[5]);
-                m_callbacks_gb[6] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 3, "R", m_callbacks_gb[6]);
-                m_callbacks_gb[7] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks_gb[7]);
-            }
-            {
-                string path = dir + "/Specular_" + ext;
-                var rt = m_gbuffer[1];
-                m_callbacks_gb[8] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks_gb[8]);
-                m_callbacks_gb[9] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 0, "R", m_callbacks_gb[9]);
-                m_callbacks_gb[10] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 1, "G", m_callbacks_gb[10]);
-                m_callbacks_gb[11] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 2, "B", m_callbacks_gb[11]);
-                m_callbacks_gb[12] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks_gb[12]);
-            }
-            {
-                string path = dir + "/Smoothness_" + ext;
-                var rt = m_gbuffer[1];
-                m_callbacks_gb[13] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks_gb[13]);
-                m_callbacks_gb[14] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 3, "R", m_callbacks_gb[14]);
-                m_callbacks_gb[15] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks_gb[15]);
-            }
-            {
-                string path = dir + "/Normal_" + ext;
-                var rt = m_gbuffer[2];
-                m_callbacks_gb[16] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks_gb[16]);
-                m_callbacks_gb[17] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 0, "R", m_callbacks_gb[17]);
-                m_callbacks_gb[18] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 1, "G", m_callbacks_gb[18]);
-                m_callbacks_gb[19] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 2, "B", m_callbacks_gb[19]);
-                m_callbacks_gb[20] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks_gb[20]);
-            }
-            {
-                string path = dir + "/Emission_" + ext;
-                var rt = m_gbuffer[3];
-                m_callbacks_gb[21] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks_gb[21]);
-                m_callbacks_gb[22] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 0, "R", m_callbacks_gb[22]);
-                m_callbacks_gb[23] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 1, "G", m_callbacks_gb[23]);
-                m_callbacks_gb[24] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 2, "B", m_callbacks_gb[24]);
-                m_callbacks_gb[25] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks_gb[25]);
-            }
-            {
-                string path = dir + "/Depth_" + ext;
-                var rt = m_gbuffer[4];
-                m_callbacks_gb[26] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks_gb[26]);
-                m_callbacks_gb[27] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 0, "R", m_callbacks_gb[27]);
-                m_callbacks_gb[28] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks_gb[28]);
-            }
-        }
-
         void EraseCallbacks()
         {
             for (int i = 0; i < m_callbacks_fb.Length; ++i)
@@ -170,11 +85,113 @@ namespace UTJ
             }
         }
 
+        void DoExport()
+        {
+            string dir = m_outputDir.GetPath();
+            string ext = Time.frameCount.ToString("0000") + ".exr";
+
+            if (m_captureFramebuffer)
+            {
+                // callback for frame buffer
+                if (m_callbacks_fb == null)
+                {
+                    m_callbacks_fb = new int[5];
+                }
+                {
+                    string path = dir + "/FrameBuffer_" + ext;
+                    var rt = m_frame_buffer;
+                    m_callbacks_fb[0] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks_fb[0]);
+                    m_callbacks_fb[1] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 0, "R", m_callbacks_fb[1]);
+                    m_callbacks_fb[2] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 1, "G", m_callbacks_fb[2]);
+                    m_callbacks_fb[3] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 2, "B", m_callbacks_fb[3]);
+                    m_callbacks_fb[4] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks_fb[4]);
+                }
+                for (int i = 0; i < m_callbacks_fb.Length; ++i)
+                {
+                    GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacks_fb[i]);
+                }
+            }
+
+            if (m_captureGBuffer)
+            {
+                // callbacks for gbuffer
+                if (m_callbacks_gb == null)
+                {
+                    m_callbacks_gb = new int[29];
+                }
+                {
+                    string path = dir + "/Albedo_" + ext;
+                    var rt = m_gbuffer[0];
+                    m_callbacks_gb[0] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks_gb[0]);
+                    m_callbacks_gb[1] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 0, "R", m_callbacks_gb[1]);
+                    m_callbacks_gb[2] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 1, "G", m_callbacks_gb[2]);
+                    m_callbacks_gb[3] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 2, "B", m_callbacks_gb[3]);
+                    m_callbacks_gb[4] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks_gb[4]);
+                }
+                {
+                    string path = dir + "/Occlusion_" + ext;
+                    var rt = m_gbuffer[0];
+                    m_callbacks_gb[5] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks_gb[5]);
+                    m_callbacks_gb[6] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 3, "R", m_callbacks_gb[6]);
+                    m_callbacks_gb[7] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks_gb[7]);
+                }
+                {
+                    string path = dir + "/Specular_" + ext;
+                    var rt = m_gbuffer[1];
+                    m_callbacks_gb[8] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks_gb[8]);
+                    m_callbacks_gb[9] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 0, "R", m_callbacks_gb[9]);
+                    m_callbacks_gb[10] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 1, "G", m_callbacks_gb[10]);
+                    m_callbacks_gb[11] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 2, "B", m_callbacks_gb[11]);
+                    m_callbacks_gb[12] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks_gb[12]);
+                }
+                {
+                    string path = dir + "/Smoothness_" + ext;
+                    var rt = m_gbuffer[1];
+                    m_callbacks_gb[13] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks_gb[13]);
+                    m_callbacks_gb[14] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 3, "R", m_callbacks_gb[14]);
+                    m_callbacks_gb[15] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks_gb[15]);
+                }
+                {
+                    string path = dir + "/Normal_" + ext;
+                    var rt = m_gbuffer[2];
+                    m_callbacks_gb[16] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks_gb[16]);
+                    m_callbacks_gb[17] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 0, "R", m_callbacks_gb[17]);
+                    m_callbacks_gb[18] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 1, "G", m_callbacks_gb[18]);
+                    m_callbacks_gb[19] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 2, "B", m_callbacks_gb[19]);
+                    m_callbacks_gb[20] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks_gb[20]);
+                }
+                {
+                    string path = dir + "/Emission_" + ext;
+                    var rt = m_gbuffer[3];
+                    m_callbacks_gb[21] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks_gb[21]);
+                    m_callbacks_gb[22] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 0, "R", m_callbacks_gb[22]);
+                    m_callbacks_gb[23] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 1, "G", m_callbacks_gb[23]);
+                    m_callbacks_gb[24] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 2, "B", m_callbacks_gb[24]);
+                    m_callbacks_gb[25] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks_gb[25]);
+                }
+                {
+                    string path = dir + "/Depth_" + ext;
+                    var rt = m_gbuffer[4];
+                    m_callbacks_gb[26] = fcAPI.fcExrBeginFrame(m_ctx, path, rt.width, rt.height, m_callbacks_gb[26]);
+                    m_callbacks_gb[27] = fcAPI.fcExrAddLayerTexture(m_ctx, rt, 0, "R", m_callbacks_gb[27]);
+                    m_callbacks_gb[28] = fcAPI.fcExrEndFrame(m_ctx, m_callbacks_gb[28]);
+                }
+                for (int i = 0; i < m_callbacks_gb.Length; ++i)
+                {
+                    GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacks_gb[i]);
+                }
+            }
+        }
 
 #if UNITY_EDITOR
         void Reset()
         {
             m_sh_copy = FrameCapturerUtils.GetFrameBufferCopyShader();
+        }
+
+        void OnValidate()
+        {
+            m_beginFrame = Mathf.Max(1, m_beginFrame);
         }
 #endif // UNITY_EDITOR
 
@@ -212,15 +229,13 @@ namespace UTJ
                 m_gbuffer = new RenderTexture[5];
                 for (int i = 0; i < m_gbuffer.Length; ++i)
                 {
+                    // last one is depth (1 channel)
                     m_gbuffer[i] = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0,
                         i == 4 ? RenderTextureFormat.RHalf : RenderTextureFormat.ARGBHalf);
                     m_gbuffer[i].filterMode = FilterMode.Point;
                     m_gbuffer[i].Create();
                 }
             }
-
-            // initialize callbacks
-            UpdateCallbacks();
 
             // initialize command buffers
             {
@@ -233,10 +248,6 @@ namespace UTJ
                 m_cb_copy_fb.SetRenderTarget(m_frame_buffer);
                 m_cb_copy_fb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 0);
                 m_cb_copy_fb.ReleaseTemporaryRT(tid);
-                for (int i = 0; i < m_callbacks_fb.Length; ++i)
-                {
-                    m_cb_copy_fb.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacks_fb[i]);
-                }
 
                 m_cb_copy_gb = new CommandBuffer();
                 m_cb_copy_gb.name = "ExrRecorder: Copy G-Buffer";
@@ -245,10 +256,6 @@ namespace UTJ
                 m_cb_copy_gb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 1);
                 m_cb_copy_gb.SetRenderTarget(m_gbuffer[4]); // depth
                 m_cb_copy_gb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 2);
-                for (int i = 0; i < m_callbacks_gb.Length; ++i)
-                {
-                    m_cb_copy_gb.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacks_gb[i]);
-                }
             }
         }
 
@@ -300,10 +307,15 @@ namespace UTJ
             {
                 RemoveCommandBuffers();
             }
+        }
 
+        IEnumerator OnPostRender()
+        {
+            int frame = Time.frameCount;
             if (frame >= m_beginFrame && frame <= m_endFrame)
             {
-                UpdateCallbacks();
+                yield return new WaitForEndOfFrame();
+                DoExport();
             }
         }
     }
