@@ -65,6 +65,7 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern void         fcDestroyStream(fcStream s);
         [DllImport ("FrameCapturer")] public static extern ulong        fcStreamGetWrittenSize(fcStream s);
 
+        [DllImport ("FrameCapturer")] public static extern int          fcDoNothingDeferred(int id);
         [DllImport ("FrameCapturer")] public static extern void         fcEraseDeferredCall(int id);
         [DllImport ("FrameCapturer")] public static extern IntPtr       fcGetRenderEventFunc();
 
@@ -226,7 +227,6 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern fcGIFContext fcGifCreateContext(ref fcGifConfig conf);
         [DllImport ("FrameCapturer")] public static extern void         fcGifDestroyContext(fcGIFContext ctx);
         [DllImport ("FrameCapturer")] public static extern Bool         fcGifAddFrameTexture(fcGIFContext ctx, IntPtr tex, fcPixelFormat fmt, Bool keyframe, double timestamp = -1.0);
-        [DllImport ("FrameCapturer")] public static extern Bool         fcGifAddFramePixels(fcGIFContext ctx, IntPtr pixels, fcPixelFormat fmt, Bool keyframe, double timestamp = -1.0);
         [DllImport ("FrameCapturer")] public static extern Bool         fcGifWrite(fcGIFContext ctx, fcStream stream, int begin_frame=0, int end_frame=-1);
 
         [DllImport ("FrameCapturer")] public static extern void         fcGifClearFrame(fcGIFContext ctx);
@@ -298,11 +298,10 @@ namespace UTJ
 
         [DllImport ("FrameCapturer")] public static extern fcMP4Context     fcMP4CreateContext(ref fcMP4Config conf);
         [DllImport ("FrameCapturer")] public static extern void             fcMP4DestroyContext(fcMP4Context ctx);
+        [DllImport ("FrameCapturer")] public static extern void             fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);
         [DllImport ("FrameCapturer")] private static extern IntPtr          fcMP4GetAudioEncoderInfo(fcMP4Context ctx);
         [DllImport ("FrameCapturer")] private static extern IntPtr          fcMP4GetVideoEncoderInfo(fcMP4Context ctx);
-        [DllImport ("FrameCapturer")] public static extern void             fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);
-        [DllImport ("FrameCapturer")] public static extern Bool             fcMP4AddVideoFrameTexture(fcMP4Context ctx, IntPtr tex, fcPixelFormat fmt, double time = -1.0);
-        [DllImport ("FrameCapturer")] public static extern Bool             fcMP4AddVideoFramePixels(fcMP4Context ctx, IntPtr pixels, fcPixelFormat fmt, double time = -1.0);
+        [DllImport ("FrameCapturer")] private static extern int             fcMP4AddVideoFrameTextureDeferred(fcMP4Context ctx, IntPtr tex, fcPixelFormat fmt, double time, int id);
         [DllImport ("FrameCapturer")] public static extern Bool             fcMP4AddAudioFrame(fcMP4Context ctx, float[] samples, int num_samples, double time = -1.0);
 
         public static string fcMP4GetAudioEncoderInfoS(fcMP4Context ctx)
@@ -315,9 +314,9 @@ namespace UTJ
             return Marshal.PtrToStringAnsi(fcMP4GetVideoEncoderInfo(ctx));
         }
 
-        public static Bool fcMP4AddVideoFrameTexture(fcMP4Context ctx, RenderTexture tex, double time = -1.0)
+        public static int fcMP4AddVideoFrameTexture(fcMP4Context ctx, RenderTexture tex, double time, int id)
         {
-            return fcMP4AddVideoFrameTexture(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), time);
+            return fcMP4AddVideoFrameTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), time, id);
         }
     }
 

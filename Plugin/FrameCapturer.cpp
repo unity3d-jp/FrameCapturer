@@ -73,9 +73,9 @@ namespace {
     std::vector<fcDeferredCall> g_deferred_calls;
 }
 
-fcCLinkage fcExport int fcAddDeferredCall(const fcDeferredCall& dc, int index = 0)
+fcCLinkage fcExport int fcAddDeferredCall(const fcDeferredCall& dc, int id)
 {
-    if (index == 0) {
+    if (id == 0) {
         // search empty object and return its position if found
         for (int i = 1; i < (int)g_deferred_calls.size(); ++i) {
             if (!g_deferred_calls[i]) {
@@ -92,8 +92,8 @@ fcCLinkage fcExport int fcAddDeferredCall(const fcDeferredCall& dc, int index = 
         return (int)g_deferred_calls.size() - 1;
     }
     else {
-        g_deferred_calls[index] = dc;
-        return index;
+        g_deferred_calls[id] = dc;
+        return id;
     }
 }
 
@@ -106,6 +106,11 @@ fcCLinkage fcExport void fcCallDeferredCall(int id)
 {
     auto& dc = g_deferred_calls[id];
     if (dc) { dc(); }
+}
+
+fcCLinkage fcExport int fcDoNothingDefered(int id)
+{
+    return fcAddDeferredCall([]() {}, id);
 }
 
 #endif // fcStaticLink
