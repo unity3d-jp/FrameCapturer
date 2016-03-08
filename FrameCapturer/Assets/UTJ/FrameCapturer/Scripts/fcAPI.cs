@@ -226,7 +226,7 @@ namespace UTJ
 
         [DllImport ("FrameCapturer")] public static extern fcGIFContext fcGifCreateContext(ref fcGifConfig conf);
         [DllImport ("FrameCapturer")] public static extern void         fcGifDestroyContext(fcGIFContext ctx);
-        [DllImport ("FrameCapturer")] public static extern Bool         fcGifAddFrameTexture(fcGIFContext ctx, IntPtr tex, fcPixelFormat fmt, Bool keyframe, double timestamp = -1.0);
+        [DllImport ("FrameCapturer")] private static extern int         fcGifAddFrameTextureDeferred(fcGIFContext ctx, IntPtr tex, fcPixelFormat fmt, Bool keyframe, double timestamp, int id);
         [DllImport ("FrameCapturer")] public static extern Bool         fcGifWrite(fcGIFContext ctx, fcStream stream, int begin_frame=0, int end_frame=-1);
 
         [DllImport ("FrameCapturer")] public static extern void         fcGifClearFrame(fcGIFContext ctx);
@@ -235,9 +235,9 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern int          fcGifGetExpectedDataSize(fcGIFContext ctx, int begin_frame, int end_frame);
         [DllImport ("FrameCapturer")] public static extern void         fcGifEraseFrame(fcGIFContext ctx, int begin_frame, int end_frame);
 
-        public static Bool fcGifAddFrameTexture(fcGIFContext ctx, RenderTexture tex, Bool keyframe, double timestamp = -1.0)
+        public static int fcGifAddFrameTexture(fcGIFContext ctx, RenderTexture tex, bool keyframe, double timestamp, int id)
         {
-            return fcGifAddFrameTexture(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), keyframe, timestamp);
+            return fcGifAddFrameTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), keyframe, timestamp, id);
         }
 
         public static Bool fcGifWriteFile(fcGIFContext ctx, string path, int begin_frame = 0, int end_frame = -1)
