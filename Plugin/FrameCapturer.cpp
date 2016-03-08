@@ -108,7 +108,7 @@ fcCLinkage fcExport void fcCallDeferredCall(int id)
     if (dc) { dc(); }
 }
 
-fcCLinkage fcExport int fcDoNothingDefered(int id)
+fcCLinkage fcExport int fcDoNothingDeferred(int id)
 {
     return fcAddDeferredCall([]() {}, id);
 }

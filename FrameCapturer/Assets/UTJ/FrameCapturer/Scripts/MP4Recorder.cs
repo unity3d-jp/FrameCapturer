@@ -171,6 +171,7 @@ namespace UTJ
         public override bool BeginRecording()
         {
             if (m_recording) { return false; }
+            m_recording = true;
 
             InitializeContext();
             GetComponent<Camera>().AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
@@ -254,8 +255,7 @@ namespace UTJ
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
             m_mat_copy = new Material(m_sh_copy);
 
-            var cam = GetComponent<Camera>();
-            if (cam.targetTexture != null)
+            if (GetComponent<Camera>().targetTexture != null)
             {
                 m_mat_copy.EnableKeyword("OFFSCREEN");
             }

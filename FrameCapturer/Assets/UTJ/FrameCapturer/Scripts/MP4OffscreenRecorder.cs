@@ -170,6 +170,7 @@ namespace UTJ
         public override bool BeginRecording()
         {
             if (m_recording) { return false; }
+            m_recording = true;
 
             InitializeContext();
             GetComponent<Camera>().AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
