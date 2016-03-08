@@ -45,7 +45,6 @@ namespace UTJ
 
         void InitializeContext()
         {
-            var cam = GetComponent<Camera>();
             m_num_video_frames = 0;
 
             // initialize scratch buffer
@@ -70,9 +69,6 @@ namespace UTJ
                 fcAPI.fcMP4AddOutputStream(m_ctx, m_ostream);
             }
 
-            // initialize callback
-            UpdateCallback();
-
             // initialize command buffer
             {
                 m_cb = new CommandBuffer();
@@ -80,7 +76,6 @@ namespace UTJ
                 m_cb.SetRenderTarget(m_scratch_buffer);
                 m_cb.SetGlobalTexture("_TmpRenderTarget", m_target);
                 m_cb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 3);
-                m_cb.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callback);
             }
         }
 
@@ -106,25 +101,6 @@ namespace UTJ
             {
                 fcAPI.fcDestroyStream(m_ostream);
                 m_ostream.ptr = IntPtr.Zero;
-            }
-        }
-
-        void UpdateCallback()
-        {
-            if (Time.frameCount % m_captureEveryNthFrame == 0)
-            {
-                double timestamp = Time.unscaledTime;
-                if (m_frameRateMode == FrameRateMode.Constant)
-                {
-                    timestamp = 1.0 / m_framerate * m_num_video_frames;
-                }
-
-                m_callback = fcAPI.fcMP4AddVideoFrameTexture(m_ctx, m_scratch_buffer, timestamp, m_callback);
-                m_num_video_frames++;
-            }
-            else
-            {
-                m_callback = fcAPI.fcDoNothingDeferred(m_callback);
             }
         }
 
@@ -260,14 +236,6 @@ namespace UTJ
             ReleaseScratchBuffer();
         }
 
-        void Update()
-        {
-            if (m_recording && m_captureVideo)
-            {
-                UpdateCallback();
-            }
-        }
-
         void OnAudioFilterRead(float[] samples, int channels)
         {
             if (m_recording && m_captureAudio)
@@ -278,6 +246,24 @@ namespace UTJ
                 }
 
                 fcAPI.fcMP4AddAudioFrame(m_ctx, samples, samples.Length);
+            }
+        }
+
+        IEnumerator OnPostRender()
+        {
+            if (m_recording && m_captureVideo && Time.frameCount % m_captureEveryNthFrame == 0)
+            {
+                yield return new WaitForEndOfFrame();
+
+                double timestamp = Time.unscaledTime;
+                if (m_frameRateMode == FrameRateMode.Constant)
+                {
+                    timestamp = 1.0 / m_framerate * m_num_video_frames;
+                }
+
+                m_callback = fcAPI.fcMP4AddVideoFrameTexture(m_ctx, m_scratch_buffer, timestamp, m_callback);
+                GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callback);
+                m_num_video_frames++;
             }
         }
     }
