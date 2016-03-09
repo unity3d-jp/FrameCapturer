@@ -40,13 +40,15 @@ namespace UTJ
 
         void DoExport()
         {
+            Debug.Log("PngOffscreenRecorder: exporting frame " + Time.frameCount);
+
+            string dir = m_outputDir.GetPath();
+            string ext = Time.frameCount.ToString("0000") + ".png";
+
             if (m_callbacks == null)
             {
                 m_callbacks = new int[m_scratch_buffers.Length];
             }
-
-            string dir = m_outputDir.GetPath();
-            string ext = Time.frameCount.ToString("0000") + ".png";
             for (int i = 0; i < m_callbacks.Length; ++i)
             {
                 string path = dir + "/" + m_outputFilename + "[" + i + "]_" + ext;
