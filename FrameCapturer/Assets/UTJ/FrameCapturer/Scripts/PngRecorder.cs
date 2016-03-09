@@ -30,7 +30,7 @@ namespace UTJ
         CommandBuffer m_cb_copy_gb;
         RenderTexture m_frame_buffer;
         RenderTexture[] m_gbuffer;
-        int m_callback_fb;
+        int[] m_callbacks_fb;
         int[] m_callbacks_gb;
 
 
@@ -49,14 +49,23 @@ namespace UTJ
 
         void EraseCallbacks()
         {
-            fcAPI.fcEraseDeferredCall(m_callback_fb);
-            m_callback_fb = 0;
-
-            for (int i = 0; i < m_callbacks_gb.Length; ++i)
+            if (m_callbacks_fb != null)
             {
-                fcAPI.fcEraseDeferredCall(m_callbacks_gb[i]);
+                for (int i = 0; i < m_callbacks_fb.Length; ++i)
+                {
+                    fcAPI.fcEraseDeferredCall(m_callbacks_fb[i]);
+                }
+                m_callbacks_fb = null;
             }
-            m_callbacks_gb = null;
+
+            if (m_callbacks_gb != null)
+            {
+                for (int i = 0; i < m_callbacks_gb.Length; ++i)
+                {
+                    fcAPI.fcEraseDeferredCall(m_callbacks_gb[i]);
+                }
+                m_callbacks_gb = null;
+            }
         }
 
         void AddCommandBuffers()
@@ -95,8 +104,12 @@ namespace UTJ
             // callback for frame buffer
             {
                 string path = dir + "/FrameBuffer_" + ext;
-                m_callback_fb = fcAPI.fcPngExportTexture(m_ctx, path, m_frame_buffer, m_callback_fb);
-                GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callback_fb);
+                if(m_callbacks_fb == null)
+                {
+                    m_callbacks_fb = new int[1];
+                }
+                m_callbacks_fb[0] = fcAPI.fcPngExportTexture(m_ctx, path, m_frame_buffer, m_callbacks_fb[0]);
+                GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacks_fb[0]);
             }
 
             // callbacks for gbuffer

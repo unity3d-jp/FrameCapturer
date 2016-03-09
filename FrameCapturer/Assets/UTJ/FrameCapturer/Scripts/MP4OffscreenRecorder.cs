@@ -219,7 +219,7 @@ namespace UTJ
 
         void Start()
         {
-            fcAPI.fcSetModulePath(Application.persistentDataPath);
+            fcAPI.fcSetModulePath(m_outputDir.GetPath());
             fcAPI.fcMP4DownloadCodecBegin();
         }
 
