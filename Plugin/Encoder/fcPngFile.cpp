@@ -67,6 +67,10 @@ void fcPngContext::release()
 
 bool fcPngContext::exportTexture(const char *path_, void *tex, int width, int height, fcPixelFormat fmt, bool flipY)
 {
+    if (m_dev == nullptr) {
+        fcDebugLog("fcPngContext::exportTexture(): gfx device is null.");
+        return false;
+    }
     waitSome();
 
     auto data = new fcPngTaskData();

@@ -174,6 +174,10 @@ void fcGifContext::kickTask(fcGifTaskData& data)
 
 bool fcGifContext::addFrameTexture(void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
 {
+    if (m_dev == nullptr) {
+        fcDebugLog("fcGifContext::addFrameTexture(): gfx device is null.");
+        return false;
+    }
     fcGifTaskData& data = getTempraryVideoFrame();
     data.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeSec();
     data.local_palette = data.frame == 0 || keyframe;

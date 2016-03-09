@@ -116,6 +116,10 @@ bool fcExrContext::beginFrame(const char *path, int width, int height)
 
 bool fcExrContext::addLayerTexture(void *tex, fcPixelFormat fmt, int channel, const char *name, bool flipY)
 {
+    if (m_dev == nullptr) {
+        fcDebugLog("fcExrContext::addLayerTexture(): gfx device is null.");
+        return false;
+    }
     if (m_task == nullptr) {
         fcDebugLog("fcExrContext::addLayerTexture(): maybe beginFrame() is not called.");
         return false;
