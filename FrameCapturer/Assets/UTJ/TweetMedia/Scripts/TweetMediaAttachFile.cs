@@ -3,7 +3,7 @@
 namespace UTJ
 {
     [RequireComponent(typeof(TweetMedia))]
-    public class TweetMediaAttachMovie : MonoBehaviour
+    public class TweetMediaAttachFile : MonoBehaviour
     {
         public IMovieRecoerderUI m_recorderUI;
         public UnityEngine.UI.Toggle m_toggle_screenshot;
@@ -17,7 +17,7 @@ namespace UTJ
                 if (!m_toggle_screenshot.isOn) { return; }
                 if (m_recorderUI == null)
                 {
-                    Debug.LogError("TweetMediaAttachMovie: m_recorderUI is null");
+                    Debug.LogError("TweetMediaAttachFile: m_recorderUI is null");
                     return;
                 }
                 m_toggle_screenshot.isOn = false;
