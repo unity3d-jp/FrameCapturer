@@ -59,6 +59,8 @@ namespace UTJ
 
         void DoExport()
         {
+            Debug.Log("ExrOffscreenRecorder: exporting frame " + Time.frameCount);
+
             string dir = m_outputDir.GetPath();
             string ext = Time.frameCount.ToString("0000") + ".exr";
 

@@ -87,6 +87,8 @@ namespace UTJ
 
         void DoExport()
         {
+            Debug.Log("PngRecorder: exporting frame " + Time.frameCount);
+
             string dir = m_outputDir.GetPath();
             string ext = Time.frameCount.ToString("0000") + ".png";
 

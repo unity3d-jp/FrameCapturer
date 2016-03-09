@@ -27,7 +27,6 @@ namespace UTJ
         public int m_captureEveryNthFrame = 2;
         public int m_keyframe = 30;
         [Tooltip("0 is treated as processor count")]
-        public int m_maxTasks = 0;
         public Shader m_shCopy;
 
         string m_output_file;
@@ -55,7 +54,7 @@ namespace UTJ
                 conf.width = m_scratch_buffer.width;
                 conf.height = m_scratch_buffer.height;
                 conf.num_colors = Mathf.Clamp(m_numColors, 1, 255);
-                conf.max_active_tasks = m_maxTasks;
+                conf.max_active_tasks = 0;
                 m_ctx = fcAPI.fcGifCreateContext(ref conf);
             }
 
