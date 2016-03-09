@@ -107,12 +107,6 @@ fcCLinkage fcExport void fcCallDeferredCall(int id)
     auto& dc = g_deferred_calls[id];
     if (dc) { dc(); }
 }
-
-fcCLinkage fcExport int fcDoNothingDeferred(int id)
-{
-    return fcAddDeferredCall([]() {}, id);
-}
-
 #endif // fcStaticLink
 
 

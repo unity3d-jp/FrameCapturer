@@ -16,8 +16,7 @@ namespace UTJ
         public string m_outputFilename = "RenderTarget";
         public int m_beginFrame = 1;
         public int m_endFrame = 100;
-        public bool m_fillAlpha = false;
-        public Shader m_sh_copy;
+        public Shader m_shCopy;
 
         fcAPI.fcPNGContext m_ctx;
         Material m_mat_copy;
@@ -79,7 +78,7 @@ namespace UTJ
 #if UNITY_EDITOR
         void Reset()
         {
-            m_sh_copy = FrameCapturerUtils.GetFrameBufferCopyShader();
+            m_shCopy = FrameCapturerUtils.GetFrameBufferCopyShader();
         }
 
         void OnValidate()
@@ -92,16 +91,7 @@ namespace UTJ
         {
             m_outputDir.CreateDirectory();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
-            m_mat_copy = new Material(m_sh_copy);
-
-            if (m_fillAlpha)
-            {
-                m_mat_copy.EnableKeyword("FILL_ALPHA");
-            }
-            else
-            {
-                m_mat_copy.DisableKeyword("FILL_ALPHA");
-            }
+            m_mat_copy = new Material(m_shCopy);
 
             // initialize png context
             fcAPI.fcPngConfig conf = fcAPI.fcPngConfig.default_value;

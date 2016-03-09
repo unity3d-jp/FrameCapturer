@@ -21,8 +21,7 @@ namespace UTJ
         public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "PngOutput");
         public int m_beginFrame = 1;
         public int m_endFrame = 100;
-        public bool m_fillAlpha = false;
-        public Shader m_sh_copy;
+        public Shader m_shCopy;
 
         fcAPI.fcPNGContext m_ctx;
         Material m_mat_copy;
@@ -69,7 +68,7 @@ namespace UTJ
             }
             if (m_captureGBuffer)
             {
-                cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb_copy_gb);
+                cam.AddCommandBuffer(CameraEvent.BeforeLighting, m_cb_copy_gb);
             }
         }
 
@@ -82,7 +81,7 @@ namespace UTJ
             }
             if (m_captureGBuffer)
             {
-                cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb_copy_gb);
+                cam.RemoveCommandBuffer(CameraEvent.BeforeLighting, m_cb_copy_gb);
             }
         }
 
@@ -101,8 +100,10 @@ namespace UTJ
             // callbacks for gbuffer
             {
                 string[] path = new string[] {
-                    dir + "/AlbedoOcclusion_" + ext,
-                    dir + "/SpecularSmoothness_" + ext,
+                    dir + "/Albedo_" + ext,
+                    dir + "/Occlusion_" + ext,
+                    dir + "/Specular_" + ext,
+                    dir + "/Smoothness_" + ext,
                     dir + "/Normal_" + ext,
                     dir + "/Emission_" + ext,
                     dir + "/Depth_" + ext,
@@ -123,7 +124,7 @@ namespace UTJ
 #if UNITY_EDITOR
         void Reset()
         {
-            m_sh_copy = FrameCapturerUtils.GetFrameBufferCopyShader();
+            m_shCopy = FrameCapturerUtils.GetFrameBufferCopyShader();
         }
 
         void OnValidate()
@@ -136,16 +137,7 @@ namespace UTJ
         {
             m_outputDir.CreateDirectory();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
-            m_mat_copy = new Material(m_sh_copy);
-
-            if (m_fillAlpha)
-            {
-                m_mat_copy.EnableKeyword("FILL_ALPHA");
-            }
-            else
-            {
-                m_mat_copy.DisableKeyword("FILL_ALPHA");
-            }
+            m_mat_copy = new Material(m_shCopy);
 
             var cam = GetComponent<Camera>();
             if (cam.targetTexture != null)
@@ -172,12 +164,20 @@ namespace UTJ
                 m_frame_buffer.wrapMode = TextureWrapMode.Repeat;
                 m_frame_buffer.Create();
 
-                m_gbuffer = new RenderTexture[5];
+                var formats = new RenderTextureFormat[7] {
+                    RenderTextureFormat.ARGBHalf,   // albedo (RGB)
+                    RenderTextureFormat.RHalf,      // occlusion (R)
+                    RenderTextureFormat.ARGBHalf,   // specular (RGB)
+                    RenderTextureFormat.RHalf,      // smoothness (R)
+                    RenderTextureFormat.ARGBHalf,   // normal (RGB)
+                    RenderTextureFormat.ARGBHalf,   // emission (RGB)
+                    RenderTextureFormat.RHalf,      // depth (R)
+                };
+                m_gbuffer = new RenderTexture[7];
                 for (int i = 0; i < m_gbuffer.Length; ++i)
                 {
                     // last one is depth (1 channel)
-                    m_gbuffer[i] = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0,
-                        i == 4 ? RenderTextureFormat.RHalf : RenderTextureFormat.ARGBHalf);
+                    m_gbuffer[i] = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0, formats[i]);
                     m_gbuffer[i].filterMode = FilterMode.Point;
                     m_gbuffer[i].Create();
                 }
@@ -199,9 +199,10 @@ namespace UTJ
                 m_cb_copy_gb.name = "PngRecorder: Copy G-Buffer";
                 m_cb_copy_gb.SetRenderTarget(
                     new RenderTargetIdentifier[] { m_gbuffer[0], m_gbuffer[1], m_gbuffer[2], m_gbuffer[3] }, m_gbuffer[0]);
-                m_cb_copy_gb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 1);
-                m_cb_copy_gb.SetRenderTarget(m_gbuffer[4]); // depth
-                m_cb_copy_gb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 2);
+                m_cb_copy_gb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 4);
+                m_cb_copy_gb.SetRenderTarget(
+                    new RenderTargetIdentifier[] { m_gbuffer[4], m_gbuffer[5], m_gbuffer[6], m_gbuffer[3] }, m_gbuffer[0]);
+                m_cb_copy_gb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 5);
             }
         }
 

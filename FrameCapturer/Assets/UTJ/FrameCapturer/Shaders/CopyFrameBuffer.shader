@@ -7,7 +7,6 @@ CGINCLUDE
 #include "UnityCG.cginc"
 //#pragma multi_compile ___ UNITY_HDR_ON
 #pragma multi_compile ___ OFFSCREEN
-#pragma multi_compile ___ FILL_ALPHA
 
 sampler2D _TmpFrameBuffer;
 sampler2D _CameraGBufferTexture0;
@@ -46,17 +45,19 @@ float2 get_texcoord_gb(v2f i)
 }
 
 
-half4 copy_framebuffer(v2f i) : SV_Target
+half4 copy_framebuffer(v2f I) : SV_Target
 {
-    float2 t = get_texcoord(i);
+    float2 t = get_texcoord(I);
 #if !defined(OFFSCREEN) || !defined(UNITY_UV_STARTS_AT_TOP)
     t.y = 1.0 - t.y;
 #endif
-    half4 r = tex2D(_TmpFrameBuffer, t);
-    r.a = 1.0;
-    return r;
+    half4 O = tex2D(_TmpFrameBuffer, t);
+    O.a = 1.0;
+    return O;
 }
 
+
+// g-buffer
 struct gbuffer_out
 {
     half4 diffuse           : SV_Target0; // RT0: diffuse color (rgb), occlusion (a)
@@ -64,44 +65,81 @@ struct gbuffer_out
     half4 normal            : SV_Target2; // RT2: normal (rgb), --unused, very low precision-- (a) 
     half4 emission          : SV_Target3; // RT3: emission (rgb), --unused-- (a)
 };
-gbuffer_out copy_gbuffer(v2f i)
+gbuffer_out copy_gbuffer(v2f I)
 {
-    float2 t = get_texcoord_gb(i);
-    gbuffer_out o;
-    o.diffuse           = tex2D(_CameraGBufferTexture0, t);
-    o.spec_smoothness   = tex2D(_CameraGBufferTexture1, t);
-    o.normal            = tex2D(_CameraGBufferTexture2, t);
-    o.emission          = tex2D(_CameraGBufferTexture3, t);
-#if FILL_ALPHA
-    o.diffuse.a         = 1.0;
-    o.spec_smoothness.a = 1.0;
-    o.normal.a          = 1.0;
-    o.emission.a        = 1.0;
-#endif // FILL_ALPHA
-    return o;
+    float2 t = get_texcoord_gb(I);
+    gbuffer_out O;
+    O.diffuse           = tex2D(_CameraGBufferTexture0, t);
+    O.spec_smoothness   = tex2D(_CameraGBufferTexture1, t);
+    O.normal            = tex2D(_CameraGBufferTexture2, t);
+    O.emission          = tex2D(_CameraGBufferTexture3, t);
+    return O;
 }
 
-float4 copy_depth(v2f i) : SV_Target
+
+// depth
+float4 copy_depth(v2f I) : SV_Target
 {
-    float4 ret = tex2D(_CameraDepthTexture, get_texcoord_gb(i)).rrrr;
-#if FILL_ALPHA
-    ret.a = 1.0;
-#endif // FILL_ALPHA
-    return ret;
+    float4 O = tex2D(_CameraDepthTexture, get_texcoord_gb(I)).rrrr;
+    return O;
 }
 
-half4 copy_rendertarget(v2f i) : SV_Target
+
+// render target (for offscreen-recorder)
+half4 copy_rendertarget(v2f I) : SV_Target
 {
-    half4 ret = tex2D(_TmpRenderTarget, get_texcoord_gb(i));
-#if FILL_ALPHA
-    ret.a = 1.0;
-#endif // FILL_ALPHA
-    return ret;
+    half4 O = tex2D(_TmpRenderTarget, get_texcoord_gb(I));
+    return O;
+}
+
+
+// albedo, occlusion, specular, smoothness
+struct aoss_out
+{
+    half4 albedo            : SV_Target0;
+    half4 occlusion         : SV_Target1;
+    half4 specular          : SV_Target2;
+    half4 smoothness        : SV_Target3;
+};
+aoss_out copy_aoss(v2f I)
+{
+    float2 t = get_texcoord_gb(I);
+    half4 ao = tex2D(_CameraGBufferTexture0, t);
+    half4 ss = tex2D(_CameraGBufferTexture1, t);
+
+    aoss_out O;
+    O.albedo = half4(ao.rgb, 1.0);
+    O.occlusion = ao.aaaa;
+    O.specular = half4(ss.rgb, 1.0);
+    O.smoothness = ss.aaaa;
+    return O;
+}
+
+
+// normal, emission, depth
+struct ned_out
+{
+    half4 normal            : SV_Target0;
+    half4 emission          : SV_Target1;
+    half4 depth             : SV_Target2;
+};
+ned_out copy_ned(v2f I)
+{
+    float2 t = get_texcoord_gb(I);
+    half4 normal = tex2D(_CameraGBufferTexture2, t);
+    half4 emission = tex2D(_CameraGBufferTexture3, t);
+    half4 depth = tex2D(_CameraDepthTexture, get_texcoord_gb(I));
+
+    ned_out O;
+    O.normal = half4(normal.rgb, 1.0);
+    O.emission = half4(emission.rgb, 1.0);
+    O.depth = depth.rrrr;
+    return O;
 }
 ENDCG
 
 Subshader {
-    // Pass 0: copy_framebuffer
+    // Pass 0: framebuffer
     Pass {
         Blend Off Cull Off ZTest Off ZWrite Off
         CGPROGRAM
@@ -110,7 +148,7 @@ Subshader {
         ENDCG
     }
 
-    // Pass 1: copy_gbuffer
+    // Pass 1: g-buffer
     Pass {
         Blend Off Cull Off ZTest Off ZWrite Off
         CGPROGRAM
@@ -119,7 +157,7 @@ Subshader {
         ENDCG
     }
 
-    // Pass 2: copy_depth
+    // Pass 2: depth
     Pass {
         Blend Off Cull Off ZTest Off ZWrite Off
         CGPROGRAM
@@ -128,12 +166,30 @@ Subshader {
         ENDCG
     }
 
-    // Pass 3: copy_rendertarget
+    // Pass 3: render target
     Pass {
         Blend Off Cull Off ZTest Off ZWrite Off
         CGPROGRAM
         #pragma vertex vert
         #pragma fragment copy_rendertarget
+        ENDCG
+    }
+
+    // Pass 4: albedo, occlusion, specular, smoothness
+    Pass {
+        Blend Off Cull Off ZTest Off ZWrite Off
+        CGPROGRAM
+        #pragma vertex vert
+        #pragma fragment copy_aoss
+        ENDCG
+    }
+
+    // Pass 5: normal, emission, depth
+    Pass {
+        Blend Off Cull Off ZTest Off ZWrite Off
+        CGPROGRAM
+        #pragma vertex vert
+        #pragma fragment copy_ned
         ENDCG
     }
 }

@@ -19,7 +19,7 @@ namespace UTJ
         public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "ExrOutput");
         public int m_beginFrame = 1;
         public int m_endFrame = 100;
-        public Shader m_sh_copy;
+        public Shader m_shCopy;
 
         fcAPI.fcEXRContext m_ctx;
         Material m_mat_copy;
@@ -68,7 +68,7 @@ namespace UTJ
             }
             if (m_captureGBuffer)
             {
-                cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb_copy_gb);
+                cam.AddCommandBuffer(CameraEvent.BeforeLighting, m_cb_copy_gb);
             }
         }
 
@@ -81,7 +81,7 @@ namespace UTJ
             }
             if (m_captureGBuffer)
             {
-                cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb_copy_gb);
+                cam.RemoveCommandBuffer(CameraEvent.BeforeLighting, m_cb_copy_gb);
             }
         }
 
@@ -186,7 +186,7 @@ namespace UTJ
 #if UNITY_EDITOR
         void Reset()
         {
-            m_sh_copy = FrameCapturerUtils.GetFrameBufferCopyShader();
+            m_shCopy = FrameCapturerUtils.GetFrameBufferCopyShader();
         }
 
         void OnValidate()
@@ -199,7 +199,7 @@ namespace UTJ
         {
             m_outputDir.CreateDirectory();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
-            m_mat_copy = new Material(m_sh_copy);
+            m_mat_copy = new Material(m_shCopy);
 
             var cam = GetComponent<Camera>();
             if (cam.targetTexture != null)
