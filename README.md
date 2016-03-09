@@ -29,7 +29,7 @@
 - 録画結果をゲーム内から直接 Twitter へ投稿可能
 
 録画解像度はかなり小さめ (横 300 pixel 程度) を推奨しています。
-gif のエンコードはとても遅い上、解像度に比例してすごい勢いで負荷が上がっていくため、等倍解像度の録画をリアルタイムで行うのは絶望的です。(後述の mp4 の録画よりも数倍遅いです！)
+gif のエンコードはとても遅い上、解像度に比例してすごい勢いで負荷が上がっていくため、等倍解像度の録画をリアルタイムで行うのは絶望的です。(後述の mp4 の録画よりも数倍遅いです)
 
 以下の動画を見ると何ができるのか大体わかると思います。  
 [![FrameCapturer: GifRecorder](http://img.youtube.com/vi/VRmVIzhxewI/0.jpg)](http://www.youtube.com/watch?v=VRmVIzhxewI)  
@@ -39,18 +39,27 @@ gif のエンコードはとても遅い上、解像度に比例してすごい�
 <img align="right" src="Screenshots/GifRecorder.png">
 ### 使い方
 1. 録画したいカメラに GifRecorder コンポーネントを追加
-2. uGUI オブジェクト MovieRecorderUI.prefab をどこかに配置し、それの capturer に 2 で追加したコンポーネントを設定
+2. uGUI オブジェクト MovieRecorderUI.prefab をどこかに配置し、それの recorder に 1 で追加したコンポーネントを設定
 
 2 は必須ではありませんが、GifRecorder には録画の on/off 切り替えやファイルへの書き出しなどをコントロールするための GUI やスクリプトが必要になります。
 MovieRecorderUI.prefab は機能はともかく見た目は必要最小限のため、これを使う場合も独自に改良した方がいいでしょう。
 
+以下はコンポーネントの各パラメータの解説です。
+- Output Dir  
+  ファイルの出力先ディレクトリです。Root が PersistentDataPath だと Application.persistentDataPath 基準になります。
+- Num Colors  
+  gif の色数です。最大 256 で、少なくするほど画質が悪くなる代わりに容量が小さくなります。
 - Frame Rate Mode  
-  Constant だとフレームレートを一定 (Framerate) に保ちます。Variable だとゲーム内のデルタ時間が録画結果にも反映されます。  
+  Constant だとフレームレートを一定に保ちます。Variable だとゲーム内のデルタ時間が録画結果にも反映されます。  
   これは処理落ちなどでフレームレートが低下したときの挙動に影響します。Variable だと処理落ちに応じて gif もコマ落ちすることになり、結果ゲーム時間と再生時間は同期します。Constant だと gif 側のフレームレートは一定に保たれるため、結果処理落ちすると gif の再生時間はゲームよりも速くなります。
 - Framerate  
   Frame Rate Mode が Constant の時、gif のフレームレートはこの数値に保たれます。Variable の時は無視されます。
 - Capture Every Nth Frame  
   1 だと全フレーム録画、2 だと 2 フレームに一回録画します。60 FPS のゲームで 30 FPS の録画を行いたい時 2 に設定します。
+- Keyframe  
+  パレットを更新する間隔です。基本的には、小さくすると画質が良くなる代わりに容量が増えます。  
+  gif はインデックスカラーの画像データですが、アニメ gif ではパレットを複数フレームの間使い回すことができます。長期間使い回せばデータ量は減らせるものの、画面全体の色の傾向が変化していく場合画質がひどく劣化することになります。  
+  Keyframe はこのパレット使い回しをコントロールするもので、Keyframe フレーム数が経過するたびにパレットを更新します。
 
 RenderTexture の録画を行う GifOffscreenRecorder というのも用意されています。Target にRenderTexture を指定する以外は使い方は GifRecorder と同じです。
 
@@ -67,16 +76,27 @@ TweetScreenshot.prefab はこちらのパッケージにしかない prefab で�
 ## MP4 Recorder
 ゲーム画面をキャプチャして mp4 動画で出力します。
 
-<img align="right" src="Screenshots/MP4Recorder.png">
+使用手順は大体 GifRecorder と同じで、録画したいカメラに MP4Recorder を追加し、GUI を配置して recorder を設定するだけです。RenderTexture を録画する MP4OffscreenRecorder が用意されているのも同様です。  
+GUI は MovieRecorderUI.prefab の使用を前提としています。
+一応 GifRecorder と同じ GUI を使えるようになっているのですが、現状 MP4Recorder はシークや編集に対応していないため、MovieRecorderEditorUI.prefab を使ってもほとんどのボタンは機能しません。
 
+<img align="right" src="Screenshots/MP4Recorder.png">
+以下はコンポーネントの各パラメータの解説です。
+- Capture Video
+- Capture Audio  
+  ビデオやオーディオのキャプチャのオンオフを指定します。mp4 の場合オーディオのみの出力も可能です。
 - Frame Rate Mode  
 - Framerate  
 - Capture Every Nth Frame  
-  これら 3 つは Gif Recorder での説明がそのまま当てはまりますが、mp4 の場合重要な注意事項があります。録音もする場合、Frame Rate Mode は Variable にすべきということです。  
+  これらは Gif Recorder での説明がそのまま当てはまりますが、mp4 の場合重要な注意事項があります。**録音もする場合、Frame Rate Mode は Variable にすべき** ということです。  
   Constant だとだんだん音と映像がズレていきます。これは Constant だとゲーム時間と再生時間の同期を諦めてフレームレートを一定に保つためです。
+- Video Bitrate
+- Audio Bitrate  
+  ビットレート指定です。画質や音質を決定するパラメータになります。  
+  デフォルトの 1024000 だと大体 128KB/sec をビデオに割り当てます。
 
-動画のエンコーダ (OpenH264) はパッケージには含んでおらず、実行時にダウンロードして展開するようになっています。
-ダウンロード＆展開は通常すぐ終わるはずですが、ダウンロードが終わっていない時や何らかの事情で失敗した場合など、録画が失敗するケースがありうる、ということは気に留めておいた方がいいと思われます。  
+注意すべき点として、動画エンコーダ (OpenH264) はパッケージには含んでおらず、実行時にダウンロードして展開するようになっています。
+ダウンロード＆展開は Output Dir に自動的に行われ、通常すぐ終わるはずです。しかし、ダウンロードが終わっていない時や何らかの事情で失敗した場合など、録画できないケースがありうるということは気に留めておいた方がいいと思われます。  
 パッケージに含めていないのにはライセンス的な理由があります。
 MP4 の使用には通常ライセンス料が課せられる可能性が生じます。しかし、OpenH264 は特定の条件を満たしていればこのライセンス料を免除できるようになっています。その条件は以下のようなものです。
 
@@ -107,9 +127,6 @@ Exr のエクスポートは非常に遅く、リアルタイムで行うのは�
 ファイル構成やレイヤー名は現状決め打ちになっています。
 変更したい場合、ExrRecorder.cs の DoExport() 内のエクスポート部分を書き換えることで対応可能です。
 
-出力例:  
-![exr_example1](Screenshots/exr_example1.png)
-
 <img align="right" src="Screenshots/ExrOffscreenRecorder.png">
 ###### RenderTexture のキャプチャ (ExrOffscreenRecorder)
 RenderTexture の内容をキャプチャするバージョンです。
@@ -120,6 +137,10 @@ RenderTexture の内容をキャプチャするバージョンです。
 
 大体 ExrRecorder と同じで、Targets に指定した RenderTexture の内容が .exr に書き出されるようになっています。
 Target は複数指定可能です。
+
+
+出力例:  
+![exr_example1](Screenshots/exr_example1.png)
 
 ---
 
