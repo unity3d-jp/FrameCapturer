@@ -131,8 +131,7 @@ UnityPluginUnload()
     unity_gfx->UnregisterDeviceEventCallback(UnityOnGraphicsDeviceEvent);
 }
 
-extern "C" UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
-fcGetRenderEventFunc()
+fcCLinkage fcExport UnityRenderingEvent fcGetRenderEventFunc()
 {
     return UnityRenderEvent;
 }
