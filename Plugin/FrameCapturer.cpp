@@ -390,9 +390,6 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
     }
 #endif
 
-#ifdef fcMP4SplitModule
-#endif // fcMP4SplitModule
-
 fcCLinkage fcExport bool fcMP4DownloadCodecBegin()
 {
 #ifdef fcMP4SplitModule
@@ -485,7 +482,7 @@ fcCLinkage fcExport bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *sam
 #endif // fcSupportMP4
 
 
-#ifdef fcWindows
+#if defined(fcWindows) && !defined(fcStaticLink)
 #include <windows.h>
 
 void fcGfxForceInitialize();

@@ -49,7 +49,7 @@ enum fcPixelFormat
     fcPixelFormat_RGu8      = fcPixelFormat_Type_u8  | 2,
     fcPixelFormat_RGBu8     = fcPixelFormat_Type_u8  | 3,
     fcPixelFormat_RGBAu8    = fcPixelFormat_Type_u8  | 4,
-    fcPixelFormat_Ri16      = fcPixelFormat_Type_i16 | 1 ,
+    fcPixelFormat_Ri16      = fcPixelFormat_Type_i16 | 1,
     fcPixelFormat_RGi16     = fcPixelFormat_Type_i16 | 2,
     fcPixelFormat_RGBi16    = fcPixelFormat_Type_i16 | 3,
     fcPixelFormat_RGBAi16   = fcPixelFormat_Type_i16 | 4,

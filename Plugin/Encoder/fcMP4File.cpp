@@ -376,7 +376,14 @@ void fcMP4Context::encodeVideoFrame(VideoFrame& vf, bool rgba2i420)
 
 bool fcMP4Context::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp)
 {
-    if (!m_h264_encoder) { return false; }
+    if (m_dev == nullptr) {
+        fcDebugLog("fcMP4Context::addVideoFrameTexture(): gfx device is null.");
+        return false;
+    }
+    if (m_h264_encoder == nullptr) {
+        fcDebugLog("fcMP4Context::addVideoFrameTexture(): h264 encoder is null.");
+        return false;
+    }
 
     VideoFrame& vf = getTempraryVideoFrame();
     auto& raw = vf.first;
@@ -415,7 +422,10 @@ bool fcMP4Context::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime tim
 
 bool fcMP4Context::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp)
 {
-    if (!m_h264_encoder) { return false; }
+    if (m_h264_encoder == nullptr) {
+        fcDebugLog("fcMP4Context::addVideoFramePixels(): h264 encoder is null.");
+        return false;
+    }
 
     VideoFrame& vf = getTempraryVideoFrame();
     auto& raw = vf.first;
@@ -454,7 +464,10 @@ bool fcMP4Context::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fc
 
 bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, fcTime timestamp)
 {
-    if (!m_aac_encoder) { return false; }
+    if (m_aac_encoder == nullptr) {
+        fcDebugLog("fcMP4Context::addAudioFrame(): aac encoder is null.");
+        return false;
+    }
 
     AudioFrame& af = getTempraryAudioFrame();
     auto& raw = af.first;
