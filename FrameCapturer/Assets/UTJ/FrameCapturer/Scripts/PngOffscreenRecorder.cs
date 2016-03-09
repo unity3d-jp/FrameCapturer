@@ -59,11 +59,14 @@ namespace UTJ
 
         void EraseCallbacks()
         {
-            for (int i = 0; i < m_callbacks.Length; ++i)
+            if (m_callbacks != null)
             {
-                fcAPI.fcEraseDeferredCall(m_callbacks[i]);
+                for (int i = 0; i < m_callbacks.Length; ++i)
+                {
+                    fcAPI.fcEraseDeferredCall(m_callbacks[i]);
+                }
+                m_callbacks = null;
             }
-            m_callbacks = null;
         }
 
         void AddCommandBuffers()

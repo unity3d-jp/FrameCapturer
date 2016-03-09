@@ -36,7 +36,6 @@ gif のエンコードはとても遅い上、解像度に比例してすごい�
 以下はこのプラグインで出力されたアニメ gif の例です。  
 ![gif_example1](Screenshots/gif_example1.gif)  
 
-<img align="right" src="Screenshots/GifRecorder.png">
 ### 使い方
 1. 録画したいカメラに GifRecorder コンポーネントを追加
 2. uGUI オブジェクト MovieRecorderUI.prefab をどこかに配置し、それの recorder に 1 で追加したコンポーネントを設定
@@ -44,6 +43,7 @@ gif のエンコードはとても遅い上、解像度に比例してすごい�
 2 は必須ではありませんが、GifRecorder には録画の on/off 切り替えやファイルへの書き出しなどをコントロールするための GUI やスクリプトが必要になります。
 MovieRecorderUI.prefab は機能はともかく見た目は必要最小限のため、これを使う場合も独自に改良した方がいいでしょう。
 
+<img align="right" src="Screenshots/GifRecorder.png">
 以下はコンポーネントの各パラメータの解説です。
 - Output Dir  
   ファイルの出力先ディレクトリです。Root が PersistentDataPath だと Application.persistentDataPath 基準になります。
@@ -71,7 +71,6 @@ TweetScreenshot.prefab はこちらのパッケージにしかない prefab で�
 
 注意すべき点として、Gif はフレーム間のデルタ時間は単位がセンチ秒 (10ms) になっています。このため再生のフレームレートは 100FPS, 50FPS, 33FPS, 25FPS... となってしまい、60FPS を正確に表現することができなくなっています。(実際のところ大抵のソフトウェアは 100FPS ではなく 60FPS だったり 30FPS だったりで再生するようですが)
 
----
 
 ## MP4 Recorder
 ゲーム画面をキャプチャして mp4 動画で出力します。
@@ -108,7 +107,6 @@ MP4 の使用には通常ライセンス料が課せられる可能性が生じ�
 (より正確には原文の方を参照ください: http://www.openh264.org/faq.html)  
 OpenH264 を使ったゲームをリリースしたい場合も、上記条件を満たさないとライセンス料を課せられる可能性が生じるため、このような仕様にしています。
 
----
 
 ## Exr Recorder  
 Exr は主に映像業界で使われる画像フォーマットで、float や half のピクセルデータで構成された画像、いわゆる HDR 画像を保持できます。  
@@ -138,11 +136,9 @@ RenderTexture の内容をキャプチャするバージョンです。
 大体 ExrRecorder と同じで、Targets に指定した RenderTexture の内容が .exr に書き出されるようになっています。
 Target は複数指定可能です。
 
-
 出力例:  
 ![exr_example1](Screenshots/exr_example1.png)
 
----
 
 ## Png Recorder
 ゲーム画面を連番 PNG でキャプチャします。  
@@ -156,7 +152,6 @@ png は 16 bit 整数カラーをサポートしており、half や float の R
 
 ![PngRecorder](Screenshots/PngRecorder.png) ![PngOffscreenRecorder](Screenshots/PngOffscreenRecorder.png)
 
----
 
 ## C++ Interface
 本プラグインは、画面のキャプチャから各種ファイルへのエクスポートはネイティブコードの DLL として実装されています。この DLL は Unity への依存はなく、非 Unity のアプリケーションへも容易に組み込めるようになっています。使い方は [テストコード](Plugin/Tests) と [FrameCapturer.h](Plugin/FrameCapturer.h) を読むと大体わかると思います。  
