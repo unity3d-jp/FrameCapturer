@@ -2,7 +2,7 @@
 # FrameCapturer
 [English](https://translate.google.com/translate?sl=ja&tl=en&u=https://github.com/unity3d-jp/FrameCapturer/) (by Google Translate)
 
-フレームバッファの内容をキャプチャして画像や動画に出力する Unity 用のプラグインです。アニメ gif, mp4, exr, png への出力に対応しています。現在は Windows 専用となっています。(ソースレベルでは Mac や Linux でもビルドできて動くはずですが、未確認です)  
+フレームバッファの内容をキャプチャして画像や動画に出力する Unity 用のプラグインです。アニメ gif, mp4, exr, png への出力に対応しています。Unity 5.2 以上の OpenGL, D3D9, D3D11 環境下で動作します。現状 Windows 専用です。(ソースレベルでは Mac や Linux でもビルドできて動くはずですが、未確認です)  
 
 使用するにはまずこのパッケージをプロジェクトにインポートしてください: [FrameCapturer.unitypackage](https://github.com/unity3d-jp/FrameCapturer/blob/master/Packages/FrameCapturer.unitypackage?raw=true)  
 以下は各コンポーネントの説明になります。
@@ -48,8 +48,16 @@ Twitter への投稿機能は、[TweetMedia](https://github.com/unity3d-jp/Tweet
 TweetScreenshot.prefab はこちらのパッケージにしかない prefab で、録画した gif を添付する機能が追加された Tweet 用 GUI になっています。
 
 
+![GifRecorder](Screenshots/GifRecorder.png)
+
+![GifOffscreenRecorder](Screenshots/GifOffscreenRecorder.png)
+
 ## MP4 Recorder
 ゲーム画面をキャプチャして mp4 動画で出力します。
+
+![MP4Recorder](Screenshots/MP4Recorder.png)
+
+![MP4OffscreenRecorder](Screenshots/MP4OffscreenRecorder.png)
 
 動画のエンコーダ (OpenH264) はパッケージには含んでおらず、実行時にダウンロードして展開するようになっています。
 ダウンロード＆展開は通常すぐ終わるはずですが、ダウンロードが終わっていない時や何らかの事情で失敗した場合は録画できない状態になってしまいます。  
@@ -77,10 +85,8 @@ Exr エクスポートは非常に重く、リアルタイムで行うのは厳�
 1. 録画したいカメラに ExrRecorder コンポーネントを追加
 2. キャプチャしたい要素 (G-Buffer, FrameBuffer)、キャプチャ開始 / 終了フレームを設定し、Play  
 
-![ExrCapturer](Screenshots/ExrCapturer.png)  
+![ExrRecorder](Screenshots/ExrRecorder.png)
 
-Depth_format は、depth を 16 bit で書き出す場合 Half、32 bit で書き出す場合 Float を指定します。
-Float の方が高精度ですが、対応していないソフトウェアもあるようです。
 
 出力例:  
 ![exr_example1](Screenshots/exr_example1.png)    
@@ -90,6 +96,7 @@ Float の方が高精度ですが、対応していないソフトウェアも�
 変更したい場合、ExrRecorder.cs の OnPostRender() 内のエクスポート部分を書き換えることで対応可能です。
 
 #### RenderTexture のキャプチャ (ExrOffscreenRecorder)
+![ExrOffscreenRecorder](Screenshots/ExrOffscreenRecorder.png)
 1. 録画したいカメラに ExrOffscreenCapturer コンポーネントを追加
 2. RenderTexture を用意し、カメラと ExrOffscreenCapturer に設定
 3. キャプチャ開始 / 終了フレームを設定し、Play
@@ -99,13 +106,17 @@ ExrOffscreenCapturer の Targets には複数の RenderTexture を設定可能�
 
 ## Png Recorder
 ゲーム画面を連番 PNG でキャプチャします。  
-こちらも想定している用途は映像のコンポジットです。
-指定したフレーム間の G-Buffer やフレームバッファの各要素を連番 png で書き出せることや、任意の RenderTexture をキャプチャする PngOffscreenRecorder が用意されていることなど、使用手順は Exr Recorder とほぼ同様です。
+EXR と同様、こちらも想定している用途は映像のコンポジットです。
+使い方も ExrRecorder, ExrOffscreenRecorder とほぼ同じで、指定したフレーム間の G-Buffer やフレームバッファの各要素を連番 png で書き出せるようになっています。
 
 png は 16 bit 整数カラーをサポートしており、half や float の RenderTexture は 16 bit モードで書き出します。
 16 bit 整数カラーの場合、0.0 - 1.0 -> 0 - 255 の変換ルールはそのまま、1.0 より大きな色が 256 以上になる、という挙動になります。
-つまり **0.0 - 1.0 の範囲しか扱わない場合精度は 8 bit カラーと変わりません**。ご注意ください。  
+つまり **0.0 - 1.0 の範囲しか扱わない場合、出力される情報量は 8 bit カラーと同等になります**。ご注意ください。  
 以上のことからコンポジット用途としては exr の方が望ましいのですが、exr はインポート/エクスポートが遅く、png で精度が足りる場合はそちらが使われるケースもあるそうで、Png Recorder も用意されています。
+
+![PngRecorder](Screenshots/PngRecorder.png)
+
+![PngOffscreenRecorder](Screenshots/PngOffscreenRecorder.png)
 
 ## C++ Interface
 本プラグインは、画面のキャプチャ (テクスチャデータの取得) から各種ファイルへのエクスポートはネイティブコードの DLL として実装されています。この DLL は Unity への依存はなく、非 Unity のアプリケーションへも容易に組み込めるようになっています。使い方は [テストコード](Plugin/Tests) と [FrameCapturer.h](Plugin/FrameCapturer.h) を読むと大体わかると思います。  
@@ -118,12 +129,13 @@ png は 16 bit 整数カラーをサポートしており、half や float の R
   - Twitch など各種配信サイトへの対応
 
 ## History
-- 2016/03/09
+- 2016/03/10
   - MP4 Recorder
   - PNG Recorder
   - GL Core モードをサポート
-  - ファイルフォーマットがサポートしていない入力データのエクスポートをサポート  
-    - gif や mp4 の場合 16/32bit カラーは 8bit カラーに変換してエンコード、Exr の場合 8bit カラーは 16bit カラーに変換してエクスポート、など
+  - これまで未対応だったファイルフォーマットとカラーフォーマットの組み合わせをサポート  
+    - ファイルフォーマットがサポートしていないカラーフォーマットも変換を挟むことでエクスポートできるようにした
+    - gif や mp4 の場合 16/32bit カラーは 8bit カラーに変換してエンコード、exr の場合 8bit カラーは 16bit カラーに変換してエクスポート、など
   - C++ インターフェースの整備
 - 2016/01/07
   - MP4 Recorder (beta)
