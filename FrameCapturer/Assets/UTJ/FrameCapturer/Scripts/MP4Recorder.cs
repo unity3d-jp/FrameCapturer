@@ -26,7 +26,7 @@ namespace UTJ
         public int m_captureEveryNthFrame = 1;
         public int m_videoBitrate = 1024000;
         public int m_audioBitrate = 64000;
-        public Shader m_sh_copy;
+        public Shader m_shCopy;
 
         string m_output_file;
         fcAPI.fcMP4Context m_ctx;
@@ -215,7 +215,7 @@ namespace UTJ
 #if UNITY_EDITOR
         void Reset()
         {
-            m_sh_copy = FrameCapturerUtils.GetFrameBufferCopyShader();
+            m_shCopy = FrameCapturerUtils.GetFrameBufferCopyShader();
         }
 #endif // UNITY_EDITOR
 
@@ -229,7 +229,7 @@ namespace UTJ
         {
             m_outputDir.CreateDirectory();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
-            m_mat_copy = new Material(m_sh_copy);
+            m_mat_copy = new Material(m_shCopy);
 
             if (GetComponent<Camera>().targetTexture != null)
             {

@@ -28,7 +28,7 @@ namespace UTJ
         public int m_keyframe = 30;
         [Tooltip("0 is treated as processor count")]
         public int m_maxTasks = 0;
-        public Shader m_sh_copy;
+        public Shader m_shCopy;
 
         string m_output_file;
         fcAPI.fcGIFContext m_ctx;
@@ -207,7 +207,7 @@ namespace UTJ
 #if UNITY_EDITOR
         void Reset()
         {
-            m_sh_copy = FrameCapturerUtils.GetFrameBufferCopyShader();
+            m_shCopy = FrameCapturerUtils.GetFrameBufferCopyShader();
         }
 
         void OnValidate()
@@ -220,7 +220,7 @@ namespace UTJ
         {
             m_outputDir.CreateDirectory();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
-            m_mat_copy = new Material(m_sh_copy);
+            m_mat_copy = new Material(m_shCopy);
 
             if (GetComponent<Camera>().targetTexture != null)
             {
