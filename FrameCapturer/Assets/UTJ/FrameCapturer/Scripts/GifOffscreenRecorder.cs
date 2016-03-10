@@ -53,7 +53,7 @@ namespace UTJ
                 fcAPI.fcGifConfig conf;
                 conf.width = m_scratch_buffer.width;
                 conf.height = m_scratch_buffer.height;
-                conf.num_colors = Mathf.Clamp(m_numColors, 1, 255);
+                conf.num_colors = Mathf.Clamp(m_numColors, 1, 256);
                 conf.max_active_tasks = 0;
                 m_ctx = fcAPI.fcGifCreateContext(ref conf);
             }

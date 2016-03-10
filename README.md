@@ -51,15 +51,19 @@ MovieRecorderUI.prefab と MovieRecorderEditorUI.prefab がそれで、前者は
 - Num Colors  
   gif の色数です。最大 256 で、少なくするほど画質が悪くなる代わりに容量が小さくなります。
 - Frame Rate Mode  
-  Constant だとフレームレートを一定に保ちます。Variable だとゲーム内のデルタ時間が録画結果にも反映されます。  
-  これは処理落ちなどでフレームレートが低下したときの挙動に影響します。Variable だと処理落ちに応じて gif もコマ落ちすることになり、結果ゲーム時間と再生時間は同期します。Constant だと gif 側のフレームレートは一定に保たれるため、結果処理落ちすると gif の再生時間はゲームよりも速くなります。
+  gif 側のフレームレートの設定で、処理落ちなどでフレームレートが低下したときの録画結果に影響します。  
+  Variable だと処理落ちに応じて gif もコマ落ちするようになります。Constant だと gif 側のフレームレートは常に一定になります。
+  言い方を変えると、Variable だとゲーム内の経過時間と gif の再生時間は同じになります。
+  Constant だと再生はスムースになりますが、ゲーム内の経過時間と gif の再生時間にズレが生じます。  
+  音声も録音して映像とタイミングを一致させたいような場合 Variable で録画する必要があります。
 - Framerate  
   Frame Rate Mode が Constant の時、gif のフレームレートはこの数値に保たれます。Variable の時は無視されます。
 - Capture Every Nth Frame  
   1 だと全フレーム録画、2 だと 2 フレームに一回録画します。60 FPS のゲームで 30 FPS の録画を行いたい時 2 に設定します。
 - Keyframe  
-  パレットを更新する間隔です。基本的には、小さくすると画質が良くなる代わりに容量が増えます。  
-  gif はインデックスカラーの画像データですが、アニメ gif ではパレットを複数フレームの間使い回すことができます。長期間使い回せばデータ量は減らせるものの、画面全体の色の傾向が変化していく場合画質がひどく劣化することになります。  
+  パレットを更新する間隔です。基本的には小さくすると画質が良くなる代わりに容量が増えます。  
+  gif はインデックスカラーの画像データですが、アニメ gif ではパレットを複数フレームの間使い回すことができます。
+  長期間使い回せばデータ量は減らせるものの、画面全体の色の傾向が変化していく場合画質がひどく劣化することになります。  
   Keyframe はこのパレット使い回しをコントロールするもので、Keyframe フレーム数が経過するたびにパレットを更新します。
 
 RenderTexture の録画を行う GifOffscreenRecorder というのも用意されています。Target にRenderTexture を指定する以外は使い方は GifRecorder と同じです。
@@ -67,13 +71,13 @@ RenderTexture の録画を行う GifOffscreenRecorder というのも用意さ�
 録画した gif をゲーム内から直接 Twitter へ投稿することもできます。
 Twitter 投稿機能は、[TweetMedia](https://github.com/unity3d-jp/TweetMedia) によって実現されており、詳しくはそちらをご参照ください。  
 TweetWithFile.prefab はこちらのパッケージにしかない prefab で、録画した gif や mp4 を添付する機能が追加された Tweet 用 GUI になっています。
-これの TweetMediaAttachFile コンポーネントの RecorderUI に 録画 GUI (MovieRecorderUI.prefab など) を設定し、Screenshot にチェックを入れて Tweet すると録画結果と共に tweet されます。
+これの TweetMediaAttachFile コンポーネントの RecorderUI に 録画 GUI (MovieRecorderUI.prefab など) を設定し、Screenshot にチェックを入れて Tweet すると録画結果と共に投稿されます。
 
 録画解像度はかなり小さめ (横 300 pixel 程度) を推奨しています。
 gif のエンコードはとても遅い上、解像度に比例してすごい勢いで負荷が上がっていくため、等倍解像度の録画をリアルタイムで行うのは絶望的です。  
 
 また、Gif は仕様でフレーム間のデルタ時間は単位がセンチ秒 (10ms) になっています。
-このため再生のフレームレートは 100FPS, 50FPS, 33FPS, 25FPS... となってしまい、60FPS を正確に表現することはできません
+このため、再生のフレームレートは多くても 100FPS, 50FPS, 33FPS, 25FPS... になってしまい、60FPS は正確に表現することはできません。
 この点は気に留めておいたほうがいいかもしれません。
 (実際のところ大抵のソフトウェアは 100FPS ではなく 60FPS だったり 30FPS だったりで再生するようですが)
 
@@ -82,9 +86,10 @@ gif のエンコードはとても遅い上、解像度に比例してすごい�
 ゲーム画面をキャプチャして mp4 動画で出力します。
 
 使用手順は大体 GifRecorder と同じで、録画したいカメラに MP4Recorder を追加し、GUI を配置して recorder を設定するだけです。RenderTexture を録画する MP4OffscreenRecorder が用意されているのも同様です。  
-GUI も GifRecorder と同じくパッケージに付属の 2 種 (MovieRecorderUI.prefab, MovieRecorderEditorUI.prefab) を使えますが、現状実用に足るのは MovieRecorderUI.prefab のみです。
+GUI も GifRecorder と同じくパッケージに付属の 2 種 (MovieRecorderUI.prefab, MovieRecorderEditorUI.prefab) を使えますが、
+現状実用に足るのは MovieRecorderUI.prefab だけです。
 MP4Recorder はシークや編集には未対応なため、MovieRecorderEditorUI.prefab を使ってもほとんどのボタンは機能しません。  
-Twitter 投稿も Gif と全く同じ手順で機能します。
+Twitter 投稿は GifRecorder と全く同じ手順で機能します。
 
 <img align="right" src="Screenshots/MP4Recorder.png">
 以下はコンポーネントの各パラメータの解説です。
@@ -101,7 +106,7 @@ Twitter 投稿も Gif と全く同じ手順で機能します。
   ビットレート指定です。画質や音質を決定するパラメータになります。  
   デフォルトの 1024000 だと大体 128KB/sec をビデオに割り当てます。
 
-MP4 特有の事情として、動画エンコーダ (OpenH264) はパッケージには含んでおらず、実行時にダウンロードして展開するようになっています。
+MP4 特有の事情として、動画エンコーダ (OpenH264) の dll はパッケージには含んでおらず、実行時にダウンロードしてくるようになっています。
 ダウンロード＆展開は Output Dir に自動的に行われ、大抵は数秒で終わります。しかし、ダウンロードが終わっていない時や何らかの事情で失敗した場合など、
 録画できないケースがありうるということは気に留めておいた方がいいでしょう。  
 パッケージに含めていないのにはライセンス的な理由があります。
@@ -117,9 +122,11 @@ OpenH264 を使ったゲームをリリースしたい場合も、上記条件�
 
 
 ## Exr Recorder  
-Exr は主に映像業界で使われる画像フォーマットで、float や half のピクセルデータで構成された画像、いわゆる HDR 画像を保持できます。  
-GifRecorder や MP4Recorder と違い、ExrRecorder および PngRecorder は映像制作用途を想定したものになっています。
-具体的には、G-Buffer やマテリアル ID などを書き出し、コンポジットに使う、といった使い方です。  
+Exr は主に映像業界で使われる画像フォーマットで、float や half のピクセルデータで構成された画像、いわゆる HDR 画像を保持できます。
+ExrRecorder および PngRecorder は映像制作用のツールとして作られており、
+G-Buffer やマテリアル ID などを書き出してコンポジットに使う、といった使い方を目的としています。  
+FrameCapturer_EXR.dll はそれなりにでかいため (3MB 超)、使わない場合は取り除いたほうがいいかもしれません。
+
 Exr のエクスポートは非常に遅く、リアルタイムで行うのは困難であるため、デルタタイムを固定して事前に指定しておいた範囲のフレームを書き出す、という使い方を前提としています。
 パッケージにはデルタタイムを固定する簡単なスクリプトが付属しています。(UTJ / Misc / FixDeltaTime)
 
