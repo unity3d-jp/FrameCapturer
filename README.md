@@ -119,6 +119,10 @@ MP4 の使用には通常ライセンス料が課せられる可能性が生じ�
 (より正確には原文の方を参照ください: http://www.openh264.org/faq.html)  
 OpenH264 を使ったゲームをリリースしたい場合も、上記条件を満たさないとライセンス料を課せられる可能性が生じるため、このような仕様にしています。
 
+音声エンコーダも同様にライセンス料の危険からパッケージには含んでいません。
+こちらは OpenH264 のような抜け道が見つかっておらず、**録音を有効にするには FAAC の dll を手動でダウンロードして FrameCapturer.dll と同じディレクトリに置く必要があります**。
+
+
 
 ## Exr Recorder  
 Exr は主に映像業界で使われる画像フォーマットで、float や half のピクセルデータで構成された画像、いわゆる HDR 画像を保持できます。
@@ -142,10 +146,11 @@ Exr のエクスポートは非常に遅く、リアルタイムで行うのは�
 <img align="right" src="Screenshots/ExrOffscreenRecorder.png">
 ##### RenderTexture のキャプチャ
 RenderTexture の内容をキャプチャするバージョンも用意されています。
-1. 録画したいカメラに ExrOffscreenCapturer コンポーネントを追加
-2. キャプチャしたい RenderTexture を Targets に設定
-3. キャプチャ開始 / 終了フレームなどを設定
-4. Play
+
+1. 録画したいカメラに ExrOffscreenCapturer コンポーネントを追加  
+2. キャプチャしたい RenderTexture を Targets に設定  
+3. キャプチャ開始 / 終了フレームなどを設定  
+4. Play  
 
 大体 ExrRecorder と同じで、Targets に指定した RenderTexture の内容が .exr に書き出されるようになっています。
 Target は複数指定可能です。
