@@ -3,6 +3,7 @@
 namespace UTJ
 {
     [RequireComponent(typeof(TweetMedia))]
+    [ExecuteInEditMode]
     public class TweetMediaAttachFile : MonoBehaviour
     {
         public IMovieRecoerderUI m_recorderUI;
@@ -25,6 +26,17 @@ namespace UTJ
                 m_recorderUI.Flush();
                 m_tweet_media.AddMediaFile(m_recorderUI.GetOutputPath());
             }
+        }
+
+
+        void OnEnable()
+        {
+#if UNITY_EDITOR
+            if (m_recorderUI == null)
+            {
+                m_recorderUI = FindObjectOfType<IMovieRecoerderUI>();
+            }
+#endif // UNITY_EDITOR
         }
 
         void Start()
