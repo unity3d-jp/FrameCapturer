@@ -102,7 +102,7 @@ fcCLinkage fcExport int fcAddDeferredCall(const fcDeferredCall& dc, int id)
         g_deferred_calls.emplace_back(dc);
         return (int)g_deferred_calls.size() - 1;
     }
-    else if(id < g_deferred_calls.size()) {
+    else if(id < (int)g_deferred_calls.size()) {
         g_deferred_calls[id] = dc;
         return id;
     }
@@ -114,7 +114,7 @@ fcCLinkage fcExport int fcAddDeferredCall(const fcDeferredCall& dc, int id)
 
 fcCLinkage fcExport void fcEraseDeferredCall(int id)
 {
-    if (id <= 0 || id >= g_deferred_calls.size()) { return; }
+    if (id <= 0 || id >= (int)g_deferred_calls.size()) { return; }
 
     g_deferred_calls[id] = fcDeferredCall();
 }
@@ -123,7 +123,7 @@ fcCLinkage fcExport void fcEraseDeferredCall(int id)
 fcCLinkage fcExport void fcCallDeferredCall(int id)
 {
     std::unique_lock<std::mutex> l(g_deferred_calls_mutex);
-    if (id <= 0 || id >= g_deferred_calls.size()) { return; }
+    if (id <= 0 || id >= (int)g_deferred_calls.size()) { return; }
 
     auto& dc = g_deferred_calls[id];
     if (dc) { dc(); }
