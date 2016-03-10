@@ -24,7 +24,7 @@ namespace UTJ
         [Tooltip("relevant only if FrameRateMode is Constant")]
         public int m_framerate = 30;
         public int m_captureEveryNthFrame = 1;
-        public int m_videoBitrate = 1024000;
+        public int m_videoBitrate = 8192000;
         public int m_audioBitrate = 64000;
         public Shader m_shCopy;
 
@@ -230,6 +230,12 @@ namespace UTJ
 
         void OnEnable()
         {
+#if UNITY_EDITOR
+            if(m_captureAudio && m_frameRateMode == FrameRateMode.Constant)
+            {
+                Debug.LogWarning("MP4Recorder: capture audio with Constant frame rate mode will cause desync");
+            }
+#endif
             m_outputDir.CreateDirectory();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
             m_mat_copy = new Material(m_shCopy);
