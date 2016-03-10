@@ -28,9 +28,6 @@
 - 簡単な in-game プレビューア＆エディタ
 - 録画結果をゲーム内から直接 Twitter へ投稿可能
 
-録画解像度はかなり小さめ (横 300 pixel 程度) を推奨しています。
-gif のエンコードはとても遅い上、解像度に比例してすごい勢いで負荷が上がっていくため、等倍解像度の録画をリアルタイムで行うのは絶望的です。(後述の mp4 の録画よりも数倍遅いです)
-
 以下の動画を見ると何ができるのか大体わかると思います。  
 [![FrameCapturer: GifRecorder](http://img.youtube.com/vi/VRmVIzhxewI/0.jpg)](http://www.youtube.com/watch?v=VRmVIzhxewI)  
 以下はこのプラグインで出力されたアニメ gif の例です。  
@@ -38,15 +35,19 @@ gif のエンコードはとても遅い上、解像度に比例してすごい�
 
 ### 使い方
 1. 録画したいカメラに GifRecorder コンポーネントを追加
-2. uGUI オブジェクト MovieRecorderUI.prefab をどこかに配置し、それの recorder に 1 で追加したコンポーネントを設定
+2. GUI オブジェクトの MovieRecorderUI.prefab などをどこかに配置
+3. GUI の recorder に 1 で追加したコンポーネントを設定
 
-2 は必須ではありませんが、GifRecorder には録画の on/off 切り替えやファイルへの書き出しなどをコントロールするための GUI やスクリプトが必要になります。
-MovieRecorderUI.prefab は機能はともかく見た目は必要最小限のため、これを使う場合も独自に改良した方がいいでしょう。
+GUI は必須ではありませんが、GifRecorder には録画の on/off 切り替えやファイルへの書き出しなどをコントロールするための GUI やスクリプトが必要になります。  
+パッケージには 2 種類の GUI が用意されています。
+MovieRecorderUI.prefab と MovieRecorderEditorUI.prefab がそれで、前者は録画のオンオフのみをコントロールするもので、後者は録画結果のシークや簡易編集機能を備えています。  
+これらは必要最小限の機能と見た目を提供するもので、実際のゲームに使うにはもっといい見た目にカスタマイズするか自作するかが必要があるかもしれません。
 
 <img align="right" src="Screenshots/GifRecorder.png">
 以下はコンポーネントの各パラメータの解説です。
 - Output Dir  
-  ファイルの出力先ディレクトリです。Root が PersistentDataPath だと Application.persistentDataPath 基準になります。
+  ファイルの出力先ディレクトリです。Root が PersistentDataPath だと Application.persistentDataPath 基準になります (デフォルト＆推奨設定)。
+  Current Directory だと文字通りカレントディレクトリ (エディタの場合プロジェクトのディレクトリ、ビルド済みの場合は大抵実行ファイルと同じディレクトリ) 基準で、エディタの場合はこちらの方が何かと便利ではあります。
 - Num Colors  
   gif の色数です。最大 256 で、少なくするほど画質が悪くなる代わりに容量が小さくなります。
 - Frame Rate Mode  
@@ -63,21 +64,27 @@ MovieRecorderUI.prefab は機能はともかく見た目は必要最小限のた
 
 RenderTexture の録画を行う GifOffscreenRecorder というのも用意されています。Target にRenderTexture を指定する以外は使い方は GifRecorder と同じです。
 
-
 録画した gif をゲーム内から直接 Twitter へ投稿することもできます。
 Twitter 投稿機能は、[TweetMedia](https://github.com/unity3d-jp/TweetMedia) によって実現されており、詳しくはそちらをご参照ください。  
-TweetScreenshot.prefab はこちらのパッケージにしかない prefab で、録画した gif を添付する機能が追加された Tweet 用 GUI になっています。
+TweetWithFile.prefab はこちらのパッケージにしかない prefab で、録画した gif や mp4 を添付する機能が追加された Tweet 用 GUI になっています。
+これの TweetMediaAttachFile コンポーネントの RecorderUI に 録画 GUI (MovieRecorderUI.prefab など) を設定し、Screenshot にチェックを入れて Tweet すると録画結果と共に tweet されます。
 
+録画解像度はかなり小さめ (横 300 pixel 程度) を推奨しています。
+gif のエンコードはとても遅い上、解像度に比例してすごい勢いで負荷が上がっていくため、等倍解像度の録画をリアルタイムで行うのは絶望的です。  
 
-注意すべき点として、Gif はフレーム間のデルタ時間は単位がセンチ秒 (10ms) になっています。このため再生のフレームレートは 100FPS, 50FPS, 33FPS, 25FPS... となってしまい、60FPS を正確に表現することができなくなっています。(実際のところ大抵のソフトウェアは 100FPS ではなく 60FPS だったり 30FPS だったりで再生するようですが)
+また、Gif は仕様でフレーム間のデルタ時間は単位がセンチ秒 (10ms) になっています。
+このため再生のフレームレートは 100FPS, 50FPS, 33FPS, 25FPS... となってしまい、60FPS を正確に表現することはできません
+この点は気に留めておいたほうがいいかもしれません。
+(実際のところ大抵のソフトウェアは 100FPS ではなく 60FPS だったり 30FPS だったりで再生するようですが)
 
 
 ## MP4 Recorder
 ゲーム画面をキャプチャして mp4 動画で出力します。
 
 使用手順は大体 GifRecorder と同じで、録画したいカメラに MP4Recorder を追加し、GUI を配置して recorder を設定するだけです。RenderTexture を録画する MP4OffscreenRecorder が用意されているのも同様です。  
-GUI は MovieRecorderUI.prefab の使用を前提としています。
-一応 GifRecorder と同じ GUI を使えるようになっているのですが、現状 MP4Recorder はシークや編集に対応していないため、MovieRecorderEditorUI.prefab を使ってもほとんどのボタンは機能しません。
+GUI も GifRecorder と同じくパッケージに付属の 2 種 (MovieRecorderUI.prefab, MovieRecorderEditorUI.prefab) を使えますが、現状実用に足るのは MovieRecorderUI.prefab のみです。
+MP4Recorder はシークや編集には未対応なため、MovieRecorderEditorUI.prefab を使ってもほとんどのボタンは機能しません。  
+Twitter 投稿も Gif と全く同じ手順で機能します。
 
 <img align="right" src="Screenshots/MP4Recorder.png">
 以下はコンポーネントの各パラメータの解説です。
@@ -94,8 +101,9 @@ GUI は MovieRecorderUI.prefab の使用を前提としています。
   ビットレート指定です。画質や音質を決定するパラメータになります。  
   デフォルトの 1024000 だと大体 128KB/sec をビデオに割り当てます。
 
-注意すべき点として、動画エンコーダ (OpenH264) はパッケージには含んでおらず、実行時にダウンロードして展開するようになっています。
-ダウンロード＆展開は Output Dir に自動的に行われ、通常すぐ終わるはずです。しかし、ダウンロードが終わっていない時や何らかの事情で失敗した場合など、録画できないケースがありうるということは気に留めておいた方がいいと思われます。  
+MP4 特有の事情として、動画エンコーダ (OpenH264) はパッケージには含んでおらず、実行時にダウンロードして展開するようになっています。
+ダウンロード＆展開は Output Dir に自動的に行われ、大抵は数秒で終わります。しかし、ダウンロードが終わっていない時や何らかの事情で失敗した場合など、
+録画できないケースがありうるということは気に留めておいた方がいいでしょう。  
 パッケージに含めていないのにはライセンス的な理由があります。
 MP4 の使用には通常ライセンス料が課せられる可能性が生じます。しかし、OpenH264 は特定の条件を満たしていればこのライセンス料を免除できるようになっています。その条件は以下のようなものです。
 
@@ -116,18 +124,18 @@ Exr のエクスポートは非常に遅く、リアルタイムで行うのは�
 パッケージにはデルタタイムを固定する簡単なスクリプトが付属しています。(UTJ / Misc / FixDeltaTime)
 
 <img align="right" src="Screenshots/ExrRecorder.png">
-###### G-Buffer & フレームバッファのキャプチャ (ExrRecorder)
+##### G-Buffer & フレームバッファのキャプチャ
 1. 録画したいカメラに ExrRecorder コンポーネントを追加
 2. キャプチャしたい要素 (G-Buffer, FrameBuffer)、キャプチャ開始 / 終了フレームを設定
 3. Play
 
-プレイ開始後、指定フレームの範囲に来ると自動的に指定ディレクトリへエクスポートします。
+プレイ開始後、指定フレームの範囲に来ると自動的にフレームバッファや G-Buffer の内容をエクスポートします。
 ファイル構成やレイヤー名は現状決め打ちになっています。
 変更したい場合、ExrRecorder.cs の DoExport() 内のエクスポート部分を書き換えることで対応可能です。
 
 <img align="right" src="Screenshots/ExrOffscreenRecorder.png">
-###### RenderTexture のキャプチャ (ExrOffscreenRecorder)
-RenderTexture の内容をキャプチャするバージョンです。
+##### RenderTexture のキャプチャ
+RenderTexture の内容をキャプチャするバージョンも用意されています。
 1. 録画したいカメラに ExrOffscreenCapturer コンポーネントを追加
 2. キャプチャしたい RenderTexture を Targets に設定
 3. キャプチャ開始 / 終了フレームなどを設定
@@ -166,6 +174,7 @@ png は 16 bit 整数カラーをサポートしており、half や float の R
     - ファイルフォーマットがサポートしていないカラーフォーマットも変換を挟むことでエクスポートできるようにした
     - gif や mp4 の場合 16/32bit カラーは 8bit カラーに変換してエンコード、exr の場合 8bit カラーは 16bit カラーに変換してエクスポート、など
   - C++ インターフェースの整備
+  - 既存コンポーネントも色々改良
 - 2016/01/07
   - MP4 Recorder (beta)
 - 2015/06/10
