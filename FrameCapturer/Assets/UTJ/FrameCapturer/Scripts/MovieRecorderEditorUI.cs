@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace UTJ
 {
-
+    [ExecuteInEditMode]
     public class MovieRecorderEditorUI : IMovieRecoerderUI
     {
         public IMovieRecorder m_recorder;
@@ -144,6 +144,12 @@ namespace UTJ
 
         void OnEnable()
         {
+#if UNITY_EDITOR
+            if (m_recorder == null)
+            {
+                m_recorder = FindObjectOfType<IMovieRecorder>();
+            }
+#endif // UNITY_EDITOR
         }
 
         void OnDisable()
@@ -159,10 +165,10 @@ namespace UTJ
         {
             if (m_rt == null)
             {
-                var gif = m_recorder.GetScratchBuffer();
-                if (gif != null)
+                var buf = m_recorder.GetScratchBuffer();
+                if (buf != null)
                 {
-                    m_rt = new RenderTexture(gif.width, gif.height, 0, RenderTextureFormat.ARGB32);
+                    m_rt = new RenderTexture(buf.width, buf.height, 0, RenderTextureFormat.ARGB32);
                     m_rt.wrapMode = TextureWrapMode.Repeat;
                     m_rt.Create();
                 }

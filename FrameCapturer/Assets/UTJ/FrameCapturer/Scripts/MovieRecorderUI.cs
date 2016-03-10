@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 namespace UTJ
 {
+    [ExecuteInEditMode]
     public class MovieRecorderUI : IMovieRecoerderUI
     {
         public IMovieRecorder m_recorder;
@@ -67,6 +68,16 @@ namespace UTJ
         }
 
 
+
+        void OnEnable()
+        {
+#if UNITY_EDITOR
+            if (m_recorder == null)
+            {
+                m_recorder = FindObjectOfType<IMovieRecorder>();
+            }
+#endif // UNITY_EDITOR
+        }
 
         void Update()
         {
