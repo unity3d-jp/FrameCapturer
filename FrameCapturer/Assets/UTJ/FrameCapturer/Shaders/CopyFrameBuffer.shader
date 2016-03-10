@@ -5,7 +5,7 @@ Properties {
 
 CGINCLUDE
 #include "UnityCG.cginc"
-//#pragma multi_compile ___ UNITY_HDR_ON
+#pragma multi_compile ___ UNITY_HDR_ON
 #pragma multi_compile ___ OFFSCREEN
 
 sampler2D _TmpFrameBuffer;
@@ -73,6 +73,9 @@ gbuffer_out copy_gbuffer(v2f I)
     O.spec_smoothness   = tex2D(_CameraGBufferTexture1, t);
     O.normal            = tex2D(_CameraGBufferTexture2, t);
     O.emission          = tex2D(_CameraGBufferTexture3, t);
+#ifndef UNITY_HDR_ON
+    O.emission.rgb = -log2(O.emission.rgb);
+#endif
     return O;
 }
 
@@ -133,6 +136,9 @@ ned_out copy_ned(v2f I)
     ned_out O;
     O.normal = half4(normal.rgb, 1.0);
     O.emission = half4(emission.rgb, 1.0);
+#ifndef UNITY_HDR_ON
+    O.emission.rgb = -log2(O.emission.rgb);
+#endif
     O.depth = depth.rrrr;
     return O;
 }

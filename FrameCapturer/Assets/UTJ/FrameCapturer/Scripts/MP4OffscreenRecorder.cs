@@ -20,7 +20,7 @@ namespace UTJ
         public DataPath m_outputDir = new DataPath(DataPath.Root.PersistentDataPath, "");
         public bool m_captureVideo = true;
         public bool m_captureAudio = true;
-        public int m_resolutionWidth = 300;
+        public int m_resolutionWidth = 640;
         public FrameRateMode m_frameRateMode = FrameRateMode.Variable;
         [Tooltip("relevant only if FrameRateMode is Constant")]
         public int m_framerate = 30;
