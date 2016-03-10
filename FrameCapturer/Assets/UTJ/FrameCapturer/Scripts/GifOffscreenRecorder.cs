@@ -76,16 +76,19 @@ namespace UTJ
                 m_cb = null;
             }
 
-            fcAPI.fcEraseDeferredCall(m_callback);
-            m_callback = 0;
-
             // scratch buffer is kept
 
-            if (m_ctx.ptr != IntPtr.Zero)
+            fcAPI.fcGuard(() =>
             {
-                fcAPI.fcGifDestroyContext(m_ctx);
-                m_ctx.ptr = IntPtr.Zero;
-            }
+                fcAPI.fcEraseDeferredCall(m_callback);
+                m_callback = 0;
+
+                if (m_ctx.ptr != IntPtr.Zero)
+                {
+                    fcAPI.fcGifDestroyContext(m_ctx);
+                    m_ctx.ptr = IntPtr.Zero;
+                }
+            });
         }
 
 
@@ -172,7 +175,10 @@ namespace UTJ
             {
                 m_output_file = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
                 var path = GetOutputPath();
-                ret = fcAPI.fcGifWriteFile(m_ctx, path, begin_frame, end_frame);
+                fcAPI.fcGuard(() =>
+                {
+                    ret = fcAPI.fcGifWriteFile(m_ctx, path, begin_frame, end_frame);
+                });
                 Debug.Log("GifOffscreenRecorder.FlushFile(" + begin_frame + ", " + end_frame + "): " + path);
             }
             return ret;

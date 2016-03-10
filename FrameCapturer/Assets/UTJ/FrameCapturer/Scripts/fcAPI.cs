@@ -65,10 +65,17 @@ namespace UTJ
         [DllImport ("FrameCapturer")] public static extern void         fcDestroyStream(fcStream s);
         [DllImport ("FrameCapturer")] public static extern ulong        fcStreamGetWrittenSize(fcStream s);
 
-        [DllImport ("FrameCapturer")] public static extern int          fcDoNothingDeferred(int id);
+        [DllImport ("FrameCapturer")] public static extern void         fcGuardBegin();
+        [DllImport ("FrameCapturer")] public static extern void         fcGuardEnd();
         [DllImport ("FrameCapturer")] public static extern void         fcEraseDeferredCall(int id);
         [DllImport ("FrameCapturer")] public static extern IntPtr       fcGetRenderEventFunc();
 
+        public static void fcGuard(Action body)
+        {
+            fcGuardBegin();
+            body.Invoke();
+            fcGuardEnd();
+        }
 
         public static fcPixelFormat fcGetPixelFormat(RenderTextureFormat v)
         {
@@ -340,12 +347,11 @@ namespace UTJ
         }
 
 #if UNITY_EDITOR
-        public static bool WarnIfRenderingPassIsNotDeferred(Camera cam, string message)
+        public static bool IsRenderingPathDeferred(Camera cam)
         {
-            if (cam.renderingPath != RenderingPath.DeferredShading &&
-                (cam.renderingPath == RenderingPath.UsePlayerSettings && PlayerSettings.renderingPath != RenderingPath.DeferredShading))
+            if (cam.renderingPath == RenderingPath.DeferredShading ||
+                (cam.renderingPath == RenderingPath.UsePlayerSettings && PlayerSettings.renderingPath == RenderingPath.DeferredShading))
             {
-                Debug.Log(message);
                 return true;
             }
             return false;

@@ -89,21 +89,24 @@ namespace UTJ
                 m_cb = null;
             }
 
-            fcAPI.fcEraseDeferredCall(m_callback);
-            m_callback = 0;
-
             // scratch buffer is kept
 
-            if (m_ctx.ptr != IntPtr.Zero)
+            fcAPI.fcGuard(() =>
             {
-                fcAPI.fcMP4DestroyContext(m_ctx);
-                m_ctx.ptr = IntPtr.Zero;
-            }
-            if (m_ostream.ptr != IntPtr.Zero)
-            {
-                fcAPI.fcDestroyStream(m_ostream);
-                m_ostream.ptr = IntPtr.Zero;
-            }
+                fcAPI.fcEraseDeferredCall(m_callback);
+                m_callback = 0;
+
+                if (m_ctx.ptr != IntPtr.Zero)
+                {
+                    fcAPI.fcMP4DestroyContext(m_ctx);
+                    m_ctx.ptr = IntPtr.Zero;
+                }
+                if (m_ostream.ptr != IntPtr.Zero)
+                {
+                    fcAPI.fcDestroyStream(m_ostream);
+                    m_ostream.ptr = IntPtr.Zero;
+                }
+            });
         }
 
         void UpdateScratchBuffer()

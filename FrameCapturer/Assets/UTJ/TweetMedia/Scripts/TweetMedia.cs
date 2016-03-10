@@ -253,7 +253,7 @@ namespace UTJ
         {
             if (m_consumerKey == "" || m_consumerSecret == "")
             {
-                Debug.LogError("TweetMedia: set consumerKey and consumerSecret!");
+                Debug.LogWarning("TweetMedia: set consumerKey and consumerSecret!");
             }
             m_ctx = TweetMediaPlugin.tmCreateContext();
         }
