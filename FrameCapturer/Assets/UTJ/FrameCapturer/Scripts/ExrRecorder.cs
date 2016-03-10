@@ -216,10 +216,9 @@ namespace UTJ
             }
 
 #if UNITY_EDITOR
-            if (m_captureGBuffer &&
-                FrameCapturerUtils.WarnIfRenderingPassIsNotDeferred(cam,
-                "ExrRecorder: Rendering Path must be deferred to use Capture GBuffer mode."))
+            if (m_captureGBuffer && !FrameCapturerUtils.IsRenderingPathDeferred(cam))
             {
+                Debug.LogWarning("ExrRecorder: Rendering Path must be deferred to use Capture GBuffer mode.");
                 m_captureGBuffer = false;
             }
 #endif // UNITY_EDITOR
@@ -270,7 +269,6 @@ namespace UTJ
         void OnDisable()
         {
             RemoveCommandBuffers();
-            EraseCallbacks();
 
             if (m_cb_copy_gb != null)
             {
@@ -298,8 +296,12 @@ namespace UTJ
                 m_gbuffer = null;
             }
 
-            fcAPI.fcExrDestroyContext(m_ctx);
-            m_ctx.ptr = System.IntPtr.Zero;
+            fcAPI.fcGuard(() =>
+            {
+                EraseCallbacks();
+                fcAPI.fcExrDestroyContext(m_ctx);
+                m_ctx.ptr = System.IntPtr.Zero;
+            });
         }
 
 

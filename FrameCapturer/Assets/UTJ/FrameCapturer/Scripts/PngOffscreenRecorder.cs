@@ -127,7 +127,6 @@ namespace UTJ
         void OnDisable()
         {
             RemoveCommandBuffers();
-            EraseCallbacks();
 
             if (m_cb_copy != null)
             {
@@ -141,8 +140,12 @@ namespace UTJ
             }
             m_scratch_buffers = null;
 
-            fcAPI.fcPngDestroyContext(m_ctx);
-            m_ctx.ptr = System.IntPtr.Zero;
+            fcAPI.fcGuard(() =>
+            {
+                EraseCallbacks();
+                fcAPI.fcPngDestroyContext(m_ctx);
+                m_ctx.ptr = System.IntPtr.Zero;
+            });
         }
 
         void Update()

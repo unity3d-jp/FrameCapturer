@@ -70,12 +70,23 @@ fcCLinkage fcExport uint64_t fcStreamGetWrittenSize(fcStream *s)
 
 typedef std::function<void()> fcDeferredCall;
 namespace {
+    std::mutex g_deferred_calls_mutex;
     std::vector<fcDeferredCall> g_deferred_calls;
+}
+
+fcCLinkage fcExport void fcGuardBegin()
+{
+    g_deferred_calls_mutex.lock();
+}
+
+fcCLinkage fcExport void fcGuardEnd()
+{
+    g_deferred_calls_mutex.unlock();
 }
 
 fcCLinkage fcExport int fcAddDeferredCall(const fcDeferredCall& dc, int id)
 {
-    if (id == 0) {
+    if (id <= 0) {
         // search empty object and return its position if found
         for (int i = 1; i < (int)g_deferred_calls.size(); ++i) {
             if (!g_deferred_calls[i]) {
@@ -91,19 +102,29 @@ fcCLinkage fcExport int fcAddDeferredCall(const fcDeferredCall& dc, int id)
         g_deferred_calls.emplace_back(dc);
         return (int)g_deferred_calls.size() - 1;
     }
-    else {
+    else if(id < g_deferred_calls.size()) {
         g_deferred_calls[id] = dc;
         return id;
+    }
+    else {
+        fcDebugLog("fcAddDeferredCall(): should not be here");
+        return 0;
     }
 }
 
 fcCLinkage fcExport void fcEraseDeferredCall(int id)
 {
+    if (id <= 0 || id >= g_deferred_calls.size()) { return; }
+
     g_deferred_calls[id] = fcDeferredCall();
 }
 
+// **called from rendering thread**
 fcCLinkage fcExport void fcCallDeferredCall(int id)
 {
+    std::unique_lock<std::mutex> l(g_deferred_calls_mutex);
+    if (id <= 0 || id >= g_deferred_calls.size()) { return; }
+
     auto& dc = g_deferred_calls[id];
     if (dc) { dc(); }
 }

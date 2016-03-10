@@ -18,7 +18,7 @@ namespace UTJ
                 if (!m_toggle_screenshot.isOn) { return; }
                 if (m_recorderUI == null)
                 {
-                    Debug.LogError("TweetMediaAttachFile: m_recorderUI is null");
+                    Debug.LogWarning("TweetMediaAttachFile: m_recorderUI is null");
                     return;
                 }
                 m_toggle_screenshot.isOn = false;
