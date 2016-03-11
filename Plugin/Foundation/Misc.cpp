@@ -128,3 +128,28 @@ double GetCurrentTimeSec()
     return (double)ts.tv_nsec / 1000000000.0;
 #endif
 }
+
+
+int Execute(const char *command_)
+{
+#ifdef fcWindows
+    STARTUPINFOA si;
+    PROCESS_INFORMATION pi;
+    memset(&si, 0, sizeof(si));
+    memset(&pi, 0, sizeof(pi));
+    si.cb = sizeof(si);
+    std::string command = command_;
+    if (::CreateProcessA(nullptr, (LPSTR)command.c_str(), nullptr, nullptr, TRUE, 0, nullptr, nullptr, &si, &pi) == TRUE) {
+        DWORD exit_code = 0;
+        ::WaitForSingleObject(pi.hThread, INFINITE);
+        ::WaitForSingleObject(pi.hProcess, INFINITE);
+        ::GetExitCodeProcess(pi.hProcess, &exit_code);
+        ::CloseHandle(pi.hThread);
+        ::CloseHandle(pi.hProcess);
+        return exit_code;
+    }
+    return 0;
+#else
+    return std::system(command);
+#endif
+}

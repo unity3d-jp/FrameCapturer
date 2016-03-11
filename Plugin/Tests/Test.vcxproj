@@ -43,6 +43,7 @@
     <ClCompile Include="PngTest.cpp" />
     <ClCompile Include="Test.cpp" />
     <ClCompile Include="TestCommon.cpp" />
+    <ClCompile Include="TestFAACSelfBuild.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestCommon.h" />
