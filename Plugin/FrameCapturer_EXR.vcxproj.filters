@@ -9,7 +9,6 @@
   <ItemGroup>
     <ClInclude Include="FrameCapturer.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="fcFoundation.h" />
     <ClInclude Include="Encoder\fcExrFile.h">
       <Filter>Encoder</Filter>
     </ClInclude>

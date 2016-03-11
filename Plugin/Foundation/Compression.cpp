@@ -1,9 +1,13 @@
 #include "pch.h"
 #include <bzip2/bzlib.h>
+#define ZIP_STATIC
+#include <libzip/zip.h>
 #include "Misc.h"
 
 #ifdef fcWindows
     #pragma comment(lib, "libbz2.lib")
+    #pragma comment(lib, "libzip.lib")
+    #pragma comment(lib, "zlibstatic.lib")
 #endif
 
 bool BZ2Decompress(std::vector<char> &dst, const void *src, size_t src_len)
@@ -38,4 +42,66 @@ size_t BZ2DecompressToFile(const char *dst_path, const void *src, size_t src_len
     fwrite(&dst[0], 1, dst.size(), fout);
     fclose(fout);
     return dst.size();
+}
+
+
+size_t Unzip(const char *dst_path_, const char *archive, const UnzipFileHandler& handler)
+{
+    struct zip *za;
+    struct zip_file *zf;
+    struct zip_stat sb;
+    char buf[1024];
+    size_t ret = 0;
+    std::string dst_path = dst_path_;
+
+    int err;
+    if ((za = zip_open(archive, 0, &err)) == nullptr) {
+        zip_error_to_str(buf, sizeof(buf), err, errno);
+        return false;
+    }
+
+    for (int i = 0; i < zip_get_num_entries(za, 0); ++i) {
+        if (zip_stat_index(za, i, 0, &sb) == 0) {
+            std::string dstpath = dst_path + '/' + sb.name;
+
+            if (dstpath.back() == '/') {
+                std::experimental::filesystem::create_directories(dstpath.c_str());
+            }
+            else {
+                zf = zip_fopen_index(za, i, 0);
+                if (!zf) {
+                    goto bail_out;
+                }
+
+                FILE *of = fopen(dstpath.c_str(), "wb");
+                if (of == nullptr) {
+                    goto bail_out;
+                }
+
+                size_t sum = 0;
+                while (sum != sb.size) {
+                    size_t len = (size_t)zip_fread(zf, buf, sizeof(buf));
+                    if (len < 0) {
+                        fclose(of);
+                        goto bail_out;
+                    }
+                    fwrite(buf, 1, len, of);
+                    sum += len;
+                }
+                fclose(of);
+                zip_fclose(zf);
+                if (handler) { handler(dstpath.c_str()); }
+                ++ret;
+            }
+        }
+    }
+
+    if (zip_close(za) == -1) {
+        return false;
+    }
+    return ret;
+
+bail_out:
+    zip_close(za);
+    return ret;
 }
