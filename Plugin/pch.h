@@ -17,6 +17,7 @@
 #include <functional>
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 
 #define fcImpl
 

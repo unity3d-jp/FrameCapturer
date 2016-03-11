@@ -14,6 +14,7 @@
 #include <half.h>
 #include "../FrameCapturer.h"
 #include "../Foundation/Buffer.h"
+#include "../Foundation/Misc.h"
 #include "../Foundation/fcThreadPool.h"
 
 

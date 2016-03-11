@@ -39,7 +39,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Encoder\fcExrFile.h" />
-    <ClInclude Include="fcFoundation.h" />
     <ClInclude Include="FrameCapturer.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
