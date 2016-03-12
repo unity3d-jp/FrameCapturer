@@ -7,7 +7,7 @@
 
 #include <libfaac/faac.h>
 #ifdef fcWindows
-    #ifdef _M_AMD64)
+    #ifdef _M_AMD64
         #define FAACDLL "libfaac-win64" fcDLLExt
     #elif _M_IX86
         #define FAACDLL "libfaac-win32" fcDLLExt
@@ -155,26 +155,30 @@ namespace {
 
 #ifdef fcWindows
         std::string dir = !fcMP4GetModulePath().empty() ? fcMP4GetModulePath() : DLLGetDirectoryOfCurrentModule();
-        std::string package_path = dir + "/FAAC_SelfBuild.zip";
+        std::string package_path = fcMP4GetFAACPackagePath();
 
-        // download self-build package
-        {
-            std::fstream package_file(package_path.c_str(), std::ios::out | std::ios::binary);
-            bool succeeded = HTTPGet(FAACSelfBuildPackageURL, [&](const char* data, size_t size) {
-                package_file.write(data, size);
+        // download self-build package package_path is http
+        if(strncmp(package_path.c_str(), "http://", 7)==0) {
+            std::string local_package = dir + "/FAAC_SelfBuild.zip";
+
+            std::fstream fs(local_package.c_str(), std::ios::out | std::ios::binary);
+            bool succeeded = HTTPGet(package_path.c_str(), [&](const char* data, size_t size) {
+                fs.write(data, size);
                 return true;
             });
-            package_file.close();
+            fs.close();
             if (succeeded) {
                 cb(fcDownloadState_InProgress, "succeeded to download package");
             }
             else {
                 cb(fcDownloadState_Error, "failed to download package");
-                //return false;
+                return;
             }
+            package_path = local_package;
         }
 
         bool ret = false;
+
         // unzip package
         if (Unzip(dir.c_str(), package_path.c_str()) > 0)
         {
