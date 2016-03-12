@@ -193,6 +193,7 @@ enum fcDownloadState {
     fcDownloadState_Error,
     fcDownloadState_InProgress,
 };
+fcCLinkage fcExport void            fcMP4SetFAACPackagePath(const char *path);
 fcCLinkage fcExport bool            fcMP4DownloadCodecBegin();
 fcCLinkage fcExport fcDownloadState fcMP4DownloadCodecGetState();
 

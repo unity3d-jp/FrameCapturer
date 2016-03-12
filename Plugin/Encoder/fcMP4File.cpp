@@ -505,11 +505,13 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, fcTime t
 
 namespace {
     std::string g_module_path;
+    std::string g_faac_package_path;
     fcDownloadState g_openh264_download_state = fcDownloadState_Idle;
     fcDownloadState g_faac_download_state = fcDownloadState_Idle;
 }
 
-const std::string fcMP4GetModulePath() { return g_module_path; }
+const std::string& fcMP4GetModulePath() { return g_module_path; }
+const std::string& fcMP4GetFAACPackagePath() { return g_faac_package_path; }
 
 fcMP4API fcIMP4Context* fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev)
 {
@@ -525,6 +527,11 @@ fcMP4API void fcMP4SetModulePathImpl(const char *path)
     g_module_path = path;
 }
 
+fcMP4API void fcMP4SetFAACPackagePathImpl(const char *path)
+{
+    g_faac_package_path = path;
+}
+
 fcMP4API bool fcMP4DownloadCodecBeginImpl()
 {
     if (fcLoadOpenH264Module() && fcLoadFAACModule()) {
@@ -538,11 +545,14 @@ fcMP4API bool fcMP4DownloadCodecBeginImpl()
         g_openh264_download_state = state;
     });
 
-    g_faac_download_state = fcDownloadState_InProgress;
-    bool faac = fcDownloadFAAC([&](fcDownloadState state, const char *message) {
-        fcDebugLog("fcDownloadFAAC: %s\n", message);
-        g_faac_download_state = state;
-    });
+    bool faac = false;
+    if (!fcMP4GetFAACPackagePath().empty()) {
+        g_faac_download_state = fcDownloadState_InProgress;
+        faac = fcDownloadFAAC([&](fcDownloadState state, const char *message) {
+            fcDebugLog("fcDownloadFAAC: %s\n", message);
+            g_faac_download_state = state;
+        });
+    }
     return openh264 || faac;
 }
 

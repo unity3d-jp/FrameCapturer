@@ -300,6 +300,7 @@ namespace UTJ
         };
         public struct fcMP4Context { public IntPtr ptr; }
 
+        [DllImport ("FrameCapturer")] public static extern void             fcMP4SetFAACPackagePath(string path);
         [DllImport ("FrameCapturer")] public static extern Bool             fcMP4DownloadCodecBegin();
         [DllImport ("FrameCapturer")] public static extern fcDownloadState  fcMP4DownloadCodecGetState();
 
