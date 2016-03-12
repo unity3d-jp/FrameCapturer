@@ -20,6 +20,7 @@ public:
     virtual bool encode(fcAACFrame& dst, const float *samples, size_t num_samples) = 0;
 };
 
+bool fcDownloadFAAC(fcDownloadCallback cb);
 bool fcLoadFAACModule();
 fcIAACEncoder* fcCreateFAACEncoder(const fcAACEncoderConfig& conf);
 

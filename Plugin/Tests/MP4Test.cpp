@@ -15,7 +15,7 @@ void MP4Test()
 
     // download OpenH264 codec
     fcMP4DownloadCodecBegin();
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 30; ++i) {
         if (fcMP4DownloadCodecGetState() == fcDownloadState_InProgress) {
             std::this_thread::sleep_for(1s);
         }

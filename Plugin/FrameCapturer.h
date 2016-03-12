@@ -182,7 +182,7 @@ struct fcMP4Config
         : video(true), audio(true)
         , video_use_hardware_encoder_if_possible(true)
         , video_width(), video_height()
-        , video_bitrate(256000), video_max_framerate(60), video_max_buffers(8)
+        , video_bitrate(1024000), video_max_framerate(60), video_max_buffers(8)
         , audio_scale(1.0f), audio_sample_rate(48000), audio_num_channels(2), audio_bitrate(64000)
     {}
 };
