@@ -222,6 +222,10 @@ namespace UTJ
 
         void Start()
         {
+            if (m_captureAudio)
+            {
+                fcAPI.fcMP4SetFAACPackagePath(Application.streamingAssetsPath + "/UTJ/FrameCapturer/FAAC_SelfBuild.zip");
+            }
             fcAPI.fcSetModulePath(m_outputDir.GetPath());
             fcAPI.fcMP4DownloadCodecBegin();
         }

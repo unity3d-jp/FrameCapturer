@@ -411,6 +411,18 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
     }
 #endif
 
+fcCLinkage fcExport void fcMP4SetFAACPackagePath(const char *path)
+{
+#ifdef fcMP4SplitModule
+    fcMP4InitializeModule();
+    if (fcMP4SetFAACPackagePathImpl) {
+        fcMP4SetFAACPackagePathImpl(path);
+    }
+#else
+    return fcMP4SetFAACPackagePath(path);
+#endif
+}
+
 fcCLinkage fcExport bool fcMP4DownloadCodecBegin()
 {
 #ifdef fcMP4SplitModule

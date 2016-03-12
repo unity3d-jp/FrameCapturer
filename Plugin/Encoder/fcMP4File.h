@@ -28,6 +28,7 @@ protected:
 
 #define fcMP4EachFunctions(Body)\
     Body(fcMP4SetModulePathImpl)\
+    Body(fcMP4SetFAACPackagePathImpl)\
     Body(fcMP4DownloadCodecBeginImpl)\
     Body(fcMP4DownloadCodecGetStateImpl)\
     Body(fcMP4CreateContextImpl)
@@ -35,12 +36,14 @@ protected:
 #ifdef fcMP4SplitModule
     #define fcMP4API fcCLinkage fcExport
     typedef void            (*fcMP4SetModulePathImpl_t)(const char *path);
+    typedef void            (*fcMP4SetFAACPackagePathImpl_t)(const char *path);
     typedef bool            (*fcMP4DownloadCodecBeginImpl_t)();
     typedef fcDownloadState (*fcMP4DownloadCodecGetStateImpl_t)();
     typedef fcIMP4Context*  (*fcMP4CreateContextImpl_t)(fcMP4Config &conf, fcIGraphicsDevice*);
 #else
     #define fcMP4API 
     fcMP4API void            fcMP4SetModulePathImpl(const char *path);
+    fcMP4API void            fcMP4SetFAACPackagePathImpl(const char *path);
     fcMP4API bool            fcMP4DownloadCodecBeginImpl();
     fcMP4API fcDownloadState fcMP4DownloadCodecGetStateImpl();
     fcMP4API fcIMP4Context*  fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice*);

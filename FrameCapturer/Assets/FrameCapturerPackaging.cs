@@ -13,11 +13,23 @@ public class FrameCapturerPackaging
     [MenuItem("Assets/UTJ/FrameCapturer/MakePackage")]
     public static void MakePackage()
     {
-        string[] files = new string[]
+        // FrameCapturer.unitypackage
         {
-"Assets/UTJ",
-        };
-        AssetDatabase.ExportPackage(files, "FrameCapturer.unitypackage", ExportPackageOptions.Recurse);
+            string[] files = new string[]
+            {
+                "Assets/UTJ",
+            };
+            AssetDatabase.ExportPackage(files, "FrameCapturer.unitypackage", ExportPackageOptions.Recurse);
+        }
+
+        // FAACSelfBuild.unitypackage
+        {
+            string[] files = new string[]
+            {
+                "Assets/StreamingAssets/UTJ",
+            };
+            AssetDatabase.ExportPackage(files, "FAACSelfBuild.unitypackage", ExportPackageOptions.Recurse);
+        }
     }
 
 }
