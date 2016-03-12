@@ -156,11 +156,12 @@ namespace {
 #ifdef fcWindows
         std::string dir = !fcMP4GetModulePath().empty() ? fcMP4GetModulePath() : DLLGetDirectoryOfCurrentModule();
         std::string package_path = fcMP4GetFAACPackagePath();
+        bool http = false;
 
         // download self-build package package_path is http
         if(strncmp(package_path.c_str(), "http://", 7)==0) {
+            http = true;
             std::string local_package = dir + "/FAAC_SelfBuild.zip";
-
             std::fstream fs(local_package.c_str(), std::ios::out | std::ios::binary);
             bool succeeded = HTTPGet(package_path.c_str(), [&](const char* data, size_t size) {
                 fs.write(data, size);
@@ -215,7 +216,9 @@ namespace {
 #ifdef fcMaster
         // remove self-build package and intermediate files
         fs::remove_all(dir + "/FAAC_SelfBuild");
-        fs::remove_all(package_path);
+        if (http) {
+            fs::remove_all(package_path);
+        }
 #endif // fcMaster
 
 #else // fcWindows

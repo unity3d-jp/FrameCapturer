@@ -18,6 +18,8 @@ public class FrameCapturerPackaging
             string[] files = new string[]
             {
                 "Assets/UTJ",
+                "Assets/StreamingAssets/UTJ/FrameCapturer/License.text",
+                "Assets/StreamingAssets/UTJ/FrameCapturer/OpenH264_BinaryLicense.txt",
             };
             AssetDatabase.ExportPackage(files, "FrameCapturer.unitypackage", ExportPackageOptions.Recurse);
         }
@@ -26,7 +28,7 @@ public class FrameCapturerPackaging
         {
             string[] files = new string[]
             {
-                "Assets/StreamingAssets/UTJ",
+                "Assets/StreamingAssets/UTJ/FrameCapturer/FAAC_SelfBuild.zip",
             };
             AssetDatabase.ExportPackage(files, "FAACSelfBuild.unitypackage", ExportPackageOptions.Recurse);
         }
