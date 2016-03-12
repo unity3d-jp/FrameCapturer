@@ -35,13 +35,7 @@
     #define fcLinux
 #endif
 
-#ifdef fcDebug
-    void DebugLogImpl(const char* fmt, ...);
-    #define fcDebugLog(...) DebugLogImpl(__VA_ARGS__)
-#else
-    #define fcDebugLog(...)
-#endif
-
+#define fcEnableLogging
 #ifdef _WIN32
     #define fcSupportOpenGL
     #define fcSupportD3D9
@@ -70,10 +64,17 @@
     #define fcSupportOpenH264
     #define fcSupportNVH264
 #endif
-
 #ifndef fcStaticLink
     //#define fcGIFSplitModule
     #define fcPNGSplitModule
     #define fcEXRSplitModule
     #define fcMP4SplitModule
 #endif // fcStaticLink
+
+
+#ifdef fcEnableLogging
+    void DebugLogImpl(const char* fmt, ...);
+    #define fcDebugLog(...) DebugLogImpl(__VA_ARGS__)
+#else
+    #define fcDebugLog(...)
+#endif

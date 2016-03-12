@@ -6,7 +6,16 @@
 #ifdef fcSupportFAAC
 
 #include <libfaac/faac.h>
-#define FAACDLL "libfaac" fcDLLExt
+#ifdef fcWindows
+    #ifdef _M_AMD64)
+        #define FAACDLL "libfaac-win64" fcDLLExt
+    #elif _M_IX86
+        #define FAACDLL "libfaac-win32" fcDLLExt
+    #endif
+    #define FAACSelfBuildPackageURL "http://github.com/unity3d-jp/FrameCapturer/raw/master/Packages/FAAC_SelfBuild.zip"
+#else
+    #define FAACDLL "libfaac" fcDLLExt
+#endif
 
 class fcFAACEncoder : public fcIAACEncoder
 {
@@ -122,11 +131,109 @@ const Buffer& fcFAACEncoder::getDecoderSpecificInfo()
         unsigned long num_buf;
         faacEncGetDecoderSpecificInfo_i(m_handle, &buf, &num_buf);
         m_aac_header.append((char*)buf, num_buf);
-        free(buf);
+        //free(buf);
     }
     return m_aac_header;
 }
 
+namespace {
+    std::thread *g_download_thread;
+
+    std::string fcGetFAACModulePath()
+    {
+        std::string ret = !fcMP4GetModulePath().empty() ? fcMP4GetModulePath() : DLLGetDirectoryOfCurrentModule();
+        if (!ret.empty() && (ret.back() != '/' && ret.back() != '\\')) {
+            ret += "/";
+        }
+        ret += FAACDLL;
+        return ret;
+    }
+
+    void fcDownloadFAACBody(fcDownloadCallback cb)
+    {
+        namespace fs = std::experimental::filesystem;
+
+#ifdef fcWindows
+        std::string dir = !fcMP4GetModulePath().empty() ? fcMP4GetModulePath() : DLLGetDirectoryOfCurrentModule();
+        std::string package_path = dir + "/FAAC_SelfBuild.zip";
+
+        // download self-build package
+        {
+            std::fstream package_file(package_path.c_str(), std::ios::out | std::ios::binary);
+            bool succeeded = HTTPGet(FAACSelfBuildPackageURL, [&](const char* data, size_t size) {
+                package_file.write(data, size);
+                return true;
+            });
+            package_file.close();
+            if (succeeded) {
+                cb(fcDownloadState_InProgress, "succeeded to download package");
+            }
+            else {
+                cb(fcDownloadState_Error, "failed to download package");
+                //return false;
+            }
+        }
+
+        bool ret = false;
+        // unzip package
+        if (Unzip(dir.c_str(), package_path.c_str()) > 0)
+        {
+            cb(fcDownloadState_InProgress, "succeeded to unzip package");
+
+            // buld
+#ifdef _M_IX86
+            std::string build_command = std::string("cmd.exe /C ") + dir + "\\FAAC_SelfBuild\\build_x86.bat";
+            std::string dst_path = dir + "/FAAC_SelfBuild/out_x86/libfaac.dll";
+#elif _M_X64
+            std::string build_command = std::string("cmd.exe /C ") + dir + "\\FAAC_SelfBuild\\build_x86_64.bat";
+            std::string dst_path = dir + "/FAAC_SelfBuild/out_x86_64/libfaac.dll";
+#endif
+
+            if (Execute(build_command.c_str()) == 0) {
+                cb(fcDownloadState_InProgress, "succeeded to build");
+                // copy built module
+                if (fs::copy_file(dst_path, fcGetFAACModulePath())) {
+                    cb(fcDownloadState_Completed, "succeeded to copy module");
+                    ret = true;
+                }
+                else {
+                    cb(fcDownloadState_Error, "failed to copy module");
+                }
+            }
+            else {
+                cb(fcDownloadState_Error, "failed to build");
+            }
+        }
+        else {
+            cb(fcDownloadState_Error, "failed to unzip package");
+        }
+
+#ifdef fcMaster
+        // remove self-build package and intermediate files
+        fs::remove_all(dir + "/FAAC_SelfBuild");
+        fs::remove_all(package_path);
+#endif // fcMaster
+
+#else // fcWindows
+#endif // fcWindows
+
+        g_download_thread->detach();
+        delete g_download_thread;
+        g_download_thread = nullptr;
+    }
+}
+
+bool fcDownloadFAAC(fcDownloadCallback cb)
+{
+    // no need to build if DLL already exists
+    if (fcLoadFAACModule()) { return true; }
+
+    // download thread is already running
+    if (g_download_thread) { return false; }
+
+    g_download_thread = new std::thread([=]() { fcDownloadFAACBody(cb); });
+    return true;
+}
 
 bool fcLoadFAACModule()
 {
