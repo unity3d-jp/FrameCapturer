@@ -165,21 +165,21 @@ namespace {
         return ret;
     }
 
-    void fcMP4DownloadCodecBody(fcDownloadCallback cb)
+    void fcDownloadOpenH264Body(fcDownloadCallback cb)
     {
         std::string response;
         if (HTTPGet(OpenH264URL, response)) {
-            cb(fcDownloadState_InProgress, "HTTP Get completed");
+            cb(fcDownloadState_InProgress, "succeeded to HTTP");
             if (BZ2DecompressToFile(fcGetOpenH264ModulePath().c_str(), &response[0], response.size()))
             {
-                cb(fcDownloadState_Completed, "BZ2 Decompress completed");
+                cb(fcDownloadState_Completed, "succeeded to BZ2 Decompress");
             }
             else {
-                cb(fcDownloadState_Error, "BZ2 Decompress failed");
+                cb(fcDownloadState_Error, "failed to BZ2 Decompress");
             }
         }
         else {
-            cb(fcDownloadState_Error, "HTTP Get failed");
+            cb(fcDownloadState_Error, "failed to HTTP Get");
         }
 
         g_download_thread->detach();
@@ -199,7 +199,7 @@ bool fcDownloadOpenH264(fcDownloadCallback cb)
     // download thread is already running
     if (g_download_thread != nullptr) { return false; }
 
-    g_download_thread = new std::thread([=]() { fcMP4DownloadCodecBody(cb); });
+    g_download_thread = new std::thread([=]() { fcDownloadOpenH264Body(cb); });
     return true;
 }
 

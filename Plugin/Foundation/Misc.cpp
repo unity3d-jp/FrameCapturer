@@ -129,6 +129,19 @@ double GetCurrentTimeSec()
 #endif
 }
 
+#ifdef fcWindows
+void fcWinPrintLastError()
+{
+    auto code = ::GetLastError();
+    char buf[1024];
+
+    ::FormatMessageA(
+        FORMAT_MESSAGE_FROM_SYSTEM,
+        nullptr, ::GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        buf, sizeof(buf), nullptr);
+    fcDebugLog("fcWinPrintLastError(): %s", buf);
+}
+#endif
 
 int Execute(const char *command_)
 {
@@ -138,8 +151,8 @@ int Execute(const char *command_)
     memset(&si, 0, sizeof(si));
     memset(&pi, 0, sizeof(pi));
     si.cb = sizeof(si);
-    std::string command = command_;
-    if (::CreateProcessA(nullptr, (LPSTR)command.c_str(), nullptr, nullptr, TRUE, 0, nullptr, nullptr, &si, &pi) == TRUE) {
+    std::string command = command_; // CreateProcessA() require **non const** string...
+    if (::CreateProcessA(nullptr, (LPSTR)command.c_str(), nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi) == TRUE) {
         DWORD exit_code = 0;
         ::WaitForSingleObject(pi.hThread, INFINITE);
         ::WaitForSingleObject(pi.hProcess, INFINITE);
@@ -148,7 +161,10 @@ int Execute(const char *command_)
         ::CloseHandle(pi.hProcess);
         return exit_code;
     }
-    return 0;
+    else {
+        fcWinPrintLastError();
+    }
+    return 1;
 #else
     return std::system(command);
 #endif

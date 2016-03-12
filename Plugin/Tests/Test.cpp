@@ -12,12 +12,13 @@ int main(int argc, char *argv[])
     bool png = false;
     bool exr = false;
     bool gif = false;
-    bool faac = false;
     bool mp4 = false;
     bool convert = false;
+    bool faac = false;
 
     if (argc <= 1) {
-        png = exr = gif = mp4 = convert = faac = true;
+        png = exr = gif = mp4 = convert = true;
+        //faac = true;
     }
     else {
         for (int i = 1; i < argc; ++i) {
@@ -33,7 +34,7 @@ int main(int argc, char *argv[])
     if (png) PngTest();
     if (exr) ExrTest();
     if (gif) GifTest();
-    if (faac) FAACSelfBuildTest();
     if (mp4) MP4Test();
     if (convert) ConvertTest();
+    if (faac) FAACSelfBuildTest();
 }
