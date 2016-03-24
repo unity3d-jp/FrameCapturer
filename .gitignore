@@ -43,3 +43,6 @@ debug/
 dependencies/
 *.dblite
 excons.cache
+
+FAACSelfBuild*
+FAAC_SelfBuild*
