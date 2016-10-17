@@ -1,0 +1,6 @@
+#include "pch.h"
+#include "fcFoundation.h"
+#include "fcI420.h"
+#include "fcWebMFile.h"
+#include "fcVorbisEncoder.h"
+#include "fcVPXEncoder.h"
