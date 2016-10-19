@@ -13,6 +13,7 @@ public:
     ~fcVP9Encoder() override;
     void release() override;
     bool encode(fcVPXFrame& dst, const fcI420Data& image, fcTime timestamp, bool force_keyframe) override;
+    bool flush(fcVPXFrame& dst) override;
 
 private:
     fcVP9EncoderConfig m_conf;
@@ -51,6 +52,11 @@ void fcVP9Encoder::release()
 }
 
 bool fcVP9Encoder::encode(fcVPXFrame& dst, const fcI420Data& image, fcTime timestamp, bool force_keyframe)
+{
+    return false;
+}
+
+bool fcVP9Encoder::flush(fcVPXFrame& dst)
 {
     return false;
 }

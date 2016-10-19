@@ -61,6 +61,9 @@
     <ProjectReference Include="FrameCapturer_PNG.vcxproj">
       <Project>{100ca7b7-efe5-4255-b4ca-d903038333b3}</Project>
     </ProjectReference>
+    <ProjectReference Include="FrameCapturer_WebM.vcxproj">
+      <Project>{d94a471a-a891-4240-8f3e-24898505eaac}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{08361722-5520-47AC-A0C2-31E8A062B73F}</ProjectGuid>

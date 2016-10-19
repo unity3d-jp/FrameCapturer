@@ -4,6 +4,7 @@
 #include "fcWebMFile.h"
 #include "fcVorbisEncoder.h"
 #include "fcVPXEncoder.h"
+#include "GraphicsDevice/fcGraphicsDevice.h"
 
 #include "webm/mkvparser.hpp"
 #include "webm/mkvreader.hpp"
@@ -37,6 +38,12 @@ private:
     fcIGraphicsDevice *m_gdev = nullptr;
     std::unique_ptr<fcIVPXEncoder> m_video_encoder;
     std::unique_ptr<fcIVorbisEncoder> m_audio_encoder;
+
+    Buffer m_tmp_texture_image;
+    Buffer m_tmp_rgba_image;
+    fcI420Image m_tmp_i420_image;
+    fcVPXFrame m_tmp_video_frame;
+    fcVorbisFrame m_tmp_audio_frame;
 };
 
 
@@ -79,6 +86,14 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
 
 fcWebMContext::~fcWebMContext()
 {
+    m_video_encoder->flush(m_tmp_video_frame);
+
+#ifndef fcMaster
+    {
+        std::ofstream ofs("tmp.vpx", std::ios::binary);
+        ofs.write(m_tmp_video_frame.data.data(), m_tmp_video_frame.data.size());
+    }
+#endif // fcMaster
 }
 
 void fcWebMContext::release()
@@ -95,7 +110,14 @@ bool fcWebMContext::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime ti
 {
     if (!tex || !m_video_encoder || !m_gdev) { return false; }
 
-    //m_video_encoder->encode(timestamp);
+    size_t psize = fcGetPixelSize(fmt);
+    m_tmp_texture_image.resize(m_conf.video_width * m_conf.video_height * psize);
+    if (!m_gdev->readTexture(m_tmp_texture_image.data(), m_tmp_texture_image.size(), tex, m_conf.video_width, m_conf.video_height, fmt))
+    {
+        return false;
+    }
+
+    addVideoFramePixels(m_tmp_texture_image.data(), fmt, timestamp);
     return true;
 }
 
@@ -103,6 +125,28 @@ bool fcWebMContext::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, f
 {
     if (!pixels || !m_video_encoder) { return false; }
 
+    fcI420Data i420;
+    if (fmt == fcPixelFormat_I420) {
+        int frame_size = m_conf.video_width * m_conf.video_height;
+        i420.y = pixels;
+        i420.u = (char*)i420.y + frame_size;
+        i420.v = (char*)i420.u + (frame_size >> 2);
+    }
+    else if (fmt == fcPixelFormat_RGBAu8) {
+        m_tmp_i420_image.resize(m_conf.video_width, m_conf.video_height);
+        fcRGBA2I420(m_tmp_i420_image, pixels, m_conf.video_width, m_conf.video_height);
+        i420 = m_tmp_i420_image.data();
+    }
+    else {
+        m_tmp_rgba_image.resize(m_conf.video_width * m_conf.video_height * 4);
+        fcConvertPixelFormat(m_tmp_rgba_image.data(), fcPixelFormat_RGBAu8, pixels, fmt, m_conf.video_width * m_conf.video_height);
+
+        m_tmp_i420_image.resize(m_conf.video_width, m_conf.video_height);
+        fcRGBA2I420(m_tmp_i420_image, m_tmp_rgba_image.data(), m_conf.video_width, m_conf.video_height);
+        i420 = m_tmp_i420_image.data();
+    }
+
+    m_video_encoder->encode(m_tmp_video_frame, i420, timestamp);
     return true;
 }
 
