@@ -9,15 +9,20 @@ struct fcVorbisEncoderConfig
 {
 };
 
-class fcVorbisEncoder
+struct fcOpusEncoderConfig
+{
+};
+
+
+class fcIVorbisEncoder
 {
 public:
     virtual void release() = 0;
     virtual bool encode(fcVorbisFrame& dst, const float *samples, size_t num_samples) = 0;
-
 protected:
-    virtual ~fcVorbisEncoder() = 0;
+    virtual ~fcIVorbisEncoder() {}
 };
 
 
-fcVorbisEncoder* fcCreateVorbisEncoder(const fcVorbisEncoderConfig& conf);
+fcIVorbisEncoder* fcCreateVorbisEncoder(const fcVorbisEncoderConfig& conf);
+fcIVorbisEncoder* fcCreateOpusEncoder(const fcOpusEncoderConfig& conf);
