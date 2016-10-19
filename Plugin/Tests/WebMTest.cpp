@@ -7,12 +7,8 @@ static size_t tellp(void *f) { return ftell((FILE*)f); }
 static void   seekp(void *f, size_t pos) { fseek((FILE*)f, (long)pos, SEEK_SET); }
 static size_t write(void *f, const void *data, size_t len) { return fwrite(data, 1, len, (FILE*)f); }
 
-
-void WebMTest()
+void WebMTest(fcWebMVideoEncoder ve, fcWebMAudioEncoder ae)
 {
-    printf("WebMTest begin\n");
-
-
     const int DurationInSeconds = 10;
     const int FrameRate = 60;
     const int Width = 320;
@@ -20,18 +16,38 @@ void WebMTest()
     const int SamplingRate = 48000;
 
     fcWebMConfig conf;
+    conf.video_encoder = ve;
     conf.video_width = Width;
     conf.video_height = Height;
     conf.video_bitrate = 256000;
+    conf.audio_encoder = ae;
     conf.audio_sample_rate = SamplingRate;
     conf.audio_num_channels = 1;
     conf.audio_bitrate = 64000;
 
+    const char *video_encoder_name = nullptr;
+    const char *audio_encoder_name = nullptr;
+    switch (ve) {
+    case fcWebMVideoEncoder::VP8: video_encoder_name = "VP8"; break;
+    case fcWebMVideoEncoder::VP9: video_encoder_name = "VP9"; break;
+    }
+    switch (ae) {
+    case fcWebMAudioEncoder::Vorbis: audio_encoder_name = "Vorbis"; break;
+    case fcWebMAudioEncoder::Opus: audio_encoder_name = "Opus"; break;
+    }
+
+    char filename_f[256];
+    char filename_c[256];
+    char filename_m[256];
+    sprintf(filename_f, "file_stream (%s %s).webm", video_encoder_name, audio_encoder_name);
+    sprintf(filename_c, "custom_stream (%s %s).webm", video_encoder_name, audio_encoder_name);
+    sprintf(filename_m, "memory_stream (%s %s).webm", video_encoder_name, audio_encoder_name);
+
 
     // create output streams
-    fcStream* fstream = fcCreateFileStream("file_stream.webm");
+    fcStream* fstream = fcCreateFileStream(filename_f);
     fcStream* mstream = fcCreateMemoryStream();
-    FILE *ofile = fopen("custom_stream.webm", "wb");
+    FILE *ofile = fopen(filename_c, "wb");
     fcStream* cstream = fcCreateCustomStream(ofile, &tellp, &seekp, &write);
 
     // create mp4 context and add output streams
@@ -75,14 +91,24 @@ void WebMTest()
     // destroy output streams
     {
         fcBufferData bd = fcStreamGetBufferData(mstream);
-        std::fstream of("memory_stream.mp4", std::ios::binary | std::ios::out);
+        std::fstream of(filename_m, std::ios::binary | std::ios::out);
         of.write((char*)bd.data, bd.size);
     }
     fcDestroyStream(fstream);
     fcDestroyStream(mstream);
     fcDestroyStream(cstream);
     fclose(ofile);
+}
 
-    printf("WebMTest end\n");
+
+void WebMTest()
+{
+    printf("WebMTest (VP8 & Vorbis) begin\n");
+    WebMTest(fcWebMVideoEncoder::VP8, fcWebMAudioEncoder::Vorbis);
+    printf("WebMTest (VP8 & Vorbis) end\n");
+
+    printf("WebMTest (VP9 & Opus) begin\n");
+    WebMTest(fcWebMVideoEncoder::VP9, fcWebMAudioEncoder::Opus);
+    printf("WebMTest (VP9 & Opus) end\n");
 }
 

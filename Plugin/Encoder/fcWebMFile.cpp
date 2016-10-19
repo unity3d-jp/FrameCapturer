@@ -9,6 +9,7 @@
 
 #ifdef _MSC_VER
     #pragma comment(lib, "vpxmt.lib")
+    #pragma comment(lib, "libwebm.lib")
 #endif // _MSC_VER
 
 
@@ -25,17 +26,29 @@ public:
     bool addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp) override;
     bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp) override;
 
-private:
-    fcWebMConfig m_conf;
-    fcIGraphicsDevice *m_gdev = nullptr;
-    std::unique_ptr<fcIVPXEncoder> m_video_encoder;
-    std::unique_ptr<fcIVorbisEncoder> m_audio_encoder;
+    template<class Body>
+    void eachStreams(const Body &b)
+    {
+        for (auto& s : m_muxers) { b(*s); }
+    }
 
-    Buffer m_tmp_texture_image;
-    Buffer m_tmp_rgba_image;
-    fcI420Image m_tmp_i420_image;
-    fcVPXFrame m_tmp_video_frame;
-    fcVorbisFrame m_tmp_audio_frame;
+private:
+    using VideoEncoderPtr = std::unique_ptr<fcIWebMVideoEncoder>;
+    using AudioEncoderPtr = std::unique_ptr<fcIWebMAudioEncoder>;
+    using MuxerPtr        = std::unique_ptr<fcIWebMMuxer>;
+    using MuxerPtrs       = std::vector<MuxerPtr>;
+
+    fcWebMConfig        m_conf;
+    fcIGraphicsDevice   *m_gdev = nullptr;
+    VideoEncoderPtr     m_video_encoder;
+    AudioEncoderPtr     m_audio_encoder;
+    MuxerPtrs           m_muxers;
+
+    Buffer              m_texture_image;
+    Buffer              m_rgba_image;
+    fcI420Image         m_i420_image;
+    fcWebMVideoFrame    m_video_frame;
+    fcWebMAudioFrame    m_audio_frame;
 };
 
 
@@ -54,7 +67,7 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
             m_video_encoder.reset(fcCreateVP8Encoder(econf));
             break;
         case fcWebMVideoEncoder::VP9:
-            m_video_encoder.reset(fcCreateVP8Encoder(econf));
+            m_video_encoder.reset(fcCreateVP9Encoder(econf));
             break;
         }
     }
@@ -78,14 +91,10 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
 
 fcWebMContext::~fcWebMContext()
 {
-    m_video_encoder->flush(m_tmp_video_frame);
-
-#ifndef fcMaster
-    {
-        std::ofstream ofs("tmp.vpx", std::ios::binary);
-        ofs.write(m_tmp_video_frame.data.data(), m_tmp_video_frame.data.size());
-    }
-#endif // fcMaster
+    m_video_encoder->flush(m_video_frame);
+    m_video_encoder.reset();
+    m_audio_encoder.reset();
+    m_muxers.clear();
 }
 
 void fcWebMContext::release()
@@ -95,7 +104,10 @@ void fcWebMContext::release()
 
 void fcWebMContext::addOutputStream(fcStream *s)
 {
-    // todo
+    auto *muxer = fcCreateWebMMuxer(*s, m_conf);
+    if (m_video_encoder) { muxer->setVideoEncoderInfo(m_video_encoder->getMatroskaCodecID()); }
+    if (m_audio_encoder) { muxer->setAudioEncoderInfo(m_audio_encoder->getMatroskaCodecID()); }
+    m_muxers.emplace_back(muxer);
 }
 
 bool fcWebMContext::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp)
@@ -103,13 +115,13 @@ bool fcWebMContext::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime ti
     if (!tex || !m_video_encoder || !m_gdev) { return false; }
 
     size_t psize = fcGetPixelSize(fmt);
-    m_tmp_texture_image.resize(m_conf.video_width * m_conf.video_height * psize);
-    if (!m_gdev->readTexture(m_tmp_texture_image.data(), m_tmp_texture_image.size(), tex, m_conf.video_width, m_conf.video_height, fmt))
+    m_texture_image.resize(m_conf.video_width * m_conf.video_height * psize);
+    if (!m_gdev->readTexture(m_texture_image.data(), m_texture_image.size(), tex, m_conf.video_width, m_conf.video_height, fmt))
     {
         return false;
     }
 
-    addVideoFramePixels(m_tmp_texture_image.data(), fmt, timestamp);
+    addVideoFramePixels(m_texture_image.data(), fmt, timestamp);
     return true;
 }
 
@@ -125,20 +137,25 @@ bool fcWebMContext::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, f
         i420.v = (char*)i420.u + (frame_size >> 2);
     }
     else if (fmt == fcPixelFormat_RGBAu8) {
-        m_tmp_i420_image.resize(m_conf.video_width, m_conf.video_height);
-        fcRGBA2I420(m_tmp_i420_image, pixels, m_conf.video_width, m_conf.video_height);
-        i420 = m_tmp_i420_image.data();
+        m_i420_image.resize(m_conf.video_width, m_conf.video_height);
+        fcRGBA2I420(m_i420_image, pixels, m_conf.video_width, m_conf.video_height);
+        i420 = m_i420_image.data();
     }
     else {
-        m_tmp_rgba_image.resize(m_conf.video_width * m_conf.video_height * 4);
-        fcConvertPixelFormat(m_tmp_rgba_image.data(), fcPixelFormat_RGBAu8, pixels, fmt, m_conf.video_width * m_conf.video_height);
+        m_rgba_image.resize(m_conf.video_width * m_conf.video_height * 4);
+        fcConvertPixelFormat(m_rgba_image.data(), fcPixelFormat_RGBAu8, pixels, fmt, m_conf.video_width * m_conf.video_height);
 
-        m_tmp_i420_image.resize(m_conf.video_width, m_conf.video_height);
-        fcRGBA2I420(m_tmp_i420_image, m_tmp_rgba_image.data(), m_conf.video_width, m_conf.video_height);
-        i420 = m_tmp_i420_image.data();
+        m_i420_image.resize(m_conf.video_width, m_conf.video_height);
+        fcRGBA2I420(m_i420_image, m_rgba_image.data(), m_conf.video_width, m_conf.video_height);
+        i420 = m_i420_image.data();
     }
 
-    m_video_encoder->encode(m_tmp_video_frame, i420, timestamp);
+    if (m_video_encoder->encode(m_video_frame, i420, timestamp)) {
+        eachStreams([&](auto& muxer) {
+            muxer.addVideoFrame(m_video_frame);
+        });
+        m_video_frame.clear();
+    }
     return true;
 }
 
@@ -146,6 +163,12 @@ bool fcWebMContext::addAudioFrame(const float *samples, int num_samples, fcTime 
 {
     if (!samples || !m_audio_encoder) { return false; }
 
+    if (m_audio_encoder->encode(m_audio_frame, samples, num_samples)) {
+        eachStreams([&](auto& muxer) {
+            muxer.addAudioFrame(m_audio_frame);
+        });
+        m_audio_frame.clear();
+    }
     return true;
 }
 

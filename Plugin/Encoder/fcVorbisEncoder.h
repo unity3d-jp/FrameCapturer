@@ -1,9 +1,5 @@
 #pragma once
 
-struct fcVorbisFrame
-{
-};
-
 
 struct fcVorbisEncoderConfig
 {
@@ -11,8 +7,21 @@ struct fcVorbisEncoderConfig
     int num_channels;
     int target_bitrate;
 };
-typedef fcVorbisEncoderConfig fcOpusEncoderConfig;
+using fcOpusEncoderConfig = fcVorbisEncoderConfig;
 
+struct fcVorbisFrame
+{
+    uint64_t timestamp;
+    Buffer data;
+    std::vector<int> segments;
+
+    void clear()
+    {
+        timestamp = 0;
+        data.clear();
+        segments.clear();
+    }
+};
 
 class fcIVorbisEncoder
 {
@@ -27,3 +36,7 @@ public:
 
 fcIVorbisEncoder* fcCreateVorbisEncoder(const fcVorbisEncoderConfig& conf);
 fcIVorbisEncoder* fcCreateOpusEncoder(const fcOpusEncoderConfig& conf);
+
+using fcWebMAudioEncoderConfig = fcVorbisEncoderConfig;
+using fcWebMAudioFrame = fcVorbisFrame;
+using fcIWebMAudioEncoder = fcIVorbisEncoder;
