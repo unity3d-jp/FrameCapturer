@@ -10,9 +10,18 @@ struct fcVPXEncoderConfig
 
 struct fcVPXFrame
 {
-    fcTime timestamp;
+    uint64_t timestamp;
     Buffer data;
     std::vector<int> segments;
+    uint32_t keyframe : 1;
+
+    void clear()
+    {
+        timestamp = 0;
+        data.clear();
+        segments.clear();
+        keyframe = 0;
+    }
 };
 
 
@@ -29,3 +38,7 @@ public:
 
 fcIVPXEncoder* fcCreateVP8Encoder(const fcVPXEncoderConfig& conf);
 fcIVPXEncoder* fcCreateVP9Encoder(const fcVPXEncoderConfig& conf);
+
+using fcWebMVideoEncoderConfig = fcVPXEncoderConfig;
+using fcWebMVideoFrame = fcVPXFrame;
+using fcIWebMVideoEncoder = fcIVPXEncoder;
