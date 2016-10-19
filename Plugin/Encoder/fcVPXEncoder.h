@@ -2,33 +2,28 @@
 
 struct fcVPXEncoderConfig
 {
-    int width = 1920;
-    int height = 1080;
+    int width = 0;
+    int height = 0;
     int target_bitrate = 0;
     int max_framerate = 60;
 };
-
-struct fcVP8EncoderConfig : public fcVPXEncoderConfig
-{
-};
-
-struct fcVP9EncoderConfig : public fcVPXEncoderConfig
-{
-};
+typedef fcVPXEncoderConfig fcVP8EncoderConfig;
+typedef fcVPXEncoderConfig fcVP9EncoderConfig;
 
 struct fcVPXFrame
 {
+    fcTime timestamp;
+    Buffer data;
+    std::vector<int> segments;
 };
 
 
 class fcIVPXEncoder
 {
 public:
+    virtual ~fcIVPXEncoder() {}
     virtual void release() = 0;
     virtual bool encode(fcVPXFrame& dst, const fcI420Data& image, fcTime timestamp, bool force_keyframe = false) = 0;
-
-protected:
-    virtual ~fcIVPXEncoder() {}
 };
 
 fcIVPXEncoder* fcCreateVP8Encoder(const fcVP8EncoderConfig& conf);

@@ -19,7 +19,7 @@ private:
 };
 
 
-fcIVorbisEncoder* fcCreateVorbisEncoder(const fcOpusEncoderConfig& conf)
+fcIVorbisEncoder* fcCreateOpusEncoder(const fcOpusEncoderConfig& conf)
 {
     return new fcOpusEncoder(conf);
 }

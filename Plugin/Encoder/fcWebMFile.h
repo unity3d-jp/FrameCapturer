@@ -20,7 +20,7 @@ public:
     virtual bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp = -1) = 0;
 
 protected:
-    virtual ~fcIWebMContext();
+    virtual ~fcIWebMContext() {}
 };
 
 
