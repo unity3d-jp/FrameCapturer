@@ -1,15 +1,14 @@
 #pragma once
 
-class fcWebMMuxer
+class fcIWebMMuxer
 {
 public:
-    fcWebMMuxer(BinaryStream &stream, const fcWebMConfig &conf);
-    virtual ~fcWebMMuxer();
-    void addVideoFrame(const fcVPXFrame& buf);
-    void addAudioFrame(const fcVorbisFrame& buf);
+    virtual ~fcIWebMMuxer() {}
+    virtual void setVideoEncoderInfo(const char *id) = 0;
+    virtual void setAudioEncoderInfo(const char *id) = 0;
 
-private:
-    BinaryStream& m_stream;
-    fcWebMConfig m_conf;
-    std::mutex m_mutex;
+    virtual void addVideoFrame(const fcWebMVideoFrame& buf) = 0;
+    virtual void addAudioFrame(const fcWebMAudioFrame& buf) = 0;
 };
+
+fcIWebMMuxer* fcCreateWebMMuxer(BinaryStream &stream, const fcWebMConfig &conf);

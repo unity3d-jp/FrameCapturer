@@ -60,7 +60,7 @@ fcVPXEncoder::fcVPXEncoder(const fcVPXEncoderConfig& conf, fcWebMVideoEncoder en
     vpx_config.g_w = m_conf.width;
     vpx_config.g_h = m_conf.height;
     vpx_config.g_timebase.num = 1;
-    vpx_config.g_timebase.den = 1000000;
+    vpx_config.g_timebase.den = 1000000000;
     vpx_config.rc_target_bitrate = m_conf.target_bitrate;
     vpx_codec_enc_init(&m_vpx_ctx, m_vpx_iface, &vpx_config, 0);
 
@@ -88,9 +88,9 @@ const char* fcVPXEncoder::getMatroskaCodecID()
 
 bool fcVPXEncoder::encode(fcVPXFrame& dst, const fcI420Data& image, fcTime timestamp, bool force_keyframe)
 {
-    vpx_codec_pts_t vpx_time = uint64_t(timestamp * 1000000.0);
+    vpx_codec_pts_t vpx_time = uint64_t(timestamp * 1000000000.0);
     vpx_enc_frame_flags_t vpx_flags = 0;
-    uint32_t duration = uint32_t((timestamp - m_prev_timestamp) * 1000000.0);
+    uint32_t duration = uint32_t((timestamp - m_prev_timestamp) * 1000000000.0);
     duration = std::max<uint32_t>(duration, 1);
     m_prev_timestamp = timestamp;
     if (force_keyframe) {
@@ -127,10 +127,10 @@ void fcVPXEncoder::gatherFrameData(fcVPXFrame& dst)
     const vpx_codec_cx_pkt_t *pkt = nullptr;
     while ((pkt = vpx_codec_get_cx_data(&m_vpx_ctx, &iter)) != nullptr) {
         if (pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
-            int keyframe = (pkt->data.frame.flags & VPX_FRAME_IS_KEY) != 0;
-            dst.timestamp = (double)pkt->data.frame.pts / 1000000.0;
+            dst.timestamp = pkt->data.frame.pts;
             dst.data.append((char*)pkt->data.frame.buf, pkt->data.frame.sz);
             dst.segments.push_back((int)pkt->data.frame.sz);
+            dst.keyframe = (pkt->data.frame.flags & VPX_FRAME_IS_KEY) != 0;
         }
     }
 }
