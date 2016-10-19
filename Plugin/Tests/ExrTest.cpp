@@ -8,7 +8,7 @@ void ExrTestImpl(fcIExrContext *ctx, const char *filename)
     int channels = GetPixelFormat<T>::value & fcPixelFormat_ChannelMask;
     const char *channel_names[] = { "R", "G", "B", "A" };
 
-    TBuffer<T> video_frame(Width * Height);
+    RawVector<T> video_frame(Width * Height);
     CreateVideoData(&video_frame[0], Width, Height, 0);
     fcExrBeginFrame(ctx, filename, Width, Height);
     for (int i = 0; i < channels; ++i) {

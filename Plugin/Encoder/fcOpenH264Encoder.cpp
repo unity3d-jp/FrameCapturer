@@ -139,7 +139,7 @@ bool fcOpenH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, fcTim
             header = fcH264NALHeader(layer.pBsBuf[total + 4]);
             total += layer.pNalLengthInByte[ni];
         }
-        dst.data.append(layer.pBsBuf, total);
+        dst.data.append((char*)layer.pBsBuf, total);
     }
 
     return true;

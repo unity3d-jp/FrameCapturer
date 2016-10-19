@@ -9,9 +9,9 @@ struct fcI420Data
 
 struct fcI420Image
 {
-    std::vector<char> y;
-    std::vector<char> u;
-    std::vector<char> v;
+    Buffer y;
+    Buffer u;
+    Buffer v;
 
     void resize(int width, int height);
     fcI420Data data();
