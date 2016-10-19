@@ -2,9 +2,9 @@
 
 struct fcI420Data
 {
-    char *y;
-    char *u;
-    char *v;
+    const void *y;
+    const void *u;
+    const void *v;
 };
 
 struct fcI420Image
