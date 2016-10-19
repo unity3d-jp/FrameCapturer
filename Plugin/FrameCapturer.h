@@ -202,8 +202,21 @@ fcCLinkage fcExport bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const
 // WebM Exporter
 // -------------------------------------------------------------
 
+enum class fcWebMVideoEncoder
+{
+    VP8,
+    VP9,
+};
+enum class fcWebMAudioEncoder
+{
+    Vorbis,
+    Opus,
+};
+
 struct fcWebMConfig
 {
+    fcWebMVideoEncoder video_encoder = fcWebMVideoEncoder::VP8;
+    fcWebMAudioEncoder audio_encoder = fcWebMAudioEncoder::Vorbis;
     bool    video = true;
     bool    audio = true;
     int     video_width = 0;
