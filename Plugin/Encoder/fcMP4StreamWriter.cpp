@@ -139,7 +139,7 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
 
 void fcMP4StreamWriter::setAACEncoderInfo(const Buffer& aacheader)
 {
-    u8 *ptr = (u8*)aacheader.ptr();
+    u8 *ptr = (u8*)aacheader.data();
     m_audio_encoder_info.assign(ptr, ptr + aacheader.size());
 }
 
@@ -291,7 +291,7 @@ void fcMP4StreamWriter::mp4End()
                 dd << u8(0);    // stream priority
                 dd << u8(4);    // descriptor type
                 dd << u8(add_buf.size());
-                dd.write(add_buf.ptr(), add_buf.size());
+                dd.write(add_buf.data(), add_buf.size());
                 dd << u8(0x6);  // config descriptor type
                 dd << u8(1);    // len
                 dd << u8(2);    // SL value(? always 2)
@@ -368,7 +368,7 @@ void fcMP4StreamWriter::mp4End()
                                         bs << u32(0);   // version and flags (none)
                                         bs << u8(3);    // ES descriptor type
                                         bs << u8(dd_buf.size());
-                                        bs.write(dd_buf.ptr(), dd_buf.size());
+                                        bs.write(dd_buf.data(), dd_buf.size());
                                     }); // esds
                                 }); // mp4a
                             }); // stsd

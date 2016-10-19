@@ -1,11 +1,6 @@
 #pragma once
 
 
-struct fcWebMConfig
-{
-};
-
-
 class fcIWebMContext
 {
 public:
@@ -29,16 +24,10 @@ protected:
 };
 
 
-#define fcWebMEachFunctions(Body)\
-    Body(fcWebMSetModulePathImpl)\
-    Body(fcWebMCreateContextImpl)
-
 #ifdef fcWebMSplitModule
     #define fcWebMAPI fcCLinkage fcExport
-    typedef void            (*fcWebMSetModulePathImpl_t)(const char *path);
     typedef fcIWebMContext* (*fcWebMCreateContextImpl_t)(fcWebMConfig &conf, fcIGraphicsDevice*);
 #else
     #define fcWebMAPI 
-    fcWebMAPI void              fcWebMSetModulePathImpl(const char *path);
     fcWebMAPI fcIWebMContext*   fcWebMCreateContextImpl(fcWebMConfig &conf, fcIGraphicsDevice*);
 #endif

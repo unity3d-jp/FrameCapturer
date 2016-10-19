@@ -15,10 +15,13 @@
 *.mp4
 *.h264
 *.aac
+*.webm
 *.exr
 *.gif
 *.png
 *.dll
+*.db
+*.opendb
 
 _out/
 _tmp/

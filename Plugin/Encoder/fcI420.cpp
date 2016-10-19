@@ -9,9 +9,9 @@
 void fcI420Image::resize(int width, int height)
 {
     int af = roundup<2>(width) * roundup<2>(height);
-    y.resize(af, 32);
-    u.resize(af >> 2, 32);
-    v.resize(af >> 2, 32);
+    y.resize(af);
+    u.resize(af >> 2);
+    v.resize(af >> 2);
 }
 
 fcI420Data fcI420Image::data()
