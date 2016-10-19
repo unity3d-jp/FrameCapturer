@@ -7,8 +7,6 @@ struct fcVPXEncoderConfig
     int target_bitrate = 0;
     int max_framerate = 60;
 };
-typedef fcVPXEncoderConfig fcVP8EncoderConfig;
-typedef fcVPXEncoderConfig fcVP9EncoderConfig;
 
 struct fcVPXFrame
 {
@@ -23,9 +21,11 @@ class fcIVPXEncoder
 public:
     virtual ~fcIVPXEncoder() {}
     virtual void release() = 0;
+    virtual const char* getMatroskaCodecID() = 0;
+
     virtual bool encode(fcVPXFrame& dst, const fcI420Data& image, fcTime timestamp, bool force_keyframe = false) = 0;
     virtual bool flush(fcVPXFrame& dst) = 0;
 };
 
-fcIVPXEncoder* fcCreateVP8Encoder(const fcVP8EncoderConfig& conf);
-fcIVPXEncoder* fcCreateVP9Encoder(const fcVP9EncoderConfig& conf);
+fcIVPXEncoder* fcCreateVP8Encoder(const fcVPXEncoderConfig& conf);
+fcIVPXEncoder* fcCreateVP9Encoder(const fcVPXEncoderConfig& conf);

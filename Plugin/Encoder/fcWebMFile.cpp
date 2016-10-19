@@ -4,13 +4,8 @@
 #include "fcWebMFile.h"
 #include "fcVorbisEncoder.h"
 #include "fcVPXEncoder.h"
+#include "fcWebMMuxer.h"
 #include "GraphicsDevice/fcGraphicsDevice.h"
-
-#include "webm/mkvparser.hpp"
-#include "webm/mkvreader.hpp"
-#include "webm/mkvwriter.hpp"
-#include "webm/mkvmuxer.hpp"
-#include "webm/mkvmuxerutil.hpp"
 
 #ifdef _MSC_VER
     #pragma comment(lib, "vpxmt.lib")
@@ -26,11 +21,8 @@ public:
     void release() override;
 
     void addOutputStream(fcStream *s) override;
-
     bool addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp) override;
-
     bool addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp) override;
-
     bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp) override;
 
 private:

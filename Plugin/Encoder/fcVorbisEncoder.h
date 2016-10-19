@@ -19,6 +19,8 @@ class fcIVorbisEncoder
 public:
     virtual ~fcIVorbisEncoder() {}
     virtual void release() = 0;
+    virtual const char* getMatroskaCodecID() = 0;
+
     virtual bool encode(fcVorbisFrame& dst, const float *samples, size_t num_samples) = 0;
 };
 

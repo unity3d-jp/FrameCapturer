@@ -10,8 +10,9 @@ class fcVorbisEncoder : public fcIVorbisEncoder
 public:
     fcVorbisEncoder(const fcVorbisEncoderConfig& conf);
     ~fcVorbisEncoder() override;
-
     void release() override;
+    const char* getMatroskaCodecID() override;
+
     bool encode(fcVorbisFrame& dst, const float *samples, size_t num_samples) override;
 
 private:
@@ -37,6 +38,11 @@ fcVorbisEncoder::~fcVorbisEncoder()
 void fcVorbisEncoder::release()
 {
     delete this;
+}
+
+const char* fcVorbisEncoder::getMatroskaCodecID()
+{
+    return "A_VORBIS";
 }
 
 bool fcVorbisEncoder::encode(fcVorbisFrame& dst, const float *samples, size_t num_samples)

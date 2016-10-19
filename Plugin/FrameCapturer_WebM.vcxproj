@@ -30,9 +30,9 @@
     <ClCompile Include="Encoder\fcI420.cpp" />
     <ClCompile Include="Encoder\fcOpusEncoder.cpp" />
     <ClCompile Include="Encoder\fcVorbisEncoder.cpp" />
-    <ClCompile Include="Encoder\fcVP8Encoder.cpp" />
-    <ClCompile Include="Encoder\fcVP9Encoder.cpp" />
+    <ClCompile Include="Encoder\fcVPXEncoder.cpp" />
     <ClCompile Include="Encoder\fcWebMFile.cpp" />
+    <ClCompile Include="Encoder\fcWebMMuxer.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -47,6 +47,7 @@
     <ClInclude Include="Encoder\fcVorbisEncoder.h" />
     <ClInclude Include="Encoder\fcVPXEncoder.h" />
     <ClInclude Include="Encoder\fcWebMFile.h" />
+    <ClInclude Include="Encoder\fcWebMMuxer.h" />
     <ClInclude Include="FrameCapturer.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>

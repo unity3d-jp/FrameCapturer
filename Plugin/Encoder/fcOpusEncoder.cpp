@@ -10,8 +10,9 @@ class fcOpusEncoder : public fcIVorbisEncoder
 public:
     fcOpusEncoder(const fcOpusEncoderConfig& conf);
     ~fcOpusEncoder() override;
-
     void release() override;
+    const char* getMatroskaCodecID() override;
+
     bool encode(fcVorbisFrame& dst, const float *samples, size_t num_samples) override;
 
 private:
@@ -37,6 +38,11 @@ fcOpusEncoder::~fcOpusEncoder()
 void fcOpusEncoder::release()
 {
     delete this;
+}
+
+const char* fcOpusEncoder::getMatroskaCodecID()
+{
+    return "A_OPUS";
 }
 
 bool fcOpusEncoder::encode(fcVorbisFrame& dst, const float *samples, size_t num_samples)

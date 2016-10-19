@@ -11,13 +11,13 @@
     <ClCompile Include="Encoder\fcI420.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcVP9Encoder.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="Encoder\fcVP8Encoder.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
     <ClCompile Include="Encoder\fcOpusEncoder.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcVPXEncoder.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcWebMMuxer.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
   </ItemGroup>
@@ -34,6 +34,9 @@
       <Filter>Encoder</Filter>
     </ClInclude>
     <ClInclude Include="Encoder\fcI420.h">
+      <Filter>Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder\fcWebMMuxer.h">
       <Filter>Encoder</Filter>
     </ClInclude>
   </ItemGroup>
