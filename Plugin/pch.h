@@ -45,6 +45,7 @@
     #define fcSupportEXR
     #define fcSupportGIF
     #define fcSupportMP4
+    #define fcSupportWebM
 
     #define fcSupportHalfPixelFormat
     #define fcSupportFAAC
@@ -58,6 +59,7 @@
     #define fcSupportEXR
     #define fcSupportGIF
     #define fcSupportMP4
+    #define fcSupportWebM
 
     #define fcSupportHalfPixelFormat
     #define fcSupportFAAC
@@ -69,6 +71,7 @@
     #define fcPNGSplitModule
     #define fcEXRSplitModule
     #define fcMP4SplitModule
+    #define fcWebMSplitModule
 #endif // fcStaticLink
 
 

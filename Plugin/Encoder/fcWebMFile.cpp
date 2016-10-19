@@ -4,3 +4,9 @@
 #include "fcWebMFile.h"
 #include "fcVorbisEncoder.h"
 #include "fcVPXEncoder.h"
+
+#include "webm/mkvparser.hpp"
+#include "webm/mkvreader.hpp"
+#include "webm/mkvwriter.hpp"
+#include "webm/mkvmuxer.hpp"
+#include "webm/mkvmuxerutil.hpp"

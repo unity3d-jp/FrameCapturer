@@ -44,6 +44,7 @@
     <ClCompile Include="Test.cpp" />
     <ClCompile Include="TestCommon.cpp" />
     <ClCompile Include="TestFAACSelfBuild.cpp" />
+    <ClCompile Include="WebMTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestCommon.h" />
