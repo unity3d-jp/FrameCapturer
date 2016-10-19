@@ -2,9 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="Encoder\fcVPXEncoder.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
     <ClCompile Include="Encoder\fcWebMFile.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
@@ -12,6 +9,15 @@
       <Filter>Encoder</Filter>
     </ClCompile>
     <ClCompile Include="Encoder\fcI420.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcVP9Encoder.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcVP8Encoder.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcOpusEncoder.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
   </ItemGroup>

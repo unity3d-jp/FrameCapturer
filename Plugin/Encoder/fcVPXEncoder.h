@@ -8,6 +8,14 @@ struct fcVPXEncoderConfig
     int max_framerate = 60;
 };
 
+struct fcVP8EncoderConfig : public fcVPXEncoderConfig
+{
+};
+
+struct fcVP9EncoderConfig : public fcVPXEncoderConfig
+{
+};
+
 struct fcVPXFrame
 {
 };
@@ -17,12 +25,11 @@ class fcIVPXEncoder
 {
 public:
     virtual void release() = 0;
-    virtual const char* getEncoderInfo() = 0;
     virtual bool encode(fcVPXFrame& dst, const fcI420Data& image, fcTime timestamp, bool force_keyframe = false) = 0;
 
 protected:
-    virtual ~fcIVPXEncoder() = 0;
+    virtual ~fcIVPXEncoder() {}
 };
 
-fcIVPXEncoder* fcCreateVP8Encoder(const fcVPXEncoderConfig& conf);
-fcIVPXEncoder* fcCreateVP9Encoder(const fcVPXEncoderConfig& conf);
+fcIVPXEncoder* fcCreateVP8Encoder(const fcVP8EncoderConfig& conf);
+fcIVPXEncoder* fcCreateVP9Encoder(const fcVP9EncoderConfig& conf);

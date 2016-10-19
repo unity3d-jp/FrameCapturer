@@ -28,8 +28,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Encoder\fcI420.cpp" />
+    <ClCompile Include="Encoder\fcOpusEncoder.cpp" />
     <ClCompile Include="Encoder\fcVorbisEncoder.cpp" />
-    <ClCompile Include="Encoder\fcVPXEncoder.cpp" />
+    <ClCompile Include="Encoder\fcVP8Encoder.cpp" />
+    <ClCompile Include="Encoder\fcVP9Encoder.cpp" />
     <ClCompile Include="Encoder\fcWebMFile.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
