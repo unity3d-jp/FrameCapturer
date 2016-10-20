@@ -49,6 +49,7 @@ private:
     Buffer              m_texture_image;
     Buffer              m_rgba_image;
     fcI420Image         m_i420_image;
+    RawVector<float>    m_audio_samples;
     fcWebMVideoFrame    m_video_frame;
     fcWebMAudioFrame    m_audio_frame;
 };
@@ -93,8 +94,10 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
 
 fcWebMContext::~fcWebMContext()
 {
-    m_video_encoder->flush(m_video_frame);
-    m_video_encoder.reset();
+    if (m_video_encoder) {
+        m_video_encoder->flush(m_video_frame);
+        m_video_encoder.reset();
+    }
     m_audio_encoder.reset();
     m_writers.clear();
 }
@@ -165,7 +168,13 @@ bool fcWebMContext::addAudioFrame(const float *samples, int num_samples, fcTime 
 {
     if (!samples || !m_audio_encoder) { return false; }
 
-    if (m_audio_encoder->encode(m_audio_frame, samples, num_samples)) {
+    m_audio_samples.assign(samples, num_samples);
+    if (m_conf.audio_scale != 1.0f) {
+        fcScaleArray(m_audio_samples.data(), m_audio_samples.size(), m_conf.audio_scale);
+    }
+
+    if (m_audio_encoder->encode(m_audio_frame, m_audio_samples.data(), m_audio_samples.size())) {
+        m_audio_frame.timestamp = uint64_t(timestamp * 1000000000.0);
         eachStreams([&](auto& muxer) {
             muxer.addAudioFrame(m_audio_frame);
         });
