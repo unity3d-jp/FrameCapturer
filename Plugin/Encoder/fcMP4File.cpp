@@ -190,7 +190,7 @@ void fcMP4Context::resetEncoders()
     m_aac_encoder.reset();
     if (m_conf.audio) {
         fcAACEncoderConfig aacconf;
-        aacconf.sampling_rate = m_conf.audio_sample_rate;
+        aacconf.sample_rate = m_conf.audio_sample_rate;
         aacconf.num_channels = m_conf.audio_num_channels;
         aacconf.target_bitrate = m_conf.audio_bitrate;
 

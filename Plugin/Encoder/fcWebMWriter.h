@@ -1,9 +1,9 @@
 #pragma once
 
-class fcIWebMMuxer
+class fcIWebMWriter
 {
 public:
-    virtual ~fcIWebMMuxer() {}
+    virtual ~fcIWebMWriter() {}
     virtual void setVideoEncoderInfo(const char *id) = 0;
     virtual void setAudioEncoderInfo(const char *id) = 0;
 
@@ -11,4 +11,4 @@ public:
     virtual void addAudioFrame(const fcWebMAudioFrame& buf) = 0;
 };
 
-fcIWebMMuxer* fcCreateWebMMuxer(BinaryStream &stream, const fcWebMConfig &conf);
+fcIWebMWriter* fcCreateWebMMuxer(BinaryStream &stream, const fcWebMConfig &conf);
