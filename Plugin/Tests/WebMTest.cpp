@@ -16,6 +16,7 @@ void WebMTest(fcWebMVideoEncoder ve, fcWebMAudioEncoder ae)
     const int SamplingRate = 48000;
 
     fcWebMConfig conf;
+    conf.video = false;
     conf.video_encoder = ve;
     conf.video_width = Width;
     conf.video_height = Height;
@@ -74,7 +75,7 @@ void WebMTest(fcWebMVideoEncoder ve, fcWebMAudioEncoder ae)
             RawVector<float> audio_sample(SamplingRate);
             fcTime t = 0;
             for (int i = 0; i < DurationInSeconds; ++i) {
-                CreateAudioData(&audio_sample[0], (int)audio_sample.size(), i);
+                CreateAudioData(&audio_sample[0], (int)audio_sample.size(), i, 1.0f);
                 fcWebMAddAudioFrame(ctx, &audio_sample[0], (int)audio_sample.size(), t);
                 t += 1.0;
             }
