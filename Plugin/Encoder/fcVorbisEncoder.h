@@ -11,15 +11,15 @@ using fcOpusEncoderConfig = fcVorbisEncoderConfig;
 
 struct fcVorbisFrame
 {
-    uint64_t timestamp;
     Buffer data;
     std::vector<int> segments;
+    uint64_t timestamp = 0;
 
     void clear()
     {
-        timestamp = 0;
         data.clear();
         segments.clear();
+        timestamp = 0;
     }
 };
 
@@ -28,7 +28,8 @@ class fcIVorbisEncoder
 public:
     virtual ~fcIVorbisEncoder() {}
     virtual void release() = 0;
-    virtual const char* getMatroskaCodecID() = 0;
+    virtual const char* getMatroskaCodecID() const = 0;
+    virtual const Buffer& getCodecPrivate() const = 0;
 
     virtual bool encode(fcVorbisFrame& dst, const float *samples, size_t num_samples) = 0;
 };
