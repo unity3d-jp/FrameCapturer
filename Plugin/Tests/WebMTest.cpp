@@ -16,7 +16,7 @@ void WebMTest(fcWebMVideoEncoder ve, fcWebMAudioEncoder ae)
     const int SamplingRate = 48000;
 
     fcWebMConfig conf;
-    conf.video = false;
+    //conf.video = false;
     conf.video_encoder = ve;
     conf.video_width = Width;
     conf.video_height = Height;
@@ -64,20 +64,20 @@ void WebMTest(fcWebMVideoEncoder ve, fcWebMAudioEncoder ae)
             RawVector<RGBAu8> video_frame(Width * Height);
             fcTime t = 0;
             for (int i = 0; i < DurationInSeconds * FrameRate; ++i) {
-                CreateVideoData(&video_frame[0], Width, Height, i);
-                fcWebMAddVideoFramePixels(ctx, &video_frame[0], fcPixelFormat_RGBAu8, t);
+                CreateVideoData(video_frame.data(), Width, Height, i);
+                fcWebMAddVideoFramePixels(ctx, video_frame.data(), fcPixelFormat_RGBAu8, t);
                 t += 1.0 / FrameRate;
             }
         });
 
         // add audio frames
         std::thread audio_thread = std::thread([&]() {
-            RawVector<float> audio_sample(SamplingRate);
+            RawVector<float> audio_sample(SamplingRate / 5);
             fcTime t = 0;
-            for (int i = 0; i < DurationInSeconds; ++i) {
-                CreateAudioData(&audio_sample[0], (int)audio_sample.size(), i, 1.0f);
-                fcWebMAddAudioFrame(ctx, &audio_sample[0], (int)audio_sample.size(), t);
-                t += 1.0;
+            while (t < (double)DurationInSeconds) {
+                CreateAudioData(audio_sample.data(), (int)audio_sample.size(), t, 1.0f);
+                fcWebMAddAudioFrame(ctx, audio_sample.data(), (int)audio_sample.size(), t);
+                t += 1.0 / 5;
             }
         });
 

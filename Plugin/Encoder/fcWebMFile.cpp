@@ -110,8 +110,8 @@ void fcWebMContext::release()
 void fcWebMContext::addOutputStream(fcStream *s)
 {
     auto *muxer = fcCreateWebMMuxer(*s, m_conf);
-    if (m_video_encoder) { muxer->setVideoEncoderInfo(m_video_encoder->getMatroskaCodecID()); }
-    if (m_audio_encoder) { muxer->setAudioEncoderInfo(m_audio_encoder->getMatroskaCodecID()); }
+    if (m_video_encoder) { muxer->setVideoEncoderInfo(*m_video_encoder); }
+    if (m_audio_encoder) { muxer->setAudioEncoderInfo(*m_audio_encoder); }
     m_writers.emplace_back(muxer);
 }
 

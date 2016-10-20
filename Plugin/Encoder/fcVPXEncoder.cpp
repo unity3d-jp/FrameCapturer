@@ -13,7 +13,7 @@ public:
     fcVPXEncoder(const fcVPXEncoderConfig& conf, fcWebMVideoEncoder encoder);
     ~fcVPXEncoder() override;
     void release() override;
-    const char* getMatroskaCodecID() override;
+    const char* getMatroskaCodecID() const override;
 
     bool encode(fcVPXFrame& dst, const fcI420Data& image, fcTime timestamp, bool force_keyframe) override;
     bool flush(fcVPXFrame& dst) override;
@@ -80,7 +80,7 @@ void fcVPXEncoder::release()
     delete this;
 }
 
-const char* fcVPXEncoder::getMatroskaCodecID()
+const char* fcVPXEncoder::getMatroskaCodecID() const
 {
     return m_matroska_codec_id;
 }
@@ -91,7 +91,9 @@ bool fcVPXEncoder::encode(fcVPXFrame& dst, const fcI420Data& image, fcTime times
     vpx_codec_pts_t vpx_time = uint64_t(timestamp * 1000000000.0);
     vpx_enc_frame_flags_t vpx_flags = 0;
     uint32_t duration = uint32_t((timestamp - m_prev_timestamp) * 1000000000.0);
-    duration = std::max<uint32_t>(duration, 1);
+    if (duration == 0) {
+        duration = 1000000000 / 60;
+    }
     m_prev_timestamp = timestamp;
     if (force_keyframe) {
         vpx_flags |= VPX_EFLAG_FORCE_KF;
