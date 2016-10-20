@@ -11,12 +11,14 @@ public:
     fcOpusEncoder(const fcOpusEncoderConfig& conf);
     ~fcOpusEncoder() override;
     void release() override;
-    const char* getMatroskaCodecID() override;
+    const char* getMatroskaCodecID() const override;
+    const Buffer& getCodecPrivate() const override;
 
     bool encode(fcVorbisFrame& dst, const float *samples, size_t num_samples) override;
 
 private:
     fcOpusEncoderConfig m_conf;
+    Buffer m_codec_private;
 };
 
 
@@ -40,9 +42,14 @@ void fcOpusEncoder::release()
     delete this;
 }
 
-const char* fcOpusEncoder::getMatroskaCodecID()
+const char* fcOpusEncoder::getMatroskaCodecID() const
 {
     return "A_OPUS";
+}
+
+const Buffer& fcOpusEncoder::getCodecPrivate() const
+{
+    return m_codec_private;
 }
 
 bool fcOpusEncoder::encode(fcVorbisFrame& dst, const float *samples, size_t num_samples)

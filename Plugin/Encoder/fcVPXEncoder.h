@@ -10,16 +10,16 @@ struct fcVPXEncoderConfig
 
 struct fcVPXFrame
 {
-    uint64_t timestamp;
     Buffer data;
     std::vector<int> segments;
+    uint64_t timestamp = 0;
     uint32_t keyframe : 1;
 
     void clear()
     {
-        timestamp = 0;
         data.clear();
         segments.clear();
+        timestamp = 0;
         keyframe = 0;
     }
 };
@@ -30,7 +30,7 @@ class fcIVPXEncoder
 public:
     virtual ~fcIVPXEncoder() {}
     virtual void release() = 0;
-    virtual const char* getMatroskaCodecID() = 0;
+    virtual const char* getMatroskaCodecID() const = 0;
 
     virtual bool encode(fcVPXFrame& dst, const fcI420Data& image, fcTime timestamp, bool force_keyframe = false) = 0;
     virtual bool flush(fcVPXFrame& dst) = 0;
