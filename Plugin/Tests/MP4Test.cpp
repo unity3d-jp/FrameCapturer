@@ -67,7 +67,7 @@ void MP4Test()
             RawVector<float> audio_sample(SamplingRate);
             fcTime t = 0;
             for (int i = 0; i < DurationInSeconds; ++i) {
-                CreateAudioData(&audio_sample[0], (int)audio_sample.size(), i);
+                CreateAudioData(&audio_sample[0], (int)audio_sample.size(), i, 32767.0f);
                 fcMP4AddAudioFrame(ctx, &audio_sample[0], (int)audio_sample.size(), t);
                 t += 1.0;
             }
