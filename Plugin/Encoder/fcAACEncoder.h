@@ -4,11 +4,11 @@
 
 struct fcAACEncoderConfig
 {
-    int sampling_rate;
+    int sample_rate;
     int num_channels;
     int target_bitrate;
 
-    fcAACEncoderConfig() : sampling_rate(), num_channels(), target_bitrate() {}
+    fcAACEncoderConfig() : sample_rate(), num_channels(), target_bitrate() {}
 };
 
 class fcIAACEncoder

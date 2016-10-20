@@ -17,7 +17,7 @@
     <ClCompile Include="Encoder\fcVPXEncoder.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcWebMMuxer.cpp">
+    <ClCompile Include="Encoder\fcWebMWriter.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
   </ItemGroup>
@@ -36,7 +36,7 @@
     <ClInclude Include="Encoder\fcI420.h">
       <Filter>Encoder</Filter>
     </ClInclude>
-    <ClInclude Include="Encoder\fcWebMMuxer.h">
+    <ClInclude Include="Encoder\fcWebMWriter.h">
       <Filter>Encoder</Filter>
     </ClInclude>
   </ItemGroup>
