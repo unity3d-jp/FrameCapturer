@@ -3,15 +3,15 @@
 #include "fcI420.h"
 #include "fcVorbisEncoder.h"
 #include "fcVPXEncoder.h"
-#include "fcWebMMuxer.h"
+#include "fcWebMWriter.h"
 
 #include "webm/mkvmuxer.hpp"
 
 
-class fcMkvWriter : public mkvmuxer::IMkvWriter
+class fcMkvStream : public mkvmuxer::IMkvWriter
 {
 public:
-    fcMkvWriter(BinaryStream &stream) : m_stream(stream) {}
+    fcMkvStream(BinaryStream &stream) : m_stream(stream) {}
     int32_t Write(const void* buf, uint32_t len) override { m_stream.write(buf, len); return 0; }
     int64_t Position() const override { return m_stream.tellp(); }
     int32_t Position(int64_t position) override { m_stream.seekp(position); return 0; }
@@ -22,11 +22,11 @@ private:
 };
 
 
-class fcWebMMuxer : public fcIWebMMuxer
+class fcWebMWriter : public fcIWebMWriter
 {
 public:
-    fcWebMMuxer(BinaryStream &stream, const fcWebMConfig &conf);
-    ~fcWebMMuxer() override;
+    fcWebMWriter(BinaryStream &stream, const fcWebMConfig &conf);
+    ~fcWebMWriter() override;
     void setVideoEncoderInfo(const char *id) override;
     void setAudioEncoderInfo(const char *id) override;
 
@@ -34,8 +34,10 @@ public:
     void addAudioFrame(const fcWebMAudioFrame& buf) override;
 
 private:
-    std::unique_ptr<fcMkvWriter> m_writer;
+    using StreamPtr = std::unique_ptr<fcMkvStream>;
+
     fcWebMConfig m_conf;
+    StreamPtr m_stream;
     std::mutex m_mutex;
 
     mkvmuxer::Segment m_segment;
@@ -44,16 +46,16 @@ private:
 };
 
 
-fcIWebMMuxer* fcCreateWebMMuxer(BinaryStream &stream, const fcWebMConfig &conf)
+fcIWebMWriter* fcCreateWebMMuxer(BinaryStream &stream, const fcWebMConfig &conf)
 {
-    return new fcWebMMuxer(stream, conf);
+    return new fcWebMWriter(stream, conf);
 }
 
-fcWebMMuxer::fcWebMMuxer(BinaryStream &stream, const fcWebMConfig &conf)
-    : m_writer(new fcMkvWriter(stream))
-    , m_conf(conf)
+fcWebMWriter::fcWebMWriter(BinaryStream &stream, const fcWebMConfig &conf)
+    : m_conf(conf)
+    , m_stream(new fcMkvStream(stream))
 {
-    m_segment.Init(m_writer.get());
+    m_segment.Init(m_stream.get());
     m_segment.set_mode(mkvmuxer::Segment::kLive);
     if (conf.video) {
         m_video_track_id = m_segment.AddVideoTrack(conf.video_width, conf.video_height, 0);
@@ -66,29 +68,35 @@ fcWebMMuxer::fcWebMMuxer(BinaryStream &stream, const fcWebMConfig &conf)
     info->set_writing_app("Unity WebM Recorder");
 }
 
-fcWebMMuxer::~fcWebMMuxer()
+fcWebMWriter::~fcWebMWriter()
 {
     m_segment.Finalize();
 }
 
-void fcWebMMuxer::setVideoEncoderInfo(const char *id)
+void fcWebMWriter::setVideoEncoderInfo(const char *id)
 {
     auto* track = dynamic_cast<mkvmuxer::VideoTrack*>(m_segment.GetTrackByNumber(m_video_track_id));
-    track->set_codec_id(id);
+    if (track) {
+        track->set_codec_id(id);
+    }
 }
 
-void fcWebMMuxer::setAudioEncoderInfo(const char *id)
+void fcWebMWriter::setAudioEncoderInfo(const char *id)
 {
     auto* track = dynamic_cast<mkvmuxer::AudioTrack*>(m_segment.GetTrackByNumber(m_audio_track_id));
-    track->set_codec_id(id);
+    if (track) {
+        track->set_codec_id(id);
+    }
 }
 
-void fcWebMMuxer::addVideoFrame(const fcWebMVideoFrame& frame)
+void fcWebMWriter::addVideoFrame(const fcWebMVideoFrame& frame)
 {
+    if (m_video_track_id == 0 || frame.data.empty()) { return; }
     m_segment.AddFrame((uint8_t*)frame.data.data(), frame.data.size(), m_video_track_id, frame.timestamp, frame.keyframe);
 }
 
-void fcWebMMuxer::addAudioFrame(const fcWebMAudioFrame& frame)
+void fcWebMWriter::addAudioFrame(const fcWebMAudioFrame& frame)
 {
+    if (m_audio_track_id == 0 || frame.data.empty()) { return; }
     m_segment.AddFrame((uint8_t*)frame.data.data(), frame.data.size(), m_audio_track_id, frame.timestamp, false);
 }

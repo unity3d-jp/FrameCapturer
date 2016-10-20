@@ -4,12 +4,14 @@
 #include "fcWebMFile.h"
 #include "fcVorbisEncoder.h"
 #include "fcVPXEncoder.h"
-#include "fcWebMMuxer.h"
+#include "fcWebMWriter.h"
 #include "GraphicsDevice/fcGraphicsDevice.h"
 
 #ifdef _MSC_VER
     #pragma comment(lib, "vpxmt.lib")
     #pragma comment(lib, "libwebm.lib")
+    #pragma comment(lib, "libvorbis_static.lib")
+    #pragma comment(lib, "libogg_static.lib")
 #endif // _MSC_VER
 
 
@@ -29,20 +31,20 @@ public:
     template<class Body>
     void eachStreams(const Body &b)
     {
-        for (auto& s : m_muxers) { b(*s); }
+        for (auto& s : m_writers) { b(*s); }
     }
 
 private:
     using VideoEncoderPtr = std::unique_ptr<fcIWebMVideoEncoder>;
     using AudioEncoderPtr = std::unique_ptr<fcIWebMAudioEncoder>;
-    using MuxerPtr        = std::unique_ptr<fcIWebMMuxer>;
-    using MuxerPtrs       = std::vector<MuxerPtr>;
+    using WriterPtr       = std::unique_ptr<fcIWebMWriter>;
+    using WriterPtrs      = std::vector<WriterPtr>;
 
     fcWebMConfig        m_conf;
     fcIGraphicsDevice   *m_gdev = nullptr;
     VideoEncoderPtr     m_video_encoder;
     AudioEncoderPtr     m_audio_encoder;
-    MuxerPtrs           m_muxers;
+    WriterPtrs          m_writers;
 
     Buffer              m_texture_image;
     Buffer              m_rgba_image;
@@ -74,7 +76,7 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
 
     if (conf.audio) {
         fcVorbisEncoderConfig econf;
-        econf.sampling_rate = conf.audio_sample_rate;
+        econf.sample_rate = conf.audio_sample_rate;
         econf.num_channels = conf.audio_num_channels;
         econf.target_bitrate = conf.audio_bitrate;
 
@@ -94,7 +96,7 @@ fcWebMContext::~fcWebMContext()
     m_video_encoder->flush(m_video_frame);
     m_video_encoder.reset();
     m_audio_encoder.reset();
-    m_muxers.clear();
+    m_writers.clear();
 }
 
 void fcWebMContext::release()
@@ -107,7 +109,7 @@ void fcWebMContext::addOutputStream(fcStream *s)
     auto *muxer = fcCreateWebMMuxer(*s, m_conf);
     if (m_video_encoder) { muxer->setVideoEncoderInfo(m_video_encoder->getMatroskaCodecID()); }
     if (m_audio_encoder) { muxer->setAudioEncoderInfo(m_audio_encoder->getMatroskaCodecID()); }
-    m_muxers.emplace_back(muxer);
+    m_writers.emplace_back(muxer);
 }
 
 bool fcWebMContext::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp)

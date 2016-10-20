@@ -82,7 +82,7 @@ module_t g_mod_faac;
 fcFAACEncoder::fcFAACEncoder(const fcAACEncoderConfig& conf)
     : m_conf(conf), m_handle(nullptr), m_num_read_samples(), m_output_size()
 {
-    m_handle = faacEncOpen_i(conf.sampling_rate, conf.num_channels, &m_num_read_samples, &m_output_size);
+    m_handle = faacEncOpen_i(conf.sample_rate, conf.num_channels, &m_num_read_samples, &m_output_size);
 
     faacEncConfigurationPtr config = faacEncGetCurrentConfiguration_i(m_handle);
     config->bitRate = conf.target_bitrate / conf.num_channels;
