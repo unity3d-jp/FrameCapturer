@@ -15,8 +15,11 @@ public:
     const Buffer& getCodecPrivate() const override;
 
     bool encode(fcVorbisFrame& dst, const float *samples, size_t num_samples) override;
+    bool flush(fcVorbisFrame& dst) override;
 
 private:
+    void gatherPackets(fcVorbisFrame& dst);
+
     fcVorbisEncoderConfig   m_conf;
     Buffer                  m_codec_private;
 
@@ -87,6 +90,23 @@ const Buffer& fcVorbisEncoder::getCodecPrivate() const
     return m_codec_private;
 }
 
+void fcVorbisEncoder::gatherPackets(fcVorbisFrame& dst)
+{
+    while (vorbis_analysis_blockout(&m_vo_dsp, &m_vo_block) == 1) {
+        vorbis_analysis(&m_vo_block, nullptr);
+        vorbis_bitrate_addblock(&m_vo_block);
+
+        ogg_packet packet;
+        while (vorbis_bitrate_flushpacket(&m_vo_dsp, &packet) == 1) {
+            dst.data.append((const char*)packet.packet, packet.bytes);
+
+            double time_in_sec = (double)packet.granulepos / (double)m_conf.sample_rate;
+            uint64_t timestamp = uint64_t(time_in_sec * 1000000000.0);
+            dst.blocks.push_back({ packet.bytes, timestamp });
+        }
+    }
+}
+
 bool fcVorbisEncoder::encode(fcVorbisFrame& dst, const float *samples, size_t num_samples)
 {
     if (!samples || num_samples == 0) { return false; }
@@ -99,22 +119,20 @@ bool fcVorbisEncoder::encode(fcVorbisFrame& dst, const float *samples, size_t nu
             buffer[ci][bi] = samples[bi*num_channels + ci];
         }
     }
-    vorbis_analysis_wrote(&m_vo_dsp, block_size);
 
-    while (vorbis_analysis_blockout(&m_vo_dsp, &m_vo_block) == 1) {
-        vorbis_analysis(&m_vo_block, nullptr);
-        vorbis_bitrate_addblock(&m_vo_block);
-
-        ogg_packet packet;
-        while (vorbis_bitrate_flushpacket(&m_vo_dsp, &packet) == 1) {
-            dst.data.append((const char*)packet.packet, packet.bytes);
-
-            double time_in_sec = (double)packet.granulepos / (double)m_conf.sample_rate;
-            uint64_t timestamp = uint64_t(time_in_sec * 1000000000.0);
-            dst.segments.push_back({ packet.bytes, timestamp });
-        }
+    if (vorbis_analysis_wrote(&m_vo_dsp, block_size) != 0) {
+        return false;
     }
+    gatherPackets(dst);
+    return true;
+}
 
+bool fcVorbisEncoder::flush(fcVorbisFrame& dst)
+{
+    if (vorbis_analysis_wrote(&m_vo_dsp, 0) != 0) {
+        return false;
+    }
+    gatherPackets(dst);
     return true;
 }
 

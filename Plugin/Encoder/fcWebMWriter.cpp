@@ -97,7 +97,9 @@ void fcWebMWriter::addVideoFrame(const fcWebMVideoFrame& frame)
     if (m_video_track_id == 0 || frame.data.empty()) { return; }
 
     std::unique_lock<std::mutex> lock(m_mutex);
-    m_segment.AddFrame((const uint8_t*)frame.data.data(), frame.data.size(), m_video_track_id, frame.timestamp, frame.keyframe);
+    frame.eachBlocks([&](const char *data, int size, uint64_t timestamp, bool keyframe) {
+        m_segment.AddFrame((const uint8_t*)data, size, m_video_track_id, timestamp, keyframe);
+    });
 }
 
 void fcWebMWriter::addAudioFrame(const fcWebMAudioFrame& frame)
@@ -105,7 +107,7 @@ void fcWebMWriter::addAudioFrame(const fcWebMAudioFrame& frame)
     if (m_audio_track_id == 0 || frame.data.empty()) { return; }
 
     std::unique_lock<std::mutex> lock(m_mutex);
-    frame.eachSegments([&](const char *data, int size, uint64_t timestamp) {
+    frame.eachBlocks([&](const char *data, int size, uint64_t timestamp) {
         m_segment.AddFrame((const uint8_t*)data, size, m_audio_track_id, timestamp, true);
     });
 }

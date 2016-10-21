@@ -129,10 +129,9 @@ void fcVPXEncoder::gatherFrameData(fcVPXFrame& dst)
     const vpx_codec_cx_pkt_t *pkt = nullptr;
     while ((pkt = vpx_codec_get_cx_data(&m_vpx_ctx, &iter)) != nullptr) {
         if (pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
-            dst.timestamp = pkt->data.frame.pts;
             dst.data.append((char*)pkt->data.frame.buf, pkt->data.frame.sz);
-            dst.segments.push_back((int)pkt->data.frame.sz);
-            dst.keyframe = (pkt->data.frame.flags & VPX_FRAME_IS_KEY) != 0;
+            dst.blocks.push_back({
+                (int)pkt->data.frame.sz, (uint64_t)pkt->data.frame.pts, pkt->data.frame.flags & VPX_FRAME_IS_KEY });
         }
     }
 }
