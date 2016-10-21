@@ -55,7 +55,7 @@
 
     #define fcSupportVPX
     #define fcSupportVorbis
-    #define fcSupportOpus
+    //#define fcSupportOpus
 #else
     #define fcSupportOpenGL
 
@@ -72,7 +72,7 @@
 
     #define fcSupportVPX
     #define fcSupportVorbis
-    #define fcSupportOpus
+    //#define fcSupportOpus
 #endif
 #ifndef fcStaticLink
     //#define fcGIFSplitModule
