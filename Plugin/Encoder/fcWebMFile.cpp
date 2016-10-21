@@ -28,10 +28,16 @@ public:
     void release() override;
 
     void addOutputStream(fcStream *s) override;
+
     bool addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp) override;
     bool addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp) override;
-    bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp) override;
+    void flushVideo();
 
+    bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp) override;
+    void flushAudio();
+
+
+    // Body: [](fcIWebMWriter& writer) {}
     template<class Body>
     void eachStreams(const Body &b)
     {
@@ -98,10 +104,10 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
 
 fcWebMContext::~fcWebMContext()
 {
-    if (m_video_encoder) {
-        m_video_encoder->flush(m_video_frame);
-        m_video_encoder.reset();
-    }
+    flushVideo();
+    flushAudio();
+
+    m_video_encoder.reset();
     m_audio_encoder.reset();
     m_writers.clear();
 }
@@ -168,14 +174,24 @@ bool fcWebMContext::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, f
     return true;
 }
 
+void fcWebMContext::flushVideo()
+{
+    if (!m_video_encoder) { return; }
+
+    if (m_video_encoder->flush(m_video_frame)) {
+        eachStreams([&](auto& writer) {
+            writer.addVideoFrame(m_video_frame);
+        });
+        m_video_frame.clear();
+    }
+}
+
+
 bool fcWebMContext::addAudioFrame(const float *samples, int num_samples, fcTime timestamp)
 {
     if (!samples || !m_audio_encoder) { return false; }
 
     m_audio_samples.assign(samples, num_samples);
-    if (m_conf.audio_scale != 1.0f) {
-        fcScaleArray(m_audio_samples.data(), m_audio_samples.size(), m_conf.audio_scale);
-    }
 
     if (m_audio_encoder->encode(m_audio_frame, m_audio_samples.data(), m_audio_samples.size())) {
         eachStreams([&](auto& writer) {
@@ -185,6 +201,19 @@ bool fcWebMContext::addAudioFrame(const float *samples, int num_samples, fcTime 
     }
     return true;
 }
+
+void fcWebMContext::flushAudio()
+{
+    if (!m_audio_encoder) { return; }
+
+    if (m_audio_encoder->flush(m_audio_frame)) {
+        eachStreams([&](auto& writer) {
+            writer.addAudioFrame(m_audio_frame);
+        });
+        m_audio_frame.clear();
+    }
+}
+
 
 fcWebMAPI fcIWebMContext* fcWebMCreateContextImpl(fcWebMConfig &conf, fcIGraphicsDevice *gd)
 {
