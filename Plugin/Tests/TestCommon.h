@@ -89,6 +89,6 @@ def(RGBAf32, fcPixelFormat_RGBAf32)
 #undef def
 
 template<class T> void CreateVideoData(T *rgba, int width, int height, int frame);
-void CreateAudioData(float *samples, int num_samples, int frame);
+void CreateAudioData(float *samples, int num_samples, double t, float scale);
 
 #endif  // TestCommon_h

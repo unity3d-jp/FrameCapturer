@@ -7,59 +7,40 @@
 void*       AlignedAlloc(size_t size, size_t align);
 void        AlignedFree(void *p);
 
+
+// low-level vector<>. T must be POD type
 template<class T>
-class TDataRef
+class RawVector
 {
 public:
-    typedef T value_type;
+    typedef T               value_type;
+    typedef T&              reference;
+    typedef const T&        const_reference;
     typedef T*              pointer;
     typedef const T*        const_pointer;
     typedef pointer         iterator;
     typedef const_pointer   const_iterator;
 
-    TDataRef() : m_data(nullptr), m_size(0) {}
-    TDataRef(void *data_, size_t size_) : m_data((pointer)data_), m_size(size_) {}
-    TDataRef(std::string &v) : m_data((pointer)&v[0]), m_size(v.size()) {}
-    template<class U, class A> TDataRef(std::vector<U, A> &v) : m_data((pointer)&v[0]), m_size(v.size()) {}
-    template<class U, size_t L> TDataRef(std::array<U, L> &v) : m_data((pointer)&v[0]), m_size(v.size()) {}
-    template<class U, size_t L> TDataRef(U(&v)[L]) : m_data((pointer)v), m_size(L) {}
-
-    char&       operator[](size_t i)        { return m_data[i]; }
-    const char& operator[](size_t i) const  { return m_data[i]; }
-
-    size_t          size() const    { return m_size; }
-    iterator        begin()         { return m_data; }
-    iterator        end()           { return m_data + m_size; }
-    const_iterator  begin() const   { return m_data; }
-    const_iterator  end() const     { return m_data + m_size; }
-    pointer         ptr()           { return m_data; }
-    const_pointer   ptr() const     { return m_data; }
-
-private:
-    pointer m_data;
-    size_t m_size;
-};
-typedef TDataRef<char> DataRef;
-
-
-// low-level vector<>. T must be POD type
-template<class T>
-class TBuffer
-{
-public:
-    typedef T           value_type;
-    typedef T*          iterator;
-    typedef const T*    const_iterator;
-    typedef T*          pointer;
-    typedef const T*    const_pointer;
-
-    TBuffer() : m_data(), m_size() {}
-    explicit TBuffer(size_t size) : m_data(), m_size() { resize(size); }
-    TBuffer(const void *src, size_t len) : m_data(), m_size() { assign(src, len); }
-    TBuffer(TBuffer& v) : m_data(), m_size() { assign(v.ptr(), v.size()); }
-    TBuffer(TBuffer&& v) : m_data(v.ptr()), m_size(v.size()) {}
-    TBuffer& operator=(TBuffer& v) { assign(v.ptr(), v.size()); return *this; }
-    ~TBuffer() { clear(); }
+    RawVector() {}
+    explicit RawVector(size_t size) { resize(size); }
+    RawVector(const_pointer src, size_t len) { assign(src, len); }
+    RawVector(RawVector& v) { assign(v.data(), v.size()); }
+    RawVector& operator=(RawVector& v) { assign(v.data(), v.size()); return *this; }
+    RawVector(RawVector&& v)
+    {
+        std::swap(m_data, v.m_data);
+        std::swap(m_size, v.m_size);
+        std::swap(m_capacity, v.m_capacity);
+    }
+    RawVector& operator=(RawVector&& v)
+    {
+        clear();
+        std::swap(m_data, v.m_data);
+        std::swap(m_size, v.m_size);
+        std::swap(m_capacity, v.m_capacity);
+        return *this;
+    }
+    ~RawVector() { clear(); }
 
     value_type&         operator[](size_t i) { return m_data[i]; }
     const value_type&   operator[](size_t i) const { return m_data[i]; }
@@ -70,48 +51,114 @@ public:
     const_iterator  begin() const   { return m_data; }
     iterator        end()           { return m_data + m_size; }
     const_iterator  end() const     { return m_data + m_size; }
-    pointer         ptr()           { return m_data; }
-    const_pointer   ptr() const     { return m_data; }
+    pointer         data()           { return m_data; }
+    const_pointer   data() const     { return m_data; }
 
-    // src must not be part of this container
-    void assign(const void *src, size_t len)
-    {
-        resize(len);
-        memcpy(ptr(), src, sizeof(T) * len);
-    }
+    T&       front()        { return m_data[0]; }
+    const T& front() const  { return m_data[0]; }
+    T&       back()         { return m_data[m_size - 1]; }
+    const T& back() const   { return m_data[m_size - 1]; }
 
-    // src must not be part of this container
-    void append(const void *src, size_t len)
-    {
-        size_t pos = size();
-        resize(pos + len);
-        memcpy(ptr() + pos, src, sizeof(T) * len);
-    }
 
-    void resize(size_t newsize)
+    static void* allocate(size_t size) { return AlignedAlloc(size, 0x20); }
+    static void deallocate(void *addr, size_t size) { AlignedFree(addr); }
+
+    void reserve(size_t s)
     {
-        T *new_data = (T*)AlignedAlloc(sizeof(T) * newsize, 0x20);
-        if (m_data) {
-            memcpy(new_data, m_data, std::min<size_t>(sizeof(T) * m_size, sizeof(T) * newsize));
+        if (s > m_capacity) {
+            s = std::max<size_t>(s, m_size * 2);
+            size_t newsize = sizeof(T) * s;
+            size_t oldsize = sizeof(T) * m_size;
+
+            T *newdata = (T*)allocate(newsize);
+            memcpy(newdata, m_data, oldsize);
+            deallocate(m_data, oldsize);
+            m_data = newdata;
+            m_capacity = s;
         }
+    }
 
-        clear();
-        m_data = new_data;
-        m_size = newsize;
+    void resize(size_t s)
+    {
+        reserve(s);
+        m_size = s;
     }
 
     void clear()
     {
-        AlignedFree(m_data);
+        size_t oldsize = sizeof(T) * m_size;
+        deallocate(m_data, oldsize);
         m_data = nullptr;
-        m_size = 0;
+        m_size = m_capacity = 0;
+    }
+
+    void swap(RawVector &other)
+    {
+        std::swap(m_data, other.m_data);
+        std::swap(m_size, other.m_size);
+        std::swap(m_capacity, other.m_capacity);
+    }
+
+    void assign(const_pointer data, size_t num)
+    {
+        resize(num);
+        memcpy(m_data, data, sizeof(T)*num);
+    }
+
+    template<class FwdIter>
+    void assign(FwdIter first, FwdIter last)
+    {
+        size_t num = std::distance(first, last);
+        resize(num);
+        memcpy(m_data, data, sizeof(T)*num);
+    }
+
+    void append(const_pointer data, size_t num)
+    {
+        size_t pos = m_size;
+        resize(m_size + num);
+        memcpy(&m_data[pos], data, sizeof(T)*num);
+    }
+
+    void erase(iterator first, iterator last)
+    {
+        size_t s = std::distance(first, last);
+        std::copy(last, end(), first);
+        m_size -= s;
+    }
+
+    void erase(iterator pos)
+    {
+        erase(pos, pos + 1);
+    }
+
+    void push_back(const T& v)
+    {
+        resize(m_size + 1);
+        back() = v;
+    }
+
+    void pop_back()
+    {
+        --m_size;
+    }
+
+    bool operator == (const RawVector& other) const
+    {
+        return m_size == other.m_size && memcmp(m_data, other.m_data, sizeof(T)*m_size) == 0;
+    }
+
+    bool operator != (const RawVector& other) const
+    {
+        return !(*this == other);
     }
 
 protected:
-    T *m_data;
-    size_t m_size;
+    T *m_data = nullptr;
+    size_t m_size = 0;
+    size_t m_capacity = 0;
 };
-typedef TBuffer<char> Buffer;
+typedef RawVector<char> Buffer;
 
 
 class BinaryStream

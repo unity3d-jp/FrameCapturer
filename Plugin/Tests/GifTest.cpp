@@ -13,7 +13,7 @@ void GifTestImpl(const char *filename)
     fcIGifContext *ctx = fcGifCreateContext(&conf);
 
     fcTime t = 0;
-    TBuffer<T> video_frame(Width * Height);
+    RawVector<T> video_frame(Width * Height);
     for (int i = 0; i < frame_count; ++i) {
         CreateVideoData(&video_frame[0], Width, Height, i);
         fcGifAddFramePixels(ctx, &video_frame[0], GetPixelFormat<T>::value, false, t);

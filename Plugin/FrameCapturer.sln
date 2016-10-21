@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrameCapturer", "FrameCapturer.vcxproj", "{08361722-5520-47AC-A0C2-31E8A062B73F}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "Tests\Test.vcxproj", "{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Foundation", "Foundation.vcxproj", "{DF113358-BDD3-418F-A350-43D63F249B45}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrameCapturer_WebM", "FrameCapturer_WebM.vcxproj", "{D94A471A-A891-4240-8F3E-24898505EAAC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -99,6 +101,18 @@ Global
 		{DF113358-BDD3-418F-A350-43D63F249B45}.MasterLib|Win32.Build.0 = Master|Win32
 		{DF113358-BDD3-418F-A350-43D63F249B45}.MasterLib|x64.ActiveCfg = Master|x64
 		{DF113358-BDD3-418F-A350-43D63F249B45}.MasterLib|x64.Build.0 = Master|x64
+		{D94A471A-A891-4240-8F3E-24898505EAAC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D94A471A-A891-4240-8F3E-24898505EAAC}.Debug|Win32.Build.0 = Debug|Win32
+		{D94A471A-A891-4240-8F3E-24898505EAAC}.Debug|x64.ActiveCfg = Debug|x64
+		{D94A471A-A891-4240-8F3E-24898505EAAC}.Debug|x64.Build.0 = Debug|x64
+		{D94A471A-A891-4240-8F3E-24898505EAAC}.MasterDLL|Win32.ActiveCfg = MasterDLL|Win32
+		{D94A471A-A891-4240-8F3E-24898505EAAC}.MasterDLL|Win32.Build.0 = MasterDLL|Win32
+		{D94A471A-A891-4240-8F3E-24898505EAAC}.MasterDLL|x64.ActiveCfg = MasterDLL|x64
+		{D94A471A-A891-4240-8F3E-24898505EAAC}.MasterDLL|x64.Build.0 = MasterDLL|x64
+		{D94A471A-A891-4240-8F3E-24898505EAAC}.MasterLib|Win32.ActiveCfg = MasterLib|Win32
+		{D94A471A-A891-4240-8F3E-24898505EAAC}.MasterLib|Win32.Build.0 = MasterLib|Win32
+		{D94A471A-A891-4240-8F3E-24898505EAAC}.MasterLib|x64.ActiveCfg = MasterLib|x64
+		{D94A471A-A891-4240-8F3E-24898505EAAC}.MasterLib|x64.Build.0 = MasterLib|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

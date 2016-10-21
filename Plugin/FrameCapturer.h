@@ -23,6 +23,7 @@ class fcIPngContext;
 class fcIExrContext;
 class fcIGifContext;
 class fcIMP4Context;
+class fcIWebMContext;
 typedef double fcTime;
 
 enum fcPixelFormat
@@ -86,10 +87,8 @@ typedef size_t(*fcWrite_t)(void *obj, const void *data, size_t len);
 
 struct fcBufferData
 {
-    void *data;
-    size_t size;
-
-    fcBufferData() : data(), size() {}
+    void *data = nullptr;
+    size_t size = 0;
 };
 fcCLinkage fcExport fcStream*       fcCreateFileStream(const char *path);
 fcCLinkage fcExport fcStream*       fcCreateMemoryStream();
@@ -105,8 +104,7 @@ fcCLinkage fcExport uint64_t        fcStreamGetWrittenSize(fcStream *s);
 
 struct fcPngConfig
 {
-    int max_active_tasks;
-    fcPngConfig() : max_active_tasks(8) {}
+    int max_active_tasks = 8;
 };
 fcCLinkage fcExport fcIPngContext*  fcPngCreateContext(const fcPngConfig *conf = nullptr);
 fcCLinkage fcExport void            fcPngDestroyContext(fcIPngContext *ctx);
@@ -120,8 +118,7 @@ fcCLinkage fcExport bool            fcPngExportTexture(fcIPngContext *ctx, const
 
 struct fcExrConfig
 {
-    int max_active_tasks;
-    fcExrConfig() : max_active_tasks(8) {}
+    int max_active_tasks = 8;
 };
 fcCLinkage fcExport fcIExrContext*  fcExrCreateContext(const fcExrConfig *conf = nullptr);
 fcCLinkage fcExport void            fcExrDestroyContext(fcIExrContext *ctx);
@@ -137,12 +134,10 @@ fcCLinkage fcExport bool            fcExrEndFrame(fcIExrContext *ctx);
 
 struct fcGifConfig
 {
-    int width;
-    int height;
-    int num_colors;
-    int max_active_tasks;
-    fcGifConfig()
-        : width(), height(), num_colors(256), max_active_tasks(8) {}
+    int width = 0;
+    int height = 0;
+    int num_colors = 256;
+    int max_active_tasks = 8;
 };
 fcCLinkage fcExport fcIGifContext*  fcGifCreateContext(const fcGifConfig *conf);
 fcCLinkage fcExport void            fcGifDestroyContext(fcIGifContext *ctx);
@@ -165,26 +160,18 @@ fcCLinkage fcExport void            fcGifEraseFrame(fcIGifContext *ctx, int begi
 
 struct fcMP4Config
 {
-    bool    video;
-    bool    audio;
-    bool    video_use_hardware_encoder_if_possible;
-    int     video_width;
-    int     video_height;
-    int     video_bitrate;
-    int     video_max_framerate;
-    int     video_max_buffers;
-    float   audio_scale; // useful for scaling (-1.0 - 1.0) samples to (-32767.0f - 32767.0f)
-    int     audio_sample_rate;
-    int     audio_num_channels;
-    int     audio_bitrate;
-
-    fcMP4Config()
-        : video(true), audio(true)
-        , video_use_hardware_encoder_if_possible(true)
-        , video_width(), video_height()
-        , video_bitrate(1024000), video_max_framerate(60), video_max_buffers(8)
-        , audio_scale(1.0f), audio_sample_rate(48000), audio_num_channels(2), audio_bitrate(64000)
-    {}
+    bool    video = true;
+    bool    audio = true;
+    bool    video_use_hardware_encoder_if_possible = true;
+    int     video_width = 0;
+    int     video_height = 0;
+    int     video_bitrate = 1024*1000;
+    int     video_max_framerate = 60;
+    int     video_max_buffers = 8;
+    float   audio_scale = 1.0f; // useful for scaling (-1.0 - 1.0) samples to (-32767.0f - 32767.0f)
+    int     audio_sample_rate = 48000;
+    int     audio_num_channels = 2;
+    int     audio_bitrate = 64000;
 };
 
 enum fcDownloadState {
@@ -205,8 +192,51 @@ fcCLinkage fcExport void            fcMP4AddOutputStream(fcIMP4Context *ctx, fcS
 // timestamp=-1 is treated as current time.
 fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1);
+fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
 fcCLinkage fcExport bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
+
+
+
+// -------------------------------------------------------------
+// WebM Exporter
+// -------------------------------------------------------------
+
+enum class fcWebMVideoEncoder
+{
+    VP8,
+    VP9,
+};
+enum class fcWebMAudioEncoder
+{
+    Vorbis,
+    Opus,
+};
+
+struct fcWebMConfig
+{
+    fcWebMVideoEncoder video_encoder = fcWebMVideoEncoder::VP8;
+    fcWebMAudioEncoder audio_encoder = fcWebMAudioEncoder::Vorbis;
+    bool    video = true;
+    bool    audio = true;
+    int     video_width = 0;
+    int     video_height = 0;
+    int     video_bitrate = 1024 * 1000;
+    int     video_max_framerate = 60;
+    int     video_max_buffers = 8;
+    int     audio_sample_rate = 48000;
+    int     audio_num_channels = 2;
+    int     audio_bitrate = 64000;
+};
+
+fcCLinkage fcExport fcIWebMContext* fcWebMCreateContext(fcWebMConfig *conf);
+fcCLinkage fcExport void            fcWebMDestroyContext(fcIWebMContext *ctx);
+fcCLinkage fcExport void            fcWebMAddOutputStream(fcIWebMContext *ctx, fcStream *stream);
+// timestamp=-1 is treated as current time.
+fcCLinkage fcExport bool            fcWebMAddVideoFramePixels(fcIWebMContext *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0);
+// timestamp=-1 is treated as current time.
+fcCLinkage fcExport bool            fcWebMAddVideoFrameTexture(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1.0);
+// timestamp=-1 is treated as current time.
+fcCLinkage fcExport bool            fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
 
 #endif // FrameCapturer_h

@@ -68,9 +68,9 @@ template void CreateVideoData<RGBAf16>(RGBAf16 *pixels, int width, int height, i
 template void CreateVideoData<RGBAf32>(RGBAf32 *pixels, int width, int height, int frame);
 
 
-void CreateAudioData(float *samples, int num_samples, int frame)
+void CreateAudioData(float *samples, int num_samples, double t, float scale)
 {
     for (int i = 0; i < num_samples; ++i) {
-        samples[i] = std::sin((float(i + (num_samples * frame)) * 0.5f) * (3.14159f / 180.0f)) * 32767.0f;
+        samples[i] = std::sin((float(i + ((double)num_samples * t)) * 5.5f) * (3.14159f / 180.0f)) * scale;
     }
 }

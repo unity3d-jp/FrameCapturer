@@ -27,12 +27,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Encoder\fcAMDH264Encoder.cpp" />
-    <ClCompile Include="Encoder\fcFAACEncoder.cpp" />
-    <ClCompile Include="Encoder\fcMP4File.cpp" />
-    <ClCompile Include="Encoder\fcMP4StreamWriter.cpp" />
-    <ClCompile Include="Encoder\fcNVH264Encoder.cpp" />
-    <ClCompile Include="Encoder\fcOpenH264Encoder.cpp" />
+    <ClCompile Include="Encoder\fcI420.cpp" />
+    <ClCompile Include="Encoder\fcOpusEncoder.cpp" />
+    <ClCompile Include="Encoder\fcVorbisEncoder.cpp" />
+    <ClCompile Include="Encoder\fcVPXEncoder.cpp" />
+    <ClCompile Include="Encoder\fcWebMFile.cpp" />
+    <ClCompile Include="Encoder\fcWebMWriter.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -43,11 +43,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Encoder\fcAACEncoder.h" />
-    <ClInclude Include="Encoder\fcH264Encoder.h" />
-    <ClInclude Include="Encoder\fcMP4File.h" />
-    <ClInclude Include="Encoder\fcMP4Internal.h" />
-    <ClInclude Include="Encoder\fcMP4StreamWriter.h" />
+    <ClInclude Include="Encoder\fcI420.h" />
+    <ClInclude Include="Encoder\fcVorbisEncoder.h" />
+    <ClInclude Include="Encoder\fcVPXEncoder.h" />
+    <ClInclude Include="Encoder\fcWebMFile.h" />
+    <ClInclude Include="Encoder\fcWebMWriter.h" />
     <ClInclude Include="FrameCapturer.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
@@ -60,9 +60,9 @@
     <Natvis Include="NatvisFile.natvis" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{067FA9E2-32CD-4C66-BE1B-959EDF510CC8}</ProjectGuid>
+    <ProjectGuid>{D94A471A-A891-4240-8F3E-24898505EAAC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <ProjectName>FrameCapturer_MP4</ProjectName>
+    <ProjectName>FrameCapturer_WebM</ProjectName>
     <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
