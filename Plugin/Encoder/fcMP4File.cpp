@@ -190,7 +190,7 @@ void fcMP4Context::resetEncoders()
     m_aac_encoder.reset();
     if (m_conf.audio) {
         fcAACEncoderConfig aacconf;
-        aacconf.sampling_rate = m_conf.audio_sample_rate;
+        aacconf.sample_rate = m_conf.audio_sample_rate;
         aacconf.num_channels = m_conf.audio_num_channels;
         aacconf.target_bitrate = m_conf.audio_bitrate;
 
@@ -202,7 +202,7 @@ void fcMP4Context::enqueueVideoTask(const std::function<void()> &f)
 {
     {
         std::unique_lock<std::mutex> lock(m_video_mutex);
-        m_video_tasks.push_back(std::function<void()>(f));
+        m_video_tasks.push_back(f);
     }
     m_video_condition.notify_one();
 }
@@ -211,7 +211,7 @@ void fcMP4Context::enqueueAudioTask(const std::function<void()> &f)
 {
     {
         std::unique_lock<std::mutex> lock(m_audio_mutex);
-        m_audio_tasks.push_back(std::function<void()>(f));
+        m_audio_tasks.push_back(f);
     }
     m_audio_condition.notify_one();
 }
@@ -369,7 +369,7 @@ void fcMP4Context::encodeVideoFrame(VideoFrame& vf, bool rgba2i420)
 
     eachStreams([&](auto& s) { s.addFrame(h264); });
 #ifndef fcMaster
-    m_dbg_h264_out->write(h264.data.ptr(), h264.data.size());
+    m_dbg_h264_out->write(h264.data.data(), h264.data.size());
 #endif // fcMaster
 }
 
@@ -406,7 +406,7 @@ bool fcMP4Context::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime tim
             returnTempraryVideoFrame(vf);
             return false;
         }
-        fcConvertPixelFormat(raw.rgba.ptr(), fcPixelFormat_RGBAu8, &raw.raw[0], fmt, m_conf.video_width * m_conf.video_height);
+        fcConvertPixelFormat(raw.rgba.data(), fcPixelFormat_RGBAu8, &raw.raw[0], fmt, m_conf.video_width * m_conf.video_height);
     }
 
     // h264 データを生成
@@ -445,10 +445,10 @@ bool fcMP4Context::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fc
         memcpy(raw.i420.v, src_v, frame_size >> 2);
     }
     else if (fmt == fcPixelFormat_RGBAu8) {
-        memcpy(raw.rgba.ptr(), pixels, raw.rgba.size());
+        memcpy(raw.rgba.data(), pixels, raw.rgba.size());
     }
     else {
-        fcConvertPixelFormat(raw.rgba.ptr(), fcPixelFormat_RGBAu8, pixels, fmt, m_conf.video_width * m_conf.video_height);
+        fcConvertPixelFormat(raw.rgba.data(), fcPixelFormat_RGBAu8, pixels, fmt, m_conf.video_width * m_conf.video_height);
     }
 
     // h264 データを生成
@@ -473,7 +473,7 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, fcTime t
     auto& raw = af.first;
     auto& aac = af.second;
     raw.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeSec();
-    raw.data = Buffer(samples, sizeof(float)*num_samples);
+    raw.data = Buffer((char*)samples, sizeof(float)*num_samples);
 
     // aac encode
     ++m_audio_active_task_count;
@@ -483,16 +483,16 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, fcTime t
 
         // apply audio_scale
         if (m_conf.audio_scale != 1.0f) {
-            float *samples = (float*)raw.data.ptr();
+            float *samples = (float*)raw.data.data();
             size_t num_samples = raw.data.size() / sizeof(float);
             fcScaleArray(samples, num_samples, m_conf.audio_scale);
         }
 
-        m_aac_encoder->encode(aac, (float*)raw.data.ptr(), raw.data.size() / sizeof(float));
+        m_aac_encoder->encode(aac, (float*)raw.data.data(), raw.data.size() / sizeof(float));
 
         eachStreams([&](auto& s) { s.addFrame(aac); });
 #ifndef fcMaster
-        m_dbg_aac_out->write(aac.data.ptr(), aac.data.size());
+        m_dbg_aac_out->write(aac.data.data(), aac.data.size());
 #endif // fcMaster
 
         returnTempraryAudioFrame(af);

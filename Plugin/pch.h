@@ -45,12 +45,17 @@
     #define fcSupportEXR
     #define fcSupportGIF
     #define fcSupportMP4
+    #define fcSupportWebM
 
     #define fcSupportHalfPixelFormat
     #define fcSupportFAAC
     #define fcSupportOpenH264
     #define fcSupportNVH264
     #define fcSupportAMDH264
+
+    #define fcSupportVPX
+    #define fcSupportVorbis
+    //#define fcSupportOpus
 #else
     #define fcSupportOpenGL
 
@@ -58,17 +63,23 @@
     #define fcSupportEXR
     #define fcSupportGIF
     #define fcSupportMP4
+    #define fcSupportWebM
 
     #define fcSupportHalfPixelFormat
     #define fcSupportFAAC
     #define fcSupportOpenH264
     #define fcSupportNVH264
+
+    #define fcSupportVPX
+    #define fcSupportVorbis
+    //#define fcSupportOpus
 #endif
 #ifndef fcStaticLink
     //#define fcGIFSplitModule
     #define fcPNGSplitModule
     #define fcEXRSplitModule
     #define fcMP4SplitModule
+    #define fcWebMSplitModule
 #endif // fcStaticLink
 
 

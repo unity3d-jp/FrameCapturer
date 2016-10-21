@@ -2,47 +2,47 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="Encoder\fcMP4File.cpp">
+    <ClCompile Include="Encoder\fcWebMFile.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcMP4StreamWriter.cpp">
+    <ClCompile Include="Encoder\fcVorbisEncoder.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcOpenH264Encoder.cpp">
+    <ClCompile Include="Encoder\fcI420.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcNVH264Encoder.cpp">
+    <ClCompile Include="Encoder\fcOpusEncoder.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcAMDH264Encoder.cpp">
+    <ClCompile Include="Encoder\fcVPXEncoder.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcFAACEncoder.cpp">
+    <ClCompile Include="Encoder\fcWebMWriter.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FrameCapturer.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Encoder\fcMP4File.h">
+    <ClInclude Include="Encoder\fcVPXEncoder.h">
       <Filter>Encoder</Filter>
     </ClInclude>
-    <ClInclude Include="Encoder\fcH264Encoder.h">
+    <ClInclude Include="Encoder\fcWebMFile.h">
       <Filter>Encoder</Filter>
     </ClInclude>
-    <ClInclude Include="Encoder\fcAACEncoder.h">
+    <ClInclude Include="Encoder\fcVorbisEncoder.h">
       <Filter>Encoder</Filter>
     </ClInclude>
-    <ClInclude Include="Encoder\fcMP4Internal.h">
+    <ClInclude Include="Encoder\fcI420.h">
       <Filter>Encoder</Filter>
     </ClInclude>
-    <ClInclude Include="Encoder\fcMP4StreamWriter.h">
+    <ClInclude Include="Encoder\fcWebMWriter.h">
       <Filter>Encoder</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Encoder">
-      <UniqueIdentifier>{48802eb2-d965-4472-acfa-f45fccdf33ac}</UniqueIdentifier>
+      <UniqueIdentifier>{5a9f7796-a052-481e-8b0d-d955258decef}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

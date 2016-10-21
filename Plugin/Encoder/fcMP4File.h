@@ -13,7 +13,7 @@ public:
 
     // assume texture format is RGBA8.
     // timestamp=-1 is treated as current time.
-    virtual bool addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp = 0) = 0;
+    virtual bool addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp = -1) = 0;
 
     // assume pixel format is RGBA8 or I420 (color_space indicates)
     // timestamp=-1 is treated as current time.

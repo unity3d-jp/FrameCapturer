@@ -17,6 +17,9 @@
     <ClCompile Include="Foundation\fcThreadPool.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
+    <ClCompile Include="Foundation\TaskQueue.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -33,6 +36,9 @@
       <Filter>Foundation</Filter>
     </ClInclude>
     <ClInclude Include="Foundation\fcThreadPool.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="Foundation\TaskQueue.h">
       <Filter>Foundation</Filter>
     </ClInclude>
   </ItemGroup>

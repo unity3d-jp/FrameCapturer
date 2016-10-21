@@ -3,9 +3,9 @@ using namespace std::literals;
 
 
 // custom stream functions (just a wrapper of FILE)
-size_t tellp(void *f) { return ftell((FILE*)f); }
-void   seekp(void *f, size_t pos) { fseek((FILE*)f, (long)pos, SEEK_SET); }
-size_t write(void *f, const void *data, size_t len) { return fwrite(data, 1, len, (FILE*)f); }
+static size_t tellp(void *f) { return ftell((FILE*)f); }
+static void   seekp(void *f, size_t pos) { fseek((FILE*)f, (long)pos, SEEK_SET); }
+static size_t write(void *f, const void *data, size_t len) { return fwrite(data, 1, len, (FILE*)f); }
 
 
 void MP4Test()
@@ -53,7 +53,7 @@ void MP4Test()
     {
         // add video frames
         std::thread video_thread = std::thread([&]() {
-            TBuffer<RGBAu8> video_frame(Width * Height);
+            RawVector<RGBAu8> video_frame(Width * Height);
             fcTime t = 0;
             for (int i = 0; i < DurationInSeconds * FrameRate; ++i) {
                 CreateVideoData(&video_frame[0], Width, Height, i);
@@ -64,10 +64,10 @@ void MP4Test()
 
         // add audio frames
         std::thread audio_thread = std::thread([&]() {
-            TBuffer<float> audio_sample(SamplingRate);
+            RawVector<float> audio_sample(SamplingRate);
             fcTime t = 0;
             for (int i = 0; i < DurationInSeconds; ++i) {
-                CreateAudioData(&audio_sample[0], (int)audio_sample.size(), i);
+                CreateAudioData(&audio_sample[0], (int)audio_sample.size(), i, 32767.0f);
                 fcMP4AddAudioFrame(ctx, &audio_sample[0], (int)audio_sample.size(), t);
                 t += 1.0;
             }

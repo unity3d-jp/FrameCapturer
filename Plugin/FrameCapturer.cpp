@@ -54,7 +54,7 @@ fcCLinkage fcExport fcBufferData fcStreamGetBufferData(fcStream *s)
 {
     fcBufferData ret;
     if (BufferStream *bs = dynamic_cast<BufferStream*>(s)) {
-        ret.data = bs->get().ptr();
+        ret.data = bs->get().data();
         ret.size = bs->get().size();
     }
     return ret;
@@ -392,9 +392,9 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
 #ifdef fcMP4SplitModule
     #define fcMP4ModuleName  "FrameCapturer_MP4" fcDLLExt
     namespace {
-#define decl(Name) Name##_t Name;
+    #define decl(Name) Name##_t Name;
         fcMP4EachFunctions(decl)
-#undef decl
+    #undef decl
 
         module_t fcMP4Module;
         void fcMP4InitializeModule()
@@ -402,14 +402,14 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
             if (!fcMP4Module) {
                 fcMP4Module = DLLLoad(fcMP4ModuleName);
                 if (fcMP4Module) {
-#define imp(Name) (void*&)Name = DLLGetSymbol(fcMP4Module, #Name);
+    #define imp(Name) (void*&)Name = DLLGetSymbol(fcMP4Module, #Name);
                     fcMP4EachFunctions(imp)
-#undef imp
+    #undef imp
                 }
             }
         }
     }
-#endif
+#endif // fcMP4SplitModule
 
 fcCLinkage fcExport void fcMP4SetFAACPackagePath(const char *path)
 {
@@ -515,6 +515,89 @@ fcCLinkage fcExport bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *sam
 #endif // fcSupportMP4
 
 
+
+// -------------------------------------------------------------
+// MP4 Exporter
+// -------------------------------------------------------------
+
+#ifdef fcSupportWebM
+#include "Encoder/fcWebMFile.h"
+
+#ifdef fcWebMSplitModule
+    #define fcWebMModuleName  "FrameCapturer_WebM" fcDLLExt
+    namespace {
+        fcWebMCreateContextImpl_t fcWebMCreateContextImpl;
+
+        module_t fcWebMModule;
+        void fcWebMInitializeModule()
+        {
+            if (!fcWebMModule) {
+                fcWebMModule = DLLLoad(fcWebMModuleName);
+                if (fcWebMModule) {
+                    (void*&)fcWebMCreateContextImpl = DLLGetSymbol(fcWebMModule, "fcWebMCreateContextImpl");
+                }
+            }
+        }
+    }
+#endif // fcSupportWebM
+
+fcCLinkage fcExport fcIWebMContext* fcWebMCreateContext(fcWebMConfig *conf)
+{
+#ifdef fcWebMSplitModule
+    fcWebMInitializeModule();
+    if (fcWebMCreateContextImpl) {
+        return fcWebMCreateContextImpl(*conf, fcGetGraphicsDevice());
+    }
+    return nullptr;
+#else
+    return fcWebMCreateContextImpl(*conf, fcGetGraphicsDevice());
+#endif
+}
+
+fcCLinkage fcExport void fcWebMDestroyContext(fcIWebMContext *ctx)
+{
+    if (!ctx) { return; }
+    ctx->release();
+}
+
+fcCLinkage fcExport void fcWebMAddOutputStream(fcIWebMContext *ctx, fcStream *stream)
+{
+    if (!ctx) { return; }
+    ctx->addOutputStream(stream);
+}
+
+fcCLinkage fcExport bool fcWebMAddVideoFramePixels(fcIWebMContext *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp)
+{
+    if (!ctx) { return false; }
+    return ctx->addVideoFramePixels(pixels, fmt, timestamp);
+}
+
+fcCLinkage fcExport bool fcWebMAddVideoFrameTexture(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp)
+{
+    if (!ctx) { return false; }
+    return ctx->addVideoFrameTexture(tex, fmt, timestamp);
+}
+
+#ifndef fcStaticLink
+fcCLinkage fcExport int fcWebMAddVideoFrameTextureDeferred(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp, int id)
+{
+    if (!ctx) { return 0; }
+    return fcAddDeferredCall([=]() {
+        return ctx->addVideoFrameTexture(tex, fmt, timestamp);
+    }, id);
+}
+#endif // fcStaticLink
+
+fcCLinkage fcExport bool fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples, fcTime timestamp)
+{
+    if (!ctx) { return false; }
+    return ctx->addAudioFrame(samples, num_samples, timestamp);
+}
+
+#endif // fcSupportWebM
+
+
+
 #if defined(fcWindows) && !defined(fcStaticLink)
 #include <windows.h>
 
@@ -532,11 +615,4 @@ BOOL WINAPI DllMain(HINSTANCE module_handle, DWORD reason_for_call, LPVOID reser
     }
     return TRUE;
 }
-
-// prevent "DllMain already defined in MSVCRT.lib"
-#ifdef _X86_
-extern "C" { int _afxForceUSRDLL; }
-#else
-extern "C" { int __afxForceUSRDLL; }
-#endif
 #endif // fcWindows
