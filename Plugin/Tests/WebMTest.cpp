@@ -72,12 +72,12 @@ void WebMTest(fcWebMVideoEncoder ve, fcWebMAudioEncoder ae)
 
         // add audio frames
         std::thread audio_thread = std::thread([&]() {
-            RawVector<float> audio_sample(SamplingRate / 5);
+            RawVector<float> audio_sample(SamplingRate);
             fcTime t = 0;
             while (t < (double)DurationInSeconds) {
                 CreateAudioData(audio_sample.data(), (int)audio_sample.size(), t, 1.0f);
                 fcWebMAddAudioFrame(ctx, audio_sample.data(), (int)audio_sample.size(), t);
-                t += 1.0 / 5;
+                t += 1.0;
             }
         });
 

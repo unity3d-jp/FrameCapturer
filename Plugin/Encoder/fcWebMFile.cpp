@@ -12,6 +12,10 @@
     #pragma comment(lib, "libwebm.lib")
     #pragma comment(lib, "libvorbis_static.lib")
     #pragma comment(lib, "libogg_static.lib")
+    #pragma comment(lib, "opus.lib")
+    #pragma comment(lib, "celt.lib")
+    #pragma comment(lib, "silk_common.lib")
+    #pragma comment(lib, "silk_float.lib")
 #endif // _MSC_VER
 
 
@@ -109,10 +113,10 @@ void fcWebMContext::release()
 
 void fcWebMContext::addOutputStream(fcStream *s)
 {
-    auto *muxer = fcCreateWebMMuxer(*s, m_conf);
-    if (m_video_encoder) { muxer->setVideoEncoderInfo(*m_video_encoder); }
-    if (m_audio_encoder) { muxer->setAudioEncoderInfo(*m_audio_encoder); }
-    m_writers.emplace_back(muxer);
+    auto *writer = fcCreateWebMMuxer(*s, m_conf);
+    if (m_video_encoder) { writer->setVideoEncoderInfo(*m_video_encoder); }
+    if (m_audio_encoder) { writer->setAudioEncoderInfo(*m_audio_encoder); }
+    m_writers.emplace_back(writer);
 }
 
 bool fcWebMContext::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp)
@@ -156,8 +160,8 @@ bool fcWebMContext::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, f
     }
 
     if (m_video_encoder->encode(m_video_frame, i420, timestamp)) {
-        eachStreams([&](auto& muxer) {
-            muxer.addVideoFrame(m_video_frame);
+        eachStreams([&](auto& writer) {
+            writer.addVideoFrame(m_video_frame);
         });
         m_video_frame.clear();
     }
@@ -174,9 +178,8 @@ bool fcWebMContext::addAudioFrame(const float *samples, int num_samples, fcTime 
     }
 
     if (m_audio_encoder->encode(m_audio_frame, m_audio_samples.data(), m_audio_samples.size())) {
-        m_audio_frame.timestamp = uint64_t(timestamp * 1000000000.0);
-        eachStreams([&](auto& muxer) {
-            muxer.addAudioFrame(m_audio_frame);
+        eachStreams([&](auto& writer) {
+            writer.addAudioFrame(m_audio_frame);
         });
         m_audio_frame.clear();
     }

@@ -11,15 +11,31 @@ using fcOpusEncoderConfig = fcVorbisEncoderConfig;
 
 struct fcVorbisFrame
 {
+    struct Segment
+    {
+        int size;
+        uint64_t timestamp;
+    };
+    using Segments = RawVector<Segment>;
+
     Buffer data;
-    std::vector<int> segments;
-    uint64_t timestamp = 0;
+    Segments segments;
 
     void clear()
     {
         data.clear();
         segments.clear();
-        timestamp = 0;
+    }
+
+    // Body: [](const char *data, int size, uint64_t timestamp) {}
+    template<class Body>
+    void eachSegments(const Body& body) const
+    {
+        int pos = 0;
+        for (auto& s : segments) {
+            body(&data[pos], s.size, s.timestamp);
+            pos += s.size;
+        }
     }
 };
 

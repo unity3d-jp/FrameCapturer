@@ -112,7 +112,7 @@ bool fcFAACEncoder::encode(fcAACFrame& dst, const float *samples, size_t num_sam
         int process_size = std::min<int>((int)m_num_read_samples, (int)num_samples);
         int size_encoded = faacEncEncode_i(m_handle, (int32_t*)samples, process_size, (unsigned char*)&m_aac_tmp_buf[0], m_output_size);
         if (size_encoded > 0) {
-            dst.data.append(&m_aac_tmp_buf[0], size_encoded);
+            dst.data.append(m_aac_tmp_buf.data(), size_encoded);
             dst.encoded_block_sizes.push_back(size_encoded);
             dst.raw_block_sizes.push_back(process_size);
             ++block_index;
