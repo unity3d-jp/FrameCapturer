@@ -1,23 +1,13 @@
 #include "pch.h"
 #include "fcFoundation.h"
-#include "fcI420.h"
 #include "fcWebMFile.h"
+
+#ifdef fcSupportWebM
+#include "fcI420.h"
 #include "fcVorbisEncoder.h"
 #include "fcVPXEncoder.h"
 #include "fcWebMWriter.h"
 #include "GraphicsDevice/fcGraphicsDevice.h"
-
-#ifdef _MSC_VER
-    #pragma comment(lib, "vpxmt.lib")
-    #pragma comment(lib, "libwebm.lib")
-    #pragma comment(lib, "libvorbis_static.lib")
-    #pragma comment(lib, "libogg_static.lib")
-    #pragma comment(lib, "opus.lib")
-    #pragma comment(lib, "celt.lib")
-    #pragma comment(lib, "silk_common.lib")
-    #pragma comment(lib, "silk_float.lib")
-#endif // _MSC_VER
-
 
 
 class fcWebMContext : public fcIWebMContext
@@ -119,7 +109,7 @@ void fcWebMContext::release()
 
 void fcWebMContext::addOutputStream(fcStream *s)
 {
-    auto *writer = fcCreateWebMMuxer(*s, m_conf);
+    auto *writer = fcCreateWebMWriter(*s, m_conf);
     if (m_video_encoder) { writer->setVideoEncoderInfo(*m_video_encoder); }
     if (m_audio_encoder) { writer->setAudioEncoderInfo(*m_audio_encoder); }
     m_writers.emplace_back(writer);
@@ -215,7 +205,10 @@ void fcWebMContext::flushAudio()
 }
 
 
-fcWebMAPI fcIWebMContext* fcWebMCreateContextImpl(fcWebMConfig &conf, fcIGraphicsDevice *gd)
-{
-    return new fcWebMContext(conf, gd);
-}
+fcWebMAPI fcIWebMContext* fcWebMCreateContextImpl(fcWebMConfig &conf, fcIGraphicsDevice *gd) { return new fcWebMContext(conf, gd); }
+
+#else  // fcSupportWebM
+
+fcWebMAPI fcIWebMContext* fcWebMCreateContextImpl(fcWebMConfig &conf, fcIGraphicsDevice *gd) { return nullptr; }
+
+#endif // fcSupportWebM

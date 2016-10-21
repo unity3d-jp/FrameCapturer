@@ -2,7 +2,13 @@
 #include "fcFoundation.h"
 #include "fcVorbisEncoder.h"
 
+#ifdef fcSupportVorbis
+
 #include "vorbis/vorbisenc.h"
+#ifdef _MSC_VER
+    #pragma comment(lib, "libvorbis_static.lib")
+    #pragma comment(lib, "libogg_static.lib")
+#endif // _MSC_VER
 
 
 class fcVorbisEncoder : public fcIVorbisEncoder
@@ -29,11 +35,6 @@ private:
     vorbis_block            m_vo_block;
 };
 
-
-fcIVorbisEncoder* fcCreateVorbisEncoder(const fcVorbisEncoderConfig& conf)
-{
-    return new fcVorbisEncoder(conf);
-}
 
 
 fcVorbisEncoder::fcVorbisEncoder(const fcVorbisEncoderConfig& conf)
@@ -136,3 +137,11 @@ bool fcVorbisEncoder::flush(fcVorbisFrame& dst)
     return true;
 }
 
+
+fcIVorbisEncoder* fcCreateVorbisEncoder(const fcVorbisEncoderConfig& conf) { return new fcVorbisEncoder(conf); }
+
+#else // fcSupportVorbis
+
+fcIVorbisEncoder* fcCreateVorbisEncoder(const fcVorbisEncoderConfig& conf) { return nullptr; }
+
+#endif // fcSupportVorbis
