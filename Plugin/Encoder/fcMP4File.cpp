@@ -202,7 +202,7 @@ void fcMP4Context::enqueueVideoTask(const std::function<void()> &f)
 {
     {
         std::unique_lock<std::mutex> lock(m_video_mutex);
-        m_video_tasks.push_back(std::function<void()>(f));
+        m_video_tasks.push_back(f);
     }
     m_video_condition.notify_one();
 }
@@ -211,7 +211,7 @@ void fcMP4Context::enqueueAudioTask(const std::function<void()> &f)
 {
     {
         std::unique_lock<std::mutex> lock(m_audio_mutex);
-        m_audio_tasks.push_back(std::function<void()>(f));
+        m_audio_tasks.push_back(f);
     }
     m_audio_condition.notify_one();
 }
