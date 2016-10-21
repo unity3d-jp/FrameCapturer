@@ -224,7 +224,6 @@ struct fcWebMConfig
     int     video_bitrate = 1024 * 1000;
     int     video_max_framerate = 60;
     int     video_max_buffers = 8;
-    float   audio_scale = 1.0f; // useful for scaling (-1.0 - 1.0) samples to (-32767.0f - 32767.0f)
     int     audio_sample_rate = 48000;
     int     audio_num_channels = 2;
     int     audio_bitrate = 64000;

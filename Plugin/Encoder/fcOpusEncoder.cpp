@@ -15,6 +15,7 @@ public:
     const Buffer& getCodecPrivate() const override;
 
     bool encode(fcVorbisFrame& dst, const float *samples, size_t num_samples) override;
+    bool flush(fcVorbisFrame& dst) override;
 
 private:
     fcOpusEncoderConfig m_conf;
@@ -84,6 +85,11 @@ bool fcOpusEncoder::encode(fcVorbisFrame& dst, const float *samples, size_t num_
         }
     }
 
+    return true;
+}
+
+bool fcOpusEncoder::flush(fcVorbisFrame& dst)
+{
     return true;
 }
 
