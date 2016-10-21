@@ -52,6 +52,10 @@
     #define fcSupportOpenH264
     #define fcSupportNVH264
     #define fcSupportAMDH264
+
+    #define fcSupportVPX
+    #define fcSupportVorbis
+    #define fcSupportOpus
 #else
     #define fcSupportOpenGL
 
@@ -65,6 +69,10 @@
     #define fcSupportFAAC
     #define fcSupportOpenH264
     #define fcSupportNVH264
+
+    #define fcSupportVPX
+    #define fcSupportVorbis
+    #define fcSupportOpus
 #endif
 #ifndef fcStaticLink
     //#define fcGIFSplitModule

@@ -5,7 +5,11 @@
 #include "fcVPXEncoder.h"
 #include "fcWebMWriter.h"
 
+#ifdef fcSupportWebM
 #include "webm/mkvmuxer.hpp"
+#ifdef _MSC_VER
+    #pragma comment(lib, "libwebm.lib")
+#endif // _MSC_VER
 
 
 class fcMkvStream : public mkvmuxer::IMkvWriter
@@ -45,11 +49,6 @@ private:
     uint64_t m_audio_track_id = 0;
 };
 
-
-fcIWebMWriter* fcCreateWebMMuxer(BinaryStream &stream, const fcWebMConfig &conf)
-{
-    return new fcWebMWriter(stream, conf);
-}
 
 fcWebMWriter::fcWebMWriter(BinaryStream &stream, const fcWebMConfig &conf)
     : m_conf(conf)
@@ -111,3 +110,12 @@ void fcWebMWriter::addAudioFrame(const fcWebMAudioFrame& frame)
         m_segment.AddFrame((const uint8_t*)data, size, m_audio_track_id, timestamp, true);
     });
 }
+
+
+fcIWebMWriter* fcCreateWebMWriter(BinaryStream &stream, const fcWebMConfig &conf) { return new fcWebMWriter(stream, conf); }
+
+#else  // fcSupportWebM
+
+fcIWebMWriter* fcCreateWebMWriter(BinaryStream &stream, const fcWebMConfig &conf) { return nullptr; }
+
+#endif // fcSupportWebM
