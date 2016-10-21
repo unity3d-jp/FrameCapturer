@@ -3,8 +3,13 @@
 #include "fcI420.h"
 #include "fcVPXEncoder.h"
 
+#ifdef fcSupportVPX
+
 #include "libvpx/vpx/vpx_encoder.h"
 #include "libvpx/vpx/vp8cx.h"
+#ifdef _MSC_VER
+    #pragma comment(lib, "vpxmt.lib")
+#endif // _MSC_VER
 
 
 class fcVPXEncoder : public fcIVPXEncoder
@@ -28,17 +33,6 @@ private:
     fcTime              m_prev_timestamp = 0.0;
     const char*         m_matroska_codec_id = nullptr;
 };
-
-
-fcIVPXEncoder* fcCreateVP8Encoder(const fcVPXEncoderConfig& conf)
-{
-    return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP8);
-}
-
-fcIVPXEncoder* fcCreateVP9Encoder(const fcVPXEncoderConfig& conf)
-{
-    return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP9);
-}
 
 
 fcVPXEncoder::fcVPXEncoder(const fcVPXEncoderConfig& conf, fcWebMVideoEncoder encoder)
@@ -135,3 +129,14 @@ void fcVPXEncoder::gatherFrameData(fcVPXFrame& dst)
         }
     }
 }
+
+
+fcIVPXEncoder* fcCreateVP8Encoder(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP8); }
+fcIVPXEncoder* fcCreateVP9Encoder(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP9); }
+
+#else // fcSupportVPX
+
+fcIVPXEncoder* fcCreateVP8Encoder(const fcVPXEncoderConfig& conf) { return nullptr; }
+fcIVPXEncoder* fcCreateVP9Encoder(const fcVPXEncoderConfig& conf) { return nullptr; }
+
+#endif // fcSupportVPX

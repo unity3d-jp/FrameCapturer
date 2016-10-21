@@ -2,7 +2,15 @@
 #include "fcFoundation.h"
 #include "fcVorbisEncoder.h"
 
+#ifdef fcSupportOpus
+
 #include "opus/opus.h"
+#ifdef _MSC_VER
+    #pragma comment(lib, "opus.lib")
+    #pragma comment(lib, "celt.lib")
+    #pragma comment(lib, "silk_common.lib")
+    #pragma comment(lib, "silk_float.lib")
+#endif // _MSC_VER
 
 
 class fcOpusEncoder : public fcIVorbisEncoder
@@ -27,17 +35,12 @@ private:
 };
 
 
-fcIVorbisEncoder* fcCreateOpusEncoder(const fcOpusEncoderConfig& conf)
-{
-    return new fcOpusEncoder(conf);
-}
-
-
 fcOpusEncoder::fcOpusEncoder(const fcOpusEncoderConfig& conf)
     : m_conf(conf)
 {
     int err;
     m_op_encoder = opus_encoder_create(conf.sample_rate, conf.num_channels, OPUS_APPLICATION_RESTRICTED_LOWDELAY, &err);
+    opus_encoder_ctl(m_op_encoder, OPUS_SET_BITRATE(conf.target_bitrate));
 }
 
 fcOpusEncoder::~fcOpusEncoder()
@@ -93,3 +96,11 @@ bool fcOpusEncoder::flush(fcVorbisFrame& dst)
     return true;
 }
 
+
+fcIVorbisEncoder* fcCreateOpusEncoder(const fcOpusEncoderConfig& conf) { return new fcOpusEncoder(conf); }
+
+#else // fcSupportOpus
+
+fcIVorbisEncoder* fcCreateOpusEncoder(const fcOpusEncoderConfig& conf) { return nullptr; }
+
+#endif // fcSupportOpus

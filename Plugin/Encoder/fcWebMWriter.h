@@ -11,4 +11,4 @@ public:
     virtual void addAudioFrame(const fcWebMAudioFrame& buf) = 0;
 };
 
-fcIWebMWriter* fcCreateWebMMuxer(BinaryStream &stream, const fcWebMConfig &conf);
+fcIWebMWriter* fcCreateWebMWriter(BinaryStream &stream, const fcWebMConfig &conf);
