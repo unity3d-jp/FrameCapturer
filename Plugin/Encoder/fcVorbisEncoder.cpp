@@ -17,8 +17,6 @@ public:
     bool encode(fcVorbisFrame& dst, const float *samples, size_t num_samples) override;
 
 private:
-    void gatherPacketData(Buffer& dst, const ogg_packet& src);
-
     fcVorbisEncoderConfig   m_conf;
     Buffer                  m_codec_private;
 
@@ -26,7 +24,6 @@ private:
     vorbis_comment          m_vo_comment;
     vorbis_dsp_state        m_vo_dsp;
     vorbis_block            m_vo_block;
-    int                     m_frame = 0;
 };
 
 
@@ -90,11 +87,6 @@ const Buffer& fcVorbisEncoder::getCodecPrivate() const
     return m_codec_private;
 }
 
-void fcVorbisEncoder::gatherPacketData(Buffer& dst, const ogg_packet& src)
-{
-    dst.append((const char*)src.packet, src.bytes);
-}
-
 bool fcVorbisEncoder::encode(fcVorbisFrame& dst, const float *samples, size_t num_samples)
 {
     if (!samples || num_samples == 0) { return false; }
@@ -114,12 +106,15 @@ bool fcVorbisEncoder::encode(fcVorbisFrame& dst, const float *samples, size_t nu
         vorbis_bitrate_addblock(&m_vo_block);
 
         ogg_packet packet;
-        while (vorbis_bitrate_flushpacket(&m_vo_dsp, &packet)) {
-            gatherPacketData(dst.data, packet);
+        while (vorbis_bitrate_flushpacket(&m_vo_dsp, &packet) == 1) {
+            dst.data.append((const char*)packet.packet, packet.bytes);
+
+            double time_in_sec = (double)packet.granulepos / (double)m_conf.sample_rate;
+            uint64_t timestamp = uint64_t(time_in_sec * 1000000000.0);
+            dst.segments.push_back({ packet.bytes, timestamp });
         }
     }
 
-    ++m_frame;
     return true;
 }
 

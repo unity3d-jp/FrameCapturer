@@ -11,7 +11,7 @@ struct fcVPXEncoderConfig
 struct fcVPXFrame
 {
     Buffer data;
-    std::vector<int> segments;
+    RawVector<int> segments;
     uint64_t timestamp = 0;
     uint32_t keyframe : 1;
 

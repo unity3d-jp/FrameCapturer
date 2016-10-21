@@ -54,6 +54,11 @@ public:
     pointer         data()           { return m_data; }
     const_pointer   data() const     { return m_data; }
 
+    T&       front()        { return m_data[0]; }
+    const T& front() const  { return m_data[0]; }
+    T&       back()         { return m_data[m_size - 1]; }
+    const T& back() const   { return m_data[m_size - 1]; }
+
 
     static void* allocate(size_t size) { return AlignedAlloc(size, 0x20); }
     static void deallocate(void *addr, size_t size) { AlignedFree(addr); }
