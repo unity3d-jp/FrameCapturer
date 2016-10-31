@@ -66,6 +66,11 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">external\ispc %(FullPath) -o $(TargetDir)%(Filename).obj -h $(TargetDir)%(Filename)_ispc.h --target=sse2,sse4,avx --arch=x86 --opt=fast-masked-vload --opt=fast-math --opt=force-aligned-memory</Command>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="setup.vcxproj">
+      <Project>{1c5de91b-7ae9-4304-9fa1-0de1aba8c02d}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DF113358-BDD3-418F-A350-43D63F249B45}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

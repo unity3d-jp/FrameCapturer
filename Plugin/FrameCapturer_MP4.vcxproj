@@ -33,6 +33,7 @@
     <ClCompile Include="Encoder\fcMP4StreamWriter.cpp" />
     <ClCompile Include="Encoder\fcNVH264Encoder.cpp" />
     <ClCompile Include="Encoder\fcOpenH264Encoder.cpp" />
+    <ClCompile Include="Encoder\Windows\fcMP4_WMF.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -48,6 +49,7 @@
     <ClInclude Include="Encoder\fcMP4File.h" />
     <ClInclude Include="Encoder\fcMP4Internal.h" />
     <ClInclude Include="Encoder\fcMP4StreamWriter.h" />
+    <ClInclude Include="Encoder\Windows\fcMP4_WMF.h" />
     <ClInclude Include="FrameCapturer.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
