@@ -12,11 +12,11 @@
 #include <mfapi.h>
 #include <mfidl.h>
 #include <Mfreadwrite.h>
-#include <mferror.h>
+#include <wrl/client.h>
 
-#pragma comment(lib, "mfreadwrite")
-#pragma comment(lib, "mfplat")
 #pragma comment(lib, "mfuuid")
+
+using Microsoft::WRL::ComPtr;
 
 
 class MFInitializer
@@ -53,6 +53,7 @@ public:
     bool addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp);
 
     bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp) override;
+    bool addAudioFrameImpl(const float *samples, int num_samples, fcTime timestamp);
 
     bool isValid() const { return m_mf_writer != nullptr; }
 
@@ -70,37 +71,55 @@ private:
     TaskQueue           m_audio_tasks;
     AudioBufferQueue    m_audio_buffers;
 
-    IMFSinkWriter       *m_mf_writer = nullptr;
+    ComPtr<IMFSinkWriter> m_mf_writer;
     DWORD               m_mf_video_index = 0;
     DWORD               m_mf_audio_index = 0;
 };
 
 
 
-template <class T>
-static inline void SafeRelease(T *&ptr)
-{
-    if (ptr)
-    {
-        ptr->Release();
-        ptr = nullptr;
-    }
-}
-
-
+static HMODULE g_MFPlat;
+static HMODULE g_MFReadWrite;
+static HRESULT(STDAPICALLTYPE *MFStartup_)(ULONG Version, DWORD dwFlags);
+static HRESULT(STDAPICALLTYPE *MFShutdown_)();
+static HRESULT(STDAPICALLTYPE *MFCreateMemoryBuffer_)(DWORD cbMaxLength, IMFMediaBuffer **ppBuffer);
+static HRESULT(STDAPICALLTYPE *MFCreateSample_)(IMFSample **ppIMFSample);
+static HRESULT(STDAPICALLTYPE *MFCreateAttributes_)(IMFAttributes** ppMFAttributes, UINT32 cInitialSize);
+static HRESULT(STDAPICALLTYPE *MFCreateMediaType_)(IMFMediaType** ppMFType);
+static HRESULT(STDAPICALLTYPE *MFCreateSinkWriterFromURL_)(LPCWSTR pwszOutputURL, IMFByteStream *pByteStream, IMFAttributes *pAttributes, IMFSinkWriter **ppSinkWriter);
 
 static LazyInstance<MFInitializer> g_MFInitializer;
 
+
 MFInitializer::MFInitializer()
 {
-    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-    MFStartup(MF_VERSION, MFSTARTUP_LITE);
+    g_MFPlat = ::LoadLibraryA("MFPlat.DLL");
+    g_MFReadWrite = ::LoadLibraryA("MFReadWrite.dll");
+    if (g_MFPlat && g_MFReadWrite) {
+        (void*&)MFStartup_              = ::GetProcAddress(g_MFPlat, "MFStartup");
+        (void*&)MFShutdown_             = ::GetProcAddress(g_MFPlat, "MFShutdown");
+        (void*&)MFCreateMemoryBuffer_   = ::GetProcAddress(g_MFPlat, "MFCreateMemoryBuffer");
+        (void*&)MFCreateSample_         = ::GetProcAddress(g_MFPlat, "MFCreateSample");
+        (void*&)MFCreateAttributes_     = ::GetProcAddress(g_MFPlat, "MFCreateAttributes");
+        (void*&)MFCreateMediaType_      = ::GetProcAddress(g_MFPlat, "MFCreateMediaType");
+        (void*&)MFCreateSinkWriterFromURL_ = ::GetProcAddress(g_MFReadWrite, "MFCreateSinkWriterFromURL");
+
+        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+        MFStartup_(MF_VERSION, MFSTARTUP_LITE);
+    }
 }
 
 MFInitializer::~MFInitializer()
 {
-    MFShutdown();
-    CoUninitialize();
+    if (g_MFPlat && g_MFReadWrite) {
+        MFShutdown_();
+        CoUninitialize();
+
+        ::FreeLibrary(g_MFReadWrite);
+        ::FreeLibrary(g_MFPlat);
+        g_MFReadWrite = nullptr;
+        g_MFPlat = nullptr;
+    }
 }
 
 
@@ -120,7 +139,7 @@ fcMP4ContextWMF::~fcMP4ContextWMF()
 
     if (m_mf_writer) {
         m_mf_writer->Finalize();
-        SafeRelease(m_mf_writer);
+        m_mf_writer.Reset();
     }
 }
 
@@ -148,61 +167,58 @@ void fcMP4ContextWMF::addOutputStream(fcStream *s)
 
 bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
 {
-    IMFSinkWriter   *pSinkWriter = nullptr;
-    HRESULT         hr;
+    if (!g_MFPlat || !g_MFReadWrite) { return false; }
+
+    ComPtr<IMFSinkWriter> pSinkWriter;
+    HRESULT hr;
 
     {
-        IMFAttributes *pAttributes = nullptr;
-        MFCreateAttributes(&pAttributes, 1);
+        ComPtr<IMFAttributes> pAttributes;
+        MFCreateAttributes_(&pAttributes, 1);
         if (pAttributes) {
             hr = pAttributes->SetGUID(MF_TRANSCODE_CONTAINERTYPE, MFTranscodeContainerType_MPEG4);
 
             std::wstring wpath;
             wpath.resize(strlen(path)+1);
             std::mbstowcs(&wpath[0], path, wpath.size());
-            hr = MFCreateSinkWriterFromURL(wpath.data(), nullptr, pAttributes, &pSinkWriter);
-            SafeRelease(pAttributes);
+            hr = MFCreateSinkWriterFromURL_(wpath.data(), nullptr, pAttributes.Get(), &pSinkWriter);
         }
     }
     if (!pSinkWriter) { return false; }
 
     // Set the video output media type.
     if(m_conf.video) {
-        IMFMediaType *pVideoOutMediaType = nullptr;
-        MFCreateMediaType(&pVideoOutMediaType);
+        ComPtr<IMFMediaType> pVideoOutMediaType;
+        MFCreateMediaType_(&pVideoOutMediaType);
         if (pVideoOutMediaType) {
             pVideoOutMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
             pVideoOutMediaType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);
             pVideoOutMediaType->SetUINT32(MF_MT_AVG_BITRATE, m_conf.video_target_bitrate);
             pVideoOutMediaType->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);
             pVideoOutMediaType->SetUINT32(MF_MT_MPEG2_PROFILE, eAVEncH264VProfile_Base);
-            MFSetAttributeSize(pVideoOutMediaType, MF_MT_FRAME_SIZE, m_conf.video_width, m_conf.video_height);
-            MFSetAttributeRatio(pVideoOutMediaType, MF_MT_FRAME_RATE, m_conf.video_target_framerate, 1);
-            MFSetAttributeRatio(pVideoOutMediaType, MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
-            pSinkWriter->AddStream(pVideoOutMediaType, &m_mf_video_index);
-
-            SafeRelease(pVideoOutMediaType);
+            MFSetAttributeSize(pVideoOutMediaType.Get(), MF_MT_FRAME_SIZE, m_conf.video_width, m_conf.video_height);
+            MFSetAttributeRatio(pVideoOutMediaType.Get(), MF_MT_FRAME_RATE, m_conf.video_target_framerate, 1);
+            MFSetAttributeRatio(pVideoOutMediaType.Get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
+            pSinkWriter->AddStream(pVideoOutMediaType.Get(), &m_mf_video_index);
         }
 
-        IMFMediaType *pVideoInputMediaType = nullptr;
-        MFCreateMediaType(&pVideoInputMediaType);
+        ComPtr<IMFMediaType> pVideoInputMediaType;
+        MFCreateMediaType_(&pVideoInputMediaType);
         if (pVideoInputMediaType) {
             pVideoInputMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
             pVideoInputMediaType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_I420);
             pVideoInputMediaType->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);
-            MFSetAttributeSize(pVideoInputMediaType, MF_MT_FRAME_SIZE, m_conf.video_width, m_conf.video_height);
-            MFSetAttributeRatio(pVideoInputMediaType, MF_MT_FRAME_RATE, m_conf.video_target_framerate, 1);
-            MFSetAttributeRatio(pVideoInputMediaType, MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
-            pSinkWriter->SetInputMediaType(m_mf_video_index, pVideoInputMediaType, nullptr);
-
-            SafeRelease(pVideoInputMediaType);
+            MFSetAttributeSize(pVideoInputMediaType.Get(), MF_MT_FRAME_SIZE, m_conf.video_width, m_conf.video_height);
+            MFSetAttributeRatio(pVideoInputMediaType.Get(), MF_MT_FRAME_RATE, m_conf.video_target_framerate, 1);
+            MFSetAttributeRatio(pVideoInputMediaType.Get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
+            pSinkWriter->SetInputMediaType(m_mf_video_index, pVideoInputMediaType.Get(), nullptr);
         }
     }
 
     // Set the audio output media type.
     if (m_conf.audio) {
-        IMFMediaType *pAudioOutMediaType = nullptr;
-        MFCreateMediaType(&pAudioOutMediaType);
+        ComPtr<IMFMediaType> pAudioOutMediaType;
+        MFCreateMediaType_(&pAudioOutMediaType);
         if (pAudioOutMediaType) {
             pAudioOutMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
             pAudioOutMediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_AAC);
@@ -212,13 +228,11 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
             pAudioOutMediaType->SetUINT32(MF_MT_AUDIO_AVG_BYTES_PER_SECOND, m_conf.audio_target_bitrate / 8);
             pAudioOutMediaType->SetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT, 1);
             pAudioOutMediaType->SetUINT32(MF_MT_AAC_AUDIO_PROFILE_LEVEL_INDICATION, 0x29);
-            pSinkWriter->AddStream(pAudioOutMediaType, &m_mf_audio_index);
-
-            SafeRelease(pAudioOutMediaType);
+            pSinkWriter->AddStream(pAudioOutMediaType.Get(), &m_mf_audio_index);
         }
 
-        IMFMediaType *pAudioInMediaType = nullptr;
-        MFCreateMediaType(&pAudioInMediaType);
+        ComPtr<IMFMediaType> pAudioInMediaType;
+        MFCreateMediaType_(&pAudioInMediaType);
         if (pAudioInMediaType) {
             pAudioInMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
             pAudioInMediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_Float);
@@ -227,15 +241,13 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
             pAudioInMediaType->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, m_conf.audio_num_channels);
             pAudioInMediaType->SetUINT32(MF_MT_AUDIO_AVG_BYTES_PER_SECOND, m_conf.audio_sample_rate * 4 * m_conf.audio_num_channels);
             pAudioInMediaType->SetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT, 4 * m_conf.audio_num_channels);
-            pSinkWriter->SetInputMediaType(m_mf_audio_index, pAudioInMediaType, nullptr);
-
-            SafeRelease(pAudioInMediaType);
+            pSinkWriter->SetInputMediaType(m_mf_audio_index, pAudioInMediaType.Get(), nullptr);
         }
     }
 
     // Tell the sink writer to start accepting data.
     if (!SUCCEEDED(pSinkWriter->BeginWriting())) {
-        SafeRelease(pSinkWriter);
+        pSinkWriter.Reset();
     }
 
     // Return the pointer to the caller.
@@ -321,8 +333,8 @@ bool fcMP4ContextWMF::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat 
     }
 
 
-    IMFMediaBuffer *pBuffer = nullptr;
-    MFCreateMemoryBuffer(buffer_size, &pBuffer);
+    ComPtr<IMFMediaBuffer> pBuffer;
+    MFCreateMemoryBuffer_(buffer_size, &pBuffer);
     if (pBuffer)
     {
         BYTE *pData = nullptr;
@@ -332,37 +344,43 @@ bool fcMP4ContextWMF::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat 
         pBuffer->SetCurrentLength(buffer_size);
 
         // Create a media sample and add the buffer to the sample.
-        IMFSample *pSample = nullptr;
-        MFCreateSample(&pSample);
+        ComPtr<IMFSample> pSample;
+        MFCreateSample_(&pSample);
         if (pSample)
         {
-            pSample->AddBuffer(pBuffer);
+            pSample->AddBuffer(pBuffer.Get());
             pSample->SetSampleTime(start);
             pSample->SetSampleDuration(duration);
-            m_mf_writer->WriteSample(m_mf_video_index, pSample);
+            m_mf_writer->WriteSample(m_mf_video_index, pSample.Get());
         }
-        SafeRelease(pSample);
     }
-
-    SafeRelease(pBuffer);
     return true;
 }
 
-
 bool fcMP4ContextWMF::addAudioFrame(const float *samples, int num_samples, fcTime timestamp)
 {
-    if (!!m_mf_writer || !samples) { return false; }
+    if (!m_mf_writer || !samples) { return false; }
 
+    auto buf = m_audio_buffers.pop();
+    buf->assign(samples, num_samples);
+
+    m_audio_tasks.run([this, buf, num_samples, timestamp]() {
+        addAudioFrameImpl(buf->data(), num_samples, timestamp);
+        m_audio_buffers.push(buf);
+    });
+    return true;
+}
+
+bool fcMP4ContextWMF::addAudioFrameImpl(const float *samples, int num_samples, fcTime timestamp)
+{
     const LONGLONG start = SecondsToTimestamp(timestamp);
     const LONGLONG duration = SecondsToTimestamp(1.0 / m_conf.video_target_framerate);
     const DWORD cbBuffer = num_samples * 4;
 
-    // Create a new memory buffer.
-    IMFMediaBuffer *pBuffer = nullptr;
-    HRESULT hr = MFCreateMemoryBuffer(cbBuffer, &pBuffer);
+    ComPtr<IMFMediaBuffer> pBuffer;
+    MFCreateMemoryBuffer_(cbBuffer, &pBuffer);
+    if (!pBuffer) { return false; }
 
-    // Lock the buffer and copy the video frame to the buffer.
-    if (SUCCEEDED(hr))
     {
         BYTE *pData = nullptr;
         pBuffer->Lock(&pData, nullptr, nullptr);
@@ -371,20 +389,18 @@ bool fcMP4ContextWMF::addAudioFrame(const float *samples, int num_samples, fcTim
         pBuffer->SetCurrentLength(cbBuffer);
 
         // Create a media sample and add the buffer to the sample.
-        IMFSample *pSample = nullptr;
-        hr = MFCreateSample(&pSample);
-        if (SUCCEEDED(hr))
+        ComPtr<IMFSample> pSample;
+        MFCreateSample_(&pSample);
+        if (pSample)
         {
-            pSample->AddBuffer(pBuffer);
+            pSample->AddBuffer(pBuffer.Get());
             pSample->SetSampleTime(start);
             pSample->SetSampleDuration(duration);
-            m_mf_writer->WriteSample(m_mf_audio_index, pSample);
+            m_mf_writer->WriteSample(m_mf_audio_index, pSample.Get());
         }
-        SafeRelease(pSample);
     }
-    SafeRelease(pBuffer);
 
-    return SUCCEEDED(hr);
+    return true;
 }
 
 
