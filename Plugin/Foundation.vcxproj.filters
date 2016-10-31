@@ -20,6 +20,9 @@
     <ClCompile Include="Foundation\TaskQueue.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
+    <ClCompile Include="Foundation\I420.cpp">
+      <Filter>Foundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -39,6 +42,12 @@
       <Filter>Foundation</Filter>
     </ClInclude>
     <ClInclude Include="Foundation\TaskQueue.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="Foundation\I420.h">
+      <Filter>Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="Foundation\LazyInstance.h">
       <Filter>Foundation</Filter>
     </ClInclude>
   </ItemGroup>

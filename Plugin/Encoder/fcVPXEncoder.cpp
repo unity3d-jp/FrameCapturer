@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "fcFoundation.h"
-#include "fcI420.h"
 #include "fcVPXEncoder.h"
 
 #ifdef fcSupportVPX
@@ -20,7 +19,7 @@ public:
     void release() override;
     const char* getMatroskaCodecID() const override;
 
-    bool encode(fcVPXFrame& dst, const fcI420Data& image, fcTime timestamp, bool force_keyframe) override;
+    bool encode(fcVPXFrame& dst, const I420Data& image, fcTime timestamp, bool force_keyframe) override;
     bool flush(fcVPXFrame& dst) override;
 
 private:
@@ -80,7 +79,7 @@ const char* fcVPXEncoder::getMatroskaCodecID() const
 }
 
 
-bool fcVPXEncoder::encode(fcVPXFrame& dst, const fcI420Data& image, fcTime timestamp, bool force_keyframe)
+bool fcVPXEncoder::encode(fcVPXFrame& dst, const I420Data& image, fcTime timestamp, bool force_keyframe)
 {
     vpx_codec_pts_t vpx_time = uint64_t(timestamp * 1000000000.0);
     vpx_enc_frame_flags_t vpx_flags = 0;

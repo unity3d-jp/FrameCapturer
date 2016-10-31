@@ -8,9 +8,6 @@
     <ClCompile Include="Encoder\fcVorbisEncoder.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcI420.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
     <ClCompile Include="Encoder\fcOpusEncoder.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
@@ -31,9 +28,6 @@
       <Filter>Encoder</Filter>
     </ClInclude>
     <ClInclude Include="Encoder\fcVorbisEncoder.h">
-      <Filter>Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="Encoder\fcI420.h">
       <Filter>Encoder</Filter>
     </ClInclude>
     <ClInclude Include="Encoder\fcWebMWriter.h">

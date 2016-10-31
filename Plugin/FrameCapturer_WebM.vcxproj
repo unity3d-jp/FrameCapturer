@@ -27,7 +27,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Encoder\fcI420.cpp" />
     <ClCompile Include="Encoder\fcOpusEncoder.cpp" />
     <ClCompile Include="Encoder\fcVorbisEncoder.cpp" />
     <ClCompile Include="Encoder\fcVPXEncoder.cpp" />
@@ -43,7 +42,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Encoder\fcI420.h" />
     <ClInclude Include="Encoder\fcVorbisEncoder.h" />
     <ClInclude Include="Encoder\fcVPXEncoder.h" />
     <ClInclude Include="Encoder\fcWebMFile.h" />
