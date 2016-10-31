@@ -165,13 +165,13 @@ struct fcMP4Config
     bool    video_use_hardware_encoder_if_possible = true;
     int     video_width = 0;
     int     video_height = 0;
-    int     video_bitrate = 1024*1000;
-    int     video_max_framerate = 60;
+    int     video_target_bitrate = 1024*1000;
+    int     video_target_framerate = 60;
     int     video_max_buffers = 8;
     float   audio_scale = 1.0f; // useful for scaling (-1.0 - 1.0) samples to (-32767.0f - 32767.0f)
     int     audio_sample_rate = 48000;
     int     audio_num_channels = 2;
-    int     audio_bitrate = 64000;
+    int     audio_target_bitrate = 64000;
 };
 
 enum fcDownloadState {

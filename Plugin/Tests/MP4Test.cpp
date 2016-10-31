@@ -31,10 +31,10 @@ void MP4Test()
     fcMP4Config conf;
     conf.video_width = Width;
     conf.video_height = Height;
-    conf.video_bitrate = 256000;
+    conf.video_target_bitrate = 256000;
     conf.audio_sample_rate = SamplingRate;
     conf.audio_num_channels = 1;
-    conf.audio_bitrate = 64000;
+    conf.audio_target_bitrate = 64000;
 
 
     // create output streams

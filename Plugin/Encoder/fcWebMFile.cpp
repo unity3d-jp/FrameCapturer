@@ -3,7 +3,6 @@
 #include "fcWebMFile.h"
 
 #ifdef fcSupportWebM
-#include "fcI420.h"
 #include "fcVorbisEncoder.h"
 #include "fcVPXEncoder.h"
 #include "fcWebMWriter.h"
@@ -61,7 +60,7 @@ private:
     VideoEncoderPtr     m_video_encoder;
     VideoBufferQueue    m_video_buffers;
     Buffer              m_rgba_image;
-    fcI420Image         m_i420_image;
+    I420Image           m_i420_image;
     fcWebMVideoFrame    m_video_frame;
 
     TaskQueue           m_audio_tasks;
@@ -186,20 +185,20 @@ bool fcWebMContext::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, f
 
 bool fcWebMContext::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp)
 {
-    fcI420Data i420;
+    I420Data i420;
 
     // convert image to I420
     if (fmt == fcPixelFormat_I420) {
         // use input data directly
         int frame_size = m_conf.video_width * m_conf.video_height;
-        i420.y = pixels;
+        i420.y = (void*)pixels;
         i420.u = (char*)i420.y + frame_size;
         i420.v = (char*)i420.u + (frame_size >> 2);
     }
     else if (fmt == fcPixelFormat_RGBAu8) {
         // RGBAu8 -> I420
         m_i420_image.resize(m_conf.video_width, m_conf.video_height);
-        fcRGBA2I420(m_i420_image, pixels, m_conf.video_width, m_conf.video_height);
+        RGBA2I420(m_i420_image, pixels, m_conf.video_width, m_conf.video_height);
         i420 = m_i420_image.data();
     }
     else {
@@ -208,7 +207,7 @@ bool fcWebMContext::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fm
         fcConvertPixelFormat(m_rgba_image.data(), fcPixelFormat_RGBAu8, pixels, fmt, m_conf.video_width * m_conf.video_height);
 
         m_i420_image.resize(m_conf.video_width, m_conf.video_height);
-        fcRGBA2I420(m_i420_image, m_rgba_image.data(), m_conf.video_width, m_conf.video_height);
+        RGBA2I420(m_i420_image, m_rgba_image.data(), m_conf.video_width, m_conf.video_height);
         i420 = m_i420_image.data();
     }
 

@@ -90,16 +90,6 @@ inline u64 u64_be(Int v_)
         (((v >> 24) & 0xFF) << 32) | (((v >> 16) & 0xFF) << 40) | (((v >> 8) & 0xFF) << 48) | ((v & 0xFF) << 56);
 }
 
-// i.e:
-//  roundup<16>(31) : 32
-//  roundup<16>(32) : 32
-//  roundup<16>(33) : 48
-template<int N, class IntType>
-inline IntType roundup(IntType v)
-{
-    return v + (N - v % N);
-}
-
 // i.e: 
 //  ceildiv(31, 16) : 2
 //  ceildiv(32, 16) : 2
@@ -108,6 +98,16 @@ template<class IntType>
 inline IntType ceildiv(IntType a, IntType b)
 {
     return a / b + (a%b == 0 ? 0 : 1);
+}
+
+// i.e:
+//  roundup<16>(31) : 32
+//  roundup<16>(32) : 32
+//  roundup<16>(33) : 48
+template<int N, class IntType>
+inline IntType roundup(IntType v)
+{
+    return ceildiv(v, N) * N;
 }
 
 #endif // fcMisc_h

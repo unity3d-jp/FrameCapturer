@@ -168,8 +168,8 @@ void fcMP4Context::resetEncoders()
         fcH264EncoderConfig h264conf;
         h264conf.width = m_conf.video_width;
         h264conf.height = m_conf.video_height;
-        h264conf.max_framerate = m_conf.video_max_framerate;
-        h264conf.target_bitrate = m_conf.video_bitrate;
+        h264conf.max_framerate = m_conf.video_target_framerate;
+        h264conf.target_bitrate = m_conf.video_target_bitrate;
 
         fcIH264Encoder *enc = nullptr;
         // try to create hardware encoder
@@ -192,7 +192,7 @@ void fcMP4Context::resetEncoders()
         fcAACEncoderConfig aacconf;
         aacconf.sample_rate = m_conf.audio_sample_rate;
         aacconf.num_channels = m_conf.audio_num_channels;
-        aacconf.target_bitrate = m_conf.audio_bitrate;
+        aacconf.target_bitrate = m_conf.audio_target_bitrate;
 
         m_aac_encoder.reset(fcCreateFAACEncoder(aacconf));
     }

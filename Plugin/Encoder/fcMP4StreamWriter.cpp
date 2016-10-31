@@ -281,8 +281,8 @@ void fcMP4StreamWriter::mp4End()
                     << u8(0x15)         // stream/type flags.  always 0x15 for my purposes.
                     << u8(0)            // buffer size, just set it to 1536 for both mp3 and aac
                     << u16_be(0x600)
-                    << u32_be(c.audio_bitrate) // max bit rate (cue bill 'o reily meme for these two)
-                    << u32_be(c.audio_bitrate) // avg bit rate
+                    << u32_be(c.audio_target_bitrate) // max bit rate (cue bill 'o reily meme for these two)
+                    << u32_be(c.audio_target_bitrate) // avg bit rate
                     << u8(0x5)          //decoder specific descriptor type
                     << u8(m_audio_encoder_info.size());
                 add.write(&m_audio_encoder_info[0], m_audio_encoder_info.size());

@@ -47,7 +47,7 @@ public:
     virtual void release() = 0;
     virtual const char* getMatroskaCodecID() const = 0;
 
-    virtual bool encode(fcVPXFrame& dst, const fcI420Data& image, fcTime timestamp, bool force_keyframe = false) = 0;
+    virtual bool encode(fcVPXFrame& dst, const I420Data& image, fcTime timestamp, bool force_keyframe = false) = 0;
     virtual bool flush(fcVPXFrame& dst) = 0;
 };
 
