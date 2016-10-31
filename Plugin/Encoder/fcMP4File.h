@@ -1,5 +1,4 @@
-﻿#ifndef fcMP4File_h
-#define fcMP4File_h
+﻿#pragma once
 
 class fcIMP4Context
 {
@@ -48,5 +47,3 @@ protected:
     fcMP4API fcDownloadState fcMP4DownloadCodecGetStateImpl();
     fcMP4API fcIMP4Context*  fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice*);
 #endif
-
-#endif // fcMP4File_h

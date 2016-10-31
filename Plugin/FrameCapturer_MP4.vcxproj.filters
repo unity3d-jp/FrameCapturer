@@ -20,6 +20,9 @@
     <ClCompile Include="Encoder\fcFAACEncoder.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
+    <ClCompile Include="Encoder\Windows\fcMP4_WMF.cpp">
+      <Filter>Encoder\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FrameCapturer.h" />
@@ -39,10 +42,16 @@
     <ClInclude Include="Encoder\fcMP4StreamWriter.h">
       <Filter>Encoder</Filter>
     </ClInclude>
+    <ClInclude Include="Encoder\Windows\fcMP4_WMF.h">
+      <Filter>Encoder\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Encoder">
       <UniqueIdentifier>{48802eb2-d965-4472-acfa-f45fccdf33ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Encoder\Windows">
+      <UniqueIdentifier>{d82fe47e-41ee-41f3-be05-3083843aa47d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

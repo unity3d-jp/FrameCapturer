@@ -28,8 +28,6 @@ public:
     using AudioBufferPtr    = std::shared_ptr<AudioBuffer>;
     using AudioBufferQueue  = ResourceQueue<AudioBufferPtr>;
 
-    using Lock = std::unique_lock<std::mutex>;
-
 
     fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd);
     ~fcWebMContext() override;
