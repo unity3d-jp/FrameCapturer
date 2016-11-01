@@ -464,6 +464,19 @@ fcCLinkage fcExport fcIMP4Context* fcMP4CreateContext(fcMP4Config *conf)
 #endif
 }
 
+fcCLinkage fcExport fcIMP4Context* fcMP4CreateOSEncoderContext(fcMP4Config *conf, const char *out_path)
+{
+#ifdef fcMP4SplitModule
+    fcMP4InitializeModule();
+    if (fcMP4CreateOSEncoderContextImpl) {
+        return fcMP4CreateOSEncoderContextImpl(*conf, fcGetGraphicsDevice(), out_path);
+    }
+    return nullptr;
+#else
+    return fcMP4CreateOSEncoderContextImpl(*conf, fcGetGraphicsDevice(), out_path);
+#endif
+}
+
 fcCLinkage fcExport void fcMP4DestroyContext(fcIMP4Context *ctx)
 {
     if (!ctx) { return; }
@@ -517,7 +530,7 @@ fcCLinkage fcExport bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *sam
 
 
 // -------------------------------------------------------------
-// MP4 Exporter
+// WebM Exporter
 // -------------------------------------------------------------
 
 #ifdef fcSupportWebM

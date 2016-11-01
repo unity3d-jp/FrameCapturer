@@ -1,7 +1,7 @@
 #include "pch.h"
 #include <openh264/codec_api.h>
 #include "fcMP4Internal.h"
-#include "fcMP4StreamWriter.h"
+#include "fcMP4Writer.h"
 
 #define fcMP464BitLength
 
@@ -41,7 +41,7 @@ time_t fcGetMacTime()
 } // namespace
 
 
-fcMP4StreamWriter::fcMP4StreamWriter(BinaryStream& stream, const fcMP4Config &conf)
+fcMP4Writer::fcMP4Writer(BinaryStream& stream, const fcMP4Config &conf)
     : m_stream(stream)
     , m_conf(conf)
     , m_mdat_begin(), m_mdat_end()
@@ -49,12 +49,12 @@ fcMP4StreamWriter::fcMP4StreamWriter(BinaryStream& stream, const fcMP4Config &co
     mp4Begin();
 }
 
-fcMP4StreamWriter::~fcMP4StreamWriter()
+fcMP4Writer::~fcMP4Writer()
 {
     mp4End();
 }
 
-void fcMP4StreamWriter::mp4Begin()
+void fcMP4Writer::mp4Begin()
 {
     BinaryStream& os = m_stream;
     os  << u32_be(0x18)
@@ -76,7 +76,7 @@ void fcMP4StreamWriter::mp4Begin()
         ;
 }
 
-void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
+void fcMP4Writer::addFrame(const fcFrameData& frame)
 {
     if (frame.data.empty()) { return; }
 
@@ -137,13 +137,13 @@ void fcMP4StreamWriter::addFrame(const fcFrameData& frame)
     }
 }
 
-void fcMP4StreamWriter::setAACEncoderInfo(const Buffer& aacheader)
+void fcMP4Writer::setAACEncoderInfo(const Buffer& aacheader)
 {
     u8 *ptr = (u8*)aacheader.data();
     m_audio_encoder_info.assign(ptr, ptr + aacheader.size());
 }
 
-void fcMP4StreamWriter::mp4End()
+void fcMP4Writer::mp4End()
 {
     const char audio_track_name[] = "UTJ Sound Media Handler";
     const char video_track_name[] = "UTJ Video Media Handler";

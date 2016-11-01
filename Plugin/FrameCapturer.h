@@ -185,6 +185,7 @@ fcCLinkage fcExport bool            fcMP4DownloadCodecBegin();
 fcCLinkage fcExport fcDownloadState fcMP4DownloadCodecGetState();
 
 fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
+fcCLinkage fcExport fcIMP4Context*  fcMP4CreateOSEncoderContext(fcMP4Config *conf, const char *out_path);
 fcCLinkage fcExport void            fcMP4DestroyContext(fcIMP4Context *ctx);
 fcCLinkage fcExport const char*     fcMP4GetAudioEncoderInfo(fcIMP4Context *ctx);
 fcCLinkage fcExport const char*     fcMP4GetVideoEncoderInfo(fcIMP4Context *ctx);
