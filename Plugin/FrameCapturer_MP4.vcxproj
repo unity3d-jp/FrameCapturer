@@ -30,7 +30,7 @@
     <ClCompile Include="Encoder\fcAMDH264Encoder.cpp" />
     <ClCompile Include="Encoder\fcFAACEncoder.cpp" />
     <ClCompile Include="Encoder\fcMP4File.cpp" />
-    <ClCompile Include="Encoder\fcMP4StreamWriter.cpp" />
+    <ClCompile Include="Encoder\fcMP4Writer.cpp" />
     <ClCompile Include="Encoder\fcNVH264Encoder.cpp" />
     <ClCompile Include="Encoder\fcOpenH264Encoder.cpp" />
     <ClCompile Include="Encoder\Windows\fcMP4_WMF.cpp" />
@@ -48,8 +48,7 @@
     <ClInclude Include="Encoder\fcH264Encoder.h" />
     <ClInclude Include="Encoder\fcMP4File.h" />
     <ClInclude Include="Encoder\fcMP4Internal.h" />
-    <ClInclude Include="Encoder\fcMP4StreamWriter.h" />
-    <ClInclude Include="Encoder\Windows\fcMP4_WMF.h" />
+    <ClInclude Include="Encoder\fcMP4Writer.h" />
     <ClInclude Include="FrameCapturer.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>

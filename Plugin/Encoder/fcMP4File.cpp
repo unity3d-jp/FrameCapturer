@@ -5,11 +5,8 @@
 #include "fcMP4File.h"
 #include "fcH264Encoder.h"
 #include "fcAACEncoder.h"
-#include "fcMP4StreamWriter.h"
+#include "fcMP4Writer.h"
 #include "GraphicsDevice/fcGraphicsDevice.h"
-#ifdef fcWindows
-    #pragma comment(lib, "yuv.lib")
-#endif
 
 #define fcMP4DefaultMaxBuffers 4
 
@@ -32,7 +29,7 @@ public:
 private:
     typedef std::pair<fcVideoFrame, fcH264Frame> VideoFrame;
     typedef std::pair<fcAudioFrame, fcAACFrame> AudioFrame;
-    typedef std::unique_ptr<fcMP4StreamWriter> StreamWriterPtr;
+    typedef std::unique_ptr<fcMP4Writer> StreamWriterPtr;
 
     void enqueueVideoTask(const std::function<void()> &f);
     void enqueueAudioTask(const std::function<void()> &f);
@@ -335,7 +332,7 @@ const char* fcMP4Context::getVideoEncoderInfo()
 
 void fcMP4Context::addOutputStream(fcStream *s)
 {
-    auto writer = new fcMP4StreamWriter(*s, m_conf);
+    auto writer = new fcMP4Writer(*s, m_conf);
     if (m_aac_encoder) {
         writer->setAACEncoderInfo(m_aac_encoder->getDecoderSpecificInfo());
     }

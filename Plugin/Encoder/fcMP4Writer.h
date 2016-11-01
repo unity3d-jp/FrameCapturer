@@ -1,11 +1,10 @@
-#ifndef fcMP4StreamWriter_h
-#define fcMP4StreamWriter_h
+#pragma once
 
-class fcMP4StreamWriter
+class fcMP4Writer
 {
 public:
-    fcMP4StreamWriter(BinaryStream &stream, const fcMP4Config &conf);
-    virtual ~fcMP4StreamWriter();
+    fcMP4Writer(BinaryStream &stream, const fcMP4Config &conf);
+    virtual ~fcMP4Writer();
     void addFrame(const fcFrameData& buf); // thread safe
     void setAACEncoderInfo(const Buffer& aacheader);
 
@@ -27,5 +26,3 @@ private:
     size_t m_mdat_begin;
     size_t m_mdat_end;
 };
-
-#endif // fcMP4StreamWriter_h

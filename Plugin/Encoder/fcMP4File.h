@@ -30,7 +30,8 @@ protected:
     Body(fcMP4SetFAACPackagePathImpl)\
     Body(fcMP4DownloadCodecBeginImpl)\
     Body(fcMP4DownloadCodecGetStateImpl)\
-    Body(fcMP4CreateContextImpl)
+    Body(fcMP4CreateContextImpl)\
+    Body(fcMP4CreateOSEncoderContextImpl)
 
 #ifdef fcMP4SplitModule
     #define fcMP4API fcCLinkage fcExport
@@ -39,6 +40,7 @@ protected:
     typedef bool            (*fcMP4DownloadCodecBeginImpl_t)();
     typedef fcDownloadState (*fcMP4DownloadCodecGetStateImpl_t)();
     typedef fcIMP4Context*  (*fcMP4CreateContextImpl_t)(fcMP4Config &conf, fcIGraphicsDevice*);
+    typedef fcIMP4Context*  (*fcMP4CreateOSEncoderContextImpl_t)(fcMP4Config &conf, fcIGraphicsDevice *dev, const char *path);
 #else
     #define fcMP4API 
     fcMP4API void            fcMP4SetModulePathImpl(const char *path);
@@ -46,4 +48,5 @@ protected:
     fcMP4API bool            fcMP4DownloadCodecBeginImpl();
     fcMP4API fcDownloadState fcMP4DownloadCodecGetStateImpl();
     fcMP4API fcIMP4Context*  fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice*);
+    fcMP4API fcIMP4Context*  fcMP4CreateOSEncoderContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev, const char *path);
 #endif

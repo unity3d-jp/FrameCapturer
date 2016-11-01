@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "fcFoundation.h"
 #include "../fcMP4File.h"
-#include "fcMP4_WMF.h"
 
 #include "GraphicsDevice/fcGraphicsDevice.h"
 #include "Foundation/TaskQueue.h"
@@ -111,15 +110,10 @@ MFInitializer::MFInitializer()
 
 MFInitializer::~MFInitializer()
 {
-    if (g_MFPlat && g_MFReadWrite) {
-        MFShutdown_();
-        CoUninitialize();
-
-        ::FreeLibrary(g_MFReadWrite);
-        ::FreeLibrary(g_MFPlat);
-        g_MFReadWrite = nullptr;
-        g_MFPlat = nullptr;
-    }
+    //if (g_MFPlat && g_MFReadWrite) {
+    //    MFShutdown_();
+    //    CoUninitialize();
+    //}
 }
 
 
@@ -189,8 +183,14 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
     // Set the video output media type.
     if(m_conf.video) {
         ComPtr<IMFMediaType> pVideoOutMediaType;
+        ComPtr<IMFMediaType> pVideoInputMediaType;
         MFCreateMediaType_(&pVideoOutMediaType);
-        if (pVideoOutMediaType) {
+        MFCreateMediaType_(&pVideoInputMediaType);
+
+        if (!pVideoOutMediaType || !pVideoInputMediaType) {
+            m_conf.video = false;
+        }
+        else {
             pVideoOutMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
             pVideoOutMediaType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);
             pVideoOutMediaType->SetUINT32(MF_MT_AVG_BITRATE, m_conf.video_target_bitrate);
@@ -200,11 +200,7 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
             MFSetAttributeRatio(pVideoOutMediaType.Get(), MF_MT_FRAME_RATE, m_conf.video_target_framerate, 1);
             MFSetAttributeRatio(pVideoOutMediaType.Get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
             pSinkWriter->AddStream(pVideoOutMediaType.Get(), &m_mf_video_index);
-        }
 
-        ComPtr<IMFMediaType> pVideoInputMediaType;
-        MFCreateMediaType_(&pVideoInputMediaType);
-        if (pVideoInputMediaType) {
             pVideoInputMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
             pVideoInputMediaType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_I420);
             pVideoInputMediaType->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);
@@ -212,14 +208,25 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
             MFSetAttributeRatio(pVideoInputMediaType.Get(), MF_MT_FRAME_RATE, m_conf.video_target_framerate, 1);
             MFSetAttributeRatio(pVideoInputMediaType.Get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
             pSinkWriter->SetInputMediaType(m_mf_video_index, pVideoInputMediaType.Get(), nullptr);
+
+            for (int i = 0; i < 4; ++i) {
+                m_video_buffers.push(VideoBufferPtr(new VideoBuffer()));
+            }
+            m_video_tasks.start();
         }
     }
 
     // Set the audio output media type.
     if (m_conf.audio) {
         ComPtr<IMFMediaType> pAudioOutMediaType;
+        ComPtr<IMFMediaType> pAudioInMediaType;
         MFCreateMediaType_(&pAudioOutMediaType);
-        if (pAudioOutMediaType) {
+        MFCreateMediaType_(&pAudioInMediaType);
+
+        if (!pAudioOutMediaType || !pAudioInMediaType) {
+            m_conf.audio = false;
+        }
+        else {
             pAudioOutMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
             pAudioOutMediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_AAC);
             pAudioOutMediaType->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, 16);
@@ -229,11 +236,7 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
             pAudioOutMediaType->SetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT, 1);
             pAudioOutMediaType->SetUINT32(MF_MT_AAC_AUDIO_PROFILE_LEVEL_INDICATION, 0x29);
             pSinkWriter->AddStream(pAudioOutMediaType.Get(), &m_mf_audio_index);
-        }
 
-        ComPtr<IMFMediaType> pAudioInMediaType;
-        MFCreateMediaType_(&pAudioInMediaType);
-        if (pAudioInMediaType) {
             pAudioInMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
             pAudioInMediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_Float);
             pAudioInMediaType->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, 32);
@@ -242,6 +245,11 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
             pAudioInMediaType->SetUINT32(MF_MT_AUDIO_AVG_BYTES_PER_SECOND, m_conf.audio_sample_rate * 4 * m_conf.audio_num_channels);
             pAudioInMediaType->SetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT, 4 * m_conf.audio_num_channels);
             pSinkWriter->SetInputMediaType(m_mf_audio_index, pAudioInMediaType.Get(), nullptr);
+
+            for (int i = 0; i < 4; ++i) {
+                m_audio_buffers.push(AudioBufferPtr(new AudioBuffer()));
+            }
+            m_audio_tasks.start();
         }
     }
 
@@ -263,7 +271,7 @@ static inline LONGLONG SecondsToTimestamp(fcTime t)
 
 bool fcMP4ContextWMF::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp)
 {
-    if (!m_mf_writer || !tex || !m_gdev) { return false; }
+    if (!m_mf_writer || !m_conf.video || !tex || !m_gdev) { return false; }
 
     auto buf = m_video_buffers.pop();
     size_t psize = fcGetPixelSize(fmt);
@@ -284,7 +292,7 @@ bool fcMP4ContextWMF::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime 
 
 bool fcMP4ContextWMF::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp)
 {
-    if (!m_mf_writer || !pixels) { return false; }
+    if (!m_mf_writer || !m_conf.video || !pixels) { return false; }
 
     auto buf = m_video_buffers.pop();
     size_t psize = fcGetPixelSize(fmt);
@@ -334,32 +342,28 @@ bool fcMP4ContextWMF::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat 
 
 
     ComPtr<IMFMediaBuffer> pBuffer;
+    ComPtr<IMFSample> pSample;
     MFCreateMemoryBuffer_(buffer_size, &pBuffer);
-    if (pBuffer)
-    {
-        BYTE *pData = nullptr;
-        pBuffer->Lock(&pData, nullptr, nullptr);
-        memcpy(pData, i420.y, buffer_size);
-        pBuffer->Unlock();
-        pBuffer->SetCurrentLength(buffer_size);
+    MFCreateSample_(&pSample);
+    if (!pBuffer || !pSample) { return false; }
 
-        // Create a media sample and add the buffer to the sample.
-        ComPtr<IMFSample> pSample;
-        MFCreateSample_(&pSample);
-        if (pSample)
-        {
-            pSample->AddBuffer(pBuffer.Get());
-            pSample->SetSampleTime(start);
-            pSample->SetSampleDuration(duration);
-            m_mf_writer->WriteSample(m_mf_video_index, pSample.Get());
-        }
-    }
+    BYTE *pData = nullptr;
+    pBuffer->Lock(&pData, nullptr, nullptr);
+    memcpy(pData, i420.y, buffer_size);
+    pBuffer->Unlock();
+    pBuffer->SetCurrentLength(buffer_size);
+
+    pSample->AddBuffer(pBuffer.Get());
+    pSample->SetSampleTime(start);
+    pSample->SetSampleDuration(duration);
+    m_mf_writer->WriteSample(m_mf_video_index, pSample.Get());
+
     return true;
 }
 
 bool fcMP4ContextWMF::addAudioFrame(const float *samples, int num_samples, fcTime timestamp)
 {
-    if (!m_mf_writer || !samples) { return false; }
+    if (!m_mf_writer || !m_conf.audio || !samples) { return false; }
 
     auto buf = m_audio_buffers.pop();
     buf->assign(samples, num_samples);
@@ -375,36 +379,30 @@ bool fcMP4ContextWMF::addAudioFrameImpl(const float *samples, int num_samples, f
 {
     const LONGLONG start = SecondsToTimestamp(timestamp);
     const LONGLONG duration = SecondsToTimestamp(1.0 / m_conf.video_target_framerate);
-    const DWORD cbBuffer = num_samples * 4;
+    const DWORD data_size = num_samples * 4;
 
     ComPtr<IMFMediaBuffer> pBuffer;
-    MFCreateMemoryBuffer_(cbBuffer, &pBuffer);
-    if (!pBuffer) { return false; }
+    ComPtr<IMFSample> pSample;
+    MFCreateMemoryBuffer_(data_size, &pBuffer);
+    MFCreateSample_(&pSample);
+    if (!pBuffer || !pSample) { return false; }
 
-    {
-        BYTE *pData = nullptr;
-        pBuffer->Lock(&pData, nullptr, nullptr);
-        memcpy(pData, samples, cbBuffer);
-        pBuffer->Unlock();
-        pBuffer->SetCurrentLength(cbBuffer);
+    BYTE *pData = nullptr;
+    pBuffer->Lock(&pData, nullptr, nullptr);
+    memcpy(pData, samples, data_size);
+    pBuffer->Unlock();
+    pBuffer->SetCurrentLength(data_size);
 
-        // Create a media sample and add the buffer to the sample.
-        ComPtr<IMFSample> pSample;
-        MFCreateSample_(&pSample);
-        if (pSample)
-        {
-            pSample->AddBuffer(pBuffer.Get());
-            pSample->SetSampleTime(start);
-            pSample->SetSampleDuration(duration);
-            m_mf_writer->WriteSample(m_mf_audio_index, pSample.Get());
-        }
-    }
+    pSample->AddBuffer(pBuffer.Get());
+    pSample->SetSampleTime(start);
+    pSample->SetSampleDuration(duration);
+    m_mf_writer->WriteSample(m_mf_audio_index, pSample.Get());
 
     return true;
 }
 
 
-fcIMP4Context* fcMP4CreateOSEncoderContext(fcMP4Config &conf, fcIGraphicsDevice *dev, const char *path)
+fcMP4API fcIMP4Context* fcMP4CreateOSEncoderContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev, const char *path)
 {
     auto ret = new fcMP4ContextWMF(conf, dev, path);
     if (!ret->isValid()) {

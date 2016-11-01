@@ -5,9 +5,6 @@
     <ClCompile Include="Encoder\fcMP4File.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcMP4StreamWriter.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
     <ClCompile Include="Encoder\fcOpenH264Encoder.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
@@ -22,6 +19,9 @@
     </ClCompile>
     <ClCompile Include="Encoder\Windows\fcMP4_WMF.cpp">
       <Filter>Encoder\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcMP4Writer.cpp">
+      <Filter>Encoder</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -39,11 +39,8 @@
     <ClInclude Include="Encoder\fcMP4Internal.h">
       <Filter>Encoder</Filter>
     </ClInclude>
-    <ClInclude Include="Encoder\fcMP4StreamWriter.h">
+    <ClInclude Include="Encoder\fcMP4Writer.h">
       <Filter>Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="Encoder\Windows\fcMP4_WMF.h">
-      <Filter>Encoder\Windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
