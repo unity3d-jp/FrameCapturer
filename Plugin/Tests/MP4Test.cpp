@@ -12,7 +12,9 @@ const int DurationInSeconds = 10;
 const int FrameRate = 60;
 const int Width = 320;
 const int Height = 240;
-const int SamplingRate = 48000;
+
+const int SampleRate = 48000;
+const int NumChannels = 1;
 
 
 static void WriteMovieData(fcIMP4Context *ctx)
@@ -30,7 +32,7 @@ static void WriteMovieData(fcIMP4Context *ctx)
 
     // add audio frames
     std::thread audio_thread = std::thread([&]() {
-        RawVector<float> audio_sample(SamplingRate);
+        RawVector<float> audio_sample(SampleRate * NumChannels);
         fcTime t = 0;
         for (int i = 0; i < DurationInSeconds; ++i) {
             CreateAudioData(&audio_sample[0], (int)audio_sample.size(), i, 1.0f);
@@ -52,8 +54,8 @@ void MP4Test()
     conf.video_height = Height;
     conf.video_target_bitrate = 256000;
     //conf.audio = false;
-    conf.audio_sample_rate = SamplingRate;
-    conf.audio_num_channels = 2;
+    conf.audio_sample_rate = SampleRate;
+    conf.audio_num_channels = NumChannels;
     conf.audio_target_bitrate = 128000;
 
 

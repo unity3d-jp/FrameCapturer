@@ -1,5 +1,4 @@
-﻿#ifndef fcMP4Encoder_h
-#define fcMP4Encoder_h
+﻿#pragma once
 
 
 struct fcH264EncoderConfig
@@ -12,12 +11,65 @@ struct fcH264EncoderConfig
     fcH264EncoderConfig() : width(), height(), target_bitrate(), max_framerate() {}
 };
 
+
+enum fcH264FrameType
+{
+    fcH264FrameType_Invalid,    ///< encoder not ready or parameters are invalidate
+    fcH264FrameType_IDR,        ///< IDR frame in H.264
+    fcH264FrameType_I,          ///< I frame type
+    fcH264FrameType_P,          ///< P frame type
+    fcH264FrameType_Skip,       ///< skip the frame based encoder kernel
+    fcH264FrameType_IPMixed     ///< a frame where I and P slices are mixing, not supported yet
+};
+
+
+struct fcH264NALHeader
+{
+    uint8_t forbidden_zero_bit : 1;
+    uint8_t nal_ref_idc : 2;
+    uint8_t nal_unit_type : 5; // ENalUnitType
+
+    fcH264NALHeader() {}
+    fcH264NALHeader(char c) {
+        forbidden_zero_bit = (c >> 7) & 0x01;
+        nal_ref_idc = (c >> 5) & 0x03;
+        nal_unit_type = c & 0x1f;
+    }
+};
+
+
+struct fcH264Frame
+{
+    Buffer data;
+    fcTime timestamp = 0.0;
+    RawVector<int> nal_sizes;
+    fcH264FrameType h264_type = fcH264FrameType_Invalid;
+
+    void clear()
+    {
+        data.clear();
+        nal_sizes.clear();
+    }
+
+    // Body: [](const char *nal_data, int nal_size) -> void
+    template<class Body>
+    void eachNALs(const Body& body) const
+    {
+        int total = 0;
+        for (int size : nal_sizes) {
+            body(&data[total], size);
+            total += size;
+        }
+    }
+};
+
+
 class fcIH264Encoder
 {
 public:
     virtual ~fcIH264Encoder() {}
     virtual const char* getEncoderInfo() = 0;
-    virtual bool encode(fcH264Frame& dst, const fcI420Image& image, fcTime timestamp, bool force_keyframe = false) = 0;
+    virtual bool encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe = false) = 0;
 };
 
 bool fcDownloadOpenH264(fcDownloadCallback cb);
@@ -26,5 +78,3 @@ bool fcLoadOpenH264Module();
 fcIH264Encoder* fcCreateOpenH264Encoder(const fcH264EncoderConfig& conf);
 fcIH264Encoder* fcCreateNVH264Encoder(const fcH264EncoderConfig& conf);
 fcIH264Encoder* fcCreateAMDH264Encoder(const fcH264EncoderConfig& conf);
-
-#endif // fcMP4Encoder_h

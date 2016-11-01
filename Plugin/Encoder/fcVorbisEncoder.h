@@ -11,28 +11,28 @@ using fcOpusEncoderConfig = fcVorbisEncoderConfig;
 
 struct fcVorbisFrame
 {
-    struct Block
+    struct PacketInfo
     {
         int size;
         uint64_t timestamp;
     };
-    using Blocks = RawVector<Block>;
+    using Packets = RawVector<PacketInfo>;
 
     Buffer data;
-    Blocks blocks;
+    Packets packets;
 
     void clear()
     {
         data.clear();
-        blocks.clear();
+        packets.clear();
     }
 
     // Body: [](const char *data, int size, uint64_t timestamp) {}
     template<class Body>
-    void eachBlocks(const Body& body) const
+    void eachPackets(const Body& body) const
     {
         int pos = 0;
-        for (auto& s : blocks) {
+        for (auto& s : packets) {
             body(&data[pos], s.size, s.timestamp);
             pos += s.size;
         }

@@ -29,7 +29,7 @@ public:
     fcOpenH264Encoder(const fcH264EncoderConfig& conf);
     ~fcOpenH264Encoder();
     const char* getEncoderInfo() override;
-    bool encode(fcH264Frame& dst, const fcI420Image& image, fcTime timestamp, bool force_keyframe) override;
+    bool encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe) override;
 
 private:
     fcH264EncoderConfig m_conf;
@@ -103,7 +103,7 @@ fcOpenH264Encoder::~fcOpenH264Encoder()
 }
 const char* fcOpenH264Encoder::getEncoderInfo() { return "OpenH264 (by Cisco Systems, Inc)"; }
 
-bool fcOpenH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, fcTime timestamp, bool /*force_keyframe*/)
+bool fcOpenH264Encoder::encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool /*force_keyframe*/)
 {
     if (!m_encoder) { return false; }
 
@@ -112,9 +112,9 @@ bool fcOpenH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, fcTim
     src.iPicWidth = m_conf.width;
     src.iPicHeight = m_conf.height;
     src.iColorFormat = videoFormatI420;
-    src.pData[0] = (unsigned char*)image.y;
-    src.pData[1] = (unsigned char*)image.u;
-    src.pData[2] = (unsigned char*)image.v;
+    src.pData[0] = (unsigned char*)data.y;
+    src.pData[1] = (unsigned char*)data.u;
+    src.pData[2] = (unsigned char*)data.v;
     src.iStride[0] = m_conf.width;
     src.iStride[1] = m_conf.width >> 1;
     src.iStride[2] = m_conf.width >> 1;
@@ -131,7 +131,7 @@ bool fcOpenH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, fcTim
 
     for (int li = 0; li < frame.iLayerNum; ++li) {
         auto& layer = frame.sLayerInfo[li];
-        dst.nal_sizes.insert(dst.nal_sizes.end(), layer.pNalLengthInByte, layer.pNalLengthInByte + layer.iNalCount);
+        dst.nal_sizes.append(layer.pNalLengthInByte, layer.iNalCount);
 
         int total = 0;
         fcH264NALHeader header;

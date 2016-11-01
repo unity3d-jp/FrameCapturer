@@ -1,6 +1,8 @@
 #include "pch.h"
 #include <openh264/codec_api.h>
 #include "fcMP4Internal.h"
+#include "fcH264Encoder.h"
+#include "fcAACEncoder.h"
 #include "fcMP4Writer.h"
 
 #define fcMP464BitLength
@@ -76,65 +78,63 @@ void fcMP4Writer::mp4Begin()
         ;
 }
 
-void fcMP4Writer::addFrame(const fcFrameData& frame)
+void fcMP4Writer::addVideoFrame(const fcH264Frame& frame)
 {
     if (frame.data.empty()) { return; }
-
     std::unique_lock<std::mutex> lock(m_mutex);
+
     BinaryStream& os = m_stream;
+    fcMP4FrameInfo info;
+    info.file_offset = os.tellp();
+    info.timestamp = frame.timestamp;
 
-    // video frame
-    if (frame.type == fcFrameType_H264) {
-        const auto& h264 = (const fcH264Frame&)frame;
-        fcFrameInfo info;
-        info.file_offset = os.tellp();
-        info.timestamp = frame.timestamp;
+    if (frame.h264_type == fcH264FrameType_I) {
+        m_iframe_ids.push_back((uint32_t)m_video_frame_info.size() + 1);
+    }
 
-        if (h264.h264_type == fcH264FrameType_I) {
-            m_iframe_ids.push_back((uint32_t)m_video_frame_info.size() + 1);
+    frame.eachNALs([&](const char *data, int size) {
+        const int offset = 4; // 0x00000001
+        size -= offset;
+
+        fcH264NALHeader nalh(data[4]);
+        if (nalh.nal_unit_type == NAL_SPS) {
+            m_sps.assign(&data[offset], &data[offset] + size);
+        }
+        else if (nalh.nal_unit_type == NAL_PPS) {
+            m_pps.assign(&data[offset], &data[offset] + size);
+        }
+        else {
+            os << u32_be(size);
+            os.write(&data[offset], size);
+            info.size += size + 4;
         }
 
-        h264.eachNALs([&](const char *data, int size) {
-            const int offset = 4; // 0x00000001
-            size -= offset;
+    });
 
-            fcH264NALHeader nalh(data[4]);
-            if (nalh.nal_unit_type == NAL_SPS) {
-                m_sps.assign(&data[offset], &data[offset] + size);
-            }
-            else if (nalh.nal_unit_type == NAL_PPS) {
-                m_pps.assign(&data[offset], &data[offset] + size);
-            }
-            else {
-                os << u32_be(size);
-                os.write(&data[offset], size);
-                info.size += size + 4;
-            }
+    m_video_frame_info.emplace_back(info);
+}
 
-        });
+void fcMP4Writer::addAudioFrame(const fcAACFrame& frame)
+{
+    if (frame.data.empty()) { return; }
+    std::unique_lock<std::mutex> lock(m_mutex);
 
-        m_video_frame_info.emplace_back(info);
-    }
-    // audio frame
-    else if (frame.type == fcFrameType_AAC) {
-        const auto& aac = (const fcAACFrame&)frame;
+    BinaryStream& os = m_stream;
+    fcTime timestamp = frame.timestamp;
+    frame.eachPackets([&](const char *data, int size, int raw_size) {
+        fcMP4FrameInfo info;
+        info.file_offset = os.tellp();
+        info.timestamp = timestamp;
 
-        fcTime timestamp = frame.timestamp;
-        aac.eachBlocks([&](const char *data, int size, int raw_size) {
-            fcFrameInfo info;
-            info.file_offset = os.tellp();
-            info.timestamp = timestamp;
+        const int offset = 7;
+        size -= offset;
 
-            const int offset = 7;
-            size -= offset;
+        os.write(data + offset, size);
+        info.size += size;
+        timestamp += (double)raw_size / (double)m_conf.audio_sample_rate;
 
-            os.write(data + offset, size);
-            info.size += size;
-            timestamp += (double)raw_size / (double)m_conf.audio_sample_rate;
-
-            m_audio_frame_info.emplace_back(info);
-        });
-    }
+        m_audio_frame_info.emplace_back(info);
+    });
 }
 
 void fcMP4Writer::setAACEncoderInfo(const Buffer& aacheader)
@@ -156,10 +156,10 @@ void fcMP4Writer::mp4End()
     u32 audio_duration = 0;
     u32 duration = 0;
 
-    std::vector<fcSampleToChunk> video_samples_to_chunk;
-    std::vector<fcSampleToChunk> audio_samples_to_chunk;
-    std::vector<fcOffsetValue> video_decode_times;
-    std::vector<fcOffsetValue> audio_decode_times;
+    std::vector<fcMP4SampleToChunk> video_samples_to_chunk;
+    std::vector<fcMP4SampleToChunk> audio_samples_to_chunk;
+    std::vector<fcMP4OffsetValue> video_decode_times;
+    std::vector<fcMP4OffsetValue> audio_decode_times;
     std::vector<u64> video_chunks;
     std::vector<u64> audio_chunks;
 
@@ -170,8 +170,8 @@ void fcMP4Writer::mp4End()
 
     // compute decode times
     auto compute_decode_times = [](
-        std::vector<fcFrameInfo>& frame_info,
-        std::vector<fcOffsetValue>& decode_times) -> u32 // return duration in millisec
+        std::vector<fcMP4FrameInfo>& frame_info,
+        std::vector<fcMP4OffsetValue>& decode_times) -> u32 // return duration in millisec
     {
         u32 total_duration_ms = 0;
         for (size_t i = 1; i < frame_info.size(); ++i) {
@@ -184,7 +184,7 @@ void fcMP4Writer::mp4End()
                 decode_times.back().count++;
             }
             else {
-                fcOffsetValue ov;
+                fcMP4OffsetValue ov;
                 ov.count = 1;
                 ov.value = duration;
                 decode_times.emplace_back(ov);
@@ -198,9 +198,9 @@ void fcMP4Writer::mp4End()
 
     // compute chunk data
     auto compute_chunk_data = [](
-        std::vector<fcFrameInfo>& frame_info,
+        std::vector<fcMP4FrameInfo>& frame_info,
         std::vector<u64>& chunks,
-        std::vector<fcSampleToChunk>& samples_to_chunk)
+        std::vector<fcMP4SampleToChunk>& samples_to_chunk)
     {
         for (size_t i = 0; i < frame_info.size(); ++i) {
             auto* cur = &frame_info[i];
@@ -210,7 +210,7 @@ void fcMP4Writer::mp4End()
             {
                 chunks.push_back(cur->file_offset);
 
-                fcSampleToChunk stc;
+                fcMP4SampleToChunk stc;
                 stc.first_chunk_ID = (uint32_t)chunks.size();
                 stc.samples_per_chunk = 1;
                 stc.sample_description_ID = 1;

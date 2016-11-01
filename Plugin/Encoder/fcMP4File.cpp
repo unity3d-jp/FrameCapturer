@@ -7,6 +7,7 @@
 #include "fcAACEncoder.h"
 #include "fcMP4Writer.h"
 #include "GraphicsDevice/fcGraphicsDevice.h"
+#include "Foundation/TaskQueue.h"
 
 #define fcMP4DefaultMaxBuffers 4
 
@@ -14,6 +15,20 @@
 class fcMP4Context : public fcIMP4Context
 {
 public:
+    using VideoEncoderPtr   = std::unique_ptr<fcIH264Encoder>;
+    using AudioEncoderPtr   = std::unique_ptr<fcIAACEncoder>;
+    using WriterPtr         = std::unique_ptr<fcMP4Writer>;
+    using WriterPtrs        = std::vector<WriterPtr>;
+
+    using VideoBuffer       = Buffer;
+    using VideoBufferPtr    = std::shared_ptr<VideoBuffer>;
+    using VideoBufferQueue  = ResourceQueue<VideoBufferPtr>;
+
+    using AudioBuffer       = RawVector<float>;
+    using AudioBufferPtr    = std::shared_ptr<AudioBuffer>;
+    using AudioBufferQueue  = ResourceQueue<AudioBufferPtr>;
+
+
     fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev);
     ~fcMP4Context();
     void release() override;
@@ -24,58 +39,35 @@ public:
     void addOutputStream(fcStream *s) override;
     bool addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp) override;
     bool addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamps) override;
+    bool addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamps);
+
     bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp) override;
+    bool addAudioFrameImpl(const float *samples, int num_samples, fcTime timestamp);
 
 private:
-    typedef std::pair<fcVideoFrame, fcH264Frame> VideoFrame;
-    typedef std::pair<fcAudioFrame, fcAACFrame> AudioFrame;
-    typedef std::unique_ptr<fcMP4Writer> StreamWriterPtr;
-
-    void enqueueVideoTask(const std::function<void()> &f);
-    void enqueueAudioTask(const std::function<void()> &f);
-    void processVideoTasks();
-    void processAudioTasks();
-
-    VideoFrame& getTempraryVideoFrame();
-    void        returnTempraryVideoFrame(VideoFrame& v);
-    AudioFrame& getTempraryAudioFrame();
-    void        returnTempraryAudioFrame(AudioFrame& v);
-
-    void resetEncoders();
-    void waitAllTasksFinished();
-    void encodeVideoFrame(VideoFrame& vf, bool rgba2i420);
-
     template<class Body>
     void eachStreams(const Body &b)
     {
-        for (auto& s : m_streams) { b(*s); }
+        for (auto& s : m_writers) { b(*s); }
     }
 
 private:
     fcMP4Config m_conf;
     fcIGraphicsDevice *m_dev;
-    bool m_stop;
 
-    std::vector<VideoFrame>     m_tmp_video_frames;
-    std::vector<AudioFrame>     m_tmp_audio_frames;
-    std::vector<VideoFrame*>    m_tmp_video_frames_unused;
-    std::vector<AudioFrame*>    m_tmp_audio_frames_unused;
+    WriterPtrs          m_writers;
 
-    std::unique_ptr<fcIH264Encoder> m_h264_encoder;
-    std::unique_ptr<fcIAACEncoder> m_aac_encoder;
-    std::vector<StreamWriterPtr> m_streams;
+    TaskQueue           m_video_tasks;
+    VideoEncoderPtr     m_video_encoder;
+    VideoBufferQueue    m_video_buffers;
+    Buffer              m_rgba_image;
+    I420Image           m_i420_image;
+    fcH264Frame         m_video_frame;
 
-    std::atomic_int m_video_active_task_count;
-    std::thread m_video_worker;
-    std::mutex m_video_mutex;
-    std::condition_variable m_video_condition;
-    std::deque<std::function<void()>> m_video_tasks;
-
-    std::atomic_int m_audio_active_task_count;
-    std::thread m_audio_worker;
-    std::mutex m_audio_mutex;
-    std::condition_variable m_audio_condition;
-    std::deque<std::function<void()>> m_audio_tasks;
+    TaskQueue           m_audio_tasks;
+    AudioEncoderPtr     m_audio_encoder;
+    AudioBufferQueue    m_audio_buffers;
+    fcAACFrame          m_audio_frame;
 
 #ifndef fcMaster
     std::unique_ptr<StdIOStream> m_dbg_h264_out;
@@ -88,35 +80,8 @@ private:
 fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
     : m_conf(conf)
     , m_dev(dev)
-    , m_stop(false)
-    , m_video_active_task_count(0)
-    , m_audio_active_task_count(0)
 {
-    if (m_conf.video_max_buffers == 0) {
-        m_conf.video_max_buffers = fcMP4DefaultMaxBuffers;
-    }
-
-    // allocate temporary buffers and start encoder threads
-    if (m_conf.video) {
-        m_tmp_video_frames.resize(m_conf.video_max_buffers);
-        for (auto& v : m_tmp_video_frames) {
-            v.first.allocate(m_conf.video_width, m_conf.video_height);
-            m_tmp_video_frames_unused.push_back(&v);
-        }
-
-        m_video_worker = std::thread([this]() { processVideoTasks(); });
-    }
-    if (m_conf.audio) {
-        m_tmp_audio_frames.resize(m_conf.video_max_buffers);
-        for (auto& v : m_tmp_audio_frames) {
-            m_tmp_audio_frames_unused.push_back(&v);
-        }
-
-        m_audio_worker = std::thread([this]() { processAudioTasks(); });
-    }
-
 #ifndef fcMaster
-    // output raw h264 & aac packets to file
     {
         uint64_t now = (uint64_t)::time(nullptr);
         char tmp_h264_filename[256];
@@ -130,37 +95,8 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
 #endif // fcMaster
 
 
-    resetEncoders();
-}
-
-fcMP4Context::~fcMP4Context()
-{
-    // stop encoder threads
-    m_stop = true;
-    if (m_conf.video) {
-        m_video_condition.notify_all();
-        m_video_worker.join();
-    }
-    if (m_conf.audio) {
-        m_audio_condition.notify_all();
-        m_audio_worker.join();
-    }
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-#ifndef fcMaster
-    m_dbg_h264_out.reset();
-    m_dbg_aac_out.reset();
-#endif // fcMaster
-
-    m_streams.clear();
-}
-
-void fcMP4Context::resetEncoders()
-{
-    waitAllTasksFinished();
-
     // create h264 encoder
-    m_h264_encoder.reset();
+    m_video_encoder.reset();
     if (m_conf.video) {
         fcH264EncoderConfig h264conf;
         h264conf.width = m_conf.video_width;
@@ -180,136 +116,44 @@ void fcMP4Context::resetEncoders()
             // fallback to software encoder (OpenH264)
             enc = fcCreateOpenH264Encoder(h264conf);
         }
-        m_h264_encoder.reset(enc);
+        m_video_encoder.reset(enc);
+
+        for (int i = 0; i < 4; ++i) {
+            m_video_buffers.push(VideoBufferPtr(new VideoBuffer()));
+        }
+        m_video_tasks.start();
     }
 
     // create aac encoder
-    m_aac_encoder.reset();
+    m_audio_encoder.reset();
     if (m_conf.audio) {
         fcAACEncoderConfig aacconf;
         aacconf.sample_rate = m_conf.audio_sample_rate;
         aacconf.num_channels = m_conf.audio_num_channels;
         aacconf.target_bitrate = m_conf.audio_target_bitrate;
+        m_audio_encoder.reset(fcCreateFAACEncoder(aacconf));
 
-        m_aac_encoder.reset(fcCreateFAACEncoder(aacconf));
-    }
-}
-
-void fcMP4Context::enqueueVideoTask(const std::function<void()> &f)
-{
-    {
-        std::unique_lock<std::mutex> lock(m_video_mutex);
-        m_video_tasks.push_back(f);
-    }
-    m_video_condition.notify_one();
-}
-
-void fcMP4Context::enqueueAudioTask(const std::function<void()> &f)
-{
-    {
-        std::unique_lock<std::mutex> lock(m_audio_mutex);
-        m_audio_tasks.push_back(f);
-    }
-    m_audio_condition.notify_one();
-}
-
-void fcMP4Context::waitAllTasksFinished()
-{
-    while (m_video_active_task_count > 0 || m_audio_active_task_count > 0) {
-        std::this_thread::yield();
-    }
-}
-
-
-fcMP4Context::VideoFrame& fcMP4Context::getTempraryVideoFrame()
-{
-    VideoFrame *ret = nullptr;
-
-    // wait if all temporaries are in use
-    for (;;) {
-        {
-            std::unique_lock<std::mutex> lock(m_video_mutex);
-            if (!m_tmp_video_frames_unused.empty()) {
-                ret = m_tmp_video_frames_unused.back();
-                m_tmp_video_frames_unused.pop_back();
-                break;
-            }
+        for (int i = 0; i < 4; ++i) {
+            m_audio_buffers.push(AudioBufferPtr(new AudioBuffer()));
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-
-    return *ret;
-}
-
-void fcMP4Context::returnTempraryVideoFrame(VideoFrame& v)
-{
-    std::unique_lock<std::mutex> lock(m_video_mutex);
-    m_tmp_video_frames_unused.push_back(&v);
-}
-
-fcMP4Context::AudioFrame& fcMP4Context::getTempraryAudioFrame()
-{
-    AudioFrame *ret = nullptr;
-
-    // wait if all temporaries are in use
-    for (;;) {
-        {
-            std::unique_lock<std::mutex> lock(m_audio_mutex);
-            if (!m_tmp_audio_frames_unused.empty()) {
-                ret = m_tmp_audio_frames_unused.back();
-                m_tmp_audio_frames_unused.pop_back();
-                break;
-            }
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-
-    return *ret;
-}
-
-void fcMP4Context::returnTempraryAudioFrame(AudioFrame& v)
-{
-    std::unique_lock<std::mutex> lock(m_audio_mutex);
-    m_tmp_audio_frames_unused.push_back(&v);
-}
-
-
-void fcMP4Context::processVideoTasks()
-{
-    while (!m_stop)
-    {
-        std::function<void()> task;
-        {
-            std::unique_lock<std::mutex> lock(m_video_mutex);
-            while (!m_stop && m_video_tasks.empty()) {
-                m_video_condition.wait(lock);
-            }
-            if (m_stop) { return; }
-
-            task = m_video_tasks.front();
-            m_video_tasks.pop_front();
-        }
-        task();
+        m_audio_tasks.start();
     }
 }
 
-void fcMP4Context::processAudioTasks()
+fcMP4Context::~fcMP4Context()
 {
-    while (!m_stop)
-    {
-        std::function<void()> task;
-        {
-            std::unique_lock<std::mutex> lock(m_audio_mutex);
-            while (!m_stop && m_audio_tasks.empty()) {
-                m_audio_condition.wait(lock);
-            }
-            if (m_stop) { return; }
+    if (m_conf.video) { m_video_tasks.stop(); }
+    if (m_conf.audio) { m_audio_tasks.stop(); }
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-            task = m_audio_tasks.front();
-            m_audio_tasks.pop_front();
-        }
-        task();
-    }
+    m_video_encoder.reset();
+    m_audio_encoder.reset();
+    m_writers.clear();
+
+#ifndef fcMaster
+    m_dbg_h264_out.reset();
+    m_dbg_aac_out.reset();
+#endif // fcMaster
 }
 
 
@@ -320,183 +164,134 @@ void fcMP4Context::release()
 
 const char* fcMP4Context::getAudioEncoderInfo()
 {
-    if (!m_aac_encoder) { return ""; }
-    return m_aac_encoder->getEncoderInfo();
+    if (!m_audio_encoder) { return ""; }
+    return m_audio_encoder->getEncoderInfo();
 }
 
 const char* fcMP4Context::getVideoEncoderInfo()
 {
-    if (!m_h264_encoder) { return ""; }
-    return m_h264_encoder->getEncoderInfo();
+    if (!m_video_encoder) { return ""; }
+    return m_video_encoder->getEncoderInfo();
 }
 
 void fcMP4Context::addOutputStream(fcStream *s)
 {
     auto writer = new fcMP4Writer(*s, m_conf);
-    if (m_aac_encoder) {
-        writer->setAACEncoderInfo(m_aac_encoder->getDecoderSpecificInfo());
+    if (m_audio_encoder) {
+        writer->setAACEncoderInfo(m_audio_encoder->getDecoderSpecificInfo());
     }
-    m_streams.emplace_back(StreamWriterPtr(writer));
+    m_writers.emplace_back(WriterPtr(writer));
 }
-
-void fcMP4Context::encodeVideoFrame(VideoFrame& vf, bool rgba2i420)
-{
-    auto& raw = vf.first;
-    auto& h264 = vf.second;
-
-    // 必要であれば RGBA -> I420 変換
-    int width = m_conf.video_width;
-    int frame_size = m_conf.video_width * m_conf.video_height;
-    uint8 *y = (uint8*)raw.i420.y;
-    uint8 *u = (uint8*)raw.i420.u;
-    uint8 *v = (uint8*)raw.i420.v;
-    if (rgba2i420) {
-        libyuv::ABGRToI420(
-            (uint8*)&raw.rgba[0], width * 4,
-            y, width,
-            u, width >> 1,
-            v, width >> 1,
-            m_conf.video_width, m_conf.video_height );
-    }
-
-    // I420 のピクセルデータを H264 へエンコード
-    h264.clear();
-    h264.timestamp = raw.timestamp;
-    m_h264_encoder->encode(h264, raw.i420, raw.timestamp);
-
-    eachStreams([&](auto& s) { s.addFrame(h264); });
-#ifndef fcMaster
-    m_dbg_h264_out->write(h264.data.data(), h264.data.size());
-#endif // fcMaster
-}
-
 
 bool fcMP4Context::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp)
 {
-    if (m_dev == nullptr) {
-        fcDebugLog("fcMP4Context::addVideoFrameTexture(): gfx device is null.");
-        return false;
-    }
-    if (m_h264_encoder == nullptr) {
-        fcDebugLog("fcMP4Context::addVideoFrameTexture(): h264 encoder is null.");
-        return false;
-    }
+    if (!tex || !m_video_encoder || !m_dev) { return false; }
 
-    VideoFrame& vf = getTempraryVideoFrame();
-    auto& raw = vf.first;
-    auto& h264 = vf.second;
-    raw.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeInSeconds();
-
-    // フレームバッファの内容取得
-    if (fmt == fcPixelFormat_RGBAu8) {
-        if (!m_dev->readTexture(&raw.rgba[0], raw.rgba.size(), tex, m_conf.video_width, m_conf.video_height, fmt))
-        {
-            returnTempraryVideoFrame(vf);
-            return false;
-        }
+    auto buf = m_video_buffers.pop();
+    size_t psize = fcGetPixelSize(fmt);
+    size_t size = m_conf.video_width * m_conf.video_height * psize;
+    buf->resize(size);
+    if (m_dev->readTexture(buf->data(), buf->size(), tex, m_conf.video_width, m_conf.video_height, fmt)) {
+        m_video_tasks.run([this, buf, fmt, timestamp]() {
+            addVideoFramePixelsImpl(buf->data(), fmt, timestamp);
+            m_video_buffers.push(buf);
+        });
     }
     else {
-        size_t psize = fcGetPixelSize(fmt);
-        raw.raw.resize(m_conf.video_width * m_conf.video_height * psize);
-        if (!m_dev->readTexture(&raw.raw[0], raw.raw.size(), tex, m_conf.video_width, m_conf.video_height, fmt))
-        {
-            returnTempraryVideoFrame(vf);
-            return false;
-        }
-        fcConvertPixelFormat(raw.rgba.data(), fcPixelFormat_RGBAu8, &raw.raw[0], fmt, m_conf.video_width * m_conf.video_height);
+        m_video_buffers.push(buf);
+        return false;
     }
-
-    // h264 データを生成
-    ++m_video_active_task_count;
-    enqueueVideoTask([this, &vf](){
-        encodeVideoFrame(vf, true);
-        returnTempraryVideoFrame(vf);
-        --m_video_active_task_count;
-    });
-
     return true;
 }
 
 bool fcMP4Context::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp)
 {
-    if (m_h264_encoder == nullptr) {
-        fcDebugLog("fcMP4Context::addVideoFramePixels(): h264 encoder is null.");
-        return false;
-    }
+    if (!pixels || !m_video_encoder) { return false; }
 
-    VideoFrame& vf = getTempraryVideoFrame();
-    auto& raw = vf.first;
-    auto& h264 = vf.second;
-    raw.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeInSeconds();
+    auto buf = m_video_buffers.pop();
+    size_t psize = fcGetPixelSize(fmt);
+    size_t size = m_conf.video_width * m_conf.video_height * psize;
+    buf->resize(size);
+    memcpy(buf->data(), pixels, size);
 
-    bool rgba2i420 = true;
+    m_video_tasks.run([this, buf, fmt, timestamp]() {
+        addVideoFramePixelsImpl(buf->data(), fmt, timestamp);
+        m_video_buffers.push(buf);
+    });
+    return true;
+
+}
+
+bool fcMP4Context::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp)
+{
+    I420Data i420;
+
+    // convert image to I420
     if (fmt == fcPixelFormat_I420) {
-        rgba2i420 = false;
-
+        // use input data directly
         int frame_size = m_conf.video_width * m_conf.video_height;
-        const uint8_t *src_y = (const uint8_t*)pixels;
-        const uint8_t *src_u = src_y + frame_size;
-        const uint8_t *src_v = src_u + (frame_size >> 2);
-        memcpy(raw.i420.y, src_y, frame_size);
-        memcpy(raw.i420.u, src_u, frame_size >> 2);
-        memcpy(raw.i420.v, src_v, frame_size >> 2);
+        i420.y = (void*)pixels;
+        i420.u = (char*)i420.y + frame_size;
+        i420.v = (char*)i420.u + (frame_size >> 2);
     }
     else if (fmt == fcPixelFormat_RGBAu8) {
-        memcpy(raw.rgba.data(), pixels, raw.rgba.size());
+        // RGBAu8 -> I420
+        m_i420_image.resize(m_conf.video_width, m_conf.video_height);
+        RGBA2I420(m_i420_image, pixels, m_conf.video_width, m_conf.video_height);
+        i420 = m_i420_image.data();
     }
     else {
-        fcConvertPixelFormat(raw.rgba.data(), fcPixelFormat_RGBAu8, pixels, fmt, m_conf.video_width * m_conf.video_height);
+        // any format -> RGBAu8 -> I420
+        m_rgba_image.resize(m_conf.video_width * m_conf.video_height * 4);
+        fcConvertPixelFormat(m_rgba_image.data(), fcPixelFormat_RGBAu8, pixels, fmt, m_conf.video_width * m_conf.video_height);
+
+        m_i420_image.resize(m_conf.video_width, m_conf.video_height);
+        RGBA2I420(m_i420_image, m_rgba_image.data(), m_conf.video_width, m_conf.video_height);
+        i420 = m_i420_image.data();
     }
 
-    // h264 データを生成
-    ++m_video_active_task_count;
-    enqueueVideoTask([this, &vf, rgba2i420](){
-        encodeVideoFrame(vf, rgba2i420);
-        returnTempraryVideoFrame(vf);
-        --m_video_active_task_count;
-    });
-
-    return true;
+    // encode!
+    m_video_frame.timestamp = timestamp;
+    if (m_video_encoder->encode(m_video_frame, i420, timestamp)) {
+        eachStreams([this](auto& s) { s.addVideoFrame(m_video_frame); });
+#ifndef fcMaster
+        m_dbg_h264_out->write(m_video_frame.data.data(), m_video_frame.data.size());
+#endif // fcMaster
+        m_video_frame.clear();
+        return true;
+    }
+    return false;
 }
 
 bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, fcTime timestamp)
 {
-    if (m_aac_encoder == nullptr) {
+    if (!m_audio_encoder) {
         fcDebugLog("fcMP4Context::addAudioFrame(): aac encoder is null.");
         return false;
     }
 
-    AudioFrame& af = getTempraryAudioFrame();
-    auto& raw = af.first;
-    auto& aac = af.second;
-    raw.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeInSeconds();
-    raw.data = Buffer((char*)samples, sizeof(float)*num_samples);
+    auto buf = m_audio_buffers.pop();
+    buf->assign(samples, num_samples);
 
-    // aac encode
-    ++m_audio_active_task_count;
-    enqueueAudioTask([this, &aac, &raw, &af](){
-        aac.clear();
-        aac.timestamp = raw.timestamp;
-
-        // apply audio_scale
-        if (m_conf.audio_scale != 1.0f) {
-            float *samples = (float*)raw.data.data();
-            size_t num_samples = raw.data.size() / sizeof(float);
-            fcScaleArray(samples, num_samples, m_conf.audio_scale);
-        }
-
-        m_aac_encoder->encode(aac, (float*)raw.data.data(), raw.data.size() / sizeof(float));
-
-        eachStreams([&](auto& s) { s.addFrame(aac); });
-#ifndef fcMaster
-        m_dbg_aac_out->write(aac.data.data(), aac.data.size());
-#endif // fcMaster
-
-        returnTempraryAudioFrame(af);
-        --m_audio_active_task_count;
+    m_audio_tasks.run([this, buf, timestamp]() {
+        addAudioFrameImpl(buf->data(), (int)buf->size(), timestamp);
+        m_audio_buffers.push(buf);
     });
-
     return true;
+}
+
+bool fcMP4Context::addAudioFrameImpl(const float *samples, int num_samples, fcTime timestamp)
+{
+    m_audio_frame.timestamp = timestamp;
+    if (m_audio_encoder->encode(m_audio_frame, samples, num_samples)) {
+        eachStreams([this](auto& s) { s.addAudioFrame(m_audio_frame); });
+#ifndef fcMaster
+        m_dbg_aac_out->write(m_audio_frame.data.data(), m_audio_frame.data.size());
+#endif // fcMaster
+        m_audio_frame.clear();
+        return true;
+    }
+    return false;
 }
 
 

@@ -22,7 +22,7 @@ public:
     fcNVH264Encoder(const fcH264EncoderConfig& conf);
     ~fcNVH264Encoder();
     const char* getEncoderInfo() override;
-    bool encode(fcH264Frame& dst, const fcI420Image& image, fcTime timestamp, bool force_keyframe) override;
+    bool encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe) override;
 
 private:
     fcH264EncoderConfig m_conf;
@@ -53,7 +53,7 @@ fcNVH264Encoder::~fcNVH264Encoder()
 }
 const char* fcNVH264Encoder::getEncoderInfo() { return "NVENC (by NVIDIA)"; }
 
-bool fcNVH264Encoder::encode(fcH264Frame& dst, const fcI420Image& image, fcTime timestamp, bool force_keyframe)
+bool fcNVH264Encoder::encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe)
 {
     return false;
 }
