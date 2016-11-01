@@ -1,16 +1,17 @@
 #include "pch.h"
-#include <bzip2/bzlib.h>
-#define ZIP_STATIC
-#include <libzip/zip.h>
 #include "Misc.h"
 
 #ifdef fcWindows
+    #define ZIP_STATIC
     #pragma comment(lib, "libbz2.lib")
     #pragma comment(lib, "libzip.lib")
     #pragma comment(lib, "zlibstatic.lib")
 #endif
+#include <bzip2/bzlib.h>
+#include <libzip/zip.h>
 
-bool BZ2Decompress(std::vector<char> &dst, const void *src, size_t src_len)
+
+bool BZ2Decompress(Buffer &dst, const void *src, size_t src_len)
 {
     const size_t initial_buffer_size = 1024 * 1024;
     if (dst.empty()) { dst.resize(initial_buffer_size); }
@@ -32,7 +33,7 @@ bool BZ2Decompress(std::vector<char> &dst, const void *src, size_t src_len)
 
 size_t BZ2DecompressToFile(const char *dst_path, const void *src, size_t src_len)
 {
-    std::vector<char> dst;
+    Buffer dst;
     if (!BZ2Decompress(dst, src, src_len)) {
         return 0;
     }

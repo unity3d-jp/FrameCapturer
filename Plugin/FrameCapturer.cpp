@@ -24,7 +24,7 @@ fcCLinkage fcExport const char* fcGetModulePath()
 
 fcCLinkage fcExport fcTime fcGetTime()
 {
-    return GetCurrentTimeSec();
+    return GetCurrentTimeInSeconds();
 }
 
 fcCLinkage fcExport fcStream* fcCreateFileStream(const char *path)

@@ -179,7 +179,7 @@ bool fcGifContext::addFrameTexture(void *tex, fcPixelFormat fmt, bool keyframe, 
         return false;
     }
     fcGifTaskData& data = getTempraryVideoFrame();
-    data.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeSec();
+    data.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeInSeconds();
     data.local_palette = data.frame == 0 || keyframe;
 
     // フレームバッファの内容取得
@@ -197,7 +197,7 @@ bool fcGifContext::addFrameTexture(void *tex, fcPixelFormat fmt, bool keyframe, 
 bool fcGifContext::addFramePixels(const void *pixels, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
 {
     fcGifTaskData& data = getTempraryVideoFrame();
-    data.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeSec();
+    data.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeInSeconds();
     data.local_palette = data.frame == 0 || keyframe;
     data.raw_pixel_format = fmt;
     data.raw_pixels.assign((char*)pixels, m_conf.width * m_conf.height * fcGetPixelSize(fmt));

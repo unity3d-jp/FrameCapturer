@@ -1,5 +1,6 @@
-﻿#ifndef fcMisc_h
-#define fcMisc_h
+﻿#pragma once
+
+#include "Buffer.h"
 
 #ifdef fcWindows
     #define fcDLLExt ".dll"
@@ -21,7 +22,7 @@ const char* DLLGetDirectoryOfCurrentModule();
 void*       AlignedAlloc(size_t size, size_t align);
 void        AlignedFree(void *p);
 
-double      GetCurrentTimeSec();
+double      GetCurrentTimeInSeconds();
 
 // execute command and **wait until it ends**
 // return exit-code
@@ -36,7 +37,7 @@ int         Execute(const char *command);
 // while decompress failed because of dst.size() is not enough, double it and retry.
 // (if dst.size() == 0, resize to 1024*1024 before first try)
 // dst.size() will be size of decompressed buffer size if succeeded.
-bool    BZ2Decompress(std::vector<char> &dst, const void *src, size_t src_len);
+bool    BZ2Decompress(Buffer &dst, const void *src, size_t src_len);
 
 // src is on-memory bz2 data
 // return decompressed size if successfully decompressed and written to file. otherwise 0.
@@ -45,6 +46,7 @@ size_t  BZ2DecompressToFile(const char *dst_path, const void *src, size_t src_le
 // return decompressed file count
 typedef std::function<void(const char*)> UnzipFileHandler;
 size_t Unzip(const char *dst_path, const char *archive, const UnzipFileHandler& h = UnzipFileHandler());
+
 
 // -------------------------------------------------------------
 // Network
@@ -109,5 +111,3 @@ inline IntType roundup(IntType v)
 {
     return ceildiv(v, N) * N;
 }
-
-#endif // fcMisc_h
