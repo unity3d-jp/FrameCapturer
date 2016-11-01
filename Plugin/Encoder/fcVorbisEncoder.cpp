@@ -103,7 +103,7 @@ void fcVorbisEncoder::gatherPackets(fcVorbisFrame& dst)
 
             double time_in_sec = (double)packet.granulepos / (double)m_conf.sample_rate;
             uint64_t timestamp = uint64_t(time_in_sec * 1000000000.0);
-            dst.blocks.push_back({ packet.bytes, timestamp });
+            dst.packets.push_back({ packet.bytes, timestamp });
         }
     }
 }

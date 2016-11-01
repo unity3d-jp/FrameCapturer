@@ -12,7 +12,6 @@
     #elif _M_IX86
         #define FAACDLL "libfaac-win32.dll"
     #endif
-    #define FAACSelfBuildPackageURL "http://github.com/unity3d-jp/FrameCapturer/raw/master/Packages/FAAC_SelfBuild.zip"
 #else
     #define FAACDLL "libfaac" fcDLLExt
 #endif
@@ -33,6 +32,7 @@ private:
     unsigned long m_output_size;
     Buffer m_aac_tmp_buf;
     Buffer m_aac_header;
+    RawVector<float> m_tmp_data;
 };
 
 
@@ -107,15 +107,16 @@ bool fcFAACEncoder::encode(fcAACFrame& dst, const float *samples, size_t num_sam
 {
     m_aac_tmp_buf.resize(m_output_size);
 
-    int block_index = 0;
+    m_tmp_data.assign(samples, num_samples);
+    for (auto& v : m_tmp_data) { v *= 32767.0f; }
+    samples = m_tmp_data.data();
+
     for (;;) {
         int process_size = std::min<int>((int)m_num_read_samples, (int)num_samples);
-        int size_encoded = faacEncEncode_i(m_handle, (int32_t*)samples, process_size, (unsigned char*)&m_aac_tmp_buf[0], m_output_size);
-        if (size_encoded > 0) {
-            dst.data.append(m_aac_tmp_buf.data(), size_encoded);
-            dst.encoded_block_sizes.push_back(size_encoded);
-            dst.raw_block_sizes.push_back(process_size);
-            ++block_index;
+        int packet_size = faacEncEncode_i(m_handle, (int32_t*)samples, process_size, (unsigned char*)&m_aac_tmp_buf[0], m_output_size);
+        if (packet_size > 0) {
+            dst.data.append(m_aac_tmp_buf.data(), packet_size);
+            dst.packets.push_back({ packet_size , process_size });
         }
         samples += process_size;
         num_samples -= process_size;

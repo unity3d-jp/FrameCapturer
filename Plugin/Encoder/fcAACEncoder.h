@@ -1,5 +1,4 @@
-﻿#ifndef fcAACEncoder_h
-#define fcAACEncoder_h
+﻿#pragma once
 
 
 struct fcAACEncoderConfig
@@ -10,6 +9,38 @@ struct fcAACEncoderConfig
 
     fcAACEncoderConfig() : sample_rate(), num_channels(), target_bitrate() {}
 };
+
+
+struct fcAACFrame
+{
+    struct PacketInfo
+    {
+        int packet_size;
+        int raw_data_size;
+    };
+
+    Buffer data;
+    fcTime timestamp = 0.0;
+    RawVector<PacketInfo> packets;
+
+    void clear()
+    {
+        data.clear();
+        packets.clear();
+    }
+
+    // Body: [](const char *data, int encoded_block_size, int raw_block_size) -> void
+    template<class Body>
+    void eachPackets(const Body& body) const
+    {
+        int total = 0;
+        for (auto& p : packets) {
+            body(&data[total], p.packet_size, p.raw_data_size);
+            total += p.packet_size;
+        }
+    }
+};
+
 
 class fcIAACEncoder
 {
@@ -23,6 +54,3 @@ public:
 bool fcDownloadFAAC(fcDownloadCallback cb);
 bool fcLoadFAACModule();
 fcIAACEncoder* fcCreateFAACEncoder(const fcAACEncoderConfig& conf);
-
-
-#endif // fcAACEncoder_h
