@@ -111,7 +111,7 @@ void AlignedFree(void *p)
 #endif
 }
 
-double GetCurrentTimeSec()
+double GetCurrentTimeInSeconds()
 {
 #ifdef fcWindows
     static LARGE_INTEGER g_freq = { 0, 0 };

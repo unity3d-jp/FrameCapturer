@@ -8,9 +8,9 @@
 #include <libfaac/faac.h>
 #ifdef fcWindows
     #ifdef _M_AMD64
-        #define FAACDLL "libfaac-win64" fcDLLExt
+        #define FAACDLL "libfaac-win64.dll"
     #elif _M_IX86
-        #define FAACDLL "libfaac-win32" fcDLLExt
+        #define FAACDLL "libfaac-win32.dll"
     #endif
     #define FAACSelfBuildPackageURL "http://github.com/unity3d-jp/FrameCapturer/raw/master/Packages/FAAC_SelfBuild.zip"
 #else
