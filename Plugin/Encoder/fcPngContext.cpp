@@ -2,7 +2,7 @@
 #include "fcFoundation.h"
 #include "fcThreadPool.h"
 #include "GraphicsDevice/fcGraphicsDevice.h"
-#include "fcPngFile.h"
+#include "fcPngContext.h"
 
 #include <libpng/png.h>
 #include <half.h>

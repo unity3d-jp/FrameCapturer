@@ -15,7 +15,49 @@
     <ClCompile Include="GraphicsDevice\fcGraphicsDevice.cpp">
       <Filter>GraphisDevice</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcGifFile.cpp">
+    <ClCompile Include="Encoder\Windows\fcMP4_WMF.cpp">
+      <Filter>Encoder\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcAMDH264Encoder.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcFAACEncoder.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcMP4Writer.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcNVH264Encoder.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcOpenH264Encoder.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcOpusEncoder.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcVorbisEncoder.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcVPXEncoder.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcWebMWriter.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcExrContext.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcGifContext.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcMP4Context.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcPngContext.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcWebMContext.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
   </ItemGroup>
@@ -25,7 +67,40 @@
     <ClInclude Include="GraphicsDevice\fcGraphicsDevice.h">
       <Filter>GraphisDevice</Filter>
     </ClInclude>
-    <ClInclude Include="Encoder\fcGifFile.h">
+    <ClInclude Include="Encoder\fcAACEncoder.h">
+      <Filter>Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder\fcH264Encoder.h">
+      <Filter>Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder\fcMP4Internal.h">
+      <Filter>Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder\fcMP4Writer.h">
+      <Filter>Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder\fcVorbisEncoder.h">
+      <Filter>Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder\fcVPXEncoder.h">
+      <Filter>Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder\fcWebMWriter.h">
+      <Filter>Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder\fcWebMContext.h">
+      <Filter>Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder\fcExrContext.h">
+      <Filter>Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder\fcGifContext.h">
+      <Filter>Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder\fcMP4Context.h">
+      <Filter>Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder\fcPngContext.h">
       <Filter>Encoder</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,6 +110,9 @@
     </Filter>
     <Filter Include="Encoder">
       <UniqueIdentifier>{48802eb2-d965-4472-acfa-f45fccdf33ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Encoder\Windows">
+      <UniqueIdentifier>{7db6f261-324d-4798-962a-36ef674aae56}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

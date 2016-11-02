@@ -11,7 +11,7 @@
 #include "fcFoundation.h"
 #include "fcThreadPool.h"
 #include "GraphicsDevice/fcGraphicsDevice.h"
-#include "fcExrFile.h"
+#include "fcExrContext.h"
 
 #if defined(fcWindows) && !defined(fcNoAutoLink)
     #pragma comment(lib, "Half.lib")
