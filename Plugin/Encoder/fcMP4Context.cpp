@@ -101,7 +101,7 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         fcH264EncoderConfig h264conf;
         h264conf.width = m_conf.video_width;
         h264conf.height = m_conf.video_height;
-        h264conf.max_framerate = m_conf.video_target_framerate;
+        h264conf.target_framerate = m_conf.video_target_framerate;
         h264conf.target_bitrate = m_conf.video_target_bitrate;
 
         fcIH264Encoder *enc = nullptr;
@@ -251,7 +251,6 @@ bool fcMP4Context::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt
     }
 
     // encode!
-    m_video_frame.timestamp = timestamp;
     if (m_video_encoder->encode(m_video_frame, i420, timestamp)) {
         eachStreams([this](auto& s) { s.addVideoFrame(m_video_frame); });
 #ifndef fcMaster
@@ -282,8 +281,7 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, fcTime t
 
 bool fcMP4Context::addAudioFrameImpl(const float *samples, int num_samples, fcTime timestamp)
 {
-    m_audio_frame.timestamp = timestamp;
-    if (m_audio_encoder->encode(m_audio_frame, samples, num_samples)) {
+    if (m_audio_encoder->encode(m_audio_frame, samples, num_samples, timestamp)) {
         eachStreams([this](auto& s) { s.addAudioFrame(m_audio_frame); });
 #ifndef fcMaster
         m_dbg_aac_out->write(m_audio_frame.data.data(), m_audio_frame.data.size());

@@ -111,3 +111,11 @@ inline IntType roundup(IntType v)
 {
     return ceildiv(v, N) * N;
 }
+
+
+inline uint64_t to_msec(double seconds) { return uint64_t(seconds * 1000.0); }
+inline uint64_t to_usec(double seconds) { return uint64_t(seconds * 1000000.0); }
+inline uint64_t to_nsec(double seconds) { return uint64_t(seconds * 1000000000.0); }
+inline double msec_to_sec(uint64_t t) { return double(t) / 1000.0; }
+inline double usec_to_sec(uint64_t t) { return double(t) / 1000000.0; }
+inline double nsec_to_sec(uint64_t t) { return double(t) / 1000000000.0; }

@@ -79,6 +79,7 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
         econf.width = conf.video_width;
         econf.height = conf.video_height;
         econf.target_bitrate = conf.video_bitrate;
+        econf.target_framerate = conf.video_target_framerate;
 
         switch (conf.video_encoder) {
         case fcWebMVideoEncoder::VP8:
@@ -244,8 +245,8 @@ bool fcWebMContext::addAudioFrame(const float *samples, int num_samples, fcTime 
     auto buf = m_audio_buffers.pop();
     buf->assign(samples, num_samples);
 
-    m_audio_tasks.run([this, buf]() {
-        if (m_audio_encoder->encode(m_audio_frame, buf->data(), buf->size())) {
+    m_audio_tasks.run([this, buf, timestamp]() {
+        if (m_audio_encoder->encode(m_audio_frame, buf->data(), buf->size(), timestamp)) {
             eachStreams([&](auto& writer) {
                 writer.addAudioFrame(m_audio_frame);
             });

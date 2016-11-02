@@ -4,8 +4,8 @@ struct fcVPXEncoderConfig
 {
     int width = 0;
     int height = 0;
-    int target_bitrate = 0;
-    int max_framerate = 60;
+    int target_bitrate = 1024000;
+    int target_framerate = 60;
 };
 
 struct fcVPXFrame
@@ -13,7 +13,7 @@ struct fcVPXFrame
     struct PacketInfo
     {
         int size;
-        uint64_t timestamp;
+        double timestamp;
         uint32_t keyframe : 1;
     };
     using Packets = RawVector<PacketInfo>;
@@ -28,14 +28,14 @@ struct fcVPXFrame
         packets.clear();
     }
 
-    // Body: [](const char *data, int size, uint64_t timestamp, bool keyframe) {}
+    // Body: [](const char *data, const PacketInfo& pinfo) {}
     template<class Body>
     void eachPackets(const Body& body) const
     {
         int pos = 0;
-        for (auto& s : packets) {
-            body(&data[pos], s.size, s.timestamp, s.keyframe);
-            pos += s.size;
+        for (auto& p : packets) {
+            body(&data[pos], p);
+            pos += p.size;
         }
     }
 };

@@ -87,7 +87,7 @@ fcOpenH264Encoder::fcOpenH264Encoder(const fcH264EncoderConfig& conf)
     SEncParamBase param;
     memset(&param, 0, sizeof(SEncParamBase));
     param.iUsageType = SCREEN_CONTENT_REAL_TIME;
-    param.fMaxFrameRate = (float)conf.max_framerate;
+    param.fMaxFrameRate = (float)conf.target_framerate;
     param.iPicWidth = conf.width;
     param.iPicHeight = conf.height;
     param.iTargetBitrate = conf.target_bitrate;
@@ -107,6 +107,8 @@ bool fcOpenH264Encoder::encode(fcH264Frame& dst, const I420Data& data, fcTime ti
 {
     if (!m_encoder) { return false; }
 
+    dst.timestamp = timestamp;
+
     SSourcePicture src;
     memset(&src, 0, sizeof(src));
     src.iPicWidth = m_conf.width;
@@ -118,7 +120,7 @@ bool fcOpenH264Encoder::encode(fcH264Frame& dst, const I420Data& data, fcTime ti
     src.iStride[0] = m_conf.width;
     src.iStride[1] = m_conf.width >> 1;
     src.iStride[2] = m_conf.width >> 1;
-    src.uiTimeStamp = int64_t(timestamp * 1000.0); // sec to millisec
+    src.uiTimeStamp = to_msec(dst.timestamp);
 
     SFrameBSInfo frame;
     memset(&frame, 0, sizeof(frame));

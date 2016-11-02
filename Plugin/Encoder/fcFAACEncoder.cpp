@@ -23,7 +23,7 @@ public:
     ~fcFAACEncoder() override;
     const char* getEncoderInfo() override;
     const Buffer& getDecoderSpecificInfo() override;
-    bool encode(fcAACFrame& dst, const float *samples, size_t num_samples) override;
+    bool encode(fcAACFrame& dst, const float *samples, size_t num_samples, fcTime timestamp) override;
 
 private:
     fcAACEncoderConfig m_conf;
@@ -103,7 +103,7 @@ fcFAACEncoder::~fcFAACEncoder()
 }
 const char* fcFAACEncoder::getEncoderInfo() { return "FAAC"; }
 
-bool fcFAACEncoder::encode(fcAACFrame& dst, const float *samples, size_t num_samples)
+bool fcFAACEncoder::encode(fcAACFrame& dst, const float *samples, size_t num_samples, fcTime timestamp)
 {
     m_aac_tmp_buf.resize(m_output_size);
 
@@ -111,16 +111,20 @@ bool fcFAACEncoder::encode(fcAACFrame& dst, const float *samples, size_t num_sam
     for (auto& v : m_tmp_data) { v *= 32767.0f; }
     samples = m_tmp_data.data();
 
+    int total = 0;
     for (;;) {
-        int process_size = std::min<int>((int)m_num_read_samples, (int)num_samples);
+        int process_size = std::min<int>((int)m_num_read_samples, (int)num_samples - total);
         int packet_size = faacEncEncode_i(m_handle, (int32_t*)samples, process_size, (unsigned char*)&m_aac_tmp_buf[0], m_output_size);
         if (packet_size > 0) {
             dst.data.append(m_aac_tmp_buf.data(), packet_size);
-            dst.packets.push_back({ packet_size , process_size });
+
+            double duration = (double)process_size / (double)m_conf.sample_rate;
+            double timepos = (double)total / (double)m_conf.sample_rate + timestamp;
+            dst.packets.push_back({ (uint32_t)packet_size, duration, timepos });
         }
+        total += process_size;
         samples += process_size;
-        num_samples -= process_size;
-        if (num_samples <= 0) { break; }
+        if (total >= num_samples) { break; }
     }
     return true;
 }

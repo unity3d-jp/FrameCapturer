@@ -264,7 +264,7 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
 }
 
 
-static inline LONGLONG SecondsToTimestamp(fcTime t)
+static inline LONGLONG SecondsToTimestampWMF(fcTime t)
 {
     return LONGLONG(t * double(10 * 1000 * 1000));
 }
@@ -309,8 +309,8 @@ bool fcMP4ContextWMF::addVideoFramePixels(const void *pixels, fcPixelFormat fmt,
 
 bool fcMP4ContextWMF::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp)
 {
-    const LONGLONG start = SecondsToTimestamp(timestamp);
-    const LONGLONG duration = SecondsToTimestamp(1.0 / m_conf.video_target_framerate);
+    const LONGLONG start = SecondsToTimestampWMF(timestamp);
+    const LONGLONG duration = SecondsToTimestampWMF(1.0 / m_conf.video_target_framerate);
     const DWORD size = roundup<2>(m_conf.video_width) * roundup<2>(m_conf.video_height);
     const DWORD buffer_size = size + (size >> 2) + (size >> 2);
 
@@ -377,8 +377,8 @@ bool fcMP4ContextWMF::addAudioFrame(const float *samples, int num_samples, fcTim
 
 bool fcMP4ContextWMF::addAudioFrameImpl(const float *samples, int num_samples, fcTime timestamp)
 {
-    const LONGLONG start = SecondsToTimestamp(timestamp);
-    const LONGLONG duration = SecondsToTimestamp(1.0 / m_conf.video_target_framerate);
+    const LONGLONG start = SecondsToTimestampWMF(timestamp);
+    const LONGLONG duration = SecondsToTimestampWMF(1.0 / m_conf.video_target_framerate);
     const DWORD data_size = num_samples * 4;
 
     ComPtr<IMFMediaBuffer> pBuffer;

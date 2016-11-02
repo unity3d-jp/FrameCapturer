@@ -223,7 +223,7 @@ struct fcWebMConfig
     int     video_width = 0;
     int     video_height = 0;
     int     video_bitrate = 1024 * 1000;
-    int     video_max_framerate = 60;
+    int     video_target_framerate = 60;
     int     video_max_buffers = 8;
     int     audio_sample_rate = 48000;
     int     audio_num_channels = 2;

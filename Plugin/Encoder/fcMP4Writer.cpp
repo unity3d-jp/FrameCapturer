@@ -86,7 +86,7 @@ void fcMP4Writer::addVideoFrame(const fcH264Frame& frame)
     BinaryStream& os = m_stream;
     fcMP4FrameInfo info;
     info.file_offset = os.tellp();
-    info.timestamp = frame.timestamp;
+    info.timestamp = to_usec(frame.timestamp);
 
     if (frame.h264_type == fcH264FrameType_I) {
         m_iframe_ids.push_back((uint32_t)m_video_frame_info.size() + 1);
@@ -111,7 +111,7 @@ void fcMP4Writer::addVideoFrame(const fcH264Frame& frame)
 
     });
 
-    m_video_frame_info.emplace_back(info);
+    m_video_frame_info.push_back(info);
 }
 
 void fcMP4Writer::addAudioFrame(const fcAACFrame& frame)
@@ -120,20 +120,17 @@ void fcMP4Writer::addAudioFrame(const fcAACFrame& frame)
     std::unique_lock<std::mutex> lock(m_mutex);
 
     BinaryStream& os = m_stream;
-    fcTime timestamp = frame.timestamp;
-    frame.eachPackets([&](const char *data, int size, int raw_size) {
+    frame.eachPackets([&](const char *data, auto& pinfo) {
         fcMP4FrameInfo info;
         info.file_offset = os.tellp();
-        info.timestamp = timestamp;
+        info.timestamp = to_usec(pinfo.timestamp);
 
         const int offset = 7;
-        size -= offset;
-
+        int size = pinfo.size - offset;
         os.write(data + offset, size);
         info.size += size;
-        timestamp += (double)raw_size / (double)m_conf.audio_sample_rate;
 
-        m_audio_frame_info.emplace_back(info);
+        m_audio_frame_info.push_back(info);
     });
 }
 
@@ -151,17 +148,17 @@ void fcMP4Writer::mp4End()
 
     const fcMP4Config& c = m_conf;
     const u32 ctime = (u32)fcGetMacTime();
-    const u32 unit_duration = 1000; // millisec
-    u32 video_duration = 0;
-    u32 audio_duration = 0;
-    u32 duration = 0;
+    const u32 unit_duration = 1000000; // usec
+    u64 video_duration = 0;
+    u64 audio_duration = 0;
+    u64 duration = 0;
 
-    std::vector<fcMP4SampleToChunk> video_samples_to_chunk;
-    std::vector<fcMP4SampleToChunk> audio_samples_to_chunk;
-    std::vector<fcMP4OffsetValue> video_decode_times;
-    std::vector<fcMP4OffsetValue> audio_decode_times;
-    std::vector<u64> video_chunks;
-    std::vector<u64> audio_chunks;
+    RawVector<fcMP4SampleToChunk> video_samples_to_chunk;
+    RawVector<fcMP4SampleToChunk> audio_samples_to_chunk;
+    RawVector<fcMP4OffsetValue> video_decode_times;
+    RawVector<fcMP4OffsetValue> audio_decode_times;
+    RawVector<u64> video_chunks;
+    RawVector<u64> audio_chunks;
 
     // there must be at least 1 I-frame
     if (m_iframe_ids.empty()) {
@@ -170,15 +167,15 @@ void fcMP4Writer::mp4End()
 
     // compute decode times
     auto compute_decode_times = [](
-        std::vector<fcMP4FrameInfo>& frame_info,
-        std::vector<fcMP4OffsetValue>& decode_times) -> u32 // return duration in millisec
+        RawVector<fcMP4FrameInfo>& frame_info,
+        RawVector<fcMP4OffsetValue>& decode_times) -> u64 // return duration
     {
-        u32 total_duration_ms = 0;
+        u64 total_duration = 0;
         for (size_t i = 1; i < frame_info.size(); ++i) {
             auto& prev = frame_info[i - 1];
             auto& cur = frame_info[i];
-            uint32_t duration = uint32_t((cur.timestamp - prev.timestamp) * 1000); // sec to millisec
-            total_duration_ms += duration;
+            u64 duration = cur.timestamp - prev.timestamp;
+            total_duration += duration;
 
             if (!decode_times.empty() && decode_times.back().value == duration) {
                 decode_times.back().count++;
@@ -186,21 +183,21 @@ void fcMP4Writer::mp4End()
             else {
                 fcMP4OffsetValue ov;
                 ov.count = 1;
-                ov.value = duration;
-                decode_times.emplace_back(ov);
+                ov.value = u32(duration);
+                decode_times.push_back(ov);
             }
         }
-        return total_duration_ms;
+        return total_duration;
     };
     video_duration = compute_decode_times(m_video_frame_info, video_decode_times);
     audio_duration = compute_decode_times(m_audio_frame_info, audio_decode_times);
-    duration = std::max<u32>(video_duration, audio_duration);
+    duration = std::max<u64>(video_duration, audio_duration);
 
     // compute chunk data
     auto compute_chunk_data = [](
-        std::vector<fcMP4FrameInfo>& frame_info,
-        std::vector<u64>& chunks,
-        std::vector<fcMP4SampleToChunk>& samples_to_chunk)
+        RawVector<fcMP4FrameInfo>& frame_info,
+        RawVector<u64>& chunks,
+        RawVector<fcMP4SampleToChunk>& samples_to_chunk)
     {
         for (size_t i = 0; i < frame_info.size(); ++i) {
             auto* cur = &frame_info[i];
@@ -214,7 +211,7 @@ void fcMP4Writer::mp4End()
                 stc.first_chunk_ID = (uint32_t)chunks.size();
                 stc.samples_per_chunk = 1;
                 stc.sample_description_ID = 1;
-                samples_to_chunk.emplace_back(stc);
+                samples_to_chunk.push_back(stc);
             }
             else {
                 samples_to_chunk.back().samples_per_chunk++;
@@ -244,7 +241,7 @@ void fcMP4Writer::mp4End()
             bs << u32(0);                       // version and flags (none)
             bs << u32_be(ctime);                // creation time
             bs << u32_be(ctime);                // modified time
-            bs << u32_be(unit_duration);        // time base (milliseconds = 1000)
+            bs << u32_be(unit_duration);        // time base
             bs << u32_be(duration);             // duration (in time base units)
             bs << u32_be(0x00010000);           // fixed point playback speed 1.0
             bs << u16_be(0x0100);               // fixed point vol 1.0

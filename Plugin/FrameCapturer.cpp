@@ -419,7 +419,7 @@ fcCLinkage fcExport void fcMP4SetFAACPackagePath(const char *path)
         fcMP4SetFAACPackagePathImpl(path);
     }
 #else
-    return fcMP4SetFAACPackagePath(path);
+    return fcMP4SetFAACPackagePathImpl(path);
 #endif
 }
 
