@@ -151,8 +151,7 @@ bool fcOpenH264Encoder::encode(fcH264Frame& dst, const I420Data& data, fcTime ti
 // -------------------------------------------------------------
 // OpenH264 downloader
 // -------------------------------------------------------------
-
-
+#ifdef fcEnableOpenH264Downloader
 namespace {
 
     std::thread *g_download_thread;
@@ -204,11 +203,16 @@ bool fcDownloadOpenH264(fcDownloadCallback cb)
     g_download_thread = new std::thread([=]() { fcDownloadOpenH264Body(cb); });
     return true;
 }
-
+#endif // fcEnableOpenH264Downloader
 #else  // fcSupportOpenH264
 
-bool fcDownloadOpenH264(fcDownloadCallback cb) { return false; }
 bool fcLoadOpenH264Module() { return false; }
 fcIH264Encoder* fcCreateOpenH264Encoder(const fcH264EncoderConfig& conf) { return nullptr; }
 
 #endif // fcSupportOpenH264
+
+#if !defined(fcSupportOpenH264) || !defined(fcEnableOpenH264Downloader)
+
+bool fcDownloadOpenH264(fcDownloadCallback cb) { return false; }
+
+#endif

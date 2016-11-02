@@ -141,6 +141,28 @@ const Buffer& fcFAACEncoder::getDecoderSpecificInfo()
     return m_aac_header;
 }
 
+
+bool fcLoadFAACModule()
+{
+    if (g_mod_faac != nullptr) { return true; }
+
+    g_mod_faac = DLLLoad(FAACDLL);
+    if (g_mod_faac == nullptr) { return false; }
+
+#define imp(name) (void*&)name##_i = DLLGetSymbol(g_mod_faac, #name);
+    EachFAACFunctions(imp)
+#undef imp
+    return true;
+}
+
+
+fcIAACEncoder* fcCreateFAACEncoder(const fcAACEncoderConfig& conf)
+{
+    if (!fcLoadFAACModule()) { return nullptr; }
+    return new fcFAACEncoder(conf);
+}
+
+#ifdef fcEnableFAACSelfBuild
 namespace {
     std::thread *g_download_thread;
 
@@ -164,7 +186,7 @@ namespace {
         bool http = false;
 
         // download self-build package package_path is http
-        if(strncmp(package_path.c_str(), "http://", 7)==0) {
+        if (strncmp(package_path.c_str(), "http://", 7) == 0) {
             http = true;
             std::string local_package = dir + "/FAAC_SelfBuild.zip";
             std::fstream fs(local_package.c_str(), std::ios::out | std::ios::binary);
@@ -247,36 +269,16 @@ bool fcDownloadFAAC(fcDownloadCallback cb)
     return true;
 }
 
-bool fcLoadFAACModule()
-{
-    if (g_mod_faac != nullptr) { return true; }
-
-    g_mod_faac = DLLLoad(FAACDLL);
-    if (g_mod_faac == nullptr) { return false; }
-
-#define imp(name) (void*&)name##_i = DLLGetSymbol(g_mod_faac, #name);
-    EachFAACFunctions(imp)
-#undef imp
-    return true;
-}
-
-
-fcIAACEncoder* fcCreateFAACEncoder(const fcAACEncoderConfig& conf)
-{
-    if (!fcLoadFAACModule()) { return nullptr; }
-    return new fcFAACEncoder(conf);
-}
-
+#endif // fcEnableFAACSelfBuild
 #else  // fcSupportFAAC
 
-bool fcLoadFAACModule()
-{
-    return false;
-}
-
-fcIAACEncoder* fcCreateFAACEncoder(const fcAACEncoderConfig& conf)
-{
-    return nullptr;
-}
+bool fcLoadFAACModule() { return false; }
+fcIAACEncoder* fcCreateFAACEncoder(const fcAACEncoderConfig& conf) { return nullptr; }
 
 #endif // fcSupportFAAC
+
+#if !defined(fcEnableFAACSelfBuild) || !defined(fcSupportFAAC)
+
+bool fcDownloadFAAC(fcDownloadCallback cb) { return false; }
+
+#endif

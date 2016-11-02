@@ -60,6 +60,9 @@
 #define fcSupportVorbis
 //#define fcSupportOpus
 
+//#define fcEnableFAACSelfBuild
+//#define fcEnableOpenH264Downloader
+
 
 //#define fcGIFSplitModule
 //#define fcPNGSplitModule
