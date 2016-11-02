@@ -13,8 +13,9 @@ struct fcVorbisFrame
 {
     struct PacketInfo
     {
-        int size;
-        uint64_t timestamp;
+        uint32_t size;
+        double duration;
+        double timestamp;
     };
     using Packets = RawVector<PacketInfo>;
 
@@ -27,13 +28,13 @@ struct fcVorbisFrame
         packets.clear();
     }
 
-    // Body: [](const char *data, int size, uint64_t timestamp) {}
+    // Body: [](const char *data, const PacketInfo& pinfo) {}
     template<class Body>
     void eachPackets(const Body& body) const
     {
         int pos = 0;
         for (auto& s : packets) {
-            body(&data[pos], s.size, s.timestamp);
+            body(&data[pos], s);
             pos += s.size;
         }
     }
@@ -47,7 +48,7 @@ public:
     virtual const char* getMatroskaCodecID() const = 0;
     virtual const Buffer& getCodecPrivate() const = 0;
 
-    virtual bool encode(fcVorbisFrame& dst, const float *samples, size_t num_samples) = 0;
+    virtual bool encode(fcVorbisFrame& dst, const float *samples, size_t num_samples, fcTime timestamp) = 0;
     virtual bool flush(fcVorbisFrame& dst) = 0;
 };
 

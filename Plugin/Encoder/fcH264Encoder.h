@@ -3,12 +3,10 @@
 
 struct fcH264EncoderConfig
 {
-    int width;
-    int height;
-    int target_bitrate;
-    int max_framerate;
-
-    fcH264EncoderConfig() : width(), height(), target_bitrate(), max_framerate() {}
+    int width = 0;
+    int height = 0;
+    int target_bitrate = 1024000;
+    int target_framerate = 60;
 };
 
 
@@ -41,9 +39,9 @@ struct fcH264NALHeader
 struct fcH264Frame
 {
     Buffer data;
-    fcTime timestamp = 0.0;
-    RawVector<int> nal_sizes;
+    double timestamp = 0;
     fcH264FrameType h264_type = fcH264FrameType_Invalid;
+    RawVector<int> nal_sizes;
 
     void clear()
     {

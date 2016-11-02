@@ -19,12 +19,12 @@ private:
     BinaryStream& m_stream;
     fcMP4Config m_conf;
     std::mutex m_mutex;
-    std::vector<fcMP4FrameInfo> m_video_frame_info;
-    std::vector<fcMP4FrameInfo> m_audio_frame_info;
-    std::vector<u8> m_pps;
-    std::vector<u8> m_sps;
-    std::vector<u32> m_iframe_ids;
-    std::vector<u8> m_audio_encoder_info;
+    RawVector<fcMP4FrameInfo> m_video_frame_info;
+    RawVector<fcMP4FrameInfo> m_audio_frame_info;
+    RawVector<u8> m_pps;
+    RawVector<u8> m_sps;
+    RawVector<u32> m_iframe_ids;
+    RawVector<u8> m_audio_encoder_info;
 
     size_t m_mdat_begin;
     size_t m_mdat_end;

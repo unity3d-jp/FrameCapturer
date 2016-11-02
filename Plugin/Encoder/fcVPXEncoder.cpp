@@ -29,7 +29,6 @@ private:
     vpx_codec_iface_t   *m_vpx_iface = nullptr;
     vpx_codec_ctx_t     m_vpx_ctx = {};
     vpx_image_t         m_vpx_img = {};
-    fcTime              m_prev_timestamp = 0.0;
     const char*         m_matroska_codec_id = nullptr;
 };
 
@@ -53,7 +52,7 @@ fcVPXEncoder::fcVPXEncoder(const fcVPXEncoderConfig& conf, fcWebMVideoEncoder en
     vpx_config.g_w = m_conf.width;
     vpx_config.g_h = m_conf.height;
     vpx_config.g_timebase.num = 1;
-    vpx_config.g_timebase.den = 1000000000;
+    vpx_config.g_timebase.den = 1000000000; // nsec
     vpx_config.rc_target_bitrate = m_conf.target_bitrate;
     vpx_codec_enc_init(&m_vpx_ctx, m_vpx_iface, &vpx_config, 0);
 
@@ -81,13 +80,9 @@ const char* fcVPXEncoder::getMatroskaCodecID() const
 
 bool fcVPXEncoder::encode(fcVPXFrame& dst, const I420Data& image, fcTime timestamp, bool force_keyframe)
 {
-    vpx_codec_pts_t vpx_time = uint64_t(timestamp * 1000000000.0);
+    vpx_codec_pts_t vpx_time = to_nsec(timestamp);
     vpx_enc_frame_flags_t vpx_flags = 0;
-    uint32_t duration = uint32_t((timestamp - m_prev_timestamp) * 1000000000.0);
-    if (duration == 0) {
-        duration = 1000000000 / 60;
-    }
-    m_prev_timestamp = timestamp;
+    uint32_t duration = 1000000000 / m_conf.target_framerate;
     if (force_keyframe) {
         vpx_flags |= VPX_EFLAG_FORCE_KF;
     }
@@ -123,8 +118,10 @@ void fcVPXEncoder::gatherFrameData(fcVPXFrame& dst)
     while ((pkt = vpx_codec_get_cx_data(&m_vpx_ctx, &iter)) != nullptr) {
         if (pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
             dst.data.append((char*)pkt->data.frame.buf, pkt->data.frame.sz);
+
+            double timestamp = nsec_to_sec(pkt->data.frame.pts);
             dst.packets.push_back({
-                (int)pkt->data.frame.sz, (uint64_t)pkt->data.frame.pts, pkt->data.frame.flags & VPX_FRAME_IS_KEY });
+                (int)pkt->data.frame.sz, timestamp, pkt->data.frame.flags & VPX_FRAME_IS_KEY });
         }
     }
 }

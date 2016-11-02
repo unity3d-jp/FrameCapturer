@@ -110,7 +110,7 @@ public:
     {
         size_t num = std::distance(first, last);
         resize(num);
-        memcpy(m_data, data, sizeof(T)*num);
+        memcpy(m_data, first, sizeof(T)*num);
     }
 
     void append(const_pointer data, size_t num)

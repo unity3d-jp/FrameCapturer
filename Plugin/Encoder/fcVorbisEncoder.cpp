@@ -20,7 +20,7 @@ public:
     const char* getMatroskaCodecID() const override;
     const Buffer& getCodecPrivate() const override;
 
-    bool encode(fcVorbisFrame& dst, const float *samples, size_t num_samples) override;
+    bool encode(fcVorbisFrame& dst, const float *samples, size_t num_samples, fcTime timestamp) override;
     bool flush(fcVorbisFrame& dst) override;
 
 private:
@@ -101,14 +101,13 @@ void fcVorbisEncoder::gatherPackets(fcVorbisFrame& dst)
         while (vorbis_bitrate_flushpacket(&m_vo_dsp, &packet) == 1) {
             dst.data.append((const char*)packet.packet, packet.bytes);
 
-            double time_in_sec = (double)packet.granulepos / (double)m_conf.sample_rate;
-            uint64_t timestamp = uint64_t(time_in_sec * 1000000000.0);
-            dst.packets.push_back({ packet.bytes, timestamp });
+            double timestamp = (double)packet.granulepos / (double)m_conf.sample_rate;
+            dst.packets.push_back({ (uint32_t)packet.bytes, 0.0, timestamp });
         }
     }
 }
 
-bool fcVorbisEncoder::encode(fcVorbisFrame& dst, const float *samples, size_t num_samples)
+bool fcVorbisEncoder::encode(fcVorbisFrame& dst, const float *samples, size_t num_samples, fcTime timestamp)
 {
     if (!samples || num_samples == 0) { return false; }
 
