@@ -27,7 +27,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Encoder\fcGifFile.cpp" />
+    <ClCompile Include="Encoder\fcAMDH264Encoder.cpp" />
+    <ClCompile Include="Encoder\fcExrContext.cpp" />
+    <ClCompile Include="Encoder\fcFAACEncoder.cpp" />
+    <ClCompile Include="Encoder\fcGifContext.cpp" />
+    <ClCompile Include="Encoder\fcMP4Context.cpp" />
+    <ClCompile Include="Encoder\fcMP4Writer.cpp" />
+    <ClCompile Include="Encoder\fcNVH264Encoder.cpp" />
+    <ClCompile Include="Encoder\fcOpenH264Encoder.cpp" />
+    <ClCompile Include="Encoder\fcOpusEncoder.cpp" />
+    <ClCompile Include="Encoder\fcPngContext.cpp" />
+    <ClCompile Include="Encoder\fcVorbisEncoder.cpp" />
+    <ClCompile Include="Encoder\fcVPXEncoder.cpp" />
+    <ClCompile Include="Encoder\fcWebMContext.cpp" />
+    <ClCompile Include="Encoder\fcWebMWriter.cpp" />
+    <ClCompile Include="Encoder\Windows\fcMP4_WMF.cpp" />
     <ClCompile Include="FrameCapturer.cpp" />
     <ClCompile Include="GraphicsDevice\fcGraphicsDevice.cpp" />
     <ClCompile Include="GraphicsDevice\fcGraphicsDeviceD3D11.cpp" />
@@ -43,7 +57,18 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Encoder\fcGifFile.h" />
+    <ClInclude Include="Encoder\fcAACEncoder.h" />
+    <ClInclude Include="Encoder\fcExrContext.h" />
+    <ClInclude Include="Encoder\fcGifContext.h" />
+    <ClInclude Include="Encoder\fcH264Encoder.h" />
+    <ClInclude Include="Encoder\fcMP4Context.h" />
+    <ClInclude Include="Encoder\fcMP4Internal.h" />
+    <ClInclude Include="Encoder\fcMP4Writer.h" />
+    <ClInclude Include="Encoder\fcPngContext.h" />
+    <ClInclude Include="Encoder\fcVorbisEncoder.h" />
+    <ClInclude Include="Encoder\fcVPXEncoder.h" />
+    <ClInclude Include="Encoder\fcWebMContext.h" />
+    <ClInclude Include="Encoder\fcWebMWriter.h" />
     <ClInclude Include="FrameCapturer.h" />
     <ClInclude Include="GraphicsDevice\fcGraphicsDevice.h" />
     <ClInclude Include="pch.h" />
@@ -51,18 +76,6 @@
   <ItemGroup>
     <ProjectReference Include="Foundation.vcxproj">
       <Project>{df113358-bdd3-418f-a350-43d63f249b45}</Project>
-    </ProjectReference>
-    <ProjectReference Include="FrameCapturer_EXR.vcxproj">
-      <Project>{3a7d5cb3-3a06-418e-b457-86456a4eb2f0}</Project>
-    </ProjectReference>
-    <ProjectReference Include="FrameCapturer_MP4.vcxproj">
-      <Project>{067fa9e2-32cd-4c66-be1b-959edf510cc8}</Project>
-    </ProjectReference>
-    <ProjectReference Include="FrameCapturer_PNG.vcxproj">
-      <Project>{100ca7b7-efe5-4255-b4ca-d903038333b3}</Project>
-    </ProjectReference>
-    <ProjectReference Include="FrameCapturer_WebM.vcxproj">
-      <Project>{d94a471a-a891-4240-8f3e-24898505eaac}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

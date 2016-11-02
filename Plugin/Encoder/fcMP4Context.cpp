@@ -2,7 +2,7 @@
 #include <libyuv/libyuv.h>
 #include "fcThreadPool.h"
 #include "fcMP4Internal.h"
-#include "fcMP4File.h"
+#include "fcMP4Context.h"
 #include "fcH264Encoder.h"
 #include "fcAACEncoder.h"
 #include "fcMP4Writer.h"

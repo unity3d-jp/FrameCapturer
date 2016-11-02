@@ -137,7 +137,7 @@ fcCLinkage fcExport void fcCallDeferredCall(int id)
 // -------------------------------------------------------------
 
 #ifdef fcSupportPNG
-#include "Encoder/fcPngFile.h"
+#include "Encoder/fcPngContext.h"
 
 #ifdef fcPNGSplitModule
     #define fcPNGModuleName  "FrameCapturer_PNG" fcDLLExt
@@ -200,7 +200,7 @@ fcCLinkage fcExport int fcPngExportTextureDeferred(fcIPngContext *ctx, const cha
 // -------------------------------------------------------------
 
 #ifdef fcSupportEXR
-#include "Encoder/fcExrFile.h"
+#include "Encoder/fcExrContext.h"
 
 #ifdef fcEXRSplitModule
     #define fcEXRModuleName  "FrameCapturer_EXR" fcDLLExt
@@ -291,7 +291,7 @@ fcCLinkage fcExport int fcExrEndFrameDeferred(fcIExrContext *ctx, int id)
 // -------------------------------------------------------------
 
 #ifdef fcSupportGIF
-#include "Encoder/fcGifFile.h"
+#include "Encoder/fcGifContext.h"
 
 #ifdef fcGIFSplitModule
     #define fcGIFModuleName  "FrameCapturer_GIF" fcDLLExt
@@ -387,7 +387,7 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
 // -------------------------------------------------------------
 
 #ifdef fcSupportMP4
-#include "Encoder/fcMP4File.h"
+#include "Encoder/fcMP4Context.h"
 
 #ifdef fcMP4SplitModule
     #define fcMP4ModuleName  "FrameCapturer_MP4" fcDLLExt
@@ -534,7 +534,7 @@ fcCLinkage fcExport bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *sam
 // -------------------------------------------------------------
 
 #ifdef fcSupportWebM
-#include "Encoder/fcWebMFile.h"
+#include "Encoder/fcWebMContext.h"
 
 #ifdef fcWebMSplitModule
     #define fcWebMModuleName  "FrameCapturer_WebM" fcDLLExt

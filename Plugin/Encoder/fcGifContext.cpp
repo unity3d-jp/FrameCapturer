@@ -2,7 +2,7 @@
 #include "fcFoundation.h"
 #include "fcThreadPool.h"
 #include "GraphicsDevice/fcGraphicsDevice.h"
-#include "fcGifFile.h"
+#include "fcGifContext.h"
 #include "external/jo_gif.cpp"
 
 #ifdef fcSupportHalfPixelFormat

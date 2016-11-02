@@ -36,51 +36,36 @@
 #endif
 
 #define fcEnableLogging
+
+#define fcSupportOpenGL
 #ifdef _WIN32
-    #define fcSupportOpenGL
     #define fcSupportD3D9
     #define fcSupportD3D11
+#endif
 
-    #define fcSupportPNG
-    #define fcSupportEXR
-    #define fcSupportGIF
-    #define fcSupportMP4
-    #define fcSupportWebM
+#define fcSupportPNG
+#define fcSupportEXR
+#define fcSupportGIF
+#define fcSupportMP4
+#define fcSupportWebM
 
-    #define fcSupportHalfPixelFormat
-    #define fcSupportFAAC
-    #define fcSupportOpenH264
+#define fcSupportHalfPixelFormat
+#define fcSupportFAAC
+#define fcSupportOpenH264
+#ifdef _WIN32
     #define fcSupportNVH264
     #define fcSupportAMDH264
-
-    #define fcSupportVPX
-    #define fcSupportVorbis
-    //#define fcSupportOpus
-#else
-    #define fcSupportOpenGL
-
-    #define fcSupportPNG
-    #define fcSupportEXR
-    #define fcSupportGIF
-    #define fcSupportMP4
-    #define fcSupportWebM
-
-    #define fcSupportHalfPixelFormat
-    #define fcSupportFAAC
-    #define fcSupportOpenH264
-    #define fcSupportNVH264
-
-    #define fcSupportVPX
-    #define fcSupportVorbis
-    //#define fcSupportOpus
 #endif
-#ifndef fcStaticLink
-    //#define fcGIFSplitModule
-    #define fcPNGSplitModule
-    #define fcEXRSplitModule
-    #define fcMP4SplitModule
-    #define fcWebMSplitModule
-#endif // fcStaticLink
+#define fcSupportVPX
+#define fcSupportVorbis
+//#define fcSupportOpus
+
+
+//#define fcGIFSplitModule
+//#define fcPNGSplitModule
+//#define fcEXRSplitModule
+//#define fcMP4SplitModule
+//#define fcWebMSplitModule
 
 
 #ifdef fcEnableLogging
