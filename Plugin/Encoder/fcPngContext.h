@@ -1,5 +1,4 @@
-#ifndef fcPNGFile_h
-#define fcPNGFile_h
+#pragma once
 
 class fcIPngContext
 {
@@ -11,5 +10,3 @@ protected:
     virtual ~fcIPngContext() {}
 };
 typedef fcIPngContext* (*fcPngCreateContextImplT)(const fcPngConfig *conf, fcIGraphicsDevice*);
-
-#endif // fcPNGFile_h

@@ -18,19 +18,7 @@
     <ClCompile Include="Encoder\Windows\fcMP4_WMF.cpp">
       <Filter>Encoder\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="Encoder\fcAMDH264Encoder.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="Encoder\fcFAACEncoder.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
     <ClCompile Include="Encoder\fcMP4Writer.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="Encoder\fcNVH264Encoder.cpp">
-      <Filter>Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="Encoder\fcOpenH264Encoder.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
     <ClCompile Include="Encoder\fcOpusEncoder.cpp">
@@ -58,6 +46,24 @@
       <Filter>Encoder</Filter>
     </ClCompile>
     <ClCompile Include="Encoder\fcWebMContext.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcAACEncoderFAAC.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcH264EncoderAMD.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcH264EncoderIntel.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcH264EncoderNVIDIA.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcH264EncoderOpenH264.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder\fcAACEncoderIntel.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
   </ItemGroup>

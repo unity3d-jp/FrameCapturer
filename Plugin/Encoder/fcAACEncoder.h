@@ -53,4 +53,6 @@ public:
 
 bool fcDownloadFAAC(fcDownloadCallback cb);
 bool fcLoadFAACModule();
-fcIAACEncoder* fcCreateFAACEncoder(const fcAACEncoderConfig& conf);
+
+fcIAACEncoder* fcCreateAACEncoderFAAC(const fcAACEncoderConfig& conf);
+fcIAACEncoder* fcCreateAACEncoderIntel(const fcAACEncoderConfig& conf);

@@ -260,21 +260,38 @@ namespace UTJ
         // MP4 Exporter
         // -------------------------------------------------------------
 
+        public enum fcMP4VideoFlags
+        {
+            H264NVIDIA  = 1 << 1,
+            H264AMD     = 1 << 2,
+            H264IntelHW = 1 << 3,
+            H264IntelSW = 1 << 4,
+            H264OpenH264= 1 << 5,
+            H264Mask = H264NVIDIA | H264AMD | H264IntelHW | H264IntelSW | H264OpenH264,
+        };
+
+        public enum fcMP4AudioFlags
+        {
+            AACIntel = 1 << 1,
+            AACFAAC  = 1 << 2,
+            AACMask = AACIntel | AACFAAC,
+        };
+
         public struct fcMP4Config
         {
             public Bool video;
             public Bool audio;
 
-            public Bool video_use_hardware_encoder_if_possible;
             public int video_width;
             public int video_height;
-            public int video_bitrate;
-            public int video_max_framerate;
-            public int video_max_buffers;
-            public float audio_scale;
-            public int audio_sampling_rate;
+            public int video_target_bitrate;
+            public int video_target_framerate;
+            public int video_flags;
+
+            public int audio_sample_rate;
             public int audio_num_channels;
-            public int audio_bitrate;
+            public int audio_target_bitrate;
+            public int audio_flags;
 
             public static fcMP4Config default_value
             {
@@ -283,17 +300,18 @@ namespace UTJ
                     return new fcMP4Config
                     {
                         video = true,
-                        audio = false,
-                        video_use_hardware_encoder_if_possible = true,
-                        video_width = 320,
-                        video_height = 240,
-                        video_bitrate = 256000,
-                        video_max_framerate = 30,
-                        video_max_buffers = 8,
-                        audio_scale = 32767.0f,
-                        audio_sampling_rate = 48000,
+                        audio = true,
+
+                        video_width = 0,
+                        video_height = 0,
+                        video_target_bitrate = 1024 * 1000,
+                        video_target_framerate = 30,
+                        video_flags = (int)fcMP4VideoFlags.H264Mask,
+
+                        audio_sample_rate = 48000,
                         audio_num_channels = 2,
-                        audio_bitrate = 64000,
+                        audio_target_bitrate = 64000,
+                        audio_flags = (int)fcMP4AudioFlags.AACMask,
                     };
                 }
             }

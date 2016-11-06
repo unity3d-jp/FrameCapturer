@@ -1,5 +1,4 @@
-﻿#ifndef fcExrFile_h
-#define fcExrFile_h
+﻿#pragma once
 
 class fcIExrContext
 {
@@ -13,5 +12,3 @@ protected:
     virtual ~fcIExrContext() {}
 };
 typedef fcIExrContext* (*fcExrCreateContextImplT)(const fcExrConfig *conf, fcIGraphicsDevice*);
-
-#endif // fcExrFile_h

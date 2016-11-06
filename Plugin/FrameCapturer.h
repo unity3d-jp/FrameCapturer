@@ -158,20 +158,38 @@ fcCLinkage fcExport void            fcGifEraseFrame(fcIGifContext *ctx, int begi
 // MP4 Exporter
 // -------------------------------------------------------------
 
+enum fcMP4VideoFlags
+{
+    fcMP4_H264NVIDIA    = 1 << 1,
+    fcMP4_H264AMD       = 1 << 2,
+    fcMP4_H264IntelHW   = 1 << 3,
+    fcMP4_H264IntelSW   = 1 << 4,
+    fcMP4_H264OpenH264  = 1 << 5,
+    fcMP4_H264Mask = fcMP4_H264NVIDIA | fcMP4_H264AMD | fcMP4_H264IntelHW | fcMP4_H264IntelSW | fcMP4_H264OpenH264,
+};
+
+enum fcMP4AudioFlags
+{
+    fcMP4_AACIntel  = 1 << 1,
+    fcMP4_AACFAAC   = 1 << 2,
+    fcMP4_AACMask = fcMP4_AACIntel | fcMP4_AACFAAC,
+};
+
 struct fcMP4Config
 {
     bool    video = true;
     bool    audio = true;
-    bool    video_use_hardware_encoder_if_possible = true;
+
     int     video_width = 0;
     int     video_height = 0;
-    int     video_target_bitrate = 1024*1000;
+    int     video_target_bitrate = 1024 * 1000;
     int     video_target_framerate = 60;
-    int     video_max_buffers = 8;
-    float   audio_scale = 1.0f; // useful for scaling (-1.0 - 1.0) samples to (-32767.0f - 32767.0f)
+    int     video_flags = fcMP4_H264Mask; // combination of fcMP4VideoFlags
+
     int     audio_sample_rate = 48000;
     int     audio_num_channels = 2;
-    int     audio_target_bitrate = 64000;
+    int     audio_target_bitrate = 128 * 1000;
+    int     audio_flags = fcMP4_AACMask; // combination of fcMP4AudioFlags
 };
 
 enum fcDownloadState {
