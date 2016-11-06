@@ -105,23 +105,26 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         h264conf.target_bitrate = m_conf.video_target_bitrate;
 
         fcIH264Encoder *enc = nullptr;
-        // try to create hardware encoder
-        if (m_conf.video_use_hardware_encoder_if_possible) {
-            enc = fcCreateNVH264Encoder(h264conf);
-            if (enc == nullptr) {
-                enc = fcCreateAMDH264Encoder(h264conf);
-            }
+        if (!enc && (m_conf.video_flags & fcMP4_H264NVIDIA) != 0) {
+            enc = fcCreateH264EncoderNVIDIA(h264conf);
         }
-        if (enc == nullptr) {
-            // fallback to software encoder (OpenH264)
-            enc = fcCreateOpenH264Encoder(h264conf);
+        if (!enc && (m_conf.video_flags & fcMP4_H264AMD) != 0) {
+            enc = fcCreateH264EncoderAMD(h264conf);
         }
-        m_video_encoder.reset(enc);
+        if (!enc && (m_conf.video_flags & (fcMP4_H264IntelHW | fcMP4_H264IntelSW)) != 0) {
+            enc = fcCreateH264EncoderIntel(h264conf);
+        }
+        if (!enc && (m_conf.video_flags & fcMP4_H264OpenH264) != 0) {
+            enc = fcCreateH264EncoderOpenH264(h264conf);
+        }
 
-        for (int i = 0; i < 4; ++i) {
-            m_video_buffers.push(VideoBufferPtr(new VideoBuffer()));
+        if (enc) {
+            m_video_encoder.reset(enc);
+            for (int i = 0; i < 4; ++i) {
+                m_video_buffers.push(VideoBufferPtr(new VideoBuffer()));
+            }
+            m_video_tasks.start();
         }
-        m_video_tasks.start();
     }
 
     // create aac encoder
@@ -131,12 +134,22 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         aacconf.sample_rate = m_conf.audio_sample_rate;
         aacconf.num_channels = m_conf.audio_num_channels;
         aacconf.target_bitrate = m_conf.audio_target_bitrate;
-        m_audio_encoder.reset(fcCreateFAACEncoder(aacconf));
 
-        for (int i = 0; i < 4; ++i) {
-            m_audio_buffers.push(AudioBufferPtr(new AudioBuffer()));
+        fcIAACEncoder *enc = nullptr;
+        if (!enc && (m_conf.audio_flags & fcMP4_AACIntel) != 0) {
+            enc = fcCreateAACEncoderIntel(aacconf);
         }
-        m_audio_tasks.start();
+        if (!enc && (m_conf.video_flags & fcMP4_AACFAAC) != 0) {
+            enc = fcCreateAACEncoderFAAC(aacconf);
+        }
+
+        if (enc) {
+            m_audio_encoder.reset(enc);
+            for (int i = 0; i < 4; ++i) {
+                m_audio_buffers.push(AudioBufferPtr(new AudioBuffer()));
+            }
+            m_audio_tasks.start();
+        }
     }
 }
 

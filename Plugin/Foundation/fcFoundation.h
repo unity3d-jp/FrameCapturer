@@ -8,6 +8,7 @@ typedef BinaryStream fcStream;
 #include "Buffer.h"
 #include "PixelFormat.h"
 #include "I420.h"
+#include "LazyInstance.h"
 #include "FrameCapturer.h"
 
 #endif // fcFoundation_h

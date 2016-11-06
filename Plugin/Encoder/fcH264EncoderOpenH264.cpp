@@ -2,7 +2,7 @@
 #include "fcMP4Internal.h"
 #include "fcH264Encoder.h"
 
-#ifdef fcSupportOpenH264
+#ifdef fcSupportH264_OpenH264
 
 #include <openh264/codec_api.h>
 
@@ -23,11 +23,11 @@
 
 
 
-class fcOpenH264Encoder : public fcIH264Encoder
+class fcH264EncoderOpenH264 : public fcIH264Encoder
 {
 public:
-    fcOpenH264Encoder(const fcH264EncoderConfig& conf);
-    ~fcOpenH264Encoder();
+    fcH264EncoderOpenH264(const fcH264EncoderConfig& conf);
+    ~fcH264EncoderOpenH264() override;
     const char* getEncoderInfo() override;
     bool encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe) override;
 
@@ -36,10 +36,10 @@ private:
     ISVCEncoder *m_encoder;
 };
 
-fcIH264Encoder* fcCreateOpenH264Encoder(const fcH264EncoderConfig& conf)
+fcIH264Encoder* fcCreateH264EncoderOpenH264(const fcH264EncoderConfig& conf)
 {
     if (!fcLoadOpenH264Module()) { return nullptr; }
-    return new fcOpenH264Encoder(conf);
+    return new fcH264EncoderOpenH264(conf);
 }
 
 
@@ -76,7 +76,7 @@ bool fcLoadOpenH264Module()
 }
 
 
-fcOpenH264Encoder::fcOpenH264Encoder(const fcH264EncoderConfig& conf)
+fcH264EncoderOpenH264::fcH264EncoderOpenH264(const fcH264EncoderConfig& conf)
     : m_conf(conf), m_encoder(nullptr)
 {
     fcLoadOpenH264Module();
@@ -95,15 +95,19 @@ fcOpenH264Encoder::fcOpenH264Encoder(const fcH264EncoderConfig& conf)
     m_encoder->Initialize(&param);
 }
 
-fcOpenH264Encoder::~fcOpenH264Encoder()
+fcH264EncoderOpenH264::~fcH264EncoderOpenH264()
 {
     if (g_mod_h264 == nullptr) { return; }
 
     WelsDestroySVCEncoder_i(m_encoder);
 }
-const char* fcOpenH264Encoder::getEncoderInfo() { return "OpenH264 (by Cisco Systems, Inc)"; }
 
-bool fcOpenH264Encoder::encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool /*force_keyframe*/)
+const char* fcH264EncoderOpenH264::getEncoderInfo()
+{
+    return "OpenH264 Video Codec provided by Cisco Systems, Inc.";
+}
+
+bool fcH264EncoderOpenH264::encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool /*force_keyframe*/)
 {
     if (!m_encoder) { return false; }
 
@@ -204,14 +208,14 @@ bool fcDownloadOpenH264(fcDownloadCallback cb)
     return true;
 }
 #endif // fcEnableOpenH264Downloader
-#else  // fcSupportOpenH264
+#else  // fcSupportH264_OpenH264
 
 bool fcLoadOpenH264Module() { return false; }
-fcIH264Encoder* fcCreateOpenH264Encoder(const fcH264EncoderConfig& conf) { return nullptr; }
+fcIH264Encoder* fcCreateH264EncoderOpenH264(const fcH264EncoderConfig& conf) { return nullptr; }
 
-#endif // fcSupportOpenH264
+#endif // fcSupportH264_OpenH264
 
-#if !defined(fcSupportOpenH264) || !defined(fcEnableOpenH264Downloader)
+#if !defined(fcSupportH264_OpenH264) || !defined(fcEnableOpenH264Downloader)
 
 bool fcDownloadOpenH264(fcDownloadCallback cb) { return false; }
 

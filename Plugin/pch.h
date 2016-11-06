@@ -50,11 +50,15 @@
 #define fcSupportWebM
 
 #define fcSupportHalfPixelFormat
-#define fcSupportFAAC
-#define fcSupportOpenH264
+#define fcSupportAAC_FAAC
 #ifdef _WIN32
-    #define fcSupportNVH264
-    #define fcSupportAMDH264
+    #define fcSupportAAC_Intel
+#endif
+#define fcSupportH264_OpenH264
+#ifdef _WIN32
+    #define fcSupportH264_NVIDIA
+    #define fcSupportH264_AMD
+    #define fcSupportH264_Intel
 #endif
 #define fcSupportVPX
 #define fcSupportVorbis

@@ -1,10 +1,8 @@
 #include "pch.h"
-#include <libyuv/libyuv.h>
-#include "fcFoundation.h"
 #include "fcMP4Internal.h"
 #include "fcH264Encoder.h"
 
-#ifdef fcSupportAMDH264
+#ifdef fcSupportH264_AMD
 
 #if defined(_M_AMD64)
     #define AmfCoreDll  "amf-core-windesktop64.dll"
@@ -15,11 +13,11 @@
 #endif
 
 
-class fcAMDH264Encoder : public fcIH264Encoder
+class fcH264EncoderAMD : public fcIH264Encoder
 {
 public:
-    fcAMDH264Encoder(const fcH264EncoderConfig& conf);
-    ~fcAMDH264Encoder();
+    fcH264EncoderAMD(const fcH264EncoderConfig& conf);
+    ~fcH264EncoderAMD() override;
     const char* getEncoderInfo() override;
     bool encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe) override;
 
@@ -44,31 +42,31 @@ bool fcLoadAMDH264Module()
 }
 
 
-fcAMDH264Encoder::fcAMDH264Encoder(const fcH264EncoderConfig& conf)
+fcH264EncoderAMD::fcH264EncoderAMD(const fcH264EncoderConfig& conf)
     : m_conf(conf)
 {
 }
 
-fcAMDH264Encoder::~fcAMDH264Encoder()
+fcH264EncoderAMD::~fcH264EncoderAMD()
 {
 }
-const char* fcAMDH264Encoder::getEncoderInfo() { return "VCE (by AMD)"; }
+const char* fcH264EncoderAMD::getEncoderInfo() { return "AMD H264 Encoder"; }
 
-bool fcAMDH264Encoder::encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe)
+bool fcH264EncoderAMD::encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe)
 {
     return false;
 }
 
-fcIH264Encoder* fcCreateAMDH264Encoder(const fcH264EncoderConfig& conf)
+fcIH264Encoder* fcCreateH264EncoderAMD(const fcH264EncoderConfig& conf)
 {
     return nullptr; // until fcAMDH264Encoder is implemented properly
 
     if (!fcLoadAMDH264Module()) { return nullptr; }
-    return new fcAMDH264Encoder(conf);
+    return new fcH264EncoderAMD(conf);
 }
 
-#else  // fcSupportAMDH264
+#else  // fcSupportH264_AMD
 
-fcIH264Encoder* fcCreateAMDH264Encoder(const fcH264EncoderConfig& conf) { return nullptr; }
+fcIH264Encoder* fcCreateH264EncoderAMD(const fcH264EncoderConfig& conf) { return nullptr; }
 
-#endif // fcSupportAMDH264
+#endif // fcSupportH264_AMD

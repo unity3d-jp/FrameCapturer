@@ -73,6 +73,7 @@ public:
 bool fcDownloadOpenH264(fcDownloadCallback cb);
 bool fcLoadOpenH264Module();
 
-fcIH264Encoder* fcCreateOpenH264Encoder(const fcH264EncoderConfig& conf);
-fcIH264Encoder* fcCreateNVH264Encoder(const fcH264EncoderConfig& conf);
-fcIH264Encoder* fcCreateAMDH264Encoder(const fcH264EncoderConfig& conf);
+fcIH264Encoder* fcCreateH264EncoderOpenH264(const fcH264EncoderConfig& conf);
+fcIH264Encoder* fcCreateH264EncoderNVIDIA(const fcH264EncoderConfig& conf);
+fcIH264Encoder* fcCreateH264EncoderAMD(const fcH264EncoderConfig& conf);
+fcIH264Encoder* fcCreateH264EncoderIntel(const fcH264EncoderConfig& conf);

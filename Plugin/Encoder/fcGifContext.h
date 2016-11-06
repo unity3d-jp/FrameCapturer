@@ -1,5 +1,4 @@
-﻿#ifndef fcGifFile_h
-#define fcGifFile_h
+﻿#pragma once
 
 class fcIGifContext
 {
@@ -20,5 +19,3 @@ protected:
     virtual ~fcIGifContext() {}
 };
 typedef fcIGifContext* (*fcGifCreateContextImplT)(const fcGifConfig &conf, fcIGraphicsDevice*);
-
-#endif // fcGifFile_h

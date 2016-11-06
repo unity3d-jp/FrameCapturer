@@ -57,10 +57,10 @@ namespace UTJ
                 m_mp4conf.audio = m_captureAudio;
                 m_mp4conf.video_width = m_scratch_buffer.width;
                 m_mp4conf.video_height = m_scratch_buffer.height;
-                m_mp4conf.video_max_framerate = 60;
-                m_mp4conf.video_bitrate = m_videoBitrate;
-                m_mp4conf.audio_bitrate = m_audioBitrate;
-                m_mp4conf.audio_sampling_rate = AudioSettings.outputSampleRate;
+                m_mp4conf.video_target_framerate = 60;
+                m_mp4conf.video_target_bitrate = m_videoBitrate;
+                m_mp4conf.audio_target_bitrate = m_audioBitrate;
+                m_mp4conf.audio_sample_rate = AudioSettings.outputSampleRate;
                 m_mp4conf.audio_num_channels = fcAPI.fcGetNumAudioChannels();
                 m_ctx = fcAPI.fcMP4CreateContext(ref m_mp4conf);
 

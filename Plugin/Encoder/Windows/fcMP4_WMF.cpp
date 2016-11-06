@@ -4,7 +4,6 @@
 
 #include "GraphicsDevice/fcGraphicsDevice.h"
 #include "Foundation/TaskQueue.h"
-#include "Foundation/LazyInstance.h"
 
 #include <Windows.h>
 #include <codecapi.h>

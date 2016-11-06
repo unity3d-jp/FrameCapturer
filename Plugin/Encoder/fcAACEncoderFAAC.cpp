@@ -3,7 +3,7 @@
 #include "fcMP4Internal.h"
 #include "fcAACEncoder.h"
 
-#ifdef fcSupportFAAC
+#ifdef fcSupportAAC_FAAC
 
 #include <libfaac/faac.h>
 #ifdef fcWindows
@@ -16,11 +16,11 @@
     #define FAACDLL "libfaac" fcDLLExt
 #endif
 
-class fcFAACEncoder : public fcIAACEncoder
+class fcAACEncoderFAAC : public fcIAACEncoder
 {
 public:
-    fcFAACEncoder(const fcAACEncoderConfig& conf);
-    ~fcFAACEncoder() override;
+    fcAACEncoderFAAC(const fcAACEncoderConfig& conf);
+    ~fcAACEncoderFAAC() override;
     const char* getEncoderInfo() override;
     const Buffer& getDecoderSpecificInfo() override;
     bool encode(fcAACFrame& dst, const float *samples, size_t num_samples, fcTime timestamp) override;
@@ -79,7 +79,7 @@ module_t g_mod_faac;
 
 } // namespace
 
-fcFAACEncoder::fcFAACEncoder(const fcAACEncoderConfig& conf)
+fcAACEncoderFAAC::fcAACEncoderFAAC(const fcAACEncoderConfig& conf)
     : m_conf(conf), m_handle(nullptr), m_num_read_samples(), m_output_size()
 {
     m_handle = faacEncOpen_i(conf.sample_rate, conf.num_channels, &m_num_read_samples, &m_output_size);
@@ -96,14 +96,14 @@ fcFAACEncoder::fcFAACEncoder(const fcAACEncoderConfig& conf)
     faacEncSetConfiguration_i(m_handle, config);
 }
 
-fcFAACEncoder::~fcFAACEncoder()
+fcAACEncoderFAAC::~fcAACEncoderFAAC()
 {
     faacEncClose_i(m_handle);
     m_handle = nullptr;
 }
-const char* fcFAACEncoder::getEncoderInfo() { return "FAAC"; }
+const char* fcAACEncoderFAAC::getEncoderInfo() { return "FAAC"; }
 
-bool fcFAACEncoder::encode(fcAACFrame& dst, const float *samples, size_t num_samples, fcTime timestamp)
+bool fcAACEncoderFAAC::encode(fcAACFrame& dst, const float *samples, size_t num_samples, fcTime timestamp)
 {
     m_aac_tmp_buf.resize(m_output_size);
 
@@ -129,7 +129,7 @@ bool fcFAACEncoder::encode(fcAACFrame& dst, const float *samples, size_t num_sam
     return true;
 }
 
-const Buffer& fcFAACEncoder::getDecoderSpecificInfo()
+const Buffer& fcAACEncoderFAAC::getDecoderSpecificInfo()
 {
     if (m_aac_header.empty()) {
         unsigned char *buf;
@@ -156,10 +156,10 @@ bool fcLoadFAACModule()
 }
 
 
-fcIAACEncoder* fcCreateFAACEncoder(const fcAACEncoderConfig& conf)
+fcIAACEncoder* fcCreateAACEncoderFAAC(const fcAACEncoderConfig& conf)
 {
     if (!fcLoadFAACModule()) { return nullptr; }
-    return new fcFAACEncoder(conf);
+    return new fcAACEncoderFAAC(conf);
 }
 
 #ifdef fcEnableFAACSelfBuild
@@ -270,14 +270,14 @@ bool fcDownloadFAAC(fcDownloadCallback cb)
 }
 
 #endif // fcEnableFAACSelfBuild
-#else  // fcSupportFAAC
+#else  // fcSupportAAC_FAAC
 
 bool fcLoadFAACModule() { return false; }
-fcIAACEncoder* fcCreateFAACEncoder(const fcAACEncoderConfig& conf) { return nullptr; }
+fcIAACEncoder* fcCreateAACEncoderFAAC(const fcAACEncoderConfig& conf) { return nullptr; }
 
-#endif // fcSupportFAAC
+#endif // fcSupportAAC_FAAC
 
-#if !defined(fcEnableFAACSelfBuild) || !defined(fcSupportFAAC)
+#if !defined(fcEnableFAACSelfBuild) || !defined(fcSupportAAC_FAAC)
 
 bool fcDownloadFAAC(fcDownloadCallback cb) { return false; }
 

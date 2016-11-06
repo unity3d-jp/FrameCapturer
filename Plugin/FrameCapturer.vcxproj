@@ -27,14 +27,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Encoder\fcAMDH264Encoder.cpp" />
+    <ClCompile Include="Encoder\fcAACEncoderFAAC.cpp" />
+    <ClCompile Include="Encoder\fcAACEncoderIntel.cpp" />
     <ClCompile Include="Encoder\fcExrContext.cpp" />
-    <ClCompile Include="Encoder\fcFAACEncoder.cpp" />
     <ClCompile Include="Encoder\fcGifContext.cpp" />
+    <ClCompile Include="Encoder\fcH264EncoderAMD.cpp" />
+    <ClCompile Include="Encoder\fcH264EncoderIntel.cpp" />
+    <ClCompile Include="Encoder\fcH264EncoderNVIDIA.cpp" />
+    <ClCompile Include="Encoder\fcH264EncoderOpenH264.cpp" />
     <ClCompile Include="Encoder\fcMP4Context.cpp" />
     <ClCompile Include="Encoder\fcMP4Writer.cpp" />
-    <ClCompile Include="Encoder\fcNVH264Encoder.cpp" />
-    <ClCompile Include="Encoder\fcOpenH264Encoder.cpp" />
     <ClCompile Include="Encoder\fcOpusEncoder.cpp" />
     <ClCompile Include="Encoder\fcPngContext.cpp" />
     <ClCompile Include="Encoder\fcVorbisEncoder.cpp" />
