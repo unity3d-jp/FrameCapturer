@@ -21,12 +21,26 @@ enum fcH264FrameType
     fcH264FrameType_IPMixed     ///< a frame where I and P slices are mixing, not supported yet
 };
 
+enum fcH264NALType
+{
+    fcH264NALType_UNKNOWN = 0,
+    fcH264NALType_SLICE = 1,
+    fcH264NALType_SLICE_DPA = 2,
+    fcH264NALType_SLICE_DPB = 3,
+    fcH264NALType_SLICE_DPC = 4,
+    fcH264NALType_SLICE_IDR = 5,
+    fcH264NALType_SEI = 6,
+    fcH264NALType_SPS = 7,
+    fcH264NALType_PPS = 8,
+    fcH264NALType_AUD = 9,
+    fcH264NALType_FILLER = 12,
+};
 
 struct fcH264NALHeader
 {
     uint8_t forbidden_zero_bit : 1;
     uint8_t nal_ref_idc : 2;
-    uint8_t nal_unit_type : 5; // ENalUnitType
+    uint8_t nal_unit_type : 5; // fcH264NALType
 
     fcH264NALHeader() {}
     fcH264NALHeader(char c) {

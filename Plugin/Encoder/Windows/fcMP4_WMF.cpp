@@ -10,6 +10,7 @@
 #include <mfapi.h>
 #include <mfidl.h>
 #include <Mfreadwrite.h>
+#include <Strmif.h>
 #include <wrl/client.h>
 
 #pragma comment(lib, "mfuuid")
@@ -157,6 +158,13 @@ void fcMP4ContextWMF::addOutputStream(fcStream *s)
 }
 
 
+static inline HRESULT SetAttributeU32(ComPtr<ICodecAPI>& codec, const GUID& guid, UINT32 value)
+{
+    VARIANT val;
+    val.vt = VT_UI4;
+    val.uintVal = value;
+    return codec->SetValue(&guid, &val);
+}
 
 bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
 {
@@ -198,7 +206,7 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
             MFSetAttributeSize(pVideoOutMediaType.Get(), MF_MT_FRAME_SIZE, m_conf.video_width, m_conf.video_height);
             MFSetAttributeRatio(pVideoOutMediaType.Get(), MF_MT_FRAME_RATE, m_conf.video_target_framerate, 1);
             MFSetAttributeRatio(pVideoOutMediaType.Get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
-            pSinkWriter->AddStream(pVideoOutMediaType.Get(), &m_mf_video_index);
+            hr = pSinkWriter->AddStream(pVideoOutMediaType.Get(), &m_mf_video_index);
 
             pVideoInputMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
             pVideoInputMediaType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_I420);
@@ -206,7 +214,24 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
             MFSetAttributeSize(pVideoInputMediaType.Get(), MF_MT_FRAME_SIZE, m_conf.video_width, m_conf.video_height);
             MFSetAttributeRatio(pVideoInputMediaType.Get(), MF_MT_FRAME_RATE, m_conf.video_target_framerate, 1);
             MFSetAttributeRatio(pVideoInputMediaType.Get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
-            pSinkWriter->SetInputMediaType(m_mf_video_index, pVideoInputMediaType.Get(), nullptr);
+            hr = pSinkWriter->SetInputMediaType(m_mf_video_index, pVideoInputMediaType.Get(), nullptr);
+
+            ComPtr<ICodecAPI> encoder;
+            pSinkWriter->GetServiceForStream(m_mf_video_index, GUID_NULL, IID_PPV_ARGS(&encoder));
+            if (encoder) {
+                SetAttributeU32(encoder, CODECAPI_AVEncAdaptiveMode, eAVEncAdaptiveMode_FrameRate);
+
+                switch (m_conf.video_bitrate_mode) {
+                case fcCBR:
+                    SetAttributeU32(encoder, CODECAPI_AVEncCommonRateControlMode, eAVEncCommonRateControlMode_CBR);
+                    SetAttributeU32(encoder, CODECAPI_AVEncCommonMeanBitRate, m_conf.video_target_bitrate);
+                    break;
+                case fcVBR:
+                    SetAttributeU32(encoder, CODECAPI_AVEncCommonRateControlMode, eAVEncCommonRateControlMode_PeakConstrainedVBR);
+                    SetAttributeU32(encoder, CODECAPI_AVEncCommonMaxBitRate, m_conf.video_target_bitrate);
+                    break;
+                }
+            }
 
             for (int i = 0; i < 4; ++i) {
                 m_video_buffers.push(VideoBufferPtr(new VideoBuffer()));
@@ -255,6 +280,7 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
     // Tell the sink writer to start accepting data.
     if (!SUCCEEDED(pSinkWriter->BeginWriting())) {
         pSinkWriter.Reset();
+        return false;
     }
 
     // Return the pointer to the caller.
