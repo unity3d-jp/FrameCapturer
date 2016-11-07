@@ -47,6 +47,12 @@ namespace UTJ
             RGBAi32  = Type_i32 | 4,
         };
 
+        public enum fcBitrateMode
+        {
+            CBR,
+            VBR,
+        }
+
         public enum fcDownloadState
         {
             Idle,
@@ -284,12 +290,14 @@ namespace UTJ
 
             public int video_width;
             public int video_height;
-            public int video_target_bitrate;
             public int video_target_framerate;
+            public fcBitrateMode video_bitrate_mode;
+            public int video_target_bitrate;
             public int video_flags;
 
             public int audio_sample_rate;
             public int audio_num_channels;
+            public fcBitrateMode audio_bitrate_mode;
             public int audio_target_bitrate;
             public int audio_flags;
 
@@ -304,12 +312,14 @@ namespace UTJ
 
                         video_width = 0,
                         video_height = 0,
+                        video_bitrate_mode = fcBitrateMode.CBR,
                         video_target_bitrate = 1024 * 1000,
                         video_target_framerate = 30,
                         video_flags = (int)fcMP4VideoFlags.H264Mask,
 
                         audio_sample_rate = 48000,
                         audio_num_channels = 2,
+                        audio_bitrate_mode = fcBitrateMode.CBR,
                         audio_target_bitrate = 64000,
                         audio_flags = (int)fcMP4AudioFlags.AACMask,
                     };

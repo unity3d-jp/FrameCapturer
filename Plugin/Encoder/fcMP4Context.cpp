@@ -102,6 +102,7 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         h264conf.width = m_conf.video_width;
         h264conf.height = m_conf.video_height;
         h264conf.target_framerate = m_conf.video_target_framerate;
+        h264conf.bitrate_mode = m_conf.video_bitrate_mode;
         h264conf.target_bitrate = m_conf.video_target_bitrate;
 
         fcIH264Encoder *enc = nullptr;
@@ -133,6 +134,7 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         fcAACEncoderConfig aacconf;
         aacconf.sample_rate = m_conf.audio_sample_rate;
         aacconf.num_channels = m_conf.audio_num_channels;
+        aacconf.bitrate_mode = m_conf.audio_bitrate_mode;
         aacconf.target_bitrate = m_conf.audio_target_bitrate;
 
         fcIAACEncoder *enc = nullptr;

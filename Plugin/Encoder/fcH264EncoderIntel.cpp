@@ -23,8 +23,12 @@ public:
 
 private:
     fcH264EncoderConfig m_conf;
-    MFXVideoSession m_session;
+    std::unique_ptr<MFXVideoSession> m_session;
     std::unique_ptr<MFXVideoENCODE> m_encoder;
+    mfxEncodeCtrl m_econtrol;
+    mfxFrameSurface1 m_surface;
+    mfxBitstream m_bitstream;
+    mfxSyncPoint m_sync;
 };
 
 
@@ -33,28 +37,15 @@ fcH264EncoderIntel::fcH264EncoderIntel(const fcH264EncoderConfig& conf)
     : m_conf(conf)
 {
     mfxStatus ret;
-    ret = m_session.Init(MFX_IMPL_AUTO_ANY, nullptr);
+    m_session.reset(new MFXVideoSession());
+    ret = m_session->Init(MFX_IMPL_AUTO_ANY, nullptr);
     if (ret < 0) {
+        m_session.reset();
         return;
     }
 
     mfxVideoParam params;
     memset(&params, 0, sizeof(params));
-    params.mfx.CodecId = MFX_CODEC_AVC;
-    params.mfx.CodecProfile = MFX_PROFILE_AVC_MAIN;
-    params.mfx.GopOptFlag = MFX_GOP_CLOSED;
-    params.mfx.GopPicSize = 0;
-    params.mfx.GopRefDist = 0;
-    params.mfx.TargetUsage = MFX_TARGETUSAGE_BEST_SPEED;
-
-    params.mfx.RateControlMethod = MFX_RATECONTROL_VBR;
-    params.mfx.TargetKbps = conf.target_bitrate / 1000;
-    params.mfx.MaxKbps = 0;
-    params.mfx.BufferSizeInKB = conf.width * conf.height * 2;
-    params.mfx.NumSlice = 0;
-    params.mfx.NumRefFrame = 0;
-
-    params.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     auto& fi = params.mfx.FrameInfo;
     fi.FourCC = MFX_FOURCC_NV12;
@@ -69,24 +60,58 @@ fcH264EncoderIntel::fcH264EncoderIntel(const fcH264EncoderConfig& conf)
     fi.PicStruct = MFX_PICSTRUCT_PROGRESSIVE;
     fi.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
 
-    m_encoder.reset(new MFXVideoENCODE(m_session));
+    params.mfx.CodecId = MFX_CODEC_AVC;
+    params.mfx.CodecProfile = MFX_PROFILE_AVC_MAIN;
+    params.mfx.GopOptFlag = MFX_GOP_CLOSED;
+    params.mfx.GopPicSize = 0;
+    params.mfx.GopRefDist = 0;
+    params.mfx.TargetUsage = MFX_TARGETUSAGE_BEST_SPEED;
+
+    params.mfx.RateControlMethod = MFX_RATECONTROL_VBR;
+    params.mfx.TargetKbps = conf.target_bitrate / 1000;
+    params.mfx.MaxKbps = 0;
+    params.mfx.BufferSizeInKB = (fi.Width * fi.Height * 2) / 1024;
+    params.mfx.NumSlice = 0;
+    params.mfx.NumRefFrame = 0;
+
+    params.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
+
+    m_encoder.reset(new MFXVideoENCODE(*m_session));
     ret = m_encoder->Init(&params);
     if (ret < 0) {
         m_encoder.reset();
     }
+
+
+    memset(&m_econtrol, 0, sizeof(m_econtrol));
+    memset(&m_surface, 0, sizeof(m_surface));
+    memset(&m_bitstream, 0, sizeof(m_bitstream));
 }
 
 fcH264EncoderIntel::~fcH264EncoderIntel()
 {
     m_encoder.reset();
-    m_session.Close();
+    m_session.reset();
 }
 
 const char* fcH264EncoderIntel::getEncoderInfo() { return "Intel H264 Encoder"; }
 
 bool fcH264EncoderIntel::encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe)
 {
-    return false;
+    if (!isValid()) { return false; }
+
+    m_surface.Data.TimeStamp = (mfxU64)(timestamp * 90000.0); // unit is 90KHz
+    m_surface.Data.MemType = MFX_MEMTYPE_SYSTEM_MEMORY;
+    m_surface.Data.Y = (mfxU8*)data.y;
+    m_surface.Data.U = (mfxU8*)data.u;
+    m_surface.Data.V = (mfxU8*)data.v;
+
+    mfxStatus ret = m_encoder->EncodeFrameAsync(&m_econtrol, &m_surface, &m_bitstream, &m_sync);
+    if (ret < 0) { return false; }
+
+    m_surface.Data.FrameOrder++;
+
+    return true;
 }
 
 fcIH264Encoder* fcCreateH264EncoderIntel(const fcH264EncoderConfig& conf)

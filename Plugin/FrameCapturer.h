@@ -61,6 +61,12 @@ enum fcPixelFormat
     fcPixelFormat_I420      = 0x10 << 4,
 };
 
+enum fcBitrateMode
+{
+    fcCBR,
+    fcVBR,
+};
+
 
 // -------------------------------------------------------------
 // Foundation
@@ -177,19 +183,21 @@ enum fcMP4AudioFlags
 
 struct fcMP4Config
 {
-    bool    video = true;
-    bool    audio = true;
+    bool video = true;
+    bool audio = true;
 
-    int     video_width = 0;
-    int     video_height = 0;
-    int     video_target_bitrate = 1024 * 1000;
-    int     video_target_framerate = 60;
-    int     video_flags = fcMP4_H264Mask; // combination of fcMP4VideoFlags
+    int video_width = 0;
+    int video_height = 0;
+    int video_target_framerate = 60;
+    fcBitrateMode video_bitrate_mode = fcCBR;
+    int video_target_bitrate = 1024 * 1000;
+    int video_flags = fcMP4_H264Mask; // combination of fcMP4VideoFlags
 
-    int     audio_sample_rate = 48000;
-    int     audio_num_channels = 2;
-    int     audio_target_bitrate = 128 * 1000;
-    int     audio_flags = fcMP4_AACMask; // combination of fcMP4AudioFlags
+    int audio_sample_rate = 48000;
+    int audio_num_channels = 2;
+    fcBitrateMode audio_bitrate_mode = fcCBR;
+    int audio_target_bitrate = 128 * 1000;
+    int audio_flags = fcMP4_AACMask; // combination of fcMP4AudioFlags
 };
 
 enum fcDownloadState {
@@ -236,16 +244,19 @@ struct fcWebMConfig
 {
     fcWebMVideoEncoder video_encoder = fcWebMVideoEncoder::VP8;
     fcWebMAudioEncoder audio_encoder = fcWebMAudioEncoder::Vorbis;
-    bool    video = true;
-    bool    audio = true;
-    int     video_width = 0;
-    int     video_height = 0;
-    int     video_bitrate = 1024 * 1000;
-    int     video_target_framerate = 60;
-    int     video_max_buffers = 8;
-    int     audio_sample_rate = 48000;
-    int     audio_num_channels = 2;
-    int     audio_bitrate = 64000;
+    bool video = true;
+    bool audio = true;
+
+    int video_width = 0;
+    int video_height = 0;
+    int video_target_framerate = 60;
+    fcBitrateMode video_bitrate_mode = fcCBR;
+    int video_target_bitrate = 1024 * 1000;
+
+    int audio_sample_rate = 48000;
+    int audio_num_channels = 2;
+    fcBitrateMode audio_bitrate_mode = fcCBR;
+    int audio_target_bitrate = 64 * 1000;
 };
 
 fcCLinkage fcExport fcIWebMContext* fcWebMCreateContext(fcWebMConfig *conf);
