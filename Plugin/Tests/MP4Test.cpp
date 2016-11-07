@@ -53,10 +53,12 @@ void MP4Test()
     conf.video_width = Width;
     conf.video_height = Height;
     conf.video_target_bitrate = 256000;
+    conf.video_flags = fcMP4_H264OpenH264;
     //conf.audio = false;
     conf.audio_sample_rate = SampleRate;
     conf.audio_num_channels = NumChannels;
     conf.audio_target_bitrate = 128000;
+    conf.audio_flags = fcMP4_AACFAAC;
 
 
     {

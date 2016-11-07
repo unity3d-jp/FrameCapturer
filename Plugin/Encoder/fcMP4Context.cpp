@@ -141,7 +141,7 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         if (!enc && (m_conf.audio_flags & fcMP4_AACIntel) != 0) {
             enc = fcCreateAACEncoderIntel(aacconf);
         }
-        if (!enc && (m_conf.video_flags & fcMP4_AACFAAC) != 0) {
+        if (!enc && (m_conf.audio_flags & fcMP4_AACFAAC) != 0) {
             enc = fcCreateAACEncoderFAAC(aacconf);
         }
 
