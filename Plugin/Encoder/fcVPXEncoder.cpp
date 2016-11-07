@@ -54,6 +54,14 @@ fcVPXEncoder::fcVPXEncoder(const fcVPXEncoderConfig& conf, fcWebMVideoEncoder en
     vpx_config.g_timebase.num = 1;
     vpx_config.g_timebase.den = 1000000000; // nsec
     vpx_config.rc_target_bitrate = m_conf.target_bitrate;
+    switch (conf.bitrate_mode) {
+    case fcCBR:
+        vpx_config.rc_end_usage = VPX_CBR;
+        break;
+    case fcVBR:
+        vpx_config.rc_end_usage = VPX_VBR;
+        break;
+    }
     vpx_codec_enc_init(&m_vpx_ctx, m_vpx_iface, &vpx_config, 0);
 
     // just fill vpx_image_t fields. memory is not needed.

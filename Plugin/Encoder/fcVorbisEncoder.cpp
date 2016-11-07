@@ -41,11 +41,16 @@ fcVorbisEncoder::fcVorbisEncoder(const fcVorbisEncoderConfig& conf)
     : m_conf(conf)
 {
     vorbis_info_init(&m_vo_info);
-    vorbis_encode_init(&m_vo_info, conf.num_channels, conf.sample_rate, -1, conf.target_bitrate, -1);
+    switch (conf.bitrate_mode) {
+    case fcCBR:
+        vorbis_encode_init(&m_vo_info, conf.num_channels, conf.sample_rate, conf.target_bitrate, conf.target_bitrate, conf.target_bitrate);
+        break;
+    case fcVBR:
+        vorbis_encode_init(&m_vo_info, conf.num_channels, conf.sample_rate, -1, conf.target_bitrate, -1);
+        break;
+    }
 
     vorbis_comment_init(&m_vo_comment);
-    vorbis_comment_add_tag(&m_vo_comment, "ENCODER", "Unity WebM Recorder");
-
     vorbis_analysis_init(&m_vo_dsp, &m_vo_info);
     vorbis_block_init(&m_vo_dsp, &m_vo_block);
 

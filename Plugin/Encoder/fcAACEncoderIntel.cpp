@@ -33,7 +33,7 @@ private:
     Buffer m_aac_header;
     RawVector<float> m_tmp_data;
 
-    MFXAudioSession m_session;
+    std::unique_ptr<MFXAudioSession> m_session;
     std::unique_ptr<MFXAudioENCODE> m_encoder;
 };
 
@@ -41,8 +41,10 @@ private:
 fcAACEncoderIntel::fcAACEncoderIntel(const fcAACEncoderConfig& conf)
 {
     mfxStatus ret;
-    ret = m_session.Init(MFX_IMPL_AUTO_ANY, nullptr);
+    m_session.reset(new MFXAudioSession());
+    ret = m_session->Init(MFX_IMPL_AUTO_ANY, nullptr);
     if (ret < 0) {
+        m_session.reset();
         return;
     }
 
@@ -57,7 +59,7 @@ fcAACEncoderIntel::fcAACEncoderIntel(const fcAACEncoderConfig& conf)
     params.mfx.OutputFormat = MFX_AUDIO_AAC_ADTS;
     params.mfx.StereoMode = MFX_AUDIO_AAC_LR_STEREO;
 
-    m_encoder.reset(new MFXAudioENCODE(m_session));
+    m_encoder.reset(new MFXAudioENCODE(*m_session));
     ret = m_encoder->Init(&params);
     if (ret < 0) {
         m_encoder.reset();
@@ -67,7 +69,7 @@ fcAACEncoderIntel::fcAACEncoderIntel(const fcAACEncoderConfig& conf)
 fcAACEncoderIntel::~fcAACEncoderIntel()
 {
     m_encoder.reset();
-    m_session.Close();
+    m_session.reset();
 }
 
 const char* fcAACEncoderIntel::getEncoderInfo()
@@ -82,7 +84,16 @@ const Buffer& fcAACEncoderIntel::getDecoderSpecificInfo()
 
 bool fcAACEncoderIntel::encode(fcAACFrame& dst, const float *samples, size_t num_samples, fcTime timestamp)
 {
-    return false;
+    if (!isValid()) { return false; }
+
+    mfxAudioFrame frame;
+    mfxBitstream buffer_out;
+    mfxSyncPoint syncp;
+    mfxStatus ret;
+    ret = m_encoder->EncodeFrameAsync(&frame, &buffer_out, &syncp);
+    if (ret < 0) { return false; }
+
+    return true;
 }
 
 fcIAACEncoder* fcCreateAACEncoderIntel(const fcAACEncoderConfig& conf)

@@ -71,7 +71,7 @@ namespace {
     Body(faacEncClose)
 
 
-#define decl(name) name##_t name##_i;
+#define decl(name) name##_t name##_;
     EachFAACFunctions(decl)
 #undef decl
 
@@ -82,9 +82,9 @@ module_t g_mod_faac;
 fcAACEncoderFAAC::fcAACEncoderFAAC(const fcAACEncoderConfig& conf)
     : m_conf(conf), m_handle(nullptr), m_num_read_samples(), m_output_size()
 {
-    m_handle = faacEncOpen_i(conf.sample_rate, conf.num_channels, &m_num_read_samples, &m_output_size);
+    m_handle = faacEncOpen_(conf.sample_rate, conf.num_channels, &m_num_read_samples, &m_output_size);
 
-    faacEncConfigurationPtr config = faacEncGetCurrentConfiguration_i(m_handle);
+    faacEncConfigurationPtr config = faacEncGetCurrentConfiguration_(m_handle);
     config->bitRate = conf.target_bitrate / conf.num_channels;
     config->quantqual = 100;
     config->inputFormat = FAAC_INPUT_FLOAT;
@@ -93,12 +93,12 @@ fcAACEncoderFAAC::fcAACEncoderFAAC(const fcAACEncoderConfig& conf)
     config->allowMidside = 0;
     config->useLfe = 0;
     config->outputFormat = 1;
-    faacEncSetConfiguration_i(m_handle, config);
+    faacEncSetConfiguration_(m_handle, config);
 }
 
 fcAACEncoderFAAC::~fcAACEncoderFAAC()
 {
-    faacEncClose_i(m_handle);
+    faacEncClose_(m_handle);
     m_handle = nullptr;
 }
 const char* fcAACEncoderFAAC::getEncoderInfo() { return "FAAC"; }
@@ -114,7 +114,7 @@ bool fcAACEncoderFAAC::encode(fcAACFrame& dst, const float *samples, size_t num_
     int total = 0;
     for (;;) {
         int process_size = std::min<int>((int)m_num_read_samples, (int)num_samples - total);
-        int packet_size = faacEncEncode_i(m_handle, (int32_t*)samples, process_size, (unsigned char*)&m_aac_tmp_buf[0], m_output_size);
+        int packet_size = faacEncEncode_(m_handle, (int32_t*)samples, process_size, (unsigned char*)&m_aac_tmp_buf[0], m_output_size);
         if (packet_size > 0) {
             dst.data.append(m_aac_tmp_buf.data(), packet_size);
 
@@ -134,7 +134,7 @@ const Buffer& fcAACEncoderFAAC::getDecoderSpecificInfo()
     if (m_aac_header.empty()) {
         unsigned char *buf;
         unsigned long num_buf;
-        faacEncGetDecoderSpecificInfo_i(m_handle, &buf, &num_buf);
+        faacEncGetDecoderSpecificInfo_(m_handle, &buf, &num_buf);
         m_aac_header.append((char*)buf, num_buf);
         //free(buf);
     }
@@ -149,7 +149,7 @@ bool fcLoadFAACModule()
     g_mod_faac = DLLLoad(FAACDLL);
     if (g_mod_faac == nullptr) { return false; }
 
-#define imp(name) (void*&)name##_i = DLLGetSymbol(g_mod_faac, #name);
+#define imp(name) (void*&)name##_ = DLLGetSymbol(g_mod_faac, #name);
     EachFAACFunctions(imp)
 #undef imp
     return true;

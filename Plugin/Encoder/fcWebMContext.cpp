@@ -78,8 +78,9 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
         fcVPXEncoderConfig econf;
         econf.width = conf.video_width;
         econf.height = conf.video_height;
-        econf.target_bitrate = conf.video_bitrate;
         econf.target_framerate = conf.video_target_framerate;
+        econf.bitrate_mode = conf.video_bitrate_mode;
+        econf.target_bitrate = conf.video_target_bitrate;
 
         switch (conf.video_encoder) {
         case fcWebMVideoEncoder::VP8:
@@ -100,7 +101,8 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
         fcVorbisEncoderConfig econf;
         econf.sample_rate = conf.audio_sample_rate;
         econf.num_channels = conf.audio_num_channels;
-        econf.target_bitrate = conf.audio_bitrate;
+        econf.bitrate_mode = conf.audio_bitrate_mode;
+        econf.target_bitrate = conf.audio_target_bitrate;
 
         switch (conf.audio_encoder) {
         case fcWebMAudioEncoder::Vorbis:

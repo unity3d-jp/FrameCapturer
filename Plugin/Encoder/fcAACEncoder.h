@@ -5,9 +5,8 @@ struct fcAACEncoderConfig
 {
     int sample_rate;
     int num_channels;
+    fcBitrateMode bitrate_mode;
     int target_bitrate;
-
-    fcAACEncoderConfig() : sample_rate(), num_channels(), target_bitrate() {}
 };
 
 

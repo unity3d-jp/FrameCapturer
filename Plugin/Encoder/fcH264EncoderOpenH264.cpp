@@ -53,7 +53,7 @@ typedef void (*WelsDestroySVCEncoder_t)(ISVCEncoder* pEncoder);
     Body(WelsDestroySVCEncoder)
 
 
-#define decl(name) name##_t name##_i;
+#define decl(name) name##_t name##_;
 EachOpenH264Functions(decl)
 #undef decl
 
@@ -69,7 +69,7 @@ bool fcLoadOpenH264Module()
     g_mod_h264 = DLLLoad(OpenH264DLL);
     if (g_mod_h264 == nullptr) { return false; }
 
-#define imp(name) (void*&)name##_i = DLLGetSymbol(g_mod_h264, #name);
+#define imp(name) (void*&)name##_ = DLLGetSymbol(g_mod_h264, #name);
     EachOpenH264Functions(imp)
 #undef imp
     return true;
@@ -82,7 +82,7 @@ fcH264EncoderOpenH264::fcH264EncoderOpenH264(const fcH264EncoderConfig& conf)
     fcLoadOpenH264Module();
     if (g_mod_h264 == nullptr) { return; }
 
-    WelsCreateSVCEncoder_i(&m_encoder);
+    WelsCreateSVCEncoder_(&m_encoder);
 
     SEncParamBase param;
     memset(&param, 0, sizeof(SEncParamBase));
@@ -92,14 +92,17 @@ fcH264EncoderOpenH264::fcH264EncoderOpenH264(const fcH264EncoderConfig& conf)
     param.iPicHeight = conf.height;
     param.iTargetBitrate = conf.target_bitrate;
     param.iRCMode = RC_BITRATE_MODE;
-    m_encoder->Initialize(&param);
+    if (m_encoder->Initialize(&param) != 0) {
+        WelsDestroySVCEncoder_(m_encoder);
+        m_encoder = nullptr;
+    }
 }
 
 fcH264EncoderOpenH264::~fcH264EncoderOpenH264()
 {
     if (g_mod_h264 == nullptr) { return; }
 
-    WelsDestroySVCEncoder_i(m_encoder);
+    WelsDestroySVCEncoder_(m_encoder);
 }
 
 const char* fcH264EncoderOpenH264::getEncoderInfo()
