@@ -135,12 +135,12 @@ void fcVPXEncoder::gatherFrameData(fcVPXFrame& dst)
 }
 
 
-fcIVPXEncoder* fcCreateVP8Encoder(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP8); }
-fcIVPXEncoder* fcCreateVP9Encoder(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP9); }
+fcIVPXEncoder* fcCreateVP8EncoderLibVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP8); }
+fcIVPXEncoder* fcCreateVP9EncoderLibVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP9); }
 
 #else // fcSupportVPX
 
-fcIVPXEncoder* fcCreateVP8Encoder(const fcVPXEncoderConfig& conf) { return nullptr; }
-fcIVPXEncoder* fcCreateVP9Encoder(const fcVPXEncoderConfig& conf) { return nullptr; }
+fcIVPXEncoder* fcCreateVP8EncoderLibVPX(const fcVPXEncoderConfig& conf) { return nullptr; }
+fcIVPXEncoder* fcCreateVP9EncoderLibVPX(const fcVPXEncoderConfig& conf) { return nullptr; }
 
 #endif // fcSupportVPX

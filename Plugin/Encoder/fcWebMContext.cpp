@@ -84,10 +84,10 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
 
         switch (conf.video_encoder) {
         case fcWebMVideoEncoder::VP8:
-            m_video_encoder.reset(fcCreateVP8Encoder(econf));
+            m_video_encoder.reset(fcCreateVP8EncoderLibVPX(econf));
             break;
         case fcWebMVideoEncoder::VP9:
-            m_video_encoder.reset(fcCreateVP9Encoder(econf));
+            m_video_encoder.reset(fcCreateVP9EncoderLibVPX(econf));
             break;
         }
 

@@ -33,6 +33,7 @@ private:
     Buffer m_aac_tmp_buf;
     Buffer m_aac_header;
     RawVector<float> m_tmp_data;
+    double m_time = 0.0;
 };
 
 
@@ -107,24 +108,31 @@ bool fcAACEncoderFAAC::encode(fcAACFrame& dst, const float *samples, size_t num_
 {
     m_aac_tmp_buf.resize(m_output_size);
 
-    m_tmp_data.assign(samples, num_samples);
-    for (auto& v : m_tmp_data) { v *= 32767.0f; }
+    size_t pos = m_tmp_data.size();
+    m_tmp_data.append(samples, num_samples);
+    num_samples = m_tmp_data.size();
+    for (size_t i = pos; i < num_samples; ++i) {
+        m_tmp_data[i] *= 32767.0f;
+    }
     samples = m_tmp_data.data();
 
     int total = 0;
     for (;;) {
-        int process_size = std::min<int>((int)m_num_read_samples, (int)num_samples - total);
-        int packet_size = faacEncEncode_(m_handle, (int32_t*)samples, process_size, (unsigned char*)&m_aac_tmp_buf[0], m_output_size);
+        if (num_samples - total < m_num_read_samples) {
+            m_tmp_data.erase(m_tmp_data.begin(), m_tmp_data.begin() + total);
+            break;
+        }
+
+        int packet_size = faacEncEncode_(m_handle, (int32_t*)samples, m_num_read_samples, (unsigned char*)&m_aac_tmp_buf[0], m_output_size);
         if (packet_size > 0) {
             dst.data.append(m_aac_tmp_buf.data(), packet_size);
 
-            double duration = (double)process_size / (double)m_conf.sample_rate;
-            double timepos = (double)total / (double)m_conf.sample_rate + timestamp;
-            dst.packets.push_back({ (uint32_t)packet_size, duration, timepos });
+            double duration = (double)m_num_read_samples / (double)m_conf.sample_rate;
+            dst.packets.push_back({ (uint32_t)packet_size, duration, m_time });
+            m_time += duration;
         }
-        total += process_size;
-        samples += process_size;
-        if (total >= num_samples) { break; }
+        total += m_num_read_samples;
+        samples += m_num_read_samples;
     }
     return true;
 }
