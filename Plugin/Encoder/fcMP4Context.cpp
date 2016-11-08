@@ -33,8 +33,8 @@ public:
     ~fcMP4Context();
     void release() override;
 
-    const char* getAudioEncoderInfo() override;
     const char* getVideoEncoderInfo() override;
+    const char* getAudioEncoderInfo() override;
 
     void addOutputStream(fcStream *s) override;
     bool addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp) override;
@@ -112,8 +112,11 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         if (!enc && (m_conf.video_flags & fcMP4_H264AMD) != 0) {
             enc = fcCreateH264EncoderAMD(h264conf);
         }
-        if (!enc && (m_conf.video_flags & (fcMP4_H264IntelHW | fcMP4_H264IntelSW)) != 0) {
-            enc = fcCreateH264EncoderIntel(h264conf);
+        if (!enc && (m_conf.video_flags & fcMP4_H264IntelHW) != 0) {
+            enc = fcCreateH264EncoderIntelHW(h264conf);
+        }
+        if (!enc && (m_conf.video_flags & fcMP4_H264IntelSW) != 0) {
+            enc = fcCreateH264EncoderIntelSW(h264conf);
         }
         if (!enc && (m_conf.video_flags & fcMP4_H264OpenH264) != 0) {
             enc = fcCreateH264EncoderOpenH264(h264conf);

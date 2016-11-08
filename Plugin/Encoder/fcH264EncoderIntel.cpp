@@ -14,7 +14,7 @@
 class fcH264EncoderIntel : public fcIH264Encoder
 {
 public:
-    fcH264EncoderIntel(const fcH264EncoderConfig& conf);
+    fcH264EncoderIntel(const fcH264EncoderConfig& conf, int impl);
     ~fcH264EncoderIntel() override;
     const char* getEncoderInfo() override;
     bool encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe) override;
@@ -30,19 +30,27 @@ private:
     mfxBitstream m_bitstream;
     mfxSyncPoint m_sync;
     Buffer m_tmp_outdata;
+    const char *m_encoder_name = nullptr;
 };
 
 
 
-fcH264EncoderIntel::fcH264EncoderIntel(const fcH264EncoderConfig& conf)
+fcH264EncoderIntel::fcH264EncoderIntel(const fcH264EncoderConfig& conf, int impl)
     : m_conf(conf)
 {
     mfxStatus ret;
     m_session.reset(new MFXVideoSession());
-    ret = m_session->Init(MFX_IMPL_AUTO_ANY, nullptr);
+    ret = m_session->Init(impl, nullptr);
     if (ret < 0) {
         m_session.reset();
         return;
+    }
+
+    if (impl == MFX_IMPL_SOFTWARE) {
+        m_encoder_name = "Intel H264 Encoder (SW)";
+    }
+    else {
+        m_encoder_name = "Intel H264 Encoder (HW)";
     }
 
     auto& params = m_params;
@@ -68,7 +76,14 @@ fcH264EncoderIntel::fcH264EncoderIntel(const fcH264EncoderConfig& conf)
     params.mfx.GopRefDist = 0;
     params.mfx.TargetUsage = MFX_TARGETUSAGE_BEST_SPEED;
 
-    params.mfx.RateControlMethod = MFX_RATECONTROL_VBR;
+    switch (m_conf.bitrate_mode) {
+    case fcCBR:
+        params.mfx.RateControlMethod = MFX_RATECONTROL_CBR;
+        break;
+    case fcVBR:
+        params.mfx.RateControlMethod = MFX_RATECONTROL_VBR;
+        break;
+    }
     params.mfx.TargetKbps = conf.target_bitrate / 1000;
     params.mfx.MaxKbps = 0;
     params.mfx.BufferSizeInKB = (fi.Width * fi.Height * 2) / 1024;
@@ -83,7 +98,6 @@ fcH264EncoderIntel::fcH264EncoderIntel(const fcH264EncoderConfig& conf)
         m_encoder.reset();
     }
 
-
     memset(&m_surface, 0, sizeof(m_surface));
     memset(&m_bitstream, 0, sizeof(m_bitstream));
     m_tmp_outdata.resize(params.mfx.BufferSizeInKB * 1024);
@@ -97,7 +111,7 @@ fcH264EncoderIntel::~fcH264EncoderIntel()
     m_session.reset();
 }
 
-const char* fcH264EncoderIntel::getEncoderInfo() { return "Intel H264 Encoder"; }
+const char* fcH264EncoderIntel::getEncoderInfo() { return m_encoder_name; }
 
 bool fcH264EncoderIntel::encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe)
 {
@@ -114,33 +128,70 @@ bool fcH264EncoderIntel::encode(fcH264Frame& dst, const I420Data& data, fcTime t
     m_surface.Data.Pitch = m_conf.width;
     m_surface.Data.FrameOrder = MFX_FRAMEORDER_UNKNOWN;
 
+    // encode!
     mfxStatus ret = m_encoder->EncodeFrameAsync(nullptr, &m_surface, &m_bitstream, &m_sync);
     if (ret < 0) { return false; }
 
+    // wait encode complete
     ret = m_session->SyncOperation(m_sync, -1);
     if (ret < 0) { return false; }
 
-    const static mfxU8 start_seq[] = { 0, 0, 1 };
-    mfxU8 *beg = m_bitstream.Data;
-    mfxU8 *end = beg + m_bitstream.DataLength;
-    for (;;) {
-        auto *pos = std::search(beg, end, start_seq, start_seq + 3);
-        if (pos == end) { break; }
-        auto *next = std::search(pos + 1, end, start_seq, start_seq + 3);
-
-        fcH264NALHeader header(pos[3]);
-        dst.nal_sizes.push_back(next - pos);
-        beg = next;
+    {
+        // gather NAL information
+        const static mfxU8 start_seq[] = { 0, 0, 1 }; // NAL start sequence
+        mfxU8 *beg = m_bitstream.Data;
+        mfxU8 *end = beg + m_bitstream.DataLength;
+        for (;;) {
+            auto *pos = std::search(beg, end, start_seq, start_seq + 3);
+            if (pos == end) { break; }
+            auto *next = std::search(pos + 1, end, start_seq, start_seq + 3);
+            dst.nal_sizes.push_back(int(next - pos));
+            beg = next;
+        }
+        dst.data.append((char*)m_bitstream.Data, m_bitstream.DataLength);
     }
-    dst.data.append((char*)m_bitstream.Data, m_bitstream.DataLength);
+
+    {
+        // convert frame type
+        dst.type = 0;
+        int t = m_bitstream.FrameType;
+        if ((t & MFX_FRAMETYPE_I) != 0) dst.type |= fcH264FrameType_I;
+        if ((t & MFX_FRAMETYPE_P) != 0) dst.type |= fcH264FrameType_P;
+        if ((t & MFX_FRAMETYPE_B) != 0) dst.type |= fcH264FrameType_B;
+        if ((t & MFX_FRAMETYPE_S) != 0) dst.type |= fcH264FrameType_S;
+        if ((t & MFX_FRAMETYPE_REF) != 0) dst.type |= fcH264FrameType_REF;
+        if ((t & MFX_FRAMETYPE_IDR) != 0) dst.type |= fcH264FrameType_IDR;
+    }
+
     m_bitstream.DataLength = 0;
 
     return true;
 }
 
-fcIH264Encoder* fcCreateH264EncoderIntel(const fcH264EncoderConfig& conf)
+fcIH264Encoder* fcCreateH264EncoderIntelHW(const fcH264EncoderConfig& conf)
 {
-    auto ret = new fcH264EncoderIntel(conf);
+    int impls[] = {
+        MFX_IMPL_HARDWARE,
+        MFX_IMPL_HARDWARE2,
+        MFX_IMPL_HARDWARE3,
+        MFX_IMPL_HARDWARE4,
+    };
+
+    for (int i : impls) {
+        auto ret = new fcH264EncoderIntel(conf, i);
+        if (ret->isValid()) {
+            return ret;
+        }
+        else {
+            delete ret;
+        }
+    }
+    return nullptr;
+}
+
+fcIH264Encoder* fcCreateH264EncoderIntelSW(const fcH264EncoderConfig& conf)
+{
+    auto ret = new fcH264EncoderIntel(conf, MFX_IMPL_SOFTWARE);
     if (!ret->isValid()) {
         delete ret;
         ret = nullptr;
@@ -150,6 +201,7 @@ fcIH264Encoder* fcCreateH264EncoderIntel(const fcH264EncoderConfig& conf)
 
 #else // fcSupportH264_Intel
 
-fcIH264Encoder* fcCreateH264EncoderIntel(const fcH264EncoderConfig& conf) { return nullptr; }
+fcIH264Encoder* fcCreateH264EncoderIntelHW(const fcH264EncoderConfig& conf) { return nullptr; }
+fcIH264Encoder* fcCreateH264EncoderIntelSW(const fcH264EncoderConfig& conf) { return nullptr; }
 
 #endif // fcSupportH264_Intel

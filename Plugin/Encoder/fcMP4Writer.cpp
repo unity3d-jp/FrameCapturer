@@ -88,7 +88,7 @@ void fcMP4Writer::addVideoFrame(const fcH264Frame& frame)
     info.file_offset = os.tellp();
     info.timestamp = to_usec(frame.timestamp);
 
-    if (frame.h264_type == fcH264FrameType_I) {
+    if ((frame.type & fcH264FrameType_I) != 0) {
         m_iframe_ids.push_back((uint32_t)m_video_frame_info.size() + 1);
     }
 
@@ -96,11 +96,11 @@ void fcMP4Writer::addVideoFrame(const fcH264Frame& frame)
         const int offset = 4; // 0x00000001
         size -= offset;
 
-        fcH264NALHeader nalh(data[4]);
-        if (nalh.nal_unit_type == NAL_SPS) {
+        fcH264NALHeader nalh(data[offset]);
+        if (nalh.type == fcH264NALType_SPS) {
             m_sps.assign(&data[offset], &data[offset] + size);
         }
-        else if (nalh.nal_unit_type == NAL_PPS) {
+        else if (nalh.type == fcH264NALType_PPS) {
             m_pps.assign(&data[offset], &data[offset] + size);
         }
         else {

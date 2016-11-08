@@ -13,12 +13,13 @@ struct fcH264EncoderConfig
 
 enum fcH264FrameType
 {
-    fcH264FrameType_Invalid,    ///< encoder not ready or parameters are invalidate
-    fcH264FrameType_IDR,        ///< IDR frame in H.264
-    fcH264FrameType_I,          ///< I frame type
-    fcH264FrameType_P,          ///< P frame type
-    fcH264FrameType_Skip,       ///< skip the frame based encoder kernel
-    fcH264FrameType_IPMixed     ///< a frame where I and P slices are mixing, not supported yet
+    fcH264FrameType_UNKNOWN = 0,
+    fcH264FrameType_I       = 0x01,
+    fcH264FrameType_P       = 0x02,
+    fcH264FrameType_B       = 0x04,
+    fcH264FrameType_S       = 0x08,
+    fcH264FrameType_REF     = 0x10,
+    fcH264FrameType_IDR     = 0x20,
 };
 
 enum fcH264NALType
@@ -36,17 +37,25 @@ enum fcH264NALType
     fcH264NALType_FILLER = 12,
 };
 
+enum fcH264NALPriority
+{
+    fcH264NALPriority_DISPOSABLE = 0,
+    fcH264NALPriority_LOW = 1,
+    fcH264NALPriority_HIGH = 2,
+    fcH264NALPriority_HIGHEST = 3,
+};
+
 struct fcH264NALHeader
 {
+    uint8_t type : 5; // fcH264NALType
+    uint8_t ref_idc : 2;
     uint8_t forbidden_zero_bit : 1;
-    uint8_t nal_ref_idc : 2;
-    uint8_t nal_unit_type : 5; // fcH264NALType
 
     fcH264NALHeader() {}
     fcH264NALHeader(char c) {
         forbidden_zero_bit = (c >> 7) & 0x01;
-        nal_ref_idc = (c >> 5) & 0x03;
-        nal_unit_type = c & 0x1f;
+        ref_idc = (c >> 5) & 0x03;
+        type = c & 0x1f;
     }
 };
 
@@ -55,11 +64,13 @@ struct fcH264Frame
 {
     Buffer data;
     double timestamp = 0;
-    fcH264FrameType h264_type = fcH264FrameType_Invalid;
+    int type = 0; // combination of fcH264FrameType
     RawVector<int> nal_sizes;
 
     void clear()
     {
+        timestamp = 0;
+        type = 0;
         data.clear();
         nal_sizes.clear();
     }
@@ -91,4 +102,5 @@ bool fcLoadOpenH264Module();
 fcIH264Encoder* fcCreateH264EncoderOpenH264(const fcH264EncoderConfig& conf);
 fcIH264Encoder* fcCreateH264EncoderNVIDIA(const fcH264EncoderConfig& conf);
 fcIH264Encoder* fcCreateH264EncoderAMD(const fcH264EncoderConfig& conf);
-fcIH264Encoder* fcCreateH264EncoderIntel(const fcH264EncoderConfig& conf);
+fcIH264Encoder* fcCreateH264EncoderIntelHW(const fcH264EncoderConfig& conf);
+fcIH264Encoder* fcCreateH264EncoderIntelSW(const fcH264EncoderConfig& conf);
