@@ -107,7 +107,13 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
 
         fcIH264Encoder *enc = nullptr;
         if (!enc && (m_conf.video_flags & fcMP4_H264NVIDIA) != 0) {
-            enc = fcCreateH264EncoderNVIDIA(h264conf);
+            // NVENC require D3D or CUDA device
+            if (m_dev) {
+                auto t = m_dev->getDeviceType();
+                if (t == fcGfxDeviceType_D3D9 || t == fcGfxDeviceType_D3D11 || t == fcGfxDeviceType_D3D12) {
+                    enc = fcCreateH264EncoderNVIDIA(h264conf, m_dev->getDevicePtr(), fcNVENCDeviceType_DirectX);
+                }
+            }
         }
         if (!enc && (m_conf.video_flags & fcMP4_H264AMD) != 0) {
             enc = fcCreateH264EncoderAMD(h264conf);
