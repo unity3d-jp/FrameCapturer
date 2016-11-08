@@ -29,11 +29,13 @@ public:
     fcH264EncoderOpenH264(const fcH264EncoderConfig& conf);
     ~fcH264EncoderOpenH264() override;
     const char* getEncoderInfo() override;
-    bool encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe) override;
+    bool encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe) override;
 
 private:
     fcH264EncoderConfig m_conf;
     ISVCEncoder *m_encoder;
+    Buffer m_rgba_image;
+    I420Image m_i420_image;
 };
 
 fcIH264Encoder* fcCreateH264EncoderOpenH264(const fcH264EncoderConfig& conf)
@@ -110,9 +112,12 @@ const char* fcH264EncoderOpenH264::getEncoderInfo()
     return "OpenH264 Video Codec provided by Cisco Systems, Inc.";
 }
 
-bool fcH264EncoderOpenH264::encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool /*force_keyframe*/)
+bool fcH264EncoderOpenH264::encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool /*force_keyframe*/)
 {
     if (!m_encoder) { return false; }
+
+    AnyToI420(m_i420_image, m_rgba_image, image, fmt, m_conf.width, m_conf.height);
+    I420Data i420 = m_i420_image.data();
 
     dst.timestamp = timestamp;
 
@@ -121,9 +126,9 @@ bool fcH264EncoderOpenH264::encode(fcH264Frame& dst, const I420Data& data, fcTim
     src.iPicWidth = m_conf.width;
     src.iPicHeight = m_conf.height;
     src.iColorFormat = videoFormatI420;
-    src.pData[0] = (unsigned char*)data.y;
-    src.pData[1] = (unsigned char*)data.u;
-    src.pData[2] = (unsigned char*)data.v;
+    src.pData[0] = (unsigned char*)i420.y;
+    src.pData[1] = (unsigned char*)i420.u;
+    src.pData[2] = (unsigned char*)i420.v;
     src.iStride[0] = m_conf.width;
     src.iStride[1] = m_conf.width >> 1;
     src.iStride[2] = m_conf.width >> 1;

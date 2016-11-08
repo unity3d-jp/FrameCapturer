@@ -22,13 +22,15 @@ public:
     fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcNVENCDeviceType type);
     ~fcH264EncoderNVIDIA() override;
     const char* getEncoderInfo() override;
-    bool encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe) override;
+    bool encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe) override;
 
     bool isValid() { return m_encoder != nullptr; }
 
 private:
     fcH264EncoderConfig m_conf;
     void *m_encoder = nullptr;
+    Buffer m_rgba_image;
+    NV12Image m_nv12_image;
 };
 
 
@@ -103,9 +105,13 @@ fcH264EncoderNVIDIA::~fcH264EncoderNVIDIA()
 
 const char* fcH264EncoderNVIDIA::getEncoderInfo() { return "NVIDIA H264 Encoder"; }
 
-bool fcH264EncoderNVIDIA::encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe)
+bool fcH264EncoderNVIDIA::encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe)
 {
     dst.timestamp = timestamp;
+
+    // convert image to NV12
+    AnyToNV12(m_nv12_image, m_rgba_image, image, fmt, m_conf.width, m_conf.height);
+    NV12Data data = m_nv12_image.data();
 
     NV_ENC_PIC_PARAMS params;
     memset(&params, 0, sizeof(params));

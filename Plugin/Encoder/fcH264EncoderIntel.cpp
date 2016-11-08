@@ -17,20 +17,19 @@ public:
     fcH264EncoderIntel(const fcH264EncoderConfig& conf, int impl);
     ~fcH264EncoderIntel() override;
     const char* getEncoderInfo() override;
-    bool encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe) override;
+    bool encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe) override;
 
     bool isValid() { return m_encoder != nullptr; }
 
 private:
     fcH264EncoderConfig m_conf;
+    const char *m_encoder_name = nullptr;
     std::unique_ptr<MFXVideoSession> m_session;
     std::unique_ptr<MFXVideoENCODE> m_encoder;
     mfxVideoParam m_params;
-    mfxFrameSurface1 m_surface;
-    mfxBitstream m_bitstream;
-    mfxSyncPoint m_sync;
-    Buffer m_tmp_outdata;
-    const char *m_encoder_name = nullptr;
+    Buffer m_rgba_image;
+    NV12Image m_nv12_image;
+    Buffer m_encoded_data;
 };
 
 
@@ -98,11 +97,7 @@ fcH264EncoderIntel::fcH264EncoderIntel(const fcH264EncoderConfig& conf, int impl
         m_encoder.reset();
     }
 
-    memset(&m_surface, 0, sizeof(m_surface));
-    memset(&m_bitstream, 0, sizeof(m_bitstream));
-    m_tmp_outdata.resize(params.mfx.BufferSizeInKB * 1024);
-    m_bitstream.Data = (mfxU8*)m_tmp_outdata.data();
-    m_bitstream.MaxLength = (mfxU32)m_tmp_outdata.size();
+    m_encoded_data.resize(params.mfx.BufferSizeInKB * 1024);
 }
 
 fcH264EncoderIntel::~fcH264EncoderIntel()
@@ -113,34 +108,47 @@ fcH264EncoderIntel::~fcH264EncoderIntel()
 
 const char* fcH264EncoderIntel::getEncoderInfo() { return m_encoder_name; }
 
-bool fcH264EncoderIntel::encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe)
+bool fcH264EncoderIntel::encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe)
 {
     if (!isValid()) { return false; }
 
+    // convert image to NV12
+    AnyToNV12(m_nv12_image, m_rgba_image, image, fmt, m_conf.width, m_conf.height);
+    NV12Data data = m_nv12_image.data();
+
+
     dst.timestamp = timestamp;
 
-    m_surface.Info = m_params.mfx.FrameInfo;
-    m_surface.Data.TimeStamp = (mfxU64)(timestamp * 90000.0); // unit is 90KHz
-    m_surface.Data.MemType = MFX_MEMTYPE_SYSTEM_MEMORY;
-    m_surface.Data.Y = (mfxU8*)data.y;
-    m_surface.Data.U = (mfxU8*)data.u;
-    m_surface.Data.V = (mfxU8*)data.v;
-    m_surface.Data.Pitch = m_conf.width;
-    m_surface.Data.FrameOrder = MFX_FRAMEORDER_UNKNOWN;
+    mfxFrameSurface1 surface;
+    memset(&surface, 0, sizeof(surface));
+    surface.Info = m_params.mfx.FrameInfo;
+    surface.Data.TimeStamp = (mfxU64)(timestamp * 90000.0); // unit is 90KHz
+    surface.Data.MemType = MFX_MEMTYPE_SYSTEM_MEMORY;
+    surface.Data.Y = (mfxU8*)data.y;
+    surface.Data.UV = (mfxU8*)data.uv;
+    surface.Data.V = (mfxU8*)data.uv + 1;
+    surface.Data.Pitch = m_conf.width;
+    surface.Data.FrameOrder = MFX_FRAMEORDER_UNKNOWN;
+
+    mfxBitstream bitstream;
+    memset(&bitstream, 0, sizeof(bitstream));
+    bitstream.Data = (mfxU8*)m_encoded_data.data();
+    bitstream.MaxLength = (mfxU32)m_encoded_data.size();
 
     // encode!
-    mfxStatus ret = m_encoder->EncodeFrameAsync(nullptr, &m_surface, &m_bitstream, &m_sync);
+    mfxSyncPoint syncp;
+    mfxStatus ret = m_encoder->EncodeFrameAsync(nullptr, &surface, &bitstream, &syncp);
     if (ret < 0) { return false; }
 
     // wait encode complete
-    ret = m_session->SyncOperation(m_sync, -1);
+    ret = m_session->SyncOperation(syncp, -1);
     if (ret < 0) { return false; }
 
     {
         // gather NAL information
         const static mfxU8 start_seq[] = { 0, 0, 1 }; // NAL start sequence
-        mfxU8 *beg = m_bitstream.Data;
-        mfxU8 *end = beg + m_bitstream.DataLength;
+        mfxU8 *beg = bitstream.Data;
+        mfxU8 *end = beg + bitstream.DataLength;
         for (;;) {
             auto *pos = std::search(beg, end, start_seq, start_seq + 3);
             if (pos == end) { break; }
@@ -148,13 +156,13 @@ bool fcH264EncoderIntel::encode(fcH264Frame& dst, const I420Data& data, fcTime t
             dst.nal_sizes.push_back(int(next - pos));
             beg = next;
         }
-        dst.data.append((char*)m_bitstream.Data, m_bitstream.DataLength);
+        dst.data.append((char*)bitstream.Data, bitstream.DataLength);
     }
 
     {
         // convert frame type
         dst.type = 0;
-        int t = m_bitstream.FrameType;
+        int t = bitstream.FrameType;
         if ((t & MFX_FRAMETYPE_I) != 0) dst.type |= fcH264FrameType_I;
         if ((t & MFX_FRAMETYPE_P) != 0) dst.type |= fcH264FrameType_P;
         if ((t & MFX_FRAMETYPE_B) != 0) dst.type |= fcH264FrameType_B;
@@ -162,8 +170,6 @@ bool fcH264EncoderIntel::encode(fcH264Frame& dst, const I420Data& data, fcTime t
         if ((t & MFX_FRAMETYPE_REF) != 0) dst.type |= fcH264FrameType_REF;
         if ((t & MFX_FRAMETYPE_IDR) != 0) dst.type |= fcH264FrameType_IDR;
     }
-
-    m_bitstream.DataLength = 0;
 
     return true;
 }

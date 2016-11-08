@@ -19,7 +19,7 @@ public:
     fcH264EncoderAMD(const fcH264EncoderConfig& conf);
     ~fcH264EncoderAMD() override;
     const char* getEncoderInfo() override;
-    bool encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe) override;
+    bool encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe) override;
 
 private:
     fcH264EncoderConfig m_conf;
@@ -52,7 +52,7 @@ fcH264EncoderAMD::~fcH264EncoderAMD()
 }
 const char* fcH264EncoderAMD::getEncoderInfo() { return "AMD H264 Encoder"; }
 
-bool fcH264EncoderAMD::encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe)
+bool fcH264EncoderAMD::encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe)
 {
     return false;
 }

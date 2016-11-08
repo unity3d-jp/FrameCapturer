@@ -60,8 +60,6 @@ private:
     TaskQueue           m_video_tasks;
     VideoEncoderPtr     m_video_encoder;
     VideoBufferQueue    m_video_buffers;
-    Buffer              m_rgba_image;
-    I420Image           m_i420_image;
     fcH264Frame         m_video_frame;
 
     TaskQueue           m_audio_tasks;
@@ -248,12 +246,8 @@ bool fcMP4Context::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fc
 
 bool fcMP4Context::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp)
 {
-    // convert image to I420
-    AnyToI420(m_i420_image, m_rgba_image, pixels, fmt, m_conf.video_width, m_conf.video_height);
-    I420Data i420 = m_i420_image.data();
-
     // encode!
-    if (m_video_encoder->encode(m_video_frame, i420, timestamp)) {
+    if (m_video_encoder->encode(m_video_frame, pixels, fmt, timestamp)) {
         eachStreams([this](auto& s) { s.addVideoFrame(m_video_frame); });
 #ifndef fcMaster
         m_dbg_h264_out->write(m_video_frame.data.data(), m_video_frame.data.size());

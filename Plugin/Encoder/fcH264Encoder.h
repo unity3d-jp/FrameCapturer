@@ -93,7 +93,7 @@ class fcIH264Encoder
 public:
     virtual ~fcIH264Encoder() {}
     virtual const char* getEncoderInfo() = 0;
-    virtual bool encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe = false) = 0;
+    virtual bool encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe = false) = 0;
 };
 
 bool fcDownloadOpenH264(fcDownloadCallback cb);
