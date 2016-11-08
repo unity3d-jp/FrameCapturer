@@ -19,36 +19,65 @@
 class fcH264EncoderNVIDIA : public fcIH264Encoder
 {
 public:
-    fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf);
+    fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcNVENCDeviceType type);
     ~fcH264EncoderNVIDIA() override;
     const char* getEncoderInfo() override;
     bool encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe) override;
 
+    bool isValid() { return m_encoder != nullptr; }
+
 private:
     fcH264EncoderConfig m_conf;
+    void *m_encoder = nullptr;
 };
 
 
 
-static module_t g_mod_h264nv;
+static module_t g_mod_nvenc;
+static NVENCSTATUS (NVENCAPI *NvEncodeAPICreateInstance_)(NV_ENCODE_API_FUNCTION_LIST *functionList);
+static NV_ENCODE_API_FUNCTION_LIST nvenc;
 
 static bool LoadNVENCModule()
 {
-    if (g_mod_h264nv) { return true; }
+    if (NvEncodeAPICreateInstance_) { return true; }
 
-    g_mod_h264nv = DLLLoad(NVEncoderDLL);
-    return g_mod_h264nv != nullptr;
+    g_mod_nvenc = DLLLoad(NVEncoderDLL);
+    if (g_mod_nvenc) {
+        (void*&)NvEncodeAPICreateInstance_ = DLLGetSymbol(g_mod_nvenc, "NvEncodeAPICreateInstance");
+        if (NvEncodeAPICreateInstance_) {
+            nvenc.version = NV_ENCODE_API_FUNCTION_LIST_VER;
+            NvEncodeAPICreateInstance_(&nvenc);
+        }
+    }
+    return NvEncodeAPICreateInstance_ != nullptr;
 }
 
 
-fcH264EncoderNVIDIA::fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf)
+fcH264EncoderNVIDIA::fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcNVENCDeviceType type)
     : m_conf(conf)
 {
+    if (!LoadNVENCModule()) { return; }
+
+    NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS params;
+    memset(&params, 0, sizeof(params));
+    params.version = NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS_VER;
+    params.apiVersion = NVENCAPI_VERSION;
+    params.device = device;
+    switch (type) {
+    case fcNVENCDeviceType_DirectX:
+        params.deviceType = NV_ENC_DEVICE_TYPE_DIRECTX;
+        break;
+    case fcNVENCDeviceType_CUDA:
+        params.deviceType = NV_ENC_DEVICE_TYPE_CUDA;
+        break;
+    }
+    nvenc.nvEncOpenEncodeSessionEx(&params, &m_encoder);
 }
 
 fcH264EncoderNVIDIA::~fcH264EncoderNVIDIA()
 {
 }
+
 const char* fcH264EncoderNVIDIA::getEncoderInfo() { return "NVIDIA H264 Encoder"; }
 
 bool fcH264EncoderNVIDIA::encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe)
@@ -56,16 +85,18 @@ bool fcH264EncoderNVIDIA::encode(fcH264Frame& dst, const I420Data& data, fcTime 
     return false;
 }
 
-fcIH264Encoder* fcCreateH264EncoderNVIDIA(const fcH264EncoderConfig& conf)
+fcIH264Encoder* fcCreateH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcNVENCDeviceType type)
 {
-    return nullptr; // until fcNVH264Encoder is implemented properly
-
-    if (!LoadNVENCModule()) { return nullptr; }
-    return new fcH264EncoderNVIDIA(conf);
+    auto *ret = new fcH264EncoderNVIDIA(conf, device, type);
+    if (!ret->isValid()) {
+        delete ret;
+        ret = nullptr;
+    }
+    return ret;
 }
 
 #else // fcSupportH264_NVIDIA
 
-fcIH264Encoder* fcCreateH264EncoderNVIDIA(const fcH264EncoderConfig& conf) { return nullptr; }
+fcIH264Encoder* fcCreateH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcNVENCDeviceType type) { return nullptr; }
 
 #endif // fcSupportH264_NVIDIA

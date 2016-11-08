@@ -1,5 +1,4 @@
-﻿#ifndef FrameCapturer_h
-#define FrameCapturer_h
+﻿#pragma once
 
 #define fcCLinkage extern "C"
 #ifdef _WIN32
@@ -269,4 +268,11 @@ fcCLinkage fcExport bool            fcWebMAddVideoFrameTexture(fcIWebMContext *c
 // timestamp=-1 is treated as current time.
 fcCLinkage fcExport bool            fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
 
-#endif // FrameCapturer_h
+
+// -------------------------------------------------------------
+// Graphics Device initializer for texture load and hardware H264 encoder
+// -------------------------------------------------------------
+
+fcCLinkage fcExport void fcGfxInitializeOpenGL();
+fcCLinkage fcExport void fcGfxInitializeD3D9(void *device);
+fcCLinkage fcExport void fcGfxInitializeD3D11(void *device);

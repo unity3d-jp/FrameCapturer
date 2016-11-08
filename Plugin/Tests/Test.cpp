@@ -34,6 +34,7 @@ int main(int argc, char *argv[])
         }
     }
 
+    InitializeD3D11();
     if (png) PngTest();
     if (exr) ExrTest();
     if (gif) GifTest();

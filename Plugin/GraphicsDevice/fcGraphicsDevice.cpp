@@ -13,38 +13,38 @@ static fcIGraphicsDevice *g_gfx_device;
 fcCLinkage fcExport fcIGraphicsDevice* fcGetGraphicsDevice() { return g_gfx_device; }
 
 
-#ifdef fcSupportOpenGL
 fcCLinkage fcExport void fcGfxInitializeOpenGL()
 {
+#ifdef fcSupportOpenGL
     if (g_gfx_device != nullptr) {
         fcDebugLog("fcInitializeOpenGL(): already initialized");
         return;
     }
     g_gfx_device = fcCreateGraphicsDeviceOpenGL();
-}
 #endif
+}
 
-#ifdef fcSupportD3D9
 fcCLinkage fcExport void fcGfxInitializeD3D9(void *device)
 {
+#ifdef fcSupportD3D9
     if (g_gfx_device != nullptr) {
         fcDebugLog("fcInitializeD3D9(): already initialized");
         return;
     }
     g_gfx_device = fcCreateGraphicsDeviceD3D9(device);
-}
 #endif
+}
 
-#ifdef fcSupportD3D11
 fcCLinkage fcExport void fcGfxInitializeD3D11(void *device)
 {
+#ifdef fcSupportD3D11
     if (g_gfx_device != nullptr) {
         fcDebugLog("fcInitializeD3D11(): already initialized");
         return;
     }
     g_gfx_device = fcCreateGraphicsDeviceD3D11(device);
-}
 #endif
+}
 
 fcCLinkage fcExport void fcGfxFinalize()
 {

@@ -1,5 +1,4 @@
-#ifndef TestCommon_h
-#define TestCommon_h
+#pragma once
 
 #ifdef _MSC_VER
     #pragma warning(disable: 4190)
@@ -91,4 +90,4 @@ def(RGBAf32, fcPixelFormat_RGBAf32)
 template<class T> void CreateVideoData(T *rgba, int width, int height, int frame);
 void CreateAudioData(float *samples, int num_samples, double t, float scale);
 
-#endif  // TestCommon_h
+bool InitializeD3D11();

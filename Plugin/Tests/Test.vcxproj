@@ -38,6 +38,7 @@
     <ClCompile Include="ConvertTest.cpp" />
     <ClCompile Include="ExrTest.cpp" />
     <ClCompile Include="GifTest.cpp" />
+    <ClCompile Include="GraphicsDevice.cpp" />
     <ClCompile Include="MemoryLeakBuster.cpp" />
     <ClCompile Include="MP4Test.cpp" />
     <ClCompile Include="PngTest.cpp" />
