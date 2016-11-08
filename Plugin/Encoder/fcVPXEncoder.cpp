@@ -19,7 +19,7 @@ public:
     void release() override;
     const char* getMatroskaCodecID() const override;
 
-    bool encode(fcVPXFrame& dst, const I420Data& image, fcTime timestamp, bool force_keyframe) override;
+    bool encode(fcVPXFrame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe) override;
     bool flush(fcVPXFrame& dst) override;
 
 private:
@@ -30,6 +30,9 @@ private:
     vpx_codec_ctx_t     m_vpx_ctx = {};
     vpx_image_t         m_vpx_img = {};
     const char*         m_matroska_codec_id = nullptr;
+
+    Buffer m_rgba_image;
+    I420Image m_i420_image;
 };
 
 
@@ -86,8 +89,11 @@ const char* fcVPXEncoder::getMatroskaCodecID() const
 }
 
 
-bool fcVPXEncoder::encode(fcVPXFrame& dst, const I420Data& image, fcTime timestamp, bool force_keyframe)
+bool fcVPXEncoder::encode(fcVPXFrame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe)
 {
+    AnyToI420(m_i420_image, m_rgba_image, image, fmt, m_conf.width, m_conf.height);
+    auto data = m_i420_image.data();
+
     vpx_codec_pts_t vpx_time = to_nsec(timestamp);
     vpx_enc_frame_flags_t vpx_flags = 0;
     uint32_t duration = 1000000000 / m_conf.target_framerate;
@@ -95,9 +101,9 @@ bool fcVPXEncoder::encode(fcVPXFrame& dst, const I420Data& image, fcTime timesta
         vpx_flags |= VPX_EFLAG_FORCE_KF;
     }
 
-    m_vpx_img.planes[VPX_PLANE_Y] = (uint8_t*)image.y;
-    m_vpx_img.planes[VPX_PLANE_U] = (uint8_t*)image.u;
-    m_vpx_img.planes[VPX_PLANE_V] = (uint8_t*)image.v;
+    m_vpx_img.planes[VPX_PLANE_Y] = (uint8_t*)data.y;
+    m_vpx_img.planes[VPX_PLANE_U] = (uint8_t*)data.u;
+    m_vpx_img.planes[VPX_PLANE_V] = (uint8_t*)data.v;
 
     auto res = vpx_codec_encode(&m_vpx_ctx, &m_vpx_img, vpx_time, duration, vpx_flags, 0);
     if (res != VPX_CODEC_OK) {

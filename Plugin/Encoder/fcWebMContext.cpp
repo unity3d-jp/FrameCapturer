@@ -59,8 +59,6 @@ private:
     TaskQueue           m_video_tasks;
     VideoEncoderPtr     m_video_encoder;
     VideoBufferQueue    m_video_buffers;
-    Buffer              m_rgba_image;
-    I420Image           m_i420_image;
     fcWebMVideoFrame    m_video_frame;
 
     TaskQueue           m_audio_tasks;
@@ -188,12 +186,8 @@ bool fcWebMContext::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, f
 
 bool fcWebMContext::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp)
 {
-    // convert image to I420
-    AnyToI420(m_i420_image, m_rgba_image, pixels, fmt, m_conf.video_width, m_conf.video_height);
-    I420Data i420 = m_i420_image.data();
-
     // encode!
-    if (m_video_encoder->encode(m_video_frame, i420, timestamp)) {
+    if (m_video_encoder->encode(m_video_frame, pixels, fmt, timestamp)) {
         eachStreams([&](auto& writer) {
             writer.addVideoFrame(m_video_frame);
         });
