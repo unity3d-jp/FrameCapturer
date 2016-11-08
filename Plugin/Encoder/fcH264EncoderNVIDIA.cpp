@@ -24,11 +24,14 @@ public:
     const char* getEncoderInfo() override;
     bool encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe) override;
 
-    bool isValid() { return m_encoder != nullptr; }
+    bool isValid();
 
 private:
     fcH264EncoderConfig m_conf;
     void *m_encoder = nullptr;
+    NV_ENC_CREATE_INPUT_BUFFER m_input;
+    NV_ENC_CREATE_BITSTREAM_BUFFER m_output;
+
     Buffer m_rgba_image;
     NV12Image m_nv12_image;
 };
@@ -60,6 +63,7 @@ fcH264EncoderNVIDIA::fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *
 {
     if (!LoadNVENCModule()) { return; }
 
+    NVENCSTATUS stat;
     {
         NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS params;
         memset(&params, 0, sizeof(params));
@@ -74,61 +78,149 @@ fcH264EncoderNVIDIA::fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *
             params.deviceType = NV_ENC_DEVICE_TYPE_CUDA;
             break;
         }
-        nvenc.nvEncOpenEncodeSessionEx(&params, &m_encoder);
+        stat = nvenc.nvEncOpenEncodeSessionEx(&params, &m_encoder);
         if (!m_encoder) {
             return;
         }
     }
 
     {
+
         NV_ENC_INITIALIZE_PARAMS params;
         memset(&params, 0, sizeof(params));
         params.version = NV_ENC_INITIALIZE_PARAMS_VER;
         params.encodeGUID = NV_ENC_CODEC_H264_GUID;
-        params.presetGUID = NV_ENC_H264_PROFILE_BASELINE_GUID;
-        params.encodeHeight = m_conf.width;
-        params.encodeHeight = m_conf.height;
-        params.darWidth = 1;
-        params.darHeight = 1;
+        params.presetGUID = NV_ENC_PRESET_DEFAULT_GUID;
+        params.encodeWidth = conf.width;
+        params.encodeHeight = conf.height;
+        params.darWidth = conf.width;
+        params.darHeight = conf.height;
         params.frameRateNum = m_conf.target_framerate;
         params.frameRateDen = 1;
-        nvenc.nvEncInitializeEncoder(m_encoder, &params);
+        params.enablePTD = 1;
+
+        NV_ENC_PRESET_CONFIG preset_config;
+        memset(&preset_config, 0, sizeof(preset_config));
+        preset_config.version = NV_ENC_PRESET_CONFIG_VER;
+        preset_config.presetCfg.version = NV_ENC_CONFIG_VER;
+        stat = nvenc.nvEncGetEncodePresetConfig(m_encoder, params.encodeGUID, params.presetGUID, &preset_config);
+
+        NV_ENC_CONFIG encode_config;
+        memset(&encode_config, 0, sizeof(encode_config));
+        encode_config.version = NV_ENC_CONFIG_VER;
+        memcpy(&encode_config, &preset_config.presetCfg, sizeof(NV_ENC_CONFIG));
+        params.encodeConfig = &encode_config;
+
+        stat = nvenc.nvEncInitializeEncoder(m_encoder, &params);
+    }
+
+    {
+        memset(&m_input, 0, sizeof(m_input));
+        m_input.version = NV_ENC_CREATE_INPUT_BUFFER_VER;
+        m_input.width = m_conf.width;
+        m_input.height = m_conf.height;
+        m_input.bufferFmt = NV_ENC_BUFFER_FORMAT_NV12;
+        stat = nvenc.nvEncCreateInputBuffer(m_encoder, &m_input);
+    }
+
+    {
+        memset(&m_output, 0, sizeof(m_output));
+        m_output.version = NV_ENC_CREATE_BITSTREAM_BUFFER_VER;
+        m_output.size = roundup<16>(conf.width) * roundup<16>(conf.height) * 2;
+        stat = nvenc.nvEncCreateBitstreamBuffer(m_encoder, &m_output);
     }
 }
 
 fcH264EncoderNVIDIA::~fcH264EncoderNVIDIA()
 {
     if (m_encoder) {
+        if (m_input.inputBuffer) {
+            nvenc.nvEncDestroyInputBuffer(m_encoder, m_input.inputBuffer);
+        }
+        if (m_output.bitstreamBuffer) {
+            nvenc.nvEncDestroyBitstreamBuffer(m_encoder, m_output.bitstreamBuffer);
+        }
         nvenc.nvEncDestroyEncoder(m_encoder);
     }
+}
+
+bool fcH264EncoderNVIDIA::isValid()
+{
+    return m_encoder != nullptr &&
+        m_input.inputBuffer != nullptr &&
+        m_output.bitstreamBuffer != nullptr;
 }
 
 const char* fcH264EncoderNVIDIA::getEncoderInfo() { return "NVIDIA H264 Encoder"; }
 
 bool fcH264EncoderNVIDIA::encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe)
 {
+    if (!isValid()) { return false; }
+
     dst.timestamp = timestamp;
 
     // convert image to NV12
     AnyToNV12(m_nv12_image, m_rgba_image, image, fmt, m_conf.width, m_conf.height);
     NV12Data data = m_nv12_image.data();
 
+    NVENCSTATUS stat;
+
+    // upload image to input buffer
+    {
+        NV_ENC_LOCK_INPUT_BUFFER lock_params = { 0 };
+        lock_params.version = NV_ENC_LOCK_INPUT_BUFFER_VER;
+        lock_params.inputBuffer = m_input.inputBuffer;
+        stat = nvenc.nvEncLockInputBuffer(m_encoder, &lock_params);
+        memcpy(lock_params.bufferDataPtr, data.y, m_nv12_image.size());
+        stat = nvenc.nvEncUnlockInputBuffer(m_encoder, m_input.inputBuffer);
+    }
+
+
     NV_ENC_PIC_PARAMS params;
     memset(&params, 0, sizeof(params));
     params.version = NV_ENC_PIC_PARAMS_VER;
-    //params.inputBuffer = surf->inputSurface;
+    params.inputBuffer = m_input.inputBuffer;
+    params.outputBitstream = m_output.bitstreamBuffer;
     params.bufferFmt = NV_ENC_BUFFER_FORMAT_NV12;
     params.inputWidth = m_conf.width;
     params.inputHeight = m_conf.height;
-    //params.outputBitstream = outputSurfaces[i].outputSurface;
     params.completionEvent = 0;
     params.pictureStruct = NV_ENC_PIC_STRUCT_FRAME;
     params.encodePicFlags = 0;
+    if (force_keyframe) {
+        params.encodePicFlags |= NV_ENC_PIC_FLAG_FORCEINTRA;
+    }
     params.inputTimeStamp = to_usec(timestamp);
-    params.inputDuration = 0;
+    params.inputDuration = to_usec(1.0 / m_conf.target_framerate);
 
-    nvenc.nvEncEncodePicture(m_encoder, &params);
-    return false;
+    // encode! 
+    stat = nvenc.nvEncEncodePicture(m_encoder, &params);
+
+    // retrieve encoded data
+    {
+        NV_ENC_LOCK_BITSTREAM lock_params = { 0 };
+        lock_params.version = NV_ENC_LOCK_BITSTREAM_VER;
+        lock_params.outputBitstream = m_output.bitstreamBuffer;
+
+        stat = nvenc.nvEncLockBitstream(m_encoder, &lock_params);
+
+        // gather NAL information
+        const static char start_seq[] = { 0, 0, 1 }; // NAL start sequence
+        char *beg = (char*)lock_params.bitstreamBufferPtr;
+        char *end = beg + lock_params.bitstreamSizeInBytes;
+        for (;;) {
+            auto *pos = std::search(beg, end, start_seq, start_seq + 3);
+            if (pos == end) { break; }
+            auto *next = std::search(pos + 1, end, start_seq, start_seq + 3);
+            dst.nal_sizes.push_back(int(next - pos));
+            beg = next;
+        }
+        dst.data.append((char*)lock_params.bitstreamBufferPtr, lock_params.bitstreamSizeInBytes);
+
+        stat = nvenc.nvEncUnlockBitstream(m_encoder, m_output.bitstreamBuffer);
+    }
+
+    return true;
 }
 
 fcIH264Encoder* fcCreateH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcNVENCDeviceType type)
