@@ -21,11 +21,11 @@
   <ItemGroup>
     <ClCompile Include="Foundation\Compression.cpp" />
     <ClCompile Include="Foundation\fcThreadPool.cpp" />
-    <ClCompile Include="Foundation\I420.cpp" />
     <ClCompile Include="Foundation\Misc.cpp" />
     <ClCompile Include="Foundation\Network.cpp" />
     <ClCompile Include="Foundation\PixelFormat.cpp" />
     <ClCompile Include="Foundation\TaskQueue.cpp" />
+    <ClCompile Include="Foundation\YUV.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -37,11 +37,11 @@
     <ClInclude Include="Foundation\Buffer.h" />
     <ClInclude Include="Foundation\fcFoundation.h" />
     <ClInclude Include="Foundation\fcThreadPool.h" />
-    <ClInclude Include="Foundation\I420.h" />
     <ClInclude Include="Foundation\LazyInstance.h" />
     <ClInclude Include="Foundation\Misc.h" />
     <ClInclude Include="Foundation\PixelFormat.h" />
     <ClInclude Include="Foundation\TaskQueue.h" />
+    <ClInclude Include="Foundation\YUV.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>

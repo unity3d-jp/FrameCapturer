@@ -1,5 +1,4 @@
-#ifndef fcBuffer_h
-#define fcBuffer_h
+#pragma once
 
 #include <vector>
 #include <algorithm>
@@ -447,6 +446,3 @@ public:
 private:
     CustomStreamData m_csd;
 };
-
-
-#endif // fcBuffer_h

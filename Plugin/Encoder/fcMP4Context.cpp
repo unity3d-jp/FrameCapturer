@@ -248,31 +248,9 @@ bool fcMP4Context::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fc
 
 bool fcMP4Context::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp)
 {
-    I420Data i420;
-
     // convert image to I420
-    if (fmt == fcPixelFormat_I420) {
-        // use input data directly
-        int frame_size = m_conf.video_width * m_conf.video_height;
-        i420.y = (void*)pixels;
-        i420.u = (char*)i420.y + frame_size;
-        i420.v = (char*)i420.u + (frame_size >> 2);
-    }
-    else if (fmt == fcPixelFormat_RGBAu8) {
-        // RGBAu8 -> I420
-        m_i420_image.resize(m_conf.video_width, m_conf.video_height);
-        RGBA2I420(m_i420_image, pixels, m_conf.video_width, m_conf.video_height);
-        i420 = m_i420_image.data();
-    }
-    else {
-        // any format -> RGBAu8 -> I420
-        m_rgba_image.resize(m_conf.video_width * m_conf.video_height * 4);
-        fcConvertPixelFormat(m_rgba_image.data(), fcPixelFormat_RGBAu8, pixels, fmt, m_conf.video_width * m_conf.video_height);
-
-        m_i420_image.resize(m_conf.video_width, m_conf.video_height);
-        RGBA2I420(m_i420_image, m_rgba_image.data(), m_conf.video_width, m_conf.video_height);
-        i420 = m_i420_image.data();
-    }
+    AnyToI420(m_i420_image, m_rgba_image, pixels, fmt, m_conf.video_width, m_conf.video_height);
+    I420Data i420 = m_i420_image.data();
 
     // encode!
     if (m_video_encoder->encode(m_video_frame, i420, timestamp)) {
