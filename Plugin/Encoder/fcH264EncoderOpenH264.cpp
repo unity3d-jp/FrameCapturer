@@ -136,7 +136,14 @@ bool fcH264EncoderOpenH264::encode(fcH264Frame& dst, const I420Data& data, fcTim
         return false;
     }
 
-    dst.h264_type = (fcH264FrameType)frame.eFrameType;
+    {
+        dst.type = 0;
+        switch (frame.eFrameType) {
+        case videoFrameTypeI:   dst.type |= fcH264FrameType_I; break;
+        case videoFrameTypeP:   dst.type |= fcH264FrameType_P; break;
+        case videoFrameTypeIDR: dst.type |= fcH264FrameType_IDR; break;
+        }
+    }
 
     for (int li = 0; li < frame.iLayerNum; ++li) {
         auto& layer = frame.sLayerInfo[li];
