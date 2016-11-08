@@ -1,5 +1,4 @@
-#ifndef PixelFormat
-#define PixelFormat
+#pragma once
 
 enum fcPixelFormat;
 int fcGetPixelSize(fcPixelFormat format);
@@ -13,5 +12,3 @@ void fcScaleArray(int32_t *data, size_t size, float scale);
 void fcScaleArray(half *data, size_t size, float scale);
 void fcScaleArray(float *data, size_t size, float scale);
 const void* fcConvertPixelFormat(void *dst, fcPixelFormat dstfmt, const void *src, fcPixelFormat srcfmt, size_t size);
-
-#endif // PixelFormat

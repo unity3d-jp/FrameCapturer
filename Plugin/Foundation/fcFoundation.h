@@ -7,7 +7,7 @@ typedef BinaryStream fcStream;
 #include "Misc.h"
 #include "Buffer.h"
 #include "PixelFormat.h"
-#include "I420.h"
+#include "YUV.h"
 #include "LazyInstance.h"
 #include "FrameCapturer.h"
 

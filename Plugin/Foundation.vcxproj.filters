@@ -20,7 +20,7 @@
     <ClCompile Include="Foundation\TaskQueue.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
-    <ClCompile Include="Foundation\I420.cpp">
+    <ClCompile Include="Foundation\YUV.cpp">
       <Filter>Foundation</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,10 +44,10 @@
     <ClInclude Include="Foundation\TaskQueue.h">
       <Filter>Foundation</Filter>
     </ClInclude>
-    <ClInclude Include="Foundation\I420.h">
+    <ClInclude Include="Foundation\LazyInstance.h">
       <Filter>Foundation</Filter>
     </ClInclude>
-    <ClInclude Include="Foundation\LazyInstance.h">
+    <ClInclude Include="Foundation\YUV.h">
       <Filter>Foundation</Filter>
     </ClInclude>
   </ItemGroup>

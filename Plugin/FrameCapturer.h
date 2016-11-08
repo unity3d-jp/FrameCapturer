@@ -58,6 +58,7 @@ enum fcPixelFormat
     fcPixelFormat_RGBi32    = fcPixelFormat_Type_i32 | 3,
     fcPixelFormat_RGBAi32   = fcPixelFormat_Type_i32 | 4,
     fcPixelFormat_I420      = 0x10 << 4,
+    fcPixelFormat_NV12      = 0x11 << 4,
 };
 
 enum fcBitrateMode

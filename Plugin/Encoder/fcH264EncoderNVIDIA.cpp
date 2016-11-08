@@ -58,30 +58,70 @@ fcH264EncoderNVIDIA::fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *
 {
     if (!LoadNVENCModule()) { return; }
 
-    NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS params;
-    memset(&params, 0, sizeof(params));
-    params.version = NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS_VER;
-    params.apiVersion = NVENCAPI_VERSION;
-    params.device = device;
-    switch (type) {
-    case fcNVENCDeviceType_DirectX:
-        params.deviceType = NV_ENC_DEVICE_TYPE_DIRECTX;
-        break;
-    case fcNVENCDeviceType_CUDA:
-        params.deviceType = NV_ENC_DEVICE_TYPE_CUDA;
-        break;
+    {
+        NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS params;
+        memset(&params, 0, sizeof(params));
+        params.version = NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS_VER;
+        params.apiVersion = NVENCAPI_VERSION;
+        params.device = device;
+        switch (type) {
+        case fcNVENCDeviceType_DirectX:
+            params.deviceType = NV_ENC_DEVICE_TYPE_DIRECTX;
+            break;
+        case fcNVENCDeviceType_CUDA:
+            params.deviceType = NV_ENC_DEVICE_TYPE_CUDA;
+            break;
+        }
+        nvenc.nvEncOpenEncodeSessionEx(&params, &m_encoder);
+        if (!m_encoder) {
+            return;
+        }
     }
-    nvenc.nvEncOpenEncodeSessionEx(&params, &m_encoder);
+
+    {
+        NV_ENC_INITIALIZE_PARAMS params;
+        memset(&params, 0, sizeof(params));
+        params.version = NV_ENC_INITIALIZE_PARAMS_VER;
+        params.encodeGUID = NV_ENC_CODEC_H264_GUID;
+        params.presetGUID = NV_ENC_H264_PROFILE_BASELINE_GUID;
+        params.encodeHeight = m_conf.width;
+        params.encodeHeight = m_conf.height;
+        params.darWidth = 1;
+        params.darHeight = 1;
+        params.frameRateNum = m_conf.target_framerate;
+        params.frameRateDen = 1;
+        nvenc.nvEncInitializeEncoder(m_encoder, &params);
+    }
 }
 
 fcH264EncoderNVIDIA::~fcH264EncoderNVIDIA()
 {
+    if (m_encoder) {
+        nvenc.nvEncDestroyEncoder(m_encoder);
+    }
 }
 
 const char* fcH264EncoderNVIDIA::getEncoderInfo() { return "NVIDIA H264 Encoder"; }
 
 bool fcH264EncoderNVIDIA::encode(fcH264Frame& dst, const I420Data& data, fcTime timestamp, bool force_keyframe)
 {
+    dst.timestamp = timestamp;
+
+    NV_ENC_PIC_PARAMS params;
+    memset(&params, 0, sizeof(params));
+    params.version = NV_ENC_PIC_PARAMS_VER;
+    //params.inputBuffer = surf->inputSurface;
+    params.bufferFmt = NV_ENC_BUFFER_FORMAT_NV12;
+    params.inputWidth = m_conf.width;
+    params.inputHeight = m_conf.height;
+    //params.outputBitstream = outputSurfaces[i].outputSurface;
+    params.completionEvent = 0;
+    params.pictureStruct = NV_ENC_PIC_STRUCT_FRAME;
+    params.encodePicFlags = 0;
+    params.inputTimeStamp = to_usec(timestamp);
+    params.inputDuration = 0;
+
+    nvenc.nvEncEncodePicture(m_encoder, &params);
     return false;
 }
 
