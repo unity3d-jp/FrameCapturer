@@ -3,7 +3,6 @@
 #include "fcH264Encoder.h"
 
 #ifdef fcSupportH264_AMD
-
 #include "amf/public/common/AMFFactory.h"
 #include "amf/public/include/components/VideoEncoderVCE.h"
 
@@ -15,13 +14,15 @@ public:
     ~fcH264EncoderAMD() override;
     const char* getEncoderInfo() override;
     bool encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe) override;
+    bool flush(fcH264Frame& dst) override;
 
-    bool isValid() { return m_encoder != nullptr; }
+    bool isValid() const { return m_encoder != nullptr; }
 
 private:
     fcH264EncoderConfig m_conf;
     amf::AMFContextPtr m_ctx;
     amf::AMFComponentPtr m_encoder;
+    amf::AMFSurfacePtr m_surface;
 
     Buffer m_rgba_image;
     I420Image m_i420_image;
@@ -45,7 +46,6 @@ static bool LoadAMFModule()
 
 
 
-
 fcH264EncoderAMD::fcH264EncoderAMD(const fcH264EncoderConfig& conf, void *device, fcHWEncoderDeviceType type)
     : m_conf(conf)
 {
@@ -53,6 +53,8 @@ fcH264EncoderAMD::fcH264EncoderAMD(const fcH264EncoderConfig& conf, void *device
 
     amf::AMFContextPtr ctx;
     amf::AMFComponentPtr encoder;
+    amf::AMFSurfacePtr surface;
+
     if (iamf->CreateContext(&ctx) != AMF_OK) {
         return;
     }
@@ -77,8 +79,11 @@ fcH264EncoderAMD::fcH264EncoderAMD(const fcH264EncoderConfig& conf, void *device
         return;
     }
 
+    ctx->AllocSurface(amf::AMF_MEMORY_HOST, amf::AMF_SURFACE_YUV420P, m_conf.width, m_conf.height, &m_surface);
+
     m_ctx = ctx;
     m_encoder = encoder;
+    m_surface = surface;
 }
 
 fcH264EncoderAMD::~fcH264EncoderAMD()
@@ -95,13 +100,26 @@ bool fcH264EncoderAMD::encode(fcH264Frame& dst, const void *image, fcPixelFormat
     AnyToI420(m_i420_image, m_rgba_image, image, fmt, m_conf.width, m_conf.height);
     I420Data i420 = m_i420_image.data();
 
-    //// todo
-    //amf::AMFDataPtr input;
-    //m_encoder->SubmitInput(input);
-    //amf::AMFDataPtr output;
-    //m_encoder->QueryOutput(&output);
+    memcpy(m_surface->GetPlane(amf::AMF_PLANE_Y)->GetNative(), i420.y, i420.pitch_y * i420.height);
+    memcpy(m_surface->GetPlane(amf::AMF_PLANE_U)->GetNative(), i420.u, i420.pitch_u * i420.height);
+    memcpy(m_surface->GetPlane(amf::AMF_PLANE_V)->GetNative(), i420.v, i420.pitch_v * i420.height);
+
+    m_encoder->SubmitInput(m_surface);
+
+    amf::AMFDataPtr out_data;
+    m_encoder->QueryOutput(&out_data);
+    out_data->Convert(amf::AMF_MEMORY_HOST);
+
+    amf::AMFBufferPtr out_buf(out_data);
+    dst.data.append((char*)out_buf->GetNative(), out_buf->GetSize());
+    dst.gatherNALInformation();
 
     return true;
+}
+
+bool fcH264EncoderAMD::flush(fcH264Frame& dst)
+{
+    return false;
 }
 
 fcIH264Encoder* fcCreateH264EncoderAMD(const fcH264EncoderConfig& conf, void *device, fcHWEncoderDeviceType type)

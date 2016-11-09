@@ -8,9 +8,13 @@
 
 struct I420Data
 {
-    void *y;
-    void *u;
-    void *v;
+    void *y = nullptr;
+    void *u = nullptr;
+    void *v = nullptr;
+    int pitch_y = 0;
+    int pitch_u = 0;
+    int pitch_v = 0;
+    int height = 0;
 };
 
 class I420Image
@@ -34,8 +38,11 @@ void AnyToI420(I420Image& dst, Buffer& tmp, const void *pixels, fcPixelFormat fm
 
 struct NV12Data
 {
-    void *y;
-    void *uv;
+    void *y = nullptr;
+    void *uv = nullptr;
+    int pitch_y = 0;
+    int pitch_uv = 0;
+    int height = 0;
 };
 
 class NV12Image

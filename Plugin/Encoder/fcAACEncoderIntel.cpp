@@ -21,6 +21,7 @@ public:
     const char* getEncoderInfo() override;
     const Buffer& getDecoderSpecificInfo() override;
     bool encode(fcAACFrame& dst, const float *samples, size_t num_samples, fcTime timestamp) override;
+    bool flush(fcAACFrame& dst) override;
 
     bool isValid() { return m_encoder != nullptr; }
 
@@ -94,6 +95,11 @@ bool fcAACEncoderIntel::encode(fcAACFrame& dst, const float *samples, size_t num
     if (ret < 0) { return false; }
 
     return true;
+}
+
+bool fcAACEncoderIntel::flush(fcAACFrame& dst)
+{
+    return false;
 }
 
 fcIAACEncoder* fcCreateAACEncoderIntel(const fcAACEncoderConfig& conf)

@@ -24,12 +24,15 @@ public:
     const char* getEncoderInfo() override;
     const Buffer& getDecoderSpecificInfo() override;
     bool encode(fcAACFrame& dst, const float *samples, size_t num_samples, fcTime timestamp) override;
+    bool flush(fcAACFrame& dst) override;
+
+    bool isValid() const { return m_handle != nullptr; }
 
 private:
     fcAACEncoderConfig m_conf;
-    void *m_handle;
-    unsigned long m_num_read_samples;
-    unsigned long m_output_size;
+    void *m_handle = nullptr;
+    unsigned long m_num_read_samples = 0;
+    unsigned long m_output_size = 0;
     Buffer m_aac_tmp_buf;
     Buffer m_aac_header;
     RawVector<float> m_tmp_data;
@@ -37,31 +40,13 @@ private:
 };
 
 
-namespace {
 
-    typedef faacEncConfigurationPtr
-        (FAACAPI* faacEncGetCurrentConfiguration_t)(faacEncHandle hEncoder);
-
-
-    typedef int(FAACAPI* faacEncSetConfiguration_t)(faacEncHandle hEncoder,
-        faacEncConfigurationPtr config);
-
-
-    typedef faacEncHandle(FAACAPI* faacEncOpen_t)(unsigned long sampleRate,
-        unsigned int numChannels,
-        unsigned long *inputSamples,
-        unsigned long *maxOutputBytes);
-
-
-    typedef int(FAACAPI* faacEncGetDecoderSpecificInfo_t)(faacEncHandle hEncoder, unsigned char **ppBuffer,
-        unsigned long *pSizeOfDecoderSpecificInfo);
-
-
-    typedef int(FAACAPI* faacEncEncode_t)(faacEncHandle hEncoder, int32_t * inputBuffer, unsigned int samplesInput,
-        unsigned char *outputBuffer,
-        unsigned int bufferSize);
-
-    typedef int(FAACAPI* faacEncClose_t)(faacEncHandle hEncoder);
+typedef faacEncConfigurationPtr (FAACAPI* faacEncGetCurrentConfiguration_t)(faacEncHandle hEncoder);
+typedef int(FAACAPI* faacEncSetConfiguration_t)(faacEncHandle hEncoder, faacEncConfigurationPtr config);
+typedef faacEncHandle(FAACAPI* faacEncOpen_t)(unsigned long sampleRate, unsigned int numChannels, unsigned long *inputSamples, unsigned long *maxOutputBytes);
+typedef int(FAACAPI* faacEncGetDecoderSpecificInfo_t)(faacEncHandle hEncoder, unsigned char **ppBuffer, unsigned long *pSizeOfDecoderSpecificInfo);
+typedef int(FAACAPI* faacEncEncode_t)(faacEncHandle hEncoder, int32_t * inputBuffer, unsigned int samplesInput, unsigned char *outputBuffer, unsigned int bufferSize);
+typedef int(FAACAPI* faacEncClose_t)(faacEncHandle hEncoder);
 
 #define EachFAACFunctions(Body)\
     Body(faacEncGetCurrentConfiguration)\
@@ -71,18 +56,31 @@ namespace {
     Body(faacEncEncode)\
     Body(faacEncClose)
 
-
-#define decl(name) name##_t name##_;
+#define decl(name) static name##_t name##_;
     EachFAACFunctions(decl)
 #undef decl
 
-module_t g_mod_faac;
+static module_t g_faac;
 
-} // namespace
+
+bool fcLoadFAACModule()
+{
+    if (g_faac != nullptr) { return true; }
+
+    g_faac = DLLLoad(FAACDLL);
+    if (g_faac == nullptr) { return false; }
+
+#define imp(name) (void*&)name##_ = DLLGetSymbol(g_faac, #name);
+    EachFAACFunctions(imp)
+#undef imp
+        return true;
+}
 
 fcAACEncoderFAAC::fcAACEncoderFAAC(const fcAACEncoderConfig& conf)
     : m_conf(conf), m_handle(nullptr), m_num_read_samples(), m_output_size()
 {
+    if (!fcLoadFAACModule()) { return; }
+
     m_handle = faacEncOpen_(conf.sample_rate, conf.num_channels, &m_num_read_samples, &m_output_size);
 
     faacEncConfigurationPtr config = faacEncGetCurrentConfiguration_(m_handle);
@@ -137,6 +135,11 @@ bool fcAACEncoderFAAC::encode(fcAACFrame& dst, const float *samples, size_t num_
     return true;
 }
 
+bool fcAACEncoderFAAC::flush(fcAACFrame& dst)
+{
+    return false;
+}
+
 const Buffer& fcAACEncoderFAAC::getDecoderSpecificInfo()
 {
     if (m_aac_header.empty()) {
@@ -150,24 +153,14 @@ const Buffer& fcAACEncoderFAAC::getDecoderSpecificInfo()
 }
 
 
-bool fcLoadFAACModule()
-{
-    if (g_mod_faac != nullptr) { return true; }
-
-    g_mod_faac = DLLLoad(FAACDLL);
-    if (g_mod_faac == nullptr) { return false; }
-
-#define imp(name) (void*&)name##_ = DLLGetSymbol(g_mod_faac, #name);
-    EachFAACFunctions(imp)
-#undef imp
-    return true;
-}
-
-
 fcIAACEncoder* fcCreateAACEncoderFAAC(const fcAACEncoderConfig& conf)
 {
-    if (!fcLoadFAACModule()) { return nullptr; }
-    return new fcAACEncoderFAAC(conf);
+    auto *ret = new fcAACEncoderFAAC(conf);
+    if (!ret->isValid()) {
+        delete ret;
+        ret = nullptr;
+    }
+    return ret;
 }
 
 #ifdef fcEnableFAACSelfBuild

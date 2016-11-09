@@ -46,77 +46,70 @@ static void WriteMovieData(fcIMP4Context *ctx)
     audio_thread.join();
 }
 
-void MP4Test()
+
+void MP4Test(int video_encoder, int audio_encoder, const char *filename)
 {
     fcMP4Config conf;
-    //conf.video = false;
     conf.video_width = Width;
     conf.video_height = Height;
     conf.video_bitrate_mode = fcVBR;
     conf.video_target_bitrate = 256000;
-    conf.video_flags = fcMP4_H264NVIDIA;
-    //conf.video_flags = fcMP4_H264IntelSW;
-    //conf.video_flags = fcMP4_H264OpenH264;
-    //conf.audio = false;
+    conf.video_flags = video_encoder;
     conf.audio_sample_rate = SampleRate;
     conf.audio_num_channels = NumChannels;
     conf.audio_target_bitrate = 128000;
-    conf.audio_flags = fcMP4_AACIntel;
+    conf.audio_flags = audio_encoder;
 
 
-    {
-        printf("MP4Test (OpenH264 & FAAC) begin\n");
+    printf("MP4Test (%s) begin\n", filename);
 
-        // download OpenH264 codec
-        fcMP4DownloadCodecBegin();
-        for (int i = 0; i < 30; ++i) {
-            if (fcMP4DownloadCodecGetState() == fcDownloadState_InProgress) {
-                std::this_thread::sleep_for(1s);
-            }
-            else { break; }
-        }
+    fcStream* fstream = fcCreateFileStream(filename);
+    fcIMP4Context *ctx = fcMP4CreateContext(&conf);
+    fcMP4AddOutputStream(ctx, fstream);
+    WriteMovieData(ctx);
+    fcMP4DestroyContext(ctx);
+    fcDestroyStream(fstream);
 
+    printf("MP4Test (%s) end\n", filename);
+}
 
-        // create output streams
-        fcStream* fstream = fcCreateFileStream("file_stream.mp4");
-        fcStream* mstream = fcCreateMemoryStream();
-        FILE *ofile = fopen("custom_stream.mp4", "wb");
-        fcStream* cstream = fcCreateCustomStream(ofile, &tellp, &seekp, &write);
+void MP4TestWMF(const char *filename)
+{
+    fcMP4Config conf;
+    conf.video_width = Width;
+    conf.video_height = Height;
+    conf.video_bitrate_mode = fcVBR;
+    conf.video_target_bitrate = 256000;
+    conf.audio_sample_rate = SampleRate;
+    conf.audio_num_channels = NumChannels;
+    conf.audio_target_bitrate = 128000;
 
-        // create mp4 context and add output streams
-        fcIMP4Context *ctx = fcMP4CreateContext(&conf);
-        fcMP4AddOutputStream(ctx, fstream);
-        fcMP4AddOutputStream(ctx, mstream);
-        fcMP4AddOutputStream(ctx, cstream);
+    printf("MP4Test (%s) begin\n", filename);
 
-        WriteMovieData(ctx);
+    fcIMP4Context *ctx = fcMP4CreateOSEncoderContext(&conf, "WMF.mp4");
+    WriteMovieData(ctx);
+    fcMP4DestroyContext(ctx);
 
-        // destroy mp4 context
-        fcMP4DestroyContext(ctx);
-
-        // destroy output streams
-        {
-            fcBufferData bd = fcStreamGetBufferData(mstream);
-            std::fstream of("memory_stream.mp4", std::ios::binary | std::ios::out);
-            of.write((char*)bd.data, bd.size);
-        }
-        fcDestroyStream(fstream);
-        fcDestroyStream(mstream);
-        fcDestroyStream(cstream);
-        fclose(ofile);
-
-        printf("MP4Test (OpenH264 & FAAC) end\n");
-    }
+    printf("MP4Test (%s) end\n", filename);
+}
 
 
-    {
-        printf("MP4Test (WMF) begin\n");
+void MP4Test()
+{
+    //// download OpenH264 codec
+    //fcMP4DownloadCodecBegin();
+    //for (int i = 0; i < 30; ++i) {
+    //    if (fcMP4DownloadCodecGetState() == fcDownloadState_InProgress) {
+    //        std::this_thread::sleep_for(1s);
+    //    }
+    //    else { break; }
+    //}
 
-        fcIMP4Context *ctx = fcMP4CreateOSEncoderContext(&conf, "WMF.mp4");
-        WriteMovieData(ctx);
-        fcMP4DestroyContext(ctx);
-
-        printf("MP4Test (WMF) end\n");
-    }
+    MP4Test(fcMP4_H264NVIDIA, 0, "NVIDIA.mp4");
+    MP4Test(fcMP4_H264AMD, 0, "AMD.mp4");
+    MP4Test(fcMP4_H264IntelHW, 0, "IntelHW.mp4");
+    MP4Test(fcMP4_H264IntelSW, 0, "IntelSW.mp4");
+    MP4Test(fcMP4_H264OpenH264, fcMP4_AACFAAC, "OpenH264.mp4");
+    MP4TestWMF("WMF.mp4");
 }
 

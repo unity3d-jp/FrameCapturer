@@ -18,6 +18,9 @@ void I420Image::resize(int width, int height)
     m_data.y = m_buffer.data();
     m_data.u = (char*)m_data.y + s;
     m_data.v = (char*)m_data.u + (s >> 2);
+    m_data.pitch_y = width;
+    m_data.pitch_u = m_data.pitch_v = width / 4;
+    m_data.height = height;
 }
 
 size_t I420Image::size() const
@@ -68,6 +71,9 @@ void NV12Image::resize(int width, int height)
     m_buffer.resize(s + (s >> 1));
     m_data.y = m_buffer.data();
     m_data.uv = (char*)m_data.y + s;
+    m_data.pitch_y = width;
+    m_data.pitch_uv = width / 2;
+    m_data.height = height;
 }
 
 size_t NV12Image::size() const

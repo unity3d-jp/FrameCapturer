@@ -66,6 +66,9 @@
     <ClCompile Include="Encoder\fcAACEncoderIntel.cpp">
       <Filter>Encoder</Filter>
     </ClCompile>
+    <ClCompile Include="Encoder\fcH264Encoder.cpp">
+      <Filter>Encoder</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FrameCapturer.h" />
