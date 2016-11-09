@@ -4,10 +4,12 @@ enum fcGfxDeviceType
 {
     fcGfxDeviceType_Unknown,
     fcGfxDeviceType_D3D9,
+    fcGfxDeviceType_D3D10,
     fcGfxDeviceType_D3D11,
     fcGfxDeviceType_D3D12,
     fcGfxDeviceType_OpenGL,
     fcGfxDeviceType_Vulkan,
+    fcGfxDeviceType_CUDA,
 };
 
 

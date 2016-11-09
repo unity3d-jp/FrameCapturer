@@ -69,7 +69,7 @@ fcH264EncoderIntel::fcH264EncoderIntel(const fcH264EncoderConfig& conf, int impl
     fi.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
 
     params.mfx.CodecId = MFX_CODEC_AVC;
-    params.mfx.CodecProfile = MFX_PROFILE_AVC_BASELINE;
+    params.mfx.CodecProfile = MFX_PROFILE_AVC_HIGH;
     params.mfx.GopOptFlag = MFX_GOP_CLOSED;
     params.mfx.GopPicSize = 0;
     params.mfx.GopRefDist = 0;

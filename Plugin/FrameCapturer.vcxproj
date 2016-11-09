@@ -76,6 +76,9 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="amf.vcxproj">
+      <Project>{5d8df42e-e98e-4738-bfb1-953b33defd1a}</Project>
+    </ProjectReference>
     <ProjectReference Include="Foundation.vcxproj">
       <Project>{df113358-bdd3-418f-a350-43d63f249b45}</Project>
     </ProjectReference>
