@@ -31,6 +31,7 @@
     <ClCompile Include="Encoder\fcAACEncoderIntel.cpp" />
     <ClCompile Include="Encoder\fcExrContext.cpp" />
     <ClCompile Include="Encoder\fcGifContext.cpp" />
+    <ClCompile Include="Encoder\fcH264Encoder.cpp" />
     <ClCompile Include="Encoder\fcH264EncoderAMD.cpp" />
     <ClCompile Include="Encoder\fcH264EncoderIntel.cpp" />
     <ClCompile Include="Encoder\fcH264EncoderNVIDIA.cpp" />

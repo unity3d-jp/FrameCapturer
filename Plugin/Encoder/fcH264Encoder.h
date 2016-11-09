@@ -85,6 +85,8 @@ struct fcH264Frame
             total += size;
         }
     }
+
+    void gatherNALInformation();
 };
 
 
@@ -94,6 +96,7 @@ public:
     virtual ~fcIH264Encoder() {}
     virtual const char* getEncoderInfo() = 0;
     virtual bool encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe = false) = 0;
+    virtual bool flush(fcH264Frame& dst) = 0;
 };
 
 bool fcDownloadOpenH264(fcDownloadCallback cb);

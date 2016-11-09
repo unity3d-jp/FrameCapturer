@@ -23,8 +23,9 @@ public:
     ~fcH264EncoderNVIDIA() override;
     const char* getEncoderInfo() override;
     bool encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe) override;
+    bool flush(fcH264Frame& dst) override;
 
-    bool isValid();
+    bool isValid() const;
 
 private:
     fcH264EncoderConfig m_conf;
@@ -44,17 +45,18 @@ static NV_ENCODE_API_FUNCTION_LIST nvenc;
 
 static bool LoadNVENCModule()
 {
-    if (NvEncodeAPICreateInstance_) { return true; }
+    if (nvenc.nvEncOpenEncodeSession != nullptr) { return true; }
 
+    NVENCSTATUS stat;
     g_mod_nvenc = DLLLoad(NVEncoderDLL);
     if (g_mod_nvenc) {
         (void*&)NvEncodeAPICreateInstance_ = DLLGetSymbol(g_mod_nvenc, "NvEncodeAPICreateInstance");
         if (NvEncodeAPICreateInstance_) {
             nvenc.version = NV_ENCODE_API_FUNCTION_LIST_VER;
-            NvEncodeAPICreateInstance_(&nvenc);
+            stat = NvEncodeAPICreateInstance_(&nvenc);
         }
     }
-    return NvEncodeAPICreateInstance_ != nullptr;
+    return nvenc.nvEncOpenEncodeSession != nullptr;
 }
 
 
@@ -144,7 +146,7 @@ fcH264EncoderNVIDIA::~fcH264EncoderNVIDIA()
     }
 }
 
-bool fcH264EncoderNVIDIA::isValid()
+bool fcH264EncoderNVIDIA::isValid() const
 {
     return m_encoder != nullptr &&
         m_input.inputBuffer != nullptr &&
@@ -203,23 +205,18 @@ bool fcH264EncoderNVIDIA::encode(fcH264Frame& dst, const void *image, fcPixelFor
 
         stat = nvenc.nvEncLockBitstream(m_encoder, &lock_params);
 
-        // gather NAL information
-        const static char start_seq[] = { 0, 0, 1 }; // NAL start sequence
-        char *beg = (char*)lock_params.bitstreamBufferPtr;
-        char *end = beg + lock_params.bitstreamSizeInBytes;
-        for (;;) {
-            auto *pos = std::search(beg, end, start_seq, start_seq + 3);
-            if (pos == end) { break; }
-            auto *next = std::search(pos + 1, end, start_seq, start_seq + 3);
-            dst.nal_sizes.push_back(int(next - pos));
-            beg = next;
-        }
         dst.data.append((char*)lock_params.bitstreamBufferPtr, lock_params.bitstreamSizeInBytes);
+        dst.gatherNALInformation();
 
         stat = nvenc.nvEncUnlockBitstream(m_encoder, m_output.bitstreamBuffer);
     }
 
     return true;
+}
+
+bool fcH264EncoderNVIDIA::flush(fcH264Frame& dst)
+{
+    return false;
 }
 
 fcIH264Encoder* fcCreateH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcHWEncoderDeviceType type)

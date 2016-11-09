@@ -40,9 +40,11 @@ public:
     bool addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp) override;
     bool addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamps) override;
     bool addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamps);
+    void flushVideo();
 
     bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp) override;
     bool addAudioFrameImpl(const float *samples, int num_samples, fcTime timestamp);
+    void flushAudio();
 
 private:
     template<class Body>
@@ -174,6 +176,9 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
 
 fcMP4Context::~fcMP4Context()
 {
+    flushVideo();
+    flushAudio();
+
     if (m_conf.video) { m_video_tasks.stop(); }
     if (m_conf.audio) { m_audio_tasks.stop(); }
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -268,6 +273,20 @@ bool fcMP4Context::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt
     return false;
 }
 
+void fcMP4Context::flushVideo()
+{
+    if (!m_video_encoder) { return; }
+
+    m_video_tasks.run([this]() {
+        if (m_video_encoder->flush(m_video_frame)) {
+            eachStreams([&](auto& writer) {
+                writer.addVideoFrame(m_video_frame);
+            });
+            m_video_frame.clear();
+        }
+    });
+}
+
 bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, fcTime timestamp)
 {
     if (!m_audio_encoder) {
@@ -298,6 +317,20 @@ bool fcMP4Context::addAudioFrameImpl(const float *samples, int num_samples, fcTi
     return false;
 }
 
+
+void fcMP4Context::flushAudio()
+{
+    if (!m_audio_encoder) { return; }
+
+    m_audio_tasks.run([this]() {
+        if (m_audio_encoder->flush(m_audio_frame)) {
+            eachStreams([&](auto& writer) {
+                writer.addAudioFrame(m_audio_frame);
+            });
+            m_audio_frame.clear();
+        }
+    });
+}
 
 namespace {
     std::string g_module_path;

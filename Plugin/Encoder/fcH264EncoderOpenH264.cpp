@@ -30,6 +30,9 @@ public:
     ~fcH264EncoderOpenH264() override;
     const char* getEncoderInfo() override;
     bool encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe) override;
+    bool flush(fcH264Frame& dst) override;
+
+    bool isValid() const { return m_encoder != nullptr; }
 
 private:
     fcH264EncoderConfig m_conf;
@@ -38,14 +41,7 @@ private:
     I420Image m_i420_image;
 };
 
-fcIH264Encoder* fcCreateH264EncoderOpenH264(const fcH264EncoderConfig& conf)
-{
-    if (!fcLoadOpenH264Module()) { return nullptr; }
-    return new fcH264EncoderOpenH264(conf);
-}
 
-
-namespace {
 
 typedef int  (*WelsCreateSVCEncoder_t)(ISVCEncoder** ppEncoder);
 typedef void (*WelsDestroySVCEncoder_t)(ISVCEncoder* pEncoder);
@@ -54,24 +50,21 @@ typedef void (*WelsDestroySVCEncoder_t)(ISVCEncoder* pEncoder);
     Body(WelsCreateSVCEncoder)\
     Body(WelsDestroySVCEncoder)
 
-
-#define decl(name) name##_t name##_;
+#define decl(name) static name##_t name##_;
 EachOpenH264Functions(decl)
 #undef decl
 
-module_t g_mod_h264;
-
-} // namespace
+static module_t g_openh264;
 
 
 bool fcLoadOpenH264Module()
 {
-    if (g_mod_h264 != nullptr) { return true; }
+    if (g_openh264 != nullptr) { return true; }
 
-    g_mod_h264 = DLLLoad(OpenH264DLL);
-    if (g_mod_h264 == nullptr) { return false; }
+    g_openh264 = DLLLoad(OpenH264DLL);
+    if (g_openh264 == nullptr) { return false; }
 
-#define imp(name) (void*&)name##_ = DLLGetSymbol(g_mod_h264, #name);
+#define imp(name) (void*&)name##_ = DLLGetSymbol(g_openh264, #name);
     EachOpenH264Functions(imp)
 #undef imp
     return true;
@@ -82,7 +75,7 @@ fcH264EncoderOpenH264::fcH264EncoderOpenH264(const fcH264EncoderConfig& conf)
     : m_conf(conf), m_encoder(nullptr)
 {
     fcLoadOpenH264Module();
-    if (g_mod_h264 == nullptr) { return; }
+    if (g_openh264 == nullptr) { return; }
 
     WelsCreateSVCEncoder_(&m_encoder);
 
@@ -102,7 +95,7 @@ fcH264EncoderOpenH264::fcH264EncoderOpenH264(const fcH264EncoderConfig& conf)
 
 fcH264EncoderOpenH264::~fcH264EncoderOpenH264()
 {
-    if (g_mod_h264 == nullptr) { return; }
+    if (g_openh264 == nullptr) { return; }
 
     WelsDestroySVCEncoder_(m_encoder);
 }
@@ -155,9 +148,7 @@ bool fcH264EncoderOpenH264::encode(fcH264Frame& dst, const void *image, fcPixelF
         dst.nal_sizes.append(layer.pNalLengthInByte, layer.iNalCount);
 
         int total = 0;
-        fcH264NALHeader header;
         for (int ni = 0; ni < layer.iNalCount; ++ni) {
-            header = fcH264NALHeader(layer.pBsBuf[total + 4]);
             total += layer.pNalLengthInByte[ni];
         }
         dst.data.append((char*)layer.pBsBuf, total);
@@ -166,6 +157,21 @@ bool fcH264EncoderOpenH264::encode(fcH264Frame& dst, const void *image, fcPixelF
     return true;
 }
 
+bool fcH264EncoderOpenH264::flush(fcH264Frame& dst)
+{
+    return false;
+}
+
+
+fcIH264Encoder* fcCreateH264EncoderOpenH264(const fcH264EncoderConfig& conf)
+{
+    auto *ret = new fcH264EncoderOpenH264(conf);
+    if (!ret->isValid()) {
+        delete ret;
+        ret = nullptr;
+    }
+    return ret;
+}
 
 // -------------------------------------------------------------
 // OpenH264 downloader

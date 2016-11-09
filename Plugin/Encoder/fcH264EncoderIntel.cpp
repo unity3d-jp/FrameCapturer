@@ -18,8 +18,9 @@ public:
     ~fcH264EncoderIntel() override;
     const char* getEncoderInfo() override;
     bool encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe) override;
+    bool flush(fcH264Frame& dst) override;
 
-    bool isValid() { return m_encoder != nullptr; }
+    bool isValid() const { return m_encoder != nullptr; }
 
 private:
     fcH264EncoderConfig m_conf;
@@ -145,18 +146,8 @@ bool fcH264EncoderIntel::encode(fcH264Frame& dst, const void *image, fcPixelForm
     if (ret < 0) { return false; }
 
     {
-        // gather NAL information
-        const static mfxU8 start_seq[] = { 0, 0, 1 }; // NAL start sequence
-        mfxU8 *beg = bitstream.Data;
-        mfxU8 *end = beg + bitstream.DataLength;
-        for (;;) {
-            auto *pos = std::search(beg, end, start_seq, start_seq + 3);
-            if (pos == end) { break; }
-            auto *next = std::search(pos + 1, end, start_seq, start_seq + 3);
-            dst.nal_sizes.push_back(int(next - pos));
-            beg = next;
-        }
         dst.data.append((char*)bitstream.Data, bitstream.DataLength);
+        dst.gatherNALInformation();
     }
 
     {
@@ -172,6 +163,11 @@ bool fcH264EncoderIntel::encode(fcH264Frame& dst, const void *image, fcPixelForm
     }
 
     return true;
+}
+
+bool fcH264EncoderIntel::flush(fcH264Frame& dst)
+{
+    return false;
 }
 
 fcIH264Encoder* fcCreateH264EncoderIntelHW(const fcH264EncoderConfig& conf)
