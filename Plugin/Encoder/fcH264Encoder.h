@@ -99,14 +99,18 @@ public:
 bool fcDownloadOpenH264(fcDownloadCallback cb);
 bool fcLoadOpenH264Module();
 
-enum fcNVENCDeviceType
+enum class fcHWEncoderDeviceType
 {
-    fcNVENCDeviceType_DirectX,
-    fcNVENCDeviceType_CUDA,
+    Unknown,
+    D3D9,
+    D3D10,
+    D3D11,
+    D3D12,
+    CUDA,
 };
 
 fcIH264Encoder* fcCreateH264EncoderOpenH264(const fcH264EncoderConfig& conf);
-fcIH264Encoder* fcCreateH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcNVENCDeviceType type);
-fcIH264Encoder* fcCreateH264EncoderAMD(const fcH264EncoderConfig& conf);
+fcIH264Encoder* fcCreateH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcHWEncoderDeviceType type);
+fcIH264Encoder* fcCreateH264EncoderAMD(const fcH264EncoderConfig& conf, void *device, fcHWEncoderDeviceType type);
 fcIH264Encoder* fcCreateH264EncoderIntelHW(const fcH264EncoderConfig& conf);
 fcIH264Encoder* fcCreateH264EncoderIntelSW(const fcH264EncoderConfig& conf);

@@ -5,21 +5,21 @@
 
 #ifdef fcSupportH264_NVIDIA
 
-#ifdef _WIN32
+#if defined(_WIN32)
     #if defined(_M_AMD64)
-        #define NVEncoderDLL    "nvEncodeAPI64.dll"
+        #define NVEncoderDLL "nvEncodeAPI64.dll"
     #elif defined(_M_IX86)
-        #define NVEncoderDLL    "nvEncodeAPI.dll"
+        #define NVEncoderDLL "nvEncodeAPI.dll"
     #endif
-#else
-    #define NVEncoderDLL    "libnvidia-encode.so.1"
+#elif defined(__linux__)
+    #define NVEncoderDLL "libnvidia-encode.so.1"
 #endif
 
 
 class fcH264EncoderNVIDIA : public fcIH264Encoder
 {
 public:
-    fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcNVENCDeviceType type);
+    fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcHWEncoderDeviceType type);
     ~fcH264EncoderNVIDIA() override;
     const char* getEncoderInfo() override;
     bool encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe) override;
@@ -58,7 +58,7 @@ static bool LoadNVENCModule()
 }
 
 
-fcH264EncoderNVIDIA::fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcNVENCDeviceType type)
+fcH264EncoderNVIDIA::fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcHWEncoderDeviceType type)
     : m_conf(conf)
 {
     if (!LoadNVENCModule()) { return; }
@@ -71,10 +71,13 @@ fcH264EncoderNVIDIA::fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *
         params.apiVersion = NVENCAPI_VERSION;
         params.device = device;
         switch (type) {
-        case fcNVENCDeviceType_DirectX:
+        case fcHWEncoderDeviceType::D3D9:
+        case fcHWEncoderDeviceType::D3D10:
+        case fcHWEncoderDeviceType::D3D11:
+        case fcHWEncoderDeviceType::D3D12:
             params.deviceType = NV_ENC_DEVICE_TYPE_DIRECTX;
             break;
-        case fcNVENCDeviceType_CUDA:
+        case fcHWEncoderDeviceType::CUDA:
             params.deviceType = NV_ENC_DEVICE_TYPE_CUDA;
             break;
         }
@@ -85,9 +88,7 @@ fcH264EncoderNVIDIA::fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *
     }
 
     {
-
-        NV_ENC_INITIALIZE_PARAMS params;
-        memset(&params, 0, sizeof(params));
+        NV_ENC_INITIALIZE_PARAMS params = { 0 };
         params.version = NV_ENC_INITIALIZE_PARAMS_VER;
         params.encodeGUID = NV_ENC_CODEC_H264_GUID;
         params.presetGUID = NV_ENC_PRESET_DEFAULT_GUID;
@@ -99,16 +100,15 @@ fcH264EncoderNVIDIA::fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *
         params.frameRateDen = 1;
         params.enablePTD = 1;
 
-        NV_ENC_PRESET_CONFIG preset_config;
-        memset(&preset_config, 0, sizeof(preset_config));
+        NV_ENC_PRESET_CONFIG preset_config = { 0 };
         preset_config.version = NV_ENC_PRESET_CONFIG_VER;
         preset_config.presetCfg.version = NV_ENC_CONFIG_VER;
         stat = nvenc.nvEncGetEncodePresetConfig(m_encoder, params.encodeGUID, params.presetGUID, &preset_config);
 
-        NV_ENC_CONFIG encode_config;
-        memset(&encode_config, 0, sizeof(encode_config));
+        NV_ENC_CONFIG encode_config = { 0 };
         encode_config.version = NV_ENC_CONFIG_VER;
         memcpy(&encode_config, &preset_config.presetCfg, sizeof(NV_ENC_CONFIG));
+        encode_config.profileGUID = NV_ENC_H264_PROFILE_HIGH_GUID;
         params.encodeConfig = &encode_config;
 
         stat = nvenc.nvEncInitializeEncoder(m_encoder, &params);
@@ -176,8 +176,7 @@ bool fcH264EncoderNVIDIA::encode(fcH264Frame& dst, const void *image, fcPixelFor
     }
 
 
-    NV_ENC_PIC_PARAMS params;
-    memset(&params, 0, sizeof(params));
+    NV_ENC_PIC_PARAMS params = { 0 };
     params.version = NV_ENC_PIC_PARAMS_VER;
     params.inputBuffer = m_input.inputBuffer;
     params.outputBitstream = m_output.bitstreamBuffer;
@@ -223,7 +222,7 @@ bool fcH264EncoderNVIDIA::encode(fcH264Frame& dst, const void *image, fcPixelFor
     return true;
 }
 
-fcIH264Encoder* fcCreateH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcNVENCDeviceType type)
+fcIH264Encoder* fcCreateH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcHWEncoderDeviceType type)
 {
     auto *ret = new fcH264EncoderNVIDIA(conf, device, type);
     if (!ret->isValid()) {
@@ -235,6 +234,6 @@ fcIH264Encoder* fcCreateH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void 
 
 #else // fcSupportH264_NVIDIA
 
-fcIH264Encoder* fcCreateH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcNVENCDeviceType type) { return nullptr; }
+fcIH264Encoder* fcCreateH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcHWEncoderDeviceType type) { return nullptr; }
 
 #endif // fcSupportH264_NVIDIA

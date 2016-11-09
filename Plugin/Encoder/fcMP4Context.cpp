@@ -103,18 +103,28 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         h264conf.bitrate_mode = m_conf.video_bitrate_mode;
         h264conf.target_bitrate = m_conf.video_target_bitrate;
 
+        fcHWEncoderDeviceType hwdt = fcHWEncoderDeviceType::Unknown;
+        if (m_dev) {
+            switch (m_dev->getDeviceType()) {
+            case fcGfxDeviceType_D3D9:  hwdt = fcHWEncoderDeviceType::D3D9; break;
+            case fcGfxDeviceType_D3D10: hwdt = fcHWEncoderDeviceType::D3D10; break;
+            case fcGfxDeviceType_D3D11: hwdt = fcHWEncoderDeviceType::D3D11; break;
+            case fcGfxDeviceType_D3D12: hwdt = fcHWEncoderDeviceType::D3D12; break;
+            case fcGfxDeviceType_CUDA: hwdt = fcHWEncoderDeviceType::CUDA; break;
+            }
+        }
+
         fcIH264Encoder *enc = nullptr;
         if (!enc && (m_conf.video_flags & fcMP4_H264NVIDIA) != 0) {
             // NVENC require D3D or CUDA device
             if (m_dev) {
-                auto t = m_dev->getDeviceType();
-                if (t == fcGfxDeviceType_D3D9 || t == fcGfxDeviceType_D3D11 || t == fcGfxDeviceType_D3D12) {
-                    enc = fcCreateH264EncoderNVIDIA(h264conf, m_dev->getDevicePtr(), fcNVENCDeviceType_DirectX);
-                }
+                enc = fcCreateH264EncoderNVIDIA(h264conf, m_dev->getDevicePtr(), hwdt);
             }
         }
         if (!enc && (m_conf.video_flags & fcMP4_H264AMD) != 0) {
-            enc = fcCreateH264EncoderAMD(h264conf);
+            if (m_dev) {
+                enc = fcCreateH264EncoderAMD(h264conf, m_dev->getDevicePtr(), hwdt);
+            }
         }
         if (!enc && (m_conf.video_flags & fcMP4_H264IntelHW) != 0) {
             enc = fcCreateH264EncoderIntelHW(h264conf);
