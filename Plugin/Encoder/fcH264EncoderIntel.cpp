@@ -14,7 +14,8 @@
 class fcH264EncoderIntel : public fcIH264Encoder
 {
 public:
-    fcH264EncoderIntel(const fcH264EncoderConfig& conf, int impl);
+    fcH264EncoderIntel(const fcH264EncoderConfig& conf, int impl,
+        mfxVersion *ver = nullptr, void *device = nullptr, fcHWEncoderDeviceType type = fcHWEncoderDeviceType::Unknown);
     ~fcH264EncoderIntel() override;
     const char* getEncoderInfo() override;
     bool encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe) override;
@@ -23,28 +24,75 @@ public:
     bool isValid() const { return m_encoder != nullptr; }
 
 private:
+    class TaskUnit
+    {
+    public:
+        Buffer image_rgba;
+        NV12Image image_nv12;
+        mfxFrameSurface1 surface;
+
+        Buffer out_data;
+        mfxBitstream bitstream;
+        mfxSyncPoint syncp = nullptr;
+
+        TaskUnit(int w, int h, const mfxFrameInfo &fi);
+    };
+    static const int MaxTasks = 16;
+
     fcH264EncoderConfig m_conf;
     const char *m_encoder_name = nullptr;
     std::unique_ptr<MFXVideoSession> m_session;
     std::unique_ptr<MFXVideoENCODE> m_encoder;
     mfxVideoParam m_params;
-    Buffer m_rgba_image;
-    NV12Image m_nv12_image;
-    Buffer m_encoded_data;
+    std::unique_ptr<TaskUnit> m_task_units[MaxTasks];
+    int m_frame = 0;
 };
 
 
 
-fcH264EncoderIntel::fcH264EncoderIntel(const fcH264EncoderConfig& conf, int impl)
+fcH264EncoderIntel::TaskUnit::TaskUnit(int w, int h, const mfxFrameInfo &fi)
+{
+    image_rgba.resize(w * h * 4);
+    image_nv12.resize(w, h);
+    auto& data = image_nv12.data();
+
+    memset(&surface, 0, sizeof(surface));
+    surface.Info = fi;
+    surface.Data.MemType = MFX_MEMTYPE_SYSTEM_MEMORY;
+    surface.Data.Y = (mfxU8*)data.y;
+    surface.Data.UV = (mfxU8*)data.uv;
+    surface.Data.V = (mfxU8*)data.uv + 1;
+    surface.Data.Pitch = data.pitch_y;
+    surface.Data.FrameOrder = MFX_FRAMEORDER_UNKNOWN;
+
+    out_data.resize(w * h * 2);
+    memset(&bitstream, 0, sizeof(bitstream));
+    bitstream.Data = (mfxU8*)out_data.data();
+    bitstream.MaxLength = (mfxU32)out_data.size();
+}
+
+
+fcH264EncoderIntel::fcH264EncoderIntel(const fcH264EncoderConfig& conf, int impl, mfxVersion *ver, void *device, fcHWEncoderDeviceType type)
     : m_conf(conf)
 {
+    //switch (type) {
+    //case fcHWEncoderDeviceType::D3D11:
+    //    impl |= MFX_IMPL_VIA_D3D11;
+    //    break;
+    //}
     mfxStatus ret;
     m_session.reset(new MFXVideoSession());
-    ret = m_session->Init(impl, nullptr);
+    ret = m_session->Init(impl, ver);
     if (ret < 0) {
         m_session.reset();
         return;
     }
+
+    //switch (type) {
+    //case fcHWEncoderDeviceType::D3D11:
+    //    m_session->SetHandle(MFX_HANDLE_D3D11_DEVICE, device);
+    //    break;
+    //}
 
     if (impl == MFX_IMPL_SOFTWARE) {
         m_encoder_name = "Intel H264 Encoder (SW)";
@@ -89,8 +137,7 @@ fcH264EncoderIntel::fcH264EncoderIntel(const fcH264EncoderConfig& conf, int impl
     params.mfx.BufferSizeInKB = (fi.Width * fi.Height * 2) / 1024;
     params.mfx.NumSlice = 0;
     params.mfx.NumRefFrame = 0;
-
-    params.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    params.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     m_encoder.reset(new MFXVideoENCODE(*m_session));
     ret = m_encoder->Init(&params);
@@ -98,7 +145,9 @@ fcH264EncoderIntel::fcH264EncoderIntel(const fcH264EncoderConfig& conf, int impl
         m_encoder.reset();
     }
 
-    m_encoded_data.resize(params.mfx.BufferSizeInKB * 1024);
+    for (auto& tu : m_task_units) {
+        tu.reset(new TaskUnit(m_conf.width, m_conf.height, params.mfx.FrameInfo));
+    }
 }
 
 fcH264EncoderIntel::~fcH264EncoderIntel()
@@ -109,57 +158,67 @@ fcH264EncoderIntel::~fcH264EncoderIntel()
 
 const char* fcH264EncoderIntel::getEncoderInfo() { return m_encoder_name; }
 
+#define MSDK_DEC_WAIT_INTERVAL 300000
+#define MSDK_ENC_WAIT_INTERVAL 300000
+#define MSDK_VPP_WAIT_INTERVAL 300000
+#define MSDK_SURFACE_WAIT_INTERVAL 20000
+#define MSDK_DEVICE_FREE_WAIT_INTERVAL 30000
+#define MSDK_WAIT_INTERVAL MSDK_DEC_WAIT_INTERVAL+3*MSDK_VPP_WAIT_INTERVAL+MSDK_ENC_WAIT_INTERVAL // an estimate for the longest pipeline we have in samples
+
 bool fcH264EncoderIntel::encode(fcH264Frame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe)
 {
     if (!isValid()) { return false; }
 
+    TaskUnit& tu = *m_task_units[m_frame++ % MaxTasks];
+
     // convert image to NV12
-    AnyToNV12(m_nv12_image, m_rgba_image, image, fmt, m_conf.width, m_conf.height);
-    NV12Data data = m_nv12_image.data();
+    AnyToNV12(tu.image_nv12, tu.image_rgba, image, fmt, m_conf.width, m_conf.height);
+    NV12Data data = tu.image_nv12.data();
 
 
     dst.timestamp = timestamp;
 
-    mfxFrameSurface1 surface;
-    memset(&surface, 0, sizeof(surface));
-    surface.Info = m_params.mfx.FrameInfo;
+    auto& surface = tu.surface;
+    auto& bitstream = tu.bitstream;
+    auto& syncp = tu.syncp;
     surface.Data.TimeStamp = (mfxU64)(timestamp * 90000.0); // unit is 90KHz
-    surface.Data.MemType = MFX_MEMTYPE_SYSTEM_MEMORY;
-    surface.Data.Y = (mfxU8*)data.y;
-    surface.Data.UV = (mfxU8*)data.uv;
-    surface.Data.V = (mfxU8*)data.uv + 1;
-    surface.Data.Pitch = m_conf.width;
-    surface.Data.FrameOrder = MFX_FRAMEORDER_UNKNOWN;
-
-    mfxBitstream bitstream;
-    memset(&bitstream, 0, sizeof(bitstream));
-    bitstream.Data = (mfxU8*)m_encoded_data.data();
-    bitstream.MaxLength = (mfxU32)m_encoded_data.size();
+    bitstream.DataLength = 0;
+    bitstream.DataOffset = 0;
+    bitstream.DataFlag = MFX_BITSTREAM_COMPLETE_FRAME;
+    bitstream.TimeStamp = surface.Data.TimeStamp;
+    syncp = nullptr;
 
     // encode!
-    mfxSyncPoint syncp;
-    mfxStatus ret = m_encoder->EncodeFrameAsync(nullptr, &surface, &bitstream, &syncp);
-    if (ret < 0) { return false; }
-
-    // wait encode complete
-    ret = m_session->SyncOperation(syncp, -1);
-    if (ret < 0) { return false; }
-
-    {
-        dst.data.append((char*)bitstream.Data, bitstream.DataLength);
-        dst.gatherNALInformation();
+    mfxStatus ret;
+    for (;;) {
+        ret = m_encoder->EncodeFrameAsync(nullptr, &surface, &bitstream, &syncp);
+        if (ret == MFX_WRN_DEVICE_BUSY) {
+            MilliSleep(1);
+        }
+        else { break; }
     }
 
-    {
-        // convert frame type
-        dst.type = 0;
-        int t = bitstream.FrameType;
-        if ((t & MFX_FRAMETYPE_I) != 0) dst.type |= fcH264FrameType_I;
-        if ((t & MFX_FRAMETYPE_P) != 0) dst.type |= fcH264FrameType_P;
-        if ((t & MFX_FRAMETYPE_B) != 0) dst.type |= fcH264FrameType_B;
-        if ((t & MFX_FRAMETYPE_S) != 0) dst.type |= fcH264FrameType_S;
-        if ((t & MFX_FRAMETYPE_REF) != 0) dst.type |= fcH264FrameType_REF;
-        if ((t & MFX_FRAMETYPE_IDR) != 0) dst.type |= fcH264FrameType_IDR;
+    if (syncp) {
+        // wait encode complete
+        ret = m_session->SyncOperation(syncp, MSDK_WAIT_INTERVAL);
+        if (ret < 0) { return false; }
+
+        {
+            dst.data.append((char*)bitstream.Data, bitstream.DataLength);
+            dst.gatherNALInformation();
+        }
+
+        {
+            // convert frame type
+            dst.type = 0;
+            int t = bitstream.FrameType;
+            if ((t & MFX_FRAMETYPE_I) != 0) dst.type |= fcH264FrameType_I;
+            if ((t & MFX_FRAMETYPE_P) != 0) dst.type |= fcH264FrameType_P;
+            if ((t & MFX_FRAMETYPE_B) != 0) dst.type |= fcH264FrameType_B;
+            if ((t & MFX_FRAMETYPE_S) != 0) dst.type |= fcH264FrameType_S;
+            if ((t & MFX_FRAMETYPE_REF) != 0) dst.type |= fcH264FrameType_REF;
+            if ((t & MFX_FRAMETYPE_IDR) != 0) dst.type |= fcH264FrameType_IDR;
+        }
     }
 
     return true;
@@ -170,25 +229,15 @@ bool fcH264EncoderIntel::flush(fcH264Frame& dst)
     return false;
 }
 
-fcIH264Encoder* fcCreateH264EncoderIntelHW(const fcH264EncoderConfig& conf)
+fcIH264Encoder* fcCreateH264EncoderIntelHW(const fcH264EncoderConfig& conf, void *device, fcHWEncoderDeviceType type)
 {
-    int impls[] = {
-        MFX_IMPL_HARDWARE,
-        MFX_IMPL_HARDWARE2,
-        MFX_IMPL_HARDWARE3,
-        MFX_IMPL_HARDWARE4,
-    };
-
-    for (int i : impls) {
-        auto ret = new fcH264EncoderIntel(conf, i);
-        if (ret->isValid()) {
-            return ret;
-        }
-        else {
-            delete ret;
-        }
+    mfxVersion ver = { 0, 1 };
+    auto ret = new fcH264EncoderIntel(conf, MFX_IMPL_HARDWARE_ANY, &ver, device, type);
+    if (!ret->isValid()) {
+        delete ret;
+        ret = nullptr;
     }
-    return nullptr;
+    return ret;
 }
 
 fcIH264Encoder* fcCreateH264EncoderIntelSW(const fcH264EncoderConfig& conf)

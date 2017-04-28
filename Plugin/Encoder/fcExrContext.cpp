@@ -279,7 +279,7 @@ void fcExrContext::endFrameTask(fcExrTaskData *exr)
 }
 
 
-fcCLinkage fcExport fcIExrContext* fcExrCreateContextImpl(const fcExrConfig *conf, fcIGraphicsDevice *dev)
+fcAPI fcIExrContext* fcExrCreateContextImpl(const fcExrConfig *conf, fcIGraphicsDevice *dev)
 {
     fcExrConfig default_cont;
     if (conf == nullptr) { conf = &default_cont; }

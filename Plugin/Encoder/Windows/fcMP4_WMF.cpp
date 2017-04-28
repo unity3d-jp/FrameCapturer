@@ -37,7 +37,7 @@ public:
     using AudioBufferQueue = ResourceQueue<AudioBufferPtr>;
 
 
-    fcMP4ContextWMF(fcMP4Config &conf, fcIGraphicsDevice *dev, const char *path);
+    fcMP4ContextWMF(const fcMP4Config &conf, fcIGraphicsDevice *dev, const char *path);
     ~fcMP4ContextWMF();
 
     void release() override;
@@ -95,16 +95,25 @@ MFInitializer::MFInitializer()
     g_MFPlat = ::LoadLibraryA("MFPlat.DLL");
     g_MFReadWrite = ::LoadLibraryA("MFReadWrite.dll");
     if (g_MFPlat && g_MFReadWrite) {
-        (void*&)MFStartup_              = ::GetProcAddress(g_MFPlat, "MFStartup");
-        (void*&)MFShutdown_             = ::GetProcAddress(g_MFPlat, "MFShutdown");
-        (void*&)MFCreateMemoryBuffer_   = ::GetProcAddress(g_MFPlat, "MFCreateMemoryBuffer");
-        (void*&)MFCreateSample_         = ::GetProcAddress(g_MFPlat, "MFCreateSample");
-        (void*&)MFCreateAttributes_     = ::GetProcAddress(g_MFPlat, "MFCreateAttributes");
-        (void*&)MFCreateMediaType_      = ::GetProcAddress(g_MFPlat, "MFCreateMediaType");
-        (void*&)MFCreateSinkWriterFromURL_ = ::GetProcAddress(g_MFReadWrite, "MFCreateSinkWriterFromURL");
+        bool ok = true;
+#define Import(Name) (void*&)Name##_ = ::GetProcAddress(g_MFPlat, #Name); if(!Name##_) { ok = false; }
+        Import(MFStartup);
+        Import(MFShutdown);
+        Import(MFCreateMemoryBuffer);
+        Import(MFCreateSample);
+        Import(MFCreateAttributes);
+        Import(MFCreateMediaType);
+        Import(MFCreateSinkWriterFromURL);
+#undef Import
 
-        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-        MFStartup_(MF_VERSION, MFSTARTUP_LITE);
+        if (ok) {
+            CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+            MFStartup_(MF_VERSION, MFSTARTUP_LITE);
+        }
+        else {
+            ::FreeLibrary(g_MFPlat); g_MFPlat = nullptr;
+            ::FreeLibrary(g_MFReadWrite); g_MFReadWrite = nullptr;
+        }
     }
 }
 
@@ -117,7 +126,7 @@ MFInitializer::~MFInitializer()
 }
 
 
-fcMP4ContextWMF::fcMP4ContextWMF(fcMP4Config &conf, fcIGraphicsDevice *dev, const char *path)
+fcMP4ContextWMF::fcMP4ContextWMF(const fcMP4Config &conf, fcIGraphicsDevice *dev, const char *path)
     : m_conf(conf)
     , m_gdev(dev)
 {

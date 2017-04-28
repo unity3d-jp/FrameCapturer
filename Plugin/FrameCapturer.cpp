@@ -11,31 +11,31 @@ namespace {
     std::string g_fcModulePath;
 }
 
-fcCLinkage fcExport void fcSetModulePath(const char *path)
+fcAPI void fcSetModulePath(const char *path)
 {
     g_fcModulePath = path;
     DLLAddSearchPath(path);
 }
 
-fcCLinkage fcExport const char* fcGetModulePath()
+fcAPI const char* fcGetModulePath()
 {
     return !g_fcModulePath.empty() ? g_fcModulePath.c_str() : DLLGetDirectoryOfCurrentModule();
 }
 
-fcCLinkage fcExport fcTime fcGetTime()
+fcAPI fcTime fcGetTime()
 {
     return GetCurrentTimeInSeconds();
 }
 
-fcCLinkage fcExport fcStream* fcCreateFileStream(const char *path)
+fcAPI fcStream* fcCreateFileStream(const char *path)
 {
     return new StdIOStream(new std::fstream(path, std::ios::binary | std::ios::in | std::ios::out | std::ios::trunc), true);
 }
-fcCLinkage fcExport fcStream* fcCreateMemoryStream()
+fcAPI fcStream* fcCreateMemoryStream()
 {
     return new BufferStream(new Buffer(), true);
 }
-fcCLinkage fcExport fcStream* fcCreateCustomStream(void *obj, fcTellp_t tellp, fcSeekp_t seekp, fcWrite_t write)
+fcAPI fcStream* fcCreateCustomStream(void *obj, fcTellp_t tellp, fcSeekp_t seekp, fcWrite_t write)
 {
     CustomStreamData csd;
     csd.obj = obj;
@@ -45,12 +45,12 @@ fcCLinkage fcExport fcStream* fcCreateCustomStream(void *obj, fcTellp_t tellp, f
     return new CustomStream(csd);
 }
 
-fcCLinkage fcExport void fcDestroyStream(fcStream *s)
+fcAPI void fcDestroyStream(fcStream *s)
 {
     delete s;
 }
 
-fcCLinkage fcExport fcBufferData fcStreamGetBufferData(fcStream *s)
+fcAPI fcBufferData fcStreamGetBufferData(fcStream *s)
 {
     fcBufferData ret;
     if (BufferStream *bs = dynamic_cast<BufferStream*>(s)) {
@@ -60,7 +60,7 @@ fcCLinkage fcExport fcBufferData fcStreamGetBufferData(fcStream *s)
     return ret;
 }
 
-fcCLinkage fcExport uint64_t fcStreamGetWrittenSize(fcStream *s)
+fcAPI uint64_t fcStreamGetWrittenSize(fcStream *s)
 {
     return s->tellp();
 }
@@ -74,17 +74,17 @@ namespace {
     std::vector<fcDeferredCall> g_deferred_calls;
 }
 
-fcCLinkage fcExport void fcGuardBegin()
+fcAPI void fcGuardBegin()
 {
     g_deferred_calls_mutex.lock();
 }
 
-fcCLinkage fcExport void fcGuardEnd()
+fcAPI void fcGuardEnd()
 {
     g_deferred_calls_mutex.unlock();
 }
 
-fcCLinkage fcExport int fcAddDeferredCall(const fcDeferredCall& dc, int id)
+fcAPI int fcAddDeferredCall(const fcDeferredCall& dc, int id)
 {
     if (id <= 0) {
         // search empty object and return its position if found
@@ -112,7 +112,7 @@ fcCLinkage fcExport int fcAddDeferredCall(const fcDeferredCall& dc, int id)
     }
 }
 
-fcCLinkage fcExport void fcEraseDeferredCall(int id)
+fcAPI void fcEraseDeferredCall(int id)
 {
     if (id <= 0 || id >= (int)g_deferred_calls.size()) { return; }
 
@@ -120,7 +120,7 @@ fcCLinkage fcExport void fcEraseDeferredCall(int id)
 }
 
 // **called from rendering thread**
-fcCLinkage fcExport void fcCallDeferredCall(int id)
+fcAPI void fcCallDeferredCall(int id)
 {
     std::unique_lock<std::mutex> l(g_deferred_calls_mutex);
     if (id <= 0 || id >= (int)g_deferred_calls.size()) { return; }
@@ -144,10 +144,10 @@ fcCLinkage fcExport void fcCallDeferredCall(int id)
     static module_t fcPngModule;
     fcPngCreateContextImplT fcPngCreateContextImpl;
 #else
-    fcCLinkage fcExport fcIPngContext* fcPngCreateContextImpl(const fcPngConfig *conf, fcIGraphicsDevice *dev);
+    fcAPI fcIPngContext* fcPngCreateContextImpl(const fcPngConfig *conf, fcIGraphicsDevice *dev);
 #endif
 
-fcCLinkage fcExport fcIPngContext* fcPngCreateContext(const fcPngConfig *conf)
+fcAPI fcIPngContext* fcPngCreateContext(const fcPngConfig *conf)
 {
 #ifdef fcPNGSplitModule
     if (!fcPngModule) {
@@ -162,26 +162,26 @@ fcCLinkage fcExport fcIPngContext* fcPngCreateContext(const fcPngConfig *conf)
 #endif
 }
 
-fcCLinkage fcExport void fcPngDestroyContext(fcIPngContext *ctx)
+fcAPI void fcPngDestroyContext(fcIPngContext *ctx)
 {
     if (!ctx) { return; }
     ctx->release();
 }
 
-fcCLinkage fcExport bool fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, bool flipY)
+fcAPI bool fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, bool flipY)
 {
     if (!ctx) { return false; }
     return ctx->exportPixels(path, pixels, width, height, fmt, flipY);
 }
 
-fcCLinkage fcExport bool fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, bool flipY)
+fcAPI bool fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, bool flipY)
 {
     if (!ctx) { return false; }
     return ctx->exportTexture(path, tex, width, height, fmt, flipY);
 }
 
 #ifndef fcStaticLink
-fcCLinkage fcExport int fcPngExportTextureDeferred(fcIPngContext *ctx, const char *path_, void *tex, int width, int height, fcPixelFormat fmt, bool flipY, int id)
+fcAPI int fcPngExportTextureDeferred(fcIPngContext *ctx, const char *path_, void *tex, int width, int height, fcPixelFormat fmt, bool flipY, int id)
 {
     if (!ctx) { return 0; }
 
@@ -207,11 +207,11 @@ fcCLinkage fcExport int fcPngExportTextureDeferred(fcIPngContext *ctx, const cha
     static module_t fcExrModule;
     fcExrCreateContextImplT fcExrCreateContextImpl;
 #else
-    fcCLinkage fcExport fcIExrContext* fcExrCreateContextImpl(const fcExrConfig *conf, fcIGraphicsDevice *dev);
+    fcAPI fcIExrContext* fcExrCreateContextImpl(const fcExrConfig *conf, fcIGraphicsDevice *dev);
 #endif
 
 
-fcCLinkage fcExport fcIExrContext* fcExrCreateContext(const fcExrConfig *conf)
+fcAPI fcIExrContext* fcExrCreateContext(const fcExrConfig *conf)
 {
 #ifdef fcEXRSplitModule
     if (!fcExrModule) {
@@ -226,38 +226,38 @@ fcCLinkage fcExport fcIExrContext* fcExrCreateContext(const fcExrConfig *conf)
 #endif
 }
 
-fcCLinkage fcExport void fcExrDestroyContext(fcIExrContext *ctx)
+fcAPI void fcExrDestroyContext(fcIExrContext *ctx)
 {
     if (!ctx) { return; }
     ctx->release();
 }
 
-fcCLinkage fcExport bool fcExrBeginFrame(fcIExrContext *ctx, const char *path, int width, int height)
+fcAPI bool fcExrBeginFrame(fcIExrContext *ctx, const char *path, int width, int height)
 {
     if (!ctx) { return false; }
     return ctx->beginFrame(path, width, height);
 }
 
-fcCLinkage fcExport bool fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name, bool flipY)
+fcAPI bool fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name, bool flipY)
 {
     if (!ctx) { return false; }
     return ctx->addLayerPixels(pixels, fmt, ch, name, flipY);
 }
 
-fcCLinkage fcExport bool fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name, bool flipY)
+fcAPI bool fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name, bool flipY)
 {
     if (!ctx) { return false; }
     return ctx->addLayerTexture(tex, fmt, ch, name, flipY);
 }
 
-fcCLinkage fcExport bool fcExrEndFrame(fcIExrContext *ctx)
+fcAPI bool fcExrEndFrame(fcIExrContext *ctx)
 {
     if (!ctx) { return false; }
     return ctx->endFrame();
 }
 
 #ifndef fcStaticLink
-fcCLinkage fcExport int fcExrBeginFrameDeferred(fcIExrContext *ctx, const char *path_, int width, int height, int id)
+fcAPI int fcExrBeginFrameDeferred(fcIExrContext *ctx, const char *path_, int width, int height, int id)
 {
     if (!ctx) { return 0; }
     std::string path = path_;
@@ -266,7 +266,7 @@ fcCLinkage fcExport int fcExrBeginFrameDeferred(fcIExrContext *ctx, const char *
     }, id);
 }
 
-fcCLinkage fcExport int fcExrAddLayerTextureDeferred(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name_, bool flipY, int id)
+fcAPI int fcExrAddLayerTextureDeferred(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name_, bool flipY, int id)
 {
     if (!ctx) { return 0; }
     std::string name = name_;
@@ -275,7 +275,7 @@ fcCLinkage fcExport int fcExrAddLayerTextureDeferred(fcIExrContext *ctx, void *t
     }, id);
 }
 
-fcCLinkage fcExport int fcExrEndFrameDeferred(fcIExrContext *ctx, int id)
+fcAPI int fcExrEndFrameDeferred(fcIExrContext *ctx, int id)
 {
     if (!ctx) { return 0; }
     return fcAddDeferredCall([=]() {
@@ -298,11 +298,11 @@ fcCLinkage fcExport int fcExrEndFrameDeferred(fcIExrContext *ctx, int id)
     static module_t fcGifModule;
     fcGifCreateContextImplT fcGifCreateContextImpl;
 #else
-    fcCLinkage fcExport fcIGifContext* fcGifCreateContextImpl(const fcGifConfig &conf, fcIGraphicsDevice *dev);
+    fcAPI fcIGifContext* fcGifCreateContextImpl(const fcGifConfig &conf, fcIGraphicsDevice *dev);
 #endif
 
 
-fcCLinkage fcExport fcIGifContext* fcGifCreateContext(const fcGifConfig *conf)
+fcAPI fcIGifContext* fcGifCreateContext(const fcGifConfig *conf)
 {
 #ifdef fcGIFSplitModule
     if (!fcGifModule) {
@@ -317,24 +317,24 @@ fcCLinkage fcExport fcIGifContext* fcGifCreateContext(const fcGifConfig *conf)
 #endif
 }
 
-fcCLinkage fcExport void fcGifDestroyContext(fcIGifContext *ctx)
+fcAPI void fcGifDestroyContext(fcIGifContext *ctx)
 {
     if (!ctx) { return; }
     ctx->release();
 }
 
-fcCLinkage fcExport bool fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
+fcAPI bool fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
 {
     if (!ctx) { return false; }
     return ctx->addFramePixels(pixels, fmt, keyframe, timestamp);
 }
-fcCLinkage fcExport bool fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
+fcAPI bool fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
 {
     if (!ctx) { return false; }
     return ctx->addFrameTexture(tex, fmt, keyframe, timestamp);
 }
 #ifndef fcStaticLink
-fcCLinkage fcExport int fcGifAddFrameTextureDeferred(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp, int id)
+fcAPI int fcGifAddFrameTextureDeferred(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp, int id)
 {
     if (!ctx) { return 0; }
     return fcAddDeferredCall([=]() {
@@ -343,37 +343,37 @@ fcCLinkage fcExport int fcGifAddFrameTextureDeferred(fcIGifContext *ctx, void *t
 }
 #endif // fcStaticLink
 
-fcCLinkage fcExport bool fcGifWrite(fcIGifContext *ctx, fcStream *stream, int begin_frame, int end_frame)
+fcAPI bool fcGifWrite(fcIGifContext *ctx, fcStream *stream, int begin_frame, int end_frame)
 {
     if (!ctx || !stream) { return false; }
     return ctx->write(*stream, begin_frame, end_frame);
 }
 
-fcCLinkage fcExport void fcGifClearFrame(fcIGifContext *ctx)
+fcAPI void fcGifClearFrame(fcIGifContext *ctx)
 {
     if (!ctx) { return; }
     ctx->clearFrame();
 }
 
-fcCLinkage fcExport int fcGifGetFrameCount(fcIGifContext *ctx)
+fcAPI int fcGifGetFrameCount(fcIGifContext *ctx)
 {
     if (!ctx) { return 0; }
     return ctx->getFrameCount();
 }
 
-fcCLinkage fcExport void fcGifGetFrameData(fcIGifContext *ctx, void *tex, int frame)
+fcAPI void fcGifGetFrameData(fcIGifContext *ctx, void *tex, int frame)
 {
     if (!ctx) { return; }
     return ctx->getFrameData(tex, frame);
 }
 
-fcCLinkage fcExport int fcGifGetExpectedDataSize(fcIGifContext *ctx, int begin_frame, int end_frame)
+fcAPI int fcGifGetExpectedDataSize(fcIGifContext *ctx, int begin_frame, int end_frame)
 {
     if (!ctx) { return 0; }
     return ctx->getExpectedDataSize(begin_frame, end_frame);
 }
 
-fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, int end_frame)
+fcAPI void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, int end_frame)
 {
     if (!ctx) { return; }
     ctx->eraseFrame(begin_frame, end_frame);
@@ -411,7 +411,7 @@ fcCLinkage fcExport void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, in
     }
 #endif // fcMP4SplitModule
 
-fcCLinkage fcExport void fcMP4SetFAACPackagePath(const char *path)
+fcAPI void fcMP4SetFAACPackagePath(const char *path)
 {
 #ifdef fcMP4SplitModule
     fcMP4InitializeModule();
@@ -423,7 +423,7 @@ fcCLinkage fcExport void fcMP4SetFAACPackagePath(const char *path)
 #endif
 }
 
-fcCLinkage fcExport bool fcMP4DownloadCodecBegin()
+fcAPI bool fcMP4DownloadCodecBegin()
 {
 #ifdef fcMP4SplitModule
     fcMP4InitializeModule();
@@ -437,7 +437,7 @@ fcCLinkage fcExport bool fcMP4DownloadCodecBegin()
 #endif
 }
 
-fcCLinkage fcExport fcDownloadState fcMP4DownloadCodecGetState()
+fcAPI fcDownloadState fcMP4DownloadCodecGetState()
 {
 #ifdef fcMP4SplitModule
     fcMP4InitializeModule();
@@ -451,7 +451,7 @@ fcCLinkage fcExport fcDownloadState fcMP4DownloadCodecGetState()
 }
 
 
-fcCLinkage fcExport fcIMP4Context* fcMP4CreateContext(fcMP4Config *conf)
+fcAPI fcIMP4Context* fcMP4CreateContext(fcMP4Config *conf)
 {
 #ifdef fcMP4SplitModule
     fcMP4InitializeModule();
@@ -464,7 +464,7 @@ fcCLinkage fcExport fcIMP4Context* fcMP4CreateContext(fcMP4Config *conf)
 #endif
 }
 
-fcCLinkage fcExport fcIMP4Context* fcMP4CreateOSEncoderContext(fcMP4Config *conf, const char *out_path)
+fcAPI fcIMP4Context* fcMP4CreateOSEncoderContext(fcMP4Config *conf, const char *out_path)
 {
 #ifdef fcMP4SplitModule
     fcMP4InitializeModule();
@@ -477,41 +477,41 @@ fcCLinkage fcExport fcIMP4Context* fcMP4CreateOSEncoderContext(fcMP4Config *conf
 #endif
 }
 
-fcCLinkage fcExport void fcMP4DestroyContext(fcIMP4Context *ctx)
+fcAPI void fcMP4DestroyContext(fcIMP4Context *ctx)
 {
     if (!ctx) { return; }
     ctx->release();
 }
 
-fcCLinkage fcExport const char* fcMP4GetVideoEncoderInfo(fcIMP4Context *ctx)
+fcAPI const char* fcMP4GetVideoEncoderInfo(fcIMP4Context *ctx)
 {
     if (!ctx) { return ""; }
     return ctx->getVideoEncoderInfo();
 }
-fcCLinkage fcExport const char* fcMP4GetAudioEncoderInfo(fcIMP4Context *ctx)
+fcAPI const char* fcMP4GetAudioEncoderInfo(fcIMP4Context *ctx)
 {
     if (!ctx) { return ""; }
     return ctx->getAudioEncoderInfo();
 }
 
-fcCLinkage fcExport void fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream)
+fcAPI void fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream)
 {
     if (!ctx) { return; }
     ctx->addOutputStream(stream);
 }
 
-fcCLinkage fcExport bool fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp)
+fcAPI bool fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp)
 {
     if (!ctx) { return false; }
     return ctx->addVideoFramePixels(pixels, fmt, timestamp);
 }
-fcCLinkage fcExport bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp)
+fcAPI bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp)
 {
     if (!ctx) { return false; }
     return ctx->addVideoFrameTexture(tex, fmt, timestamp);
 }
 #ifndef fcStaticLink
-fcCLinkage fcExport int fcMP4AddVideoFrameTextureDeferred(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp, int id)
+fcAPI int fcMP4AddVideoFrameTextureDeferred(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp, int id)
 {
     if (!ctx) { return 0; }
     return fcAddDeferredCall([=]() {
@@ -520,7 +520,7 @@ fcCLinkage fcExport int fcMP4AddVideoFrameTextureDeferred(fcIMP4Context *ctx, vo
 }
 #endif // fcStaticLink
 
-fcCLinkage fcExport bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp)
+fcAPI bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp)
 {
     if (!ctx) { return false; }
     return ctx->addAudioFrame(samples, num_samples, timestamp);
@@ -554,7 +554,7 @@ fcCLinkage fcExport bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *sam
     }
 #endif // fcSupportWebM
 
-fcCLinkage fcExport fcIWebMContext* fcWebMCreateContext(fcWebMConfig *conf)
+fcAPI fcIWebMContext* fcWebMCreateContext(fcWebMConfig *conf)
 {
 #ifdef fcWebMSplitModule
     fcWebMInitializeModule();
@@ -567,32 +567,32 @@ fcCLinkage fcExport fcIWebMContext* fcWebMCreateContext(fcWebMConfig *conf)
 #endif
 }
 
-fcCLinkage fcExport void fcWebMDestroyContext(fcIWebMContext *ctx)
+fcAPI void fcWebMDestroyContext(fcIWebMContext *ctx)
 {
     if (!ctx) { return; }
     ctx->release();
 }
 
-fcCLinkage fcExport void fcWebMAddOutputStream(fcIWebMContext *ctx, fcStream *stream)
+fcAPI void fcWebMAddOutputStream(fcIWebMContext *ctx, fcStream *stream)
 {
     if (!ctx) { return; }
     ctx->addOutputStream(stream);
 }
 
-fcCLinkage fcExport bool fcWebMAddVideoFramePixels(fcIWebMContext *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp)
+fcAPI bool fcWebMAddVideoFramePixels(fcIWebMContext *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp)
 {
     if (!ctx) { return false; }
     return ctx->addVideoFramePixels(pixels, fmt, timestamp);
 }
 
-fcCLinkage fcExport bool fcWebMAddVideoFrameTexture(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp)
+fcAPI bool fcWebMAddVideoFrameTexture(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp)
 {
     if (!ctx) { return false; }
     return ctx->addVideoFrameTexture(tex, fmt, timestamp);
 }
 
 #ifndef fcStaticLink
-fcCLinkage fcExport int fcWebMAddVideoFrameTextureDeferred(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp, int id)
+fcAPI int fcWebMAddVideoFrameTextureDeferred(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp, int id)
 {
     if (!ctx) { return 0; }
     return fcAddDeferredCall([=]() {
@@ -601,7 +601,7 @@ fcCLinkage fcExport int fcWebMAddVideoFrameTextureDeferred(fcIWebMContext *ctx, 
 }
 #endif // fcStaticLink
 
-fcCLinkage fcExport bool fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples, fcTime timestamp)
+fcAPI bool fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples, fcTime timestamp)
 {
     if (!ctx) { return false; }
     return ctx->addAudioFrame(samples, num_samples, timestamp);

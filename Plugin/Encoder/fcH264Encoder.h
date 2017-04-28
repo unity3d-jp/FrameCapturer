@@ -115,5 +115,5 @@ enum class fcHWEncoderDeviceType
 fcIH264Encoder* fcCreateH264EncoderOpenH264(const fcH264EncoderConfig& conf);
 fcIH264Encoder* fcCreateH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *device, fcHWEncoderDeviceType type);
 fcIH264Encoder* fcCreateH264EncoderAMD(const fcH264EncoderConfig& conf, void *device, fcHWEncoderDeviceType type);
-fcIH264Encoder* fcCreateH264EncoderIntelHW(const fcH264EncoderConfig& conf);
+fcIH264Encoder* fcCreateH264EncoderIntelHW(const fcH264EncoderConfig& conf, void *device, fcHWEncoderDeviceType type);
 fcIH264Encoder* fcCreateH264EncoderIntelSW(const fcH264EncoderConfig& conf);

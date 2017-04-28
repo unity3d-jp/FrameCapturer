@@ -28,6 +28,8 @@ double      GetCurrentTimeInSeconds();
 // return exit-code
 int         Execute(const char *command);
 
+void        MilliSleep(int ms);
+
 
 // -------------------------------------------------------------
 // Compression

@@ -34,7 +34,7 @@ protected:
     Body(fcMP4CreateOSEncoderContextImpl)
 
 #ifdef fcMP4SplitModule
-    #define fcMP4API fcCLinkage fcExport
+    #define fcMP4API fcAPI
     typedef void            (*fcMP4SetModulePathImpl_t)(const char *path);
     typedef void            (*fcMP4SetFAACPackagePathImpl_t)(const char *path);
     typedef bool            (*fcMP4DownloadCodecBeginImpl_t)();
