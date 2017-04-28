@@ -10,10 +10,10 @@ fcIGraphicsDevice* fcCreateGraphicsDeviceD3D11(void *device);
 
 
 static fcIGraphicsDevice *g_gfx_device;
-fcCLinkage fcExport fcIGraphicsDevice* fcGetGraphicsDevice() { return g_gfx_device; }
+fcAPI fcIGraphicsDevice* fcGetGraphicsDevice() { return g_gfx_device; }
 
 
-fcCLinkage fcExport void fcGfxInitializeOpenGL()
+fcAPI void fcGfxInitializeOpenGL()
 {
 #ifdef fcSupportOpenGL
     if (g_gfx_device != nullptr) {
@@ -24,7 +24,7 @@ fcCLinkage fcExport void fcGfxInitializeOpenGL()
 #endif
 }
 
-fcCLinkage fcExport void fcGfxInitializeD3D9(void *device)
+fcAPI void fcGfxInitializeD3D9(void *device)
 {
 #ifdef fcSupportD3D9
     if (g_gfx_device != nullptr) {
@@ -35,7 +35,7 @@ fcCLinkage fcExport void fcGfxInitializeD3D9(void *device)
 #endif
 }
 
-fcCLinkage fcExport void fcGfxInitializeD3D11(void *device)
+fcAPI void fcGfxInitializeD3D11(void *device)
 {
 #ifdef fcSupportD3D11
     if (g_gfx_device != nullptr) {
@@ -46,13 +46,13 @@ fcCLinkage fcExport void fcGfxInitializeD3D11(void *device)
 #endif
 }
 
-fcCLinkage fcExport void fcGfxFinalize()
+fcAPI void fcGfxFinalize()
 {
     delete g_gfx_device;
     g_gfx_device = nullptr;
 }
 
-fcCLinkage fcExport void fcGfxSync()
+fcAPI void fcGfxSync()
 {
     if (g_gfx_device) {
         g_gfx_device->sync();
@@ -110,7 +110,7 @@ static void UNITY_INTERFACE_API UnityOnGraphicsDeviceEvent(UnityGfxDeviceEventTy
     }
 }
 
-fcCLinkage fcExport void fcCallDeferredCall(int id);
+fcAPI void fcCallDeferredCall(int id);
 static void UNITY_INTERFACE_API UnityRenderEvent(int eventID)
 {
     fcCallDeferredCall(eventID);
@@ -131,12 +131,12 @@ UnityPluginUnload()
     unity_gfx->UnregisterDeviceEventCallback(UnityOnGraphicsDeviceEvent);
 }
 
-fcCLinkage fcExport UnityRenderingEvent fcGetRenderEventFunc()
+fcAPI UnityRenderingEvent fcGetRenderEventFunc()
 {
     return UnityRenderEvent;
 }
 
-fcCLinkage fcExport IUnityInterfaces* fcGetUnityInterface()
+fcAPI IUnityInterfaces* fcGetUnityInterface()
 {
     return g_unity_interface;
 }

@@ -129,7 +129,9 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
             }
         }
         if (!enc && (m_conf.video_flags & fcMP4_H264IntelHW) != 0) {
-            enc = fcCreateH264EncoderIntelHW(h264conf);
+            if (m_dev) {
+                enc = fcCreateH264EncoderIntelHW(h264conf, m_dev->getDevicePtr(), hwdt);
+            }
         }
         if (!enc && (m_conf.video_flags & fcMP4_H264IntelSW) != 0) {
             enc = fcCreateH264EncoderIntelSW(h264conf);

@@ -1,18 +1,17 @@
 ﻿#pragma once
 
-#define fcCLinkage extern "C"
 #ifdef _WIN32
     #ifndef fcStaticLink
         #ifdef fcImpl
-            #define fcExport __declspec(dllexport)
+            #define fcAPI extern "C" __declspec(dllexport)
         #else
-            #define fcExport __declspec(dllimport)
+            #define fcAPI extern "C" __declspec(dllimport)
         #endif
     #else
-        #define fcExport
+        #define fcAPI extern "C"
     #endif
 #else
-    #define fcExport
+    #define fcAPI extern "C"
 #endif
 
 #include <cstdint>
@@ -23,7 +22,7 @@ class fcIExrContext;
 class fcIGifContext;
 class fcIMP4Context;
 class fcIWebMContext;
-typedef double fcTime;
+using fcTime = double;
 
 enum fcPixelFormat
 {
@@ -72,36 +71,36 @@ enum fcBitrateMode
 // Foundation
 // -------------------------------------------------------------
 
-fcCLinkage fcExport void            fcGfxInitializeOpenGL();
-fcCLinkage fcExport void            fcGfxInitializeD3D9(void *device);
-fcCLinkage fcExport void            fcGfxInitializeD3D11(void *device);
-fcCLinkage fcExport void            fcGfxFinalize();
-fcCLinkage fcExport void            fcGfxSync();
+fcAPI void            fcGfxInitializeOpenGL();
+fcAPI void            fcGfxInitializeD3D9(void *device);
+fcAPI void            fcGfxInitializeD3D11(void *device);
+fcAPI void            fcGfxFinalize();
+fcAPI void            fcGfxSync();
 
-fcCLinkage fcExport void            fcSetModulePath(const char *path);
-fcCLinkage fcExport const char*     fcGetModulePath();
-fcCLinkage fcExport fcTime          fcGetTime(); // current time in seconds
+fcAPI void            fcSetModulePath(const char *path);
+fcAPI const char*     fcGetModulePath();
+fcAPI fcTime          fcGetTime(); // current time in seconds
 
 
 #ifndef fcImpl
 struct fcStream;
 #endif
 // function types for custom stream
-typedef size_t(*fcTellp_t)(void *obj);
-typedef void(*fcSeekp_t)(void *obj, size_t pos);
-typedef size_t(*fcWrite_t)(void *obj, const void *data, size_t len);
+using fcTellp_t = size_t(*)(void *obj);
+using fcSeekp_t = void(*)(void *obj, size_t pos);
+using fcWrite_t = size_t(*)(void *obj, const void *data, size_t len);
 
 struct fcBufferData
 {
     void *data = nullptr;
     size_t size = 0;
 };
-fcCLinkage fcExport fcStream*       fcCreateFileStream(const char *path);
-fcCLinkage fcExport fcStream*       fcCreateMemoryStream();
-fcCLinkage fcExport fcStream*       fcCreateCustomStream(void *obj, fcTellp_t tellp, fcSeekp_t seekp, fcWrite_t write);
-fcCLinkage fcExport void            fcDestroyStream(fcStream *s);
-fcCLinkage fcExport fcBufferData    fcStreamGetBufferData(fcStream *s); // s must be created by fcCreateMemoryStream(), otherwise return {nullptr, 0}.
-fcCLinkage fcExport uint64_t        fcStreamGetWrittenSize(fcStream *s);
+fcAPI fcStream*       fcCreateFileStream(const char *path);
+fcAPI fcStream*       fcCreateMemoryStream();
+fcAPI fcStream*       fcCreateCustomStream(void *obj, fcTellp_t tellp, fcSeekp_t seekp, fcWrite_t write);
+fcAPI void            fcDestroyStream(fcStream *s);
+fcAPI fcBufferData    fcStreamGetBufferData(fcStream *s); // s must be created by fcCreateMemoryStream(), otherwise return {nullptr, 0}.
+fcAPI uint64_t        fcStreamGetWrittenSize(fcStream *s);
 
 
 // -------------------------------------------------------------
@@ -112,10 +111,10 @@ struct fcPngConfig
 {
     int max_active_tasks = 8;
 };
-fcCLinkage fcExport fcIPngContext*  fcPngCreateContext(const fcPngConfig *conf = nullptr);
-fcCLinkage fcExport void            fcPngDestroyContext(fcIPngContext *ctx);
-fcCLinkage fcExport bool            fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, bool flipY = false);
-fcCLinkage fcExport bool            fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, bool flipY = false);
+fcAPI fcIPngContext*  fcPngCreateContext(const fcPngConfig *conf = nullptr);
+fcAPI void            fcPngDestroyContext(fcIPngContext *ctx);
+fcAPI bool            fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, bool flipY = false);
+fcAPI bool            fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, bool flipY = false);
 
 
 // -------------------------------------------------------------
@@ -126,12 +125,12 @@ struct fcExrConfig
 {
     int max_active_tasks = 8;
 };
-fcCLinkage fcExport fcIExrContext*  fcExrCreateContext(const fcExrConfig *conf = nullptr);
-fcCLinkage fcExport void            fcExrDestroyContext(fcIExrContext *ctx);
-fcCLinkage fcExport bool            fcExrBeginFrame(fcIExrContext *ctx, const char *path, int width, int height);
-fcCLinkage fcExport bool            fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name, bool flipY = false);
-fcCLinkage fcExport bool            fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name, bool flipY = false);
-fcCLinkage fcExport bool            fcExrEndFrame(fcIExrContext *ctx);
+fcAPI fcIExrContext*  fcExrCreateContext(const fcExrConfig *conf = nullptr);
+fcAPI void            fcExrDestroyContext(fcIExrContext *ctx);
+fcAPI bool            fcExrBeginFrame(fcIExrContext *ctx, const char *path, int width, int height);
+fcAPI bool            fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name, bool flipY = false);
+fcAPI bool            fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name, bool flipY = false);
+fcAPI bool            fcExrEndFrame(fcIExrContext *ctx);
 
 
 // -------------------------------------------------------------
@@ -145,19 +144,19 @@ struct fcGifConfig
     int num_colors = 256;
     int max_active_tasks = 8;
 };
-fcCLinkage fcExport fcIGifContext*  fcGifCreateContext(const fcGifConfig *conf);
-fcCLinkage fcExport void            fcGifDestroyContext(fcIGifContext *ctx);
+fcAPI fcIGifContext*  fcGifCreateContext(const fcGifConfig *conf);
+fcAPI void            fcGifDestroyContext(fcIGifContext *ctx);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
+fcAPI bool            fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
-fcCLinkage fcExport bool            fcGifWrite(fcIGifContext *ctx, fcStream *stream, int begin_frame = 0, int end_frame = -1);
+fcAPI bool            fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
+fcAPI bool            fcGifWrite(fcIGifContext *ctx, fcStream *stream, int begin_frame = 0, int end_frame = -1);
 
-fcCLinkage fcExport void            fcGifClearFrame(fcIGifContext *ctx);
-fcCLinkage fcExport int             fcGifGetFrameCount(fcIGifContext *ctx);
-fcCLinkage fcExport void            fcGifGetFrameData(fcIGifContext *ctx, void *tex, int frame);
-fcCLinkage fcExport int             fcGifGetExpectedDataSize(fcIGifContext *ctx, int begin_frame, int end_frame);
-fcCLinkage fcExport void            fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, int end_frame);
+fcAPI void            fcGifClearFrame(fcIGifContext *ctx);
+fcAPI int             fcGifGetFrameCount(fcIGifContext *ctx);
+fcAPI void            fcGifGetFrameData(fcIGifContext *ctx, void *tex, int frame);
+fcAPI int             fcGifGetExpectedDataSize(fcIGifContext *ctx, int begin_frame, int end_frame);
+fcAPI void            fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, int end_frame);
 
 
 // -------------------------------------------------------------
@@ -206,22 +205,22 @@ enum fcDownloadState {
     fcDownloadState_Error,
     fcDownloadState_InProgress,
 };
-fcCLinkage fcExport void            fcMP4SetFAACPackagePath(const char *path);
-fcCLinkage fcExport bool            fcMP4DownloadCodecBegin();
-fcCLinkage fcExport fcDownloadState fcMP4DownloadCodecGetState();
+fcAPI void            fcMP4SetFAACPackagePath(const char *path);
+fcAPI bool            fcMP4DownloadCodecBegin();
+fcAPI fcDownloadState fcMP4DownloadCodecGetState();
 
-fcCLinkage fcExport fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
-fcCLinkage fcExport fcIMP4Context*  fcMP4CreateOSEncoderContext(fcMP4Config *conf, const char *out_path);
-fcCLinkage fcExport void            fcMP4DestroyContext(fcIMP4Context *ctx);
-fcCLinkage fcExport const char*     fcMP4GetVideoEncoderInfo(fcIMP4Context *ctx);
-fcCLinkage fcExport const char*     fcMP4GetAudioEncoderInfo(fcIMP4Context *ctx);
-fcCLinkage fcExport void            fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream);
+fcAPI fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
+fcAPI fcIMP4Context*  fcMP4CreateOSEncoderContext(fcMP4Config *conf, const char *out_path);
+fcAPI void            fcMP4DestroyContext(fcIMP4Context *ctx);
+fcAPI const char*     fcMP4GetVideoEncoderInfo(fcIMP4Context *ctx);
+fcAPI const char*     fcMP4GetAudioEncoderInfo(fcIMP4Context *ctx);
+fcAPI void            fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0);
+fcAPI bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1.0);
+fcAPI bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
+fcAPI bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
 
 
 
@@ -259,21 +258,21 @@ struct fcWebMConfig
     int audio_target_bitrate = 64 * 1000;
 };
 
-fcCLinkage fcExport fcIWebMContext* fcWebMCreateContext(fcWebMConfig *conf);
-fcCLinkage fcExport void            fcWebMDestroyContext(fcIWebMContext *ctx);
-fcCLinkage fcExport void            fcWebMAddOutputStream(fcIWebMContext *ctx, fcStream *stream);
+fcAPI fcIWebMContext* fcWebMCreateContext(fcWebMConfig *conf);
+fcAPI void            fcWebMDestroyContext(fcIWebMContext *ctx);
+fcAPI void            fcWebMAddOutputStream(fcIWebMContext *ctx, fcStream *stream);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcWebMAddVideoFramePixels(fcIWebMContext *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0);
+fcAPI bool            fcWebMAddVideoFramePixels(fcIWebMContext *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcWebMAddVideoFrameTexture(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1.0);
+fcAPI bool            fcWebMAddVideoFrameTexture(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
-fcCLinkage fcExport bool            fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
+fcAPI bool            fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
 
 
 // -------------------------------------------------------------
 // Graphics Device initializer for texture load and hardware H264 encoder
 // -------------------------------------------------------------
 
-fcCLinkage fcExport void fcGfxInitializeOpenGL();
-fcCLinkage fcExport void fcGfxInitializeD3D9(void *device);
-fcCLinkage fcExport void fcGfxInitializeD3D11(void *device);
+fcAPI void fcGfxInitializeOpenGL();
+fcAPI void fcGfxInitializeD3D9(void *device);
+fcAPI void fcGfxInitializeD3D11(void *device);

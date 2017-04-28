@@ -22,7 +22,7 @@ protected:
 
 
 #ifdef fcWebMSplitModule
-    #define fcWebMAPI fcCLinkage fcExport
+    #define fcWebMAPI fcAPI
     typedef fcIWebMContext* (*fcWebMCreateContextImpl_t)(fcWebMConfig &conf, fcIGraphicsDevice*);
 #else
     #define fcWebMAPI 

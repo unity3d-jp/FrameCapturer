@@ -64,6 +64,7 @@ fcH264EncoderNVIDIA::fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *
     : m_conf(conf)
 {
     if (!LoadNVENCModule()) { return; }
+    ;
 
     NVENCSTATUS stat;
     {
@@ -87,6 +88,27 @@ fcH264EncoderNVIDIA::fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *
         if (!m_encoder) {
             return;
         }
+    }
+
+    std::vector<GUID> encode_guilds;
+    std::vector<GUID> profile_guilds;
+    std::vector<GUID> preset_guilds;
+    {
+        uint32_t num_encode_guilds = 0;
+        uint32_t num_profile_guilds = 0;
+        uint32_t num_preset_guilds = 0;
+
+        nvenc.nvEncGetEncodeGUIDCount(m_encoder, &num_encode_guilds);
+        encode_guilds.resize(num_encode_guilds);
+        nvenc.nvEncGetEncodeGUIDs(m_encoder, encode_guilds.data(), num_encode_guilds, &num_encode_guilds);
+
+        nvenc.nvEncGetEncodeProfileGUIDCount(m_encoder, NV_ENC_CODEC_H264_GUID, &num_profile_guilds);
+        profile_guilds.resize(num_profile_guilds);
+        nvenc.nvEncGetEncodeProfileGUIDs(m_encoder, NV_ENC_CODEC_H264_GUID, profile_guilds.data(), num_profile_guilds, &num_profile_guilds);
+
+        nvenc.nvEncGetEncodePresetCount(m_encoder, NV_ENC_CODEC_H264_GUID, &num_preset_guilds);
+        preset_guilds.resize(num_preset_guilds);
+        nvenc.nvEncGetEncodePresetGUIDs(m_encoder, NV_ENC_CODEC_H264_GUID, preset_guilds.data(), num_preset_guilds, &num_preset_guilds);
     }
 
     {
