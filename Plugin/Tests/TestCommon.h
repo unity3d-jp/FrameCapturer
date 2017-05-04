@@ -11,10 +11,8 @@
 #include <vector>
 #include <thread>
 #include <half.h>
-#include "../FrameCapturer.h"
-#include "../Foundation/Buffer.h"
-#include "../Foundation/Misc.h"
-#include "../Foundation/fcThreadPool.h"
+#include "../fccore/fccore.h"
+#include "../fccore/Foundation/fcFoundation.h"
 
 
 typedef uint8_t u8;

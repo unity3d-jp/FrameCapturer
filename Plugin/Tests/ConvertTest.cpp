@@ -1,6 +1,5 @@
+#include "pch.h"
 #include "TestCommon.h"
-
-const void* fcConvertPixelFormat(void *dst, fcPixelFormat dstfmt, const void *src, fcPixelFormat srcfmt, size_t size);
 
 const int Width = 320;
 const int Height = 240;

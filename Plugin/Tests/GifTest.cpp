@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "TestCommon.h"
 
 template<class T>
@@ -30,14 +31,15 @@ void GifTest()
 {
     printf("GifTest begin\n");
 
-    fcTaskGroup group;
-    group.run([]() { GifTestImpl<RGBu8>("RGBu8.gif"); });
-    group.run([]() { GifTestImpl<RGBf16>("RGBf16.gif"); });
-    group.run([]() { GifTestImpl<RGBf32>("RGBf32.gif"); });
-    group.run([]() { GifTestImpl<RGBAu8>("RGBAu8.gif"); });
-    group.run([]() { GifTestImpl<RGBAf16>("RGBAf16.gif"); });
-    group.run([]() { GifTestImpl<RGBAf32>("RGBAf32.gif"); });
-    group.wait();
+    std::vector<std::future<void>> tasks;
+    tasks.push_back(std::async(std::launch::async, []() { GifTestImpl<RGBu8>("RGBu8.gif");     }));
+    tasks.push_back(std::async(std::launch::async, []() { GifTestImpl<RGBf16>("RGBf16.gif");   }));
+    tasks.push_back(std::async(std::launch::async, []() { GifTestImpl<RGBf32>("RGBf32.gif");   }));
+    tasks.push_back(std::async(std::launch::async, []() { GifTestImpl<RGBAu8>("RGBAu8.gif");   }));
+    tasks.push_back(std::async(std::launch::async, []() { GifTestImpl<RGBAf16>("RGBAf16.gif"); }));
+    tasks.push_back(std::async(std::launch::async, []() { GifTestImpl<RGBAf32>("RGBAf32.gif"); }));
+
+    for (auto& task : tasks) { task.get(); }
 
     printf("GifTest end\n");
 }

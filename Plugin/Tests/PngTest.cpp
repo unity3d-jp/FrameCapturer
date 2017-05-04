@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "TestCommon.h"
 
 template<class T>

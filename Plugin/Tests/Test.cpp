@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "TestCommon.h"
 
 void PngTest();
@@ -6,7 +7,6 @@ void GifTest();
 void MP4Test();
 void WebMTest();
 void ConvertTest();
-void FAACSelfBuildTest();
 
 int main(int argc, char *argv[])
 {
@@ -16,7 +16,6 @@ int main(int argc, char *argv[])
     bool mp4 = false;
     bool webm = false;
     bool convert = false;
-    bool faac = false;
 
     if (argc <= 1) {
         png = exr = gif = mp4 = webm = convert = true;
@@ -27,7 +26,6 @@ int main(int argc, char *argv[])
             if      (strstr(argv[i], "png")) { png = true; }
             else if (strstr(argv[i], "exr")) { exr = true; }
             else if (strstr(argv[i], "gif")) { gif = true; }
-            else if (strstr(argv[i], "faac")) { faac = true; }
             else if (strstr(argv[i], "mp4")) { mp4 = true; }
             else if (strstr(argv[i], "webm")) { webm = true; }
             else if (strstr(argv[i], "convert")) { convert = true; }
@@ -41,5 +39,4 @@ int main(int argc, char *argv[])
     if (mp4) MP4Test();
     if (webm) WebMTest();
     if (convert) ConvertTest();
-    if (faac) FAACSelfBuildTest();
 }

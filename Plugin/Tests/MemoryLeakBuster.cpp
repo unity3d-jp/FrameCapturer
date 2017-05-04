@@ -1,4 +1,6 @@
-﻿// created by i-saint
+﻿#ifdef _WIN32
+
+// created by i-saint
 // distributed under Creative Commons Attribution (CC BY) license.
 // https://github.com/i-saint/MemoryLeakBuster
 
@@ -815,3 +817,4 @@ mlbInitializer g_initializer;
 } // namespace mlb
 
 #endif // mlbDLL
+#endif // _WIN32
