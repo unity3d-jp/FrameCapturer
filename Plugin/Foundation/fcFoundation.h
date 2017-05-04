@@ -1,8 +1,7 @@
-#ifndef fcFoundation_h
-#define fcFoundation_h
+#pragma once
 
 class BinaryStream;
-typedef BinaryStream fcStream;
+using fcStream = BinaryStream;
 
 #include "Misc.h"
 #include "Buffer.h"
@@ -10,5 +9,3 @@ typedef BinaryStream fcStream;
 #include "YUV.h"
 #include "LazyInstance.h"
 #include "FrameCapturer.h"
-
-#endif // fcFoundation_h

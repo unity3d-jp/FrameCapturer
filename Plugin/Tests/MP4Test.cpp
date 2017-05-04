@@ -86,7 +86,7 @@ void MP4TestWMF(const char *filename)
 
     printf("MP4Test (%s) begin\n", filename);
 
-    fcIMP4Context *ctx = fcMP4CreateOSEncoderContext(&conf, "WMF.mp4");
+    fcIMP4Context *ctx = fcMP4OSCreateContext(&conf, "WMF.mp4");
     WriteMovieData(ctx);
     fcMP4DestroyContext(ctx);
 

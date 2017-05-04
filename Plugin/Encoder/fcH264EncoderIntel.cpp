@@ -252,7 +252,7 @@ fcIH264Encoder* fcCreateH264EncoderIntelSW(const fcH264EncoderConfig& conf)
 
 #else // fcSupportH264_Intel
 
-fcIH264Encoder* fcCreateH264EncoderIntelHW(const fcH264EncoderConfig& conf) { return nullptr; }
+fcIH264Encoder* fcCreateH264EncoderIntelHW(const fcH264EncoderConfig& conf, void *device, fcHWEncoderDeviceType type) { return nullptr; }
 fcIH264Encoder* fcCreateH264EncoderIntelSW(const fcH264EncoderConfig& conf) { return nullptr; }
 
 #endif // fcSupportH264_Intel

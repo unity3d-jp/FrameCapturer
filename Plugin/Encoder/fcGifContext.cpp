@@ -332,7 +332,7 @@ void fcGifContext::eraseFrame(int begin_frame, int end_frame)
 }
 
 
-fcAPI fcIGifContext* fcGifCreateContextImpl(const fcGifConfig &conf, fcIGraphicsDevice *dev)
+fcIGifContext* fcGifCreateContextImpl(const fcGifConfig &conf, fcIGraphicsDevice *dev)
 {
     return new fcGifContext(conf, dev);
 }

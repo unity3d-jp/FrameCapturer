@@ -73,6 +73,7 @@
     <ClInclude Include="Encoder\fcWebMContext.h" />
     <ClInclude Include="Encoder\fcWebMWriter.h" />
     <ClInclude Include="FrameCapturer.h" />
+    <ClInclude Include="FrameCapturerConfig.h" />
     <ClInclude Include="GraphicsDevice\fcGraphicsDevice.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>

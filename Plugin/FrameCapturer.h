@@ -210,7 +210,8 @@ fcAPI bool            fcMP4DownloadCodecBegin();
 fcAPI fcDownloadState fcMP4DownloadCodecGetState();
 
 fcAPI fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
-fcAPI fcIMP4Context*  fcMP4CreateOSEncoderContext(fcMP4Config *conf, const char *out_path);
+// OS-provided mp4 encoder. in this case video_flags and audio_flags in conf are ignored
+fcAPI fcIMP4Context*  fcMP4OSCreateContext(fcMP4Config *conf, const char *out_path);
 fcAPI void            fcMP4DestroyContext(fcIMP4Context *ctx);
 fcAPI const char*     fcMP4GetVideoEncoderInfo(fcIMP4Context *ctx);
 fcAPI const char*     fcMP4GetAudioEncoderInfo(fcIMP4Context *ctx);

@@ -344,7 +344,7 @@ namespace {
 const std::string& fcMP4GetModulePath() { return g_module_path; }
 const std::string& fcMP4GetFAACPackagePath() { return g_faac_package_path; }
 
-fcMP4API fcIMP4Context* fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev)
+fcIMP4Context* fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev)
 {
     if (fcLoadOpenH264Module()) {
         fcLoadFAACModule();
@@ -353,17 +353,17 @@ fcMP4API fcIMP4Context* fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDev
     return nullptr;
 }
 
-fcMP4API void fcMP4SetModulePathImpl(const char *path)
+void fcMP4SetModulePathImpl(const char *path)
 {
     g_module_path = path;
 }
 
-fcMP4API void fcMP4SetFAACPackagePathImpl(const char *path)
+void fcMP4SetFAACPackagePathImpl(const char *path)
 {
     g_faac_package_path = path;
 }
 
-fcMP4API bool fcMP4DownloadCodecBeginImpl()
+bool fcMP4DownloadCodecBeginImpl()
 {
     if (fcLoadOpenH264Module() && fcLoadFAACModule()) {
         g_openh264_download_state = fcDownloadState_Completed;
@@ -387,7 +387,7 @@ fcMP4API bool fcMP4DownloadCodecBeginImpl()
     return openh264 || faac;
 }
 
-fcMP4API fcDownloadState fcMP4DownloadCodecGetStateImpl()
+fcDownloadState fcMP4DownloadCodecGetStateImpl()
 {
     return std::max<fcDownloadState>(g_openh264_download_state, g_faac_download_state);
 }
