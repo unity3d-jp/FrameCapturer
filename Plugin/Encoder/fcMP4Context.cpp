@@ -108,11 +108,11 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         fcHWEncoderDeviceType hwdt = fcHWEncoderDeviceType::Unknown;
         if (m_dev) {
             switch (m_dev->getDeviceType()) {
-            case fcGfxDeviceType_D3D9:  hwdt = fcHWEncoderDeviceType::D3D9; break;
-            case fcGfxDeviceType_D3D10: hwdt = fcHWEncoderDeviceType::D3D10; break;
-            case fcGfxDeviceType_D3D11: hwdt = fcHWEncoderDeviceType::D3D11; break;
-            case fcGfxDeviceType_D3D12: hwdt = fcHWEncoderDeviceType::D3D12; break;
-            case fcGfxDeviceType_CUDA: hwdt = fcHWEncoderDeviceType::CUDA; break;
+            case fcGfxDeviceType::D3D9:  hwdt = fcHWEncoderDeviceType::D3D9; break;
+            case fcGfxDeviceType::D3D10: hwdt = fcHWEncoderDeviceType::D3D10; break;
+            case fcGfxDeviceType::D3D11: hwdt = fcHWEncoderDeviceType::D3D11; break;
+            case fcGfxDeviceType::D3D12: hwdt = fcHWEncoderDeviceType::D3D12; break;
+            case fcGfxDeviceType::CUDA: hwdt = fcHWEncoderDeviceType::CUDA; break;
             }
         }
 
