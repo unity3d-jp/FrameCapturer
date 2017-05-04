@@ -62,7 +62,7 @@ namespace UTJ
                 m_mp4conf.audio_target_bitrate = m_audioBitrate;
                 m_mp4conf.audio_sample_rate = AudioSettings.outputSampleRate;
                 m_mp4conf.audio_num_channels = fcAPI.fcGetNumAudioChannels();
-                m_ctx = fcAPI.fcMP4CreateContext(ref m_mp4conf);
+                m_ctx = fcAPI.fcMP4OSCreateContext(ref m_mp4conf);
 
                 m_output_file = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
                 m_ostream = fcAPI.fcCreateFileStream(GetOutputPath());
@@ -222,12 +222,6 @@ namespace UTJ
 
         void Start()
         {
-            if (m_captureAudio)
-            {
-                fcAPI.fcMP4SetFAACPackagePath(Application.streamingAssetsPath + "/UTJ/FrameCapturer/FAAC_SelfBuild.zip");
-            }
-            fcAPI.fcSetModulePath(m_outputDir.GetPath());
-            fcAPI.fcMP4DownloadCodecBegin();
         }
 
         void OnEnable()
