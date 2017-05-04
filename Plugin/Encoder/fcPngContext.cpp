@@ -281,7 +281,7 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
     return true;
 }
 
-fcAPI fcIPngContext* fcPngCreateContextImpl(const fcPngConfig *conf, fcIGraphicsDevice *dev)
+fcIPngContext* fcPngCreateContextImpl(const fcPngConfig *conf, fcIGraphicsDevice *dev)
 {
     fcPngConfig default_cont;
     if (conf == nullptr) { conf = &default_cont; }

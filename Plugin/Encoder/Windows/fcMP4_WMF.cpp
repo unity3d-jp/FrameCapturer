@@ -350,7 +350,7 @@ bool fcMP4ContextWMF::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat 
 
     // convert image to I420
     AnyToI420(m_i420_image, m_rgba_image, pixels, fmt, m_conf.video_width, m_conf.video_height);
-    I420Data i420 = m_i420_image.data();
+    auto& i420 = m_i420_image.data();
 
 
     ComPtr<IMFMediaBuffer> pBuffer;
@@ -414,7 +414,7 @@ bool fcMP4ContextWMF::addAudioFrameImpl(const float *samples, int num_samples, f
 }
 
 
-fcMP4API fcIMP4Context* fcMP4CreateOSEncoderContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev, const char *path)
+fcIMP4Context* fcMP4OSCreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev, const char *path)
 {
     auto ret = new fcMP4ContextWMF(conf, dev, path);
     if (!ret->isValid()) {

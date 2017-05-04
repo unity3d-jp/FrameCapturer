@@ -7,21 +7,6 @@
 // Foundation
 // -------------------------------------------------------------
 
-namespace {
-    std::string g_fcModulePath;
-}
-
-fcAPI void fcSetModulePath(const char *path)
-{
-    g_fcModulePath = path;
-    DLLAddSearchPath(path);
-}
-
-fcAPI const char* fcGetModulePath()
-{
-    return !g_fcModulePath.empty() ? g_fcModulePath.c_str() : DLLGetDirectoryOfCurrentModule();
-}
-
 fcAPI fcTime fcGetTime()
 {
     return GetCurrentTimeInSeconds();
@@ -66,9 +51,11 @@ fcAPI uint64_t fcStreamGetWrittenSize(fcStream *s)
 }
 
 
-#ifndef fcStaticLink
+// -------------------------------------------------------------
+// deferred call
+// -------------------------------------------------------------
 
-typedef std::function<void()> fcDeferredCall;
+using fcDeferredCall = std::function<void()>;
 namespace {
     std::mutex g_deferred_calls_mutex;
     std::vector<fcDeferredCall> g_deferred_calls;
@@ -128,7 +115,6 @@ fcAPI void fcCallDeferredCall(int id)
     auto& dc = g_deferred_calls[id];
     if (dc) { dc(); }
 }
-#endif // fcStaticLink
 
 
 
@@ -139,27 +125,11 @@ fcAPI void fcCallDeferredCall(int id)
 #ifdef fcSupportPNG
 #include "Encoder/fcPngContext.h"
 
-#ifdef fcPNGSplitModule
-    #define fcPNGModuleName  "FrameCapturer_PNG" fcDLLExt
-    static module_t fcPngModule;
-    fcPngCreateContextImplT fcPngCreateContextImpl;
-#else
-    fcAPI fcIPngContext* fcPngCreateContextImpl(const fcPngConfig *conf, fcIGraphicsDevice *dev);
-#endif
+fcIPngContext* fcPngCreateContextImpl(const fcPngConfig *conf, fcIGraphicsDevice *dev);
 
 fcAPI fcIPngContext* fcPngCreateContext(const fcPngConfig *conf)
 {
-#ifdef fcPNGSplitModule
-    if (!fcPngModule) {
-        fcPngModule = DLLLoad(fcPNGModuleName);
-        if (fcPngModule) {
-            (void*&)fcPngCreateContextImpl = DLLGetSymbol(fcPngModule, "fcPngCreateContextImpl");
-        }
-    }
-    return fcPngCreateContextImpl ? fcPngCreateContextImpl(conf, fcGetGraphicsDevice()) : nullptr;
-#else
     return fcPngCreateContextImpl(conf, fcGetGraphicsDevice());
-#endif
 }
 
 fcAPI void fcPngDestroyContext(fcIPngContext *ctx)
@@ -180,7 +150,6 @@ fcAPI bool fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, i
     return ctx->exportTexture(path, tex, width, height, fmt, flipY);
 }
 
-#ifndef fcStaticLink
 fcAPI int fcPngExportTextureDeferred(fcIPngContext *ctx, const char *path_, void *tex, int width, int height, fcPixelFormat fmt, bool flipY, int id)
 {
     if (!ctx) { return 0; }
@@ -190,8 +159,6 @@ fcAPI int fcPngExportTextureDeferred(fcIPngContext *ctx, const char *path_, void
         ctx->exportTexture(path.c_str(), tex, width, height, fmt, flipY);
     }, id);
 }
-#endif // fcStaticLink
-
 #endif // fcSupportPNG
 
 
@@ -202,28 +169,11 @@ fcAPI int fcPngExportTextureDeferred(fcIPngContext *ctx, const char *path_, void
 #ifdef fcSupportEXR
 #include "Encoder/fcExrContext.h"
 
-#ifdef fcEXRSplitModule
-    #define fcEXRModuleName  "FrameCapturer_EXR" fcDLLExt
-    static module_t fcExrModule;
-    fcExrCreateContextImplT fcExrCreateContextImpl;
-#else
-    fcAPI fcIExrContext* fcExrCreateContextImpl(const fcExrConfig *conf, fcIGraphicsDevice *dev);
-#endif
-
+fcAPI fcIExrContext* fcExrCreateContextImpl(const fcExrConfig *conf, fcIGraphicsDevice *dev);
 
 fcAPI fcIExrContext* fcExrCreateContext(const fcExrConfig *conf)
 {
-#ifdef fcEXRSplitModule
-    if (!fcExrModule) {
-        fcExrModule = DLLLoad(fcEXRModuleName);
-        if (fcExrModule) {
-            (void*&)fcExrCreateContextImpl = DLLGetSymbol(fcExrModule, "fcExrCreateContextImpl");
-        }
-    }
-    return fcExrCreateContextImpl ? fcExrCreateContextImpl(conf, fcGetGraphicsDevice()) : nullptr;
-#else
     return fcExrCreateContextImpl(conf, fcGetGraphicsDevice());
-#endif
 }
 
 fcAPI void fcExrDestroyContext(fcIExrContext *ctx)
@@ -256,11 +206,10 @@ fcAPI bool fcExrEndFrame(fcIExrContext *ctx)
     return ctx->endFrame();
 }
 
-#ifndef fcStaticLink
 fcAPI int fcExrBeginFrameDeferred(fcIExrContext *ctx, const char *path_, int width, int height, int id)
 {
     if (!ctx) { return 0; }
-    std::string path = path_;
+    std::string path = path_; // hold to deferred call
     return fcAddDeferredCall([=]() {
         return ctx->beginFrame(path.c_str(), width, height);
     }, id);
@@ -282,7 +231,6 @@ fcAPI int fcExrEndFrameDeferred(fcIExrContext *ctx, int id)
         return ctx->endFrame();
     }, id);
 }
-#endif // fcStaticLink
 #endif // fcSupportEXR
 
 
@@ -293,28 +241,12 @@ fcAPI int fcExrEndFrameDeferred(fcIExrContext *ctx, int id)
 #ifdef fcSupportGIF
 #include "Encoder/fcGifContext.h"
 
-#ifdef fcGIFSplitModule
-    #define fcGIFModuleName  "FrameCapturer_GIF" fcDLLExt
-    static module_t fcGifModule;
-    fcGifCreateContextImplT fcGifCreateContextImpl;
-#else
-    fcAPI fcIGifContext* fcGifCreateContextImpl(const fcGifConfig &conf, fcIGraphicsDevice *dev);
-#endif
+fcIGifContext* fcGifCreateContextImpl(const fcGifConfig &conf, fcIGraphicsDevice *dev);
 
 
 fcAPI fcIGifContext* fcGifCreateContext(const fcGifConfig *conf)
 {
-#ifdef fcGIFSplitModule
-    if (!fcGifModule) {
-        fcGifModule = DLLLoad(fcGIFModuleName);
-        if (fcGifModule) {
-            (void*&)fcExrCreateContextImpl = DLLGetSymbol(fcGifModule, "fcGifCreateContextImpl");
-        }
-    }
-    return fcExrCreateContextImpl ? fcExrCreateContextImpl(*conf, fcGetGraphicsDevice()) : nullptr;
-#else
     return fcGifCreateContextImpl(*conf, fcGetGraphicsDevice());
-#endif
 }
 
 fcAPI void fcGifDestroyContext(fcIGifContext *ctx)
@@ -333,7 +265,6 @@ fcAPI bool fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt
     if (!ctx) { return false; }
     return ctx->addFrameTexture(tex, fmt, keyframe, timestamp);
 }
-#ifndef fcStaticLink
 fcAPI int fcGifAddFrameTextureDeferred(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp, int id)
 {
     if (!ctx) { return 0; }
@@ -341,7 +272,6 @@ fcAPI int fcGifAddFrameTextureDeferred(fcIGifContext *ctx, void *tex, fcPixelFor
         return ctx->addFrameTexture(tex, fmt, keyframe, timestamp);
     }, id);
 }
-#endif // fcStaticLink
 
 fcAPI bool fcGifWrite(fcIGifContext *ctx, fcStream *stream, int begin_frame, int end_frame)
 {
@@ -389,92 +319,30 @@ fcAPI void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, int end_frame)
 #ifdef fcSupportMP4
 #include "Encoder/fcMP4Context.h"
 
-#ifdef fcMP4SplitModule
-    #define fcMP4ModuleName  "FrameCapturer_MP4" fcDLLExt
-    namespace {
-    #define decl(Name) Name##_t Name;
-        fcMP4EachFunctions(decl)
-    #undef decl
-
-        module_t fcMP4Module;
-        void fcMP4InitializeModule()
-        {
-            if (!fcMP4Module) {
-                fcMP4Module = DLLLoad(fcMP4ModuleName);
-                if (fcMP4Module) {
-    #define imp(Name) (void*&)Name = DLLGetSymbol(fcMP4Module, #Name);
-                    fcMP4EachFunctions(imp)
-    #undef imp
-                }
-            }
-        }
-    }
-#endif // fcMP4SplitModule
-
 fcAPI void fcMP4SetFAACPackagePath(const char *path)
 {
-#ifdef fcMP4SplitModule
-    fcMP4InitializeModule();
-    if (fcMP4SetFAACPackagePathImpl) {
-        fcMP4SetFAACPackagePathImpl(path);
-    }
-#else
     return fcMP4SetFAACPackagePathImpl(path);
-#endif
 }
 
 fcAPI bool fcMP4DownloadCodecBegin()
 {
-#ifdef fcMP4SplitModule
-    fcMP4InitializeModule();
-    if (fcMP4SetModulePathImpl && fcMP4DownloadCodecBeginImpl) {
-        fcMP4SetModulePathImpl(fcGetModulePath());
-        return fcMP4DownloadCodecBeginImpl();
-    }
-    return false;
-#else
     return fcMP4DownloadCodecBeginImpl();
-#endif
 }
 
 fcAPI fcDownloadState fcMP4DownloadCodecGetState()
 {
-#ifdef fcMP4SplitModule
-    fcMP4InitializeModule();
-    if (fcMP4DownloadCodecGetStateImpl) {
-        return fcMP4DownloadCodecGetStateImpl();
-    }
-    return fcDownloadState_Error;
-#else
     return fcMP4DownloadCodecGetStateImpl();
-#endif
 }
 
 
 fcAPI fcIMP4Context* fcMP4CreateContext(fcMP4Config *conf)
 {
-#ifdef fcMP4SplitModule
-    fcMP4InitializeModule();
-    if (fcMP4CreateContextImpl) {
-        return fcMP4CreateContextImpl(*conf, fcGetGraphicsDevice());
-    }
-    return nullptr;
-#else
     return fcMP4CreateContextImpl(*conf, fcGetGraphicsDevice());
-#endif
 }
 
-fcAPI fcIMP4Context* fcMP4CreateOSEncoderContext(fcMP4Config *conf, const char *out_path)
+fcAPI fcIMP4Context* fcMP4OSCreateContext(fcMP4Config *conf, const char *out_path)
 {
-#ifdef fcMP4SplitModule
-    fcMP4InitializeModule();
-    if (fcMP4CreateOSEncoderContextImpl) {
-        return fcMP4CreateOSEncoderContextImpl(*conf, fcGetGraphicsDevice(), out_path);
-    }
-    return nullptr;
-#else
-    return fcMP4CreateOSEncoderContextImpl(*conf, fcGetGraphicsDevice(), out_path);
-#endif
+    return fcMP4OSCreateContextImpl(*conf, fcGetGraphicsDevice(), out_path);
 }
 
 fcAPI void fcMP4DestroyContext(fcIMP4Context *ctx)
@@ -510,7 +378,6 @@ fcAPI bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelForma
     if (!ctx) { return false; }
     return ctx->addVideoFrameTexture(tex, fmt, timestamp);
 }
-#ifndef fcStaticLink
 fcAPI int fcMP4AddVideoFrameTextureDeferred(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp, int id)
 {
     if (!ctx) { return 0; }
@@ -518,7 +385,6 @@ fcAPI int fcMP4AddVideoFrameTextureDeferred(fcIMP4Context *ctx, void *tex, fcPix
         return ctx->addVideoFrameTexture(tex, fmt, timestamp);
     }, id);
 }
-#endif // fcStaticLink
 
 fcAPI bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp)
 {
@@ -536,35 +402,9 @@ fcAPI bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_
 #ifdef fcSupportWebM
 #include "Encoder/fcWebMContext.h"
 
-#ifdef fcWebMSplitModule
-    #define fcWebMModuleName  "FrameCapturer_WebM" fcDLLExt
-    namespace {
-        fcWebMCreateContextImpl_t fcWebMCreateContextImpl;
-
-        module_t fcWebMModule;
-        void fcWebMInitializeModule()
-        {
-            if (!fcWebMModule) {
-                fcWebMModule = DLLLoad(fcWebMModuleName);
-                if (fcWebMModule) {
-                    (void*&)fcWebMCreateContextImpl = DLLGetSymbol(fcWebMModule, "fcWebMCreateContextImpl");
-                }
-            }
-        }
-    }
-#endif // fcSupportWebM
-
 fcAPI fcIWebMContext* fcWebMCreateContext(fcWebMConfig *conf)
 {
-#ifdef fcWebMSplitModule
-    fcWebMInitializeModule();
-    if (fcWebMCreateContextImpl) {
-        return fcWebMCreateContextImpl(*conf, fcGetGraphicsDevice());
-    }
-    return nullptr;
-#else
     return fcWebMCreateContextImpl(*conf, fcGetGraphicsDevice());
-#endif
 }
 
 fcAPI void fcWebMDestroyContext(fcIWebMContext *ctx)
@@ -591,7 +431,6 @@ fcAPI bool fcWebMAddVideoFrameTexture(fcIWebMContext *ctx, void *tex, fcPixelFor
     return ctx->addVideoFrameTexture(tex, fmt, timestamp);
 }
 
-#ifndef fcStaticLink
 fcAPI int fcWebMAddVideoFrameTextureDeferred(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp, int id)
 {
     if (!ctx) { return 0; }
@@ -599,7 +438,6 @@ fcAPI int fcWebMAddVideoFrameTextureDeferred(fcIWebMContext *ctx, void *tex, fcP
         return ctx->addVideoFrameTexture(tex, fmt, timestamp);
     }, id);
 }
-#endif // fcStaticLink
 
 fcAPI bool fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples, fcTime timestamp)
 {
@@ -620,9 +458,6 @@ BOOL WINAPI DllMain(HINSTANCE module_handle, DWORD reason_for_call, LPVOID reser
 {
     if (reason_for_call == DLL_PROCESS_ATTACH)
     {
-        // add dll search path to load additional modules (FrameCapturer_MP4.dll etc).
-        DLLAddSearchPath(DLLGetDirectoryOfCurrentModule());
-
         // initialize graphics device
         fcGfxForceInitialize();
     }

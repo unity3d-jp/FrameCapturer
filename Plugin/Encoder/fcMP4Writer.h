@@ -1,7 +1,6 @@
 #pragma once
 
 
-
 class fcMP4Writer
 {
 public:

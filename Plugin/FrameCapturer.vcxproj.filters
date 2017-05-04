@@ -112,6 +112,7 @@
     <ClInclude Include="Encoder\fcPngContext.h">
       <Filter>Encoder</Filter>
     </ClInclude>
+    <ClInclude Include="FrameCapturerConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="GraphisDevice">

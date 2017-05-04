@@ -21,10 +21,4 @@ protected:
 };
 
 
-#ifdef fcWebMSplitModule
-    #define fcWebMAPI fcAPI
-    typedef fcIWebMContext* (*fcWebMCreateContextImpl_t)(fcWebMConfig &conf, fcIGraphicsDevice*);
-#else
-    #define fcWebMAPI 
-    fcWebMAPI fcIWebMContext*   fcWebMCreateContextImpl(fcWebMConfig &conf, fcIGraphicsDevice*);
-#endif
+fcIWebMContext* fcWebMCreateContextImpl(fcWebMConfig &conf, fcIGraphicsDevice*);
