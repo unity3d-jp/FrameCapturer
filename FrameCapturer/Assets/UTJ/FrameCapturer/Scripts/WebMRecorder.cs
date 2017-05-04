@@ -5,9 +5,9 @@ using UnityEngine.Rendering;
 
 namespace UTJ
 {
-    [AddComponentMenu("UTJ/FrameCapturer/MP4Recorder")]
+    [AddComponentMenu("UTJ/FrameCapturer/WebMRecorder")]
     [RequireComponent(typeof(Camera))]
-    public class MP4Recorder : IMovieRecorder
+    public class WebMRecorder : IMovieRecorder
     {
         public enum FrameRateMode
         {
@@ -29,8 +29,8 @@ namespace UTJ
         public Shader m_shCopy;
 
         string m_output_file;
-        fcAPI.fcMP4Context m_ctx;
-        fcAPI.fcMP4Config m_mp4conf = fcAPI.fcMP4Config.default_value;
+        fcAPI.fcWebMContext m_ctx;
+        fcAPI.fcWebMConfig m_webmconf = fcAPI.fcWebMConfig.default_value;
         fcAPI.fcStream m_ostream;
 
         Material m_mat_copy;
@@ -51,28 +51,28 @@ namespace UTJ
 
             // initialize context and stream
             {
-                m_mp4conf = fcAPI.fcMP4Config.default_value;
-                m_mp4conf.video = m_captureVideo;
-                m_mp4conf.audio = m_captureAudio;
-                m_mp4conf.video_width = m_scratch_buffer.width;
-                m_mp4conf.video_height = m_scratch_buffer.height;
-                m_mp4conf.video_target_framerate = 60;
-                m_mp4conf.video_target_bitrate = m_videoBitrate;
-                m_mp4conf.audio_target_bitrate = m_audioBitrate;
-                m_mp4conf.audio_sample_rate = AudioSettings.outputSampleRate;
-                m_mp4conf.audio_num_channels = fcAPI.fcGetNumAudioChannels();
-                m_ctx = fcAPI.fcMP4OSCreateContext(ref m_mp4conf);
+                m_webmconf = fcAPI.fcWebMConfig.default_value;
+                m_webmconf.video = m_captureVideo;
+                m_webmconf.audio = m_captureAudio;
+                m_webmconf.video_width = m_scratch_buffer.width;
+                m_webmconf.video_height = m_scratch_buffer.height;
+                m_webmconf.video_target_framerate = 60;
+                m_webmconf.video_target_bitrate = m_videoBitrate;
+                m_webmconf.audio_target_bitrate = m_audioBitrate;
+                m_webmconf.audio_sample_rate = AudioSettings.outputSampleRate;
+                m_webmconf.audio_num_channels = fcAPI.fcGetNumAudioChannels();
+                m_ctx = fcAPI.fcWebMCreateContext(ref m_webmconf);
 
-                m_output_file = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
+                m_output_file = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".webm";
                 m_ostream = fcAPI.fcCreateFileStream(GetOutputPath());
-                fcAPI.fcMP4AddOutputStream(m_ctx, m_ostream);
+                fcAPI.fcWebMAddOutputStream(m_ctx, m_ostream);
             }
 
             // initialize command buffer
             {
                 int tid = Shader.PropertyToID("_TmpFrameBuffer");
                 m_cb = new CommandBuffer();
-                m_cb.name = "MP4Recorder: copy frame buffer";
+                m_cb.name = "WebMRecorder: copy frame buffer";
                 m_cb.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Bilinear);
                 m_cb.Blit(BuiltinRenderTextureType.CurrentActive, tid);
                 m_cb.SetRenderTarget(m_scratch_buffer);
@@ -96,12 +96,12 @@ namespace UTJ
                 fcAPI.fcEraseDeferredCall(m_callback);
                 m_callback = 0;
 
-                if (m_ctx.ptr != IntPtr.Zero)
+                if (m_ctx)
                 {
-                    fcAPI.fcMP4DestroyContext(m_ctx);
+                    fcAPI.fcWebMDestroyContext(m_ctx);
                     m_ctx.ptr = IntPtr.Zero;
                 }
-                if (m_ostream.ptr != IntPtr.Zero)
+                if (m_ostream)
                 {
                     fcAPI.fcDestroyStream(m_ostream);
                     m_ostream.ptr = IntPtr.Zero;
@@ -154,7 +154,7 @@ namespace UTJ
 
             InitializeContext();
             GetComponent<Camera>().AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
-            Debug.Log("MP4Recorder.BeginRecording(): " + GetOutputPath());
+            Debug.Log("WebMRecorder.BeginRecording(): " + GetOutputPath());
             return true;
         }
 
@@ -165,7 +165,7 @@ namespace UTJ
 
             GetComponent<Camera>().RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb);
             ReleaseContext();
-            Debug.Log("MP4Recorder.EndRecording(): " + GetOutputPath());
+            Debug.Log("WebMRecorder.EndRecording(): " + GetOutputPath());
             return true;
         }
 
@@ -213,7 +213,7 @@ namespace UTJ
         }
 
 
-        public fcAPI.fcMP4Context GetMP4Context() { return m_ctx; }
+        public fcAPI.fcWebMContext GetWebMContext() { return m_ctx; }
 
 #if UNITY_EDITOR
         void Reset()
@@ -222,16 +222,12 @@ namespace UTJ
         }
 #endif // UNITY_EDITOR
 
-        void Start()
-        {
-        }
-
         void OnEnable()
         {
 #if UNITY_EDITOR
             if(m_captureAudio && m_frameRateMode == FrameRateMode.Constant)
             {
-                Debug.LogWarning("MP4Recorder: capture audio with Constant frame rate mode will cause desync");
+                Debug.LogWarning("WebMRecorder: capture audio with Constant frame rate mode will cause desync");
             }
 #endif
             m_outputDir.CreateDirectory();
@@ -255,11 +251,12 @@ namespace UTJ
         {
             if (m_recording && m_captureAudio)
             {
-                if(channels != m_mp4conf.audio_num_channels) {
-                    Debug.LogError("MP4Recorder: audio channels mismatch!");
+                if (channels != m_webmconf.audio_num_channels)
+                {
+                    Debug.LogError("WebMRecorder: audio channels mismatch!");
                     return;
                 }
-                fcAPI.fcMP4AddAudioFrame(m_ctx, samples, samples.Length);
+                fcAPI.fcWebMAddAudioFrame(m_ctx, samples, samples.Length);
             }
         }
 
@@ -275,7 +272,7 @@ namespace UTJ
                     timestamp = 1.0 / m_framerate * m_num_video_frames;
                 }
 
-                m_callback = fcAPI.fcMP4AddVideoFrameTexture(m_ctx, m_scratch_buffer, timestamp, m_callback);
+                m_callback = fcAPI.fcWebMAddVideoFrameTexture(m_ctx, m_scratch_buffer, timestamp, m_callback);
                 GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callback);
                 m_num_video_frames++;
             }

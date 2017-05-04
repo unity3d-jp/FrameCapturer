@@ -53,28 +53,24 @@ namespace UTJ
             VBR,
         }
 
-        public enum fcDownloadState
+
+        [DllImport ("fccore")] public static extern void         fcSetModulePath(string path);
+        [DllImport ("fccore")] public static extern double       fcGetTime();
+
+        public struct fcStream
         {
-            Idle,
-            Completed,
-            Error,
-            InProgress,
-        };
+            public IntPtr ptr;
+            public static implicit operator bool(fcStream v) { return v.ptr != IntPtr.Zero; }
+        }
+        [DllImport ("fccore")] public static extern fcStream     fcCreateFileStream(string path);
+        [DllImport ("fccore")] public static extern fcStream     fcCreateMemoryStream();
+        [DllImport ("fccore")] public static extern void         fcDestroyStream(fcStream s);
+        [DllImport ("fccore")] public static extern ulong        fcStreamGetWrittenSize(fcStream s);
 
-
-        [DllImport ("FrameCapturer")] public static extern void         fcSetModulePath(string path);
-        [DllImport ("FrameCapturer")] public static extern double       fcGetTime();
-
-        public struct fcStream { public IntPtr ptr; }
-        [DllImport ("FrameCapturer")] public static extern fcStream     fcCreateFileStream(string path);
-        [DllImport ("FrameCapturer")] public static extern fcStream     fcCreateMemoryStream();
-        [DllImport ("FrameCapturer")] public static extern void         fcDestroyStream(fcStream s);
-        [DllImport ("FrameCapturer")] public static extern ulong        fcStreamGetWrittenSize(fcStream s);
-
-        [DllImport ("FrameCapturer")] public static extern void         fcGuardBegin();
-        [DllImport ("FrameCapturer")] public static extern void         fcGuardEnd();
-        [DllImport ("FrameCapturer")] public static extern void         fcEraseDeferredCall(int id);
-        [DllImport ("FrameCapturer")] public static extern IntPtr       fcGetRenderEventFunc();
+        [DllImport ("fccore")] public static extern void         fcGuardBegin();
+        [DllImport ("fccore")] public static extern void         fcGuardEnd();
+        [DllImport ("fccore")] public static extern void         fcEraseDeferredCall(int id);
+        [DllImport ("fccore")] public static extern IntPtr       fcGetRenderEventFunc();
 
         public static void fcGuard(Action body)
         {
@@ -154,11 +150,15 @@ namespace UTJ
                 }
             }
         };
-        public struct fcPNGContext { public IntPtr ptr; }
+        public struct fcPNGContext
+        {
+            public IntPtr ptr;
+            public static implicit operator bool(fcPNGContext v) { return v.ptr != IntPtr.Zero; }
+        }
 
-        [DllImport ("FrameCapturer")] public static extern fcPNGContext fcPngCreateContext(ref fcPngConfig conf);
-        [DllImport ("FrameCapturer")] public static extern void         fcPngDestroyContext(fcPNGContext ctx);
-        [DllImport ("FrameCapturer")] private static extern int         fcPngExportTextureDeferred(fcPNGContext ctx, string path, IntPtr tex, int width, int height, fcPixelFormat f, Bool flipY, int id);
+        [DllImport ("fccore")] public static extern fcPNGContext fcPngCreateContext(ref fcPngConfig conf);
+        [DllImport ("fccore")] public static extern void         fcPngDestroyContext(fcPNGContext ctx);
+        [DllImport ("fccore")] private static extern int         fcPngExportTextureDeferred(fcPNGContext ctx, string path, IntPtr tex, int width, int height, fcPixelFormat f, Bool flipY, int id);
 
         public static int fcPngExportTexture(fcPNGContext ctx, string path, RenderTexture tex, int pos)
         {
@@ -186,13 +186,17 @@ namespace UTJ
                 }
             }
         };
-        public struct fcEXRContext { public IntPtr ptr; }
+        public struct fcEXRContext
+        {
+            public IntPtr ptr;
+            public static implicit operator bool(fcEXRContext v) { return v.ptr != IntPtr.Zero; }
+        }
 
-        [DllImport ("FrameCapturer")] public static extern fcEXRContext fcExrCreateContext(ref fcExrConfig conf);
-        [DllImport ("FrameCapturer")] public static extern void         fcExrDestroyContext(fcEXRContext ctx);
-        [DllImport ("FrameCapturer")] private static extern int         fcExrBeginFrameDeferred(fcEXRContext ctx, string path, int width, int height, int id);
-        [DllImport ("FrameCapturer")] private static extern int         fcExrAddLayerTextureDeferred(fcEXRContext ctx, IntPtr tex, fcPixelFormat f, int ch, string name, Bool flipY, int id);
-        [DllImport ("FrameCapturer")] private static extern int         fcExrEndFrameDeferred(fcEXRContext ctx, int id);
+        [DllImport ("fccore")] public static extern fcEXRContext fcExrCreateContext(ref fcExrConfig conf);
+        [DllImport ("fccore")] public static extern void         fcExrDestroyContext(fcEXRContext ctx);
+        [DllImport ("fccore")] private static extern int         fcExrBeginFrameDeferred(fcEXRContext ctx, string path, int width, int height, int id);
+        [DllImport ("fccore")] private static extern int         fcExrAddLayerTextureDeferred(fcEXRContext ctx, IntPtr tex, fcPixelFormat f, int ch, string name, Bool flipY, int id);
+        [DllImport ("fccore")] private static extern int         fcExrEndFrameDeferred(fcEXRContext ctx, int id);
 
         public static int fcExrBeginFrame(fcEXRContext ctx, string path, int width, int height, int id)
         {
@@ -235,18 +239,22 @@ namespace UTJ
                 }
             }
         };
-        public struct fcGIFContext { public IntPtr ptr; }
+        public struct fcGIFContext
+        {
+            public IntPtr ptr;
+            public static implicit operator bool(fcGIFContext v) { return v.ptr != IntPtr.Zero; }
+        }
 
-        [DllImport ("FrameCapturer")] public static extern fcGIFContext fcGifCreateContext(ref fcGifConfig conf);
-        [DllImport ("FrameCapturer")] public static extern void         fcGifDestroyContext(fcGIFContext ctx);
-        [DllImport ("FrameCapturer")] private static extern int         fcGifAddFrameTextureDeferred(fcGIFContext ctx, IntPtr tex, fcPixelFormat fmt, Bool keyframe, double timestamp, int id);
-        [DllImport ("FrameCapturer")] public static extern Bool         fcGifWrite(fcGIFContext ctx, fcStream stream, int begin_frame=0, int end_frame=-1);
+        [DllImport ("fccore")] public static extern fcGIFContext fcGifCreateContext(ref fcGifConfig conf);
+        [DllImport ("fccore")] public static extern void         fcGifDestroyContext(fcGIFContext ctx);
+        [DllImport ("fccore")] private static extern int         fcGifAddFrameTextureDeferred(fcGIFContext ctx, IntPtr tex, fcPixelFormat fmt, Bool keyframe, double timestamp, int id);
+        [DllImport ("fccore")] public static extern Bool         fcGifWrite(fcGIFContext ctx, fcStream stream, int begin_frame=0, int end_frame=-1);
 
-        [DllImport ("FrameCapturer")] public static extern void         fcGifClearFrame(fcGIFContext ctx);
-        [DllImport ("FrameCapturer")] public static extern int          fcGifGetFrameCount(fcGIFContext ctx);
-        [DllImport ("FrameCapturer")] public static extern void         fcGifGetFrameData(fcGIFContext ctx, IntPtr tex, int frame);
-        [DllImport ("FrameCapturer")] public static extern int          fcGifGetExpectedDataSize(fcGIFContext ctx, int begin_frame, int end_frame);
-        [DllImport ("FrameCapturer")] public static extern void         fcGifEraseFrame(fcGIFContext ctx, int begin_frame, int end_frame);
+        [DllImport ("fccore")] public static extern void         fcGifClearFrame(fcGIFContext ctx);
+        [DllImport ("fccore")] public static extern int          fcGifGetFrameCount(fcGIFContext ctx);
+        [DllImport ("fccore")] public static extern void         fcGifGetFrameData(fcGIFContext ctx, IntPtr tex, int frame);
+        [DllImport ("fccore")] public static extern int          fcGifGetExpectedDataSize(fcGIFContext ctx, int begin_frame, int end_frame);
+        [DllImport ("fccore")] public static extern void         fcGifEraseFrame(fcGIFContext ctx, int begin_frame, int end_frame);
 
         public static int fcGifAddFrameTexture(fcGIFContext ctx, RenderTexture tex, bool keyframe, double timestamp, int id)
         {
@@ -326,19 +334,20 @@ namespace UTJ
                 }
             }
         };
-        public struct fcMP4Context { public IntPtr ptr; }
+        public struct fcMP4Context
+        {
+            public IntPtr ptr;
+            public static implicit operator bool(fcMP4Context v) { return v.ptr != IntPtr.Zero; }
+        }
 
-        [DllImport ("FrameCapturer")] public static extern void             fcMP4SetFAACPackagePath(string path);
-        [DllImport ("FrameCapturer")] public static extern Bool             fcMP4DownloadCodecBegin();
-        [DllImport ("FrameCapturer")] public static extern fcDownloadState  fcMP4DownloadCodecGetState();
-
-        [DllImport ("FrameCapturer")] public static extern fcMP4Context     fcMP4CreateContext(ref fcMP4Config conf);
-        [DllImport ("FrameCapturer")] public static extern void             fcMP4DestroyContext(fcMP4Context ctx);
-        [DllImport ("FrameCapturer")] public static extern void             fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);
-        [DllImport ("FrameCapturer")] private static extern IntPtr          fcMP4GetAudioEncoderInfo(fcMP4Context ctx);
-        [DllImport ("FrameCapturer")] private static extern IntPtr          fcMP4GetVideoEncoderInfo(fcMP4Context ctx);
-        [DllImport ("FrameCapturer")] private static extern int             fcMP4AddVideoFrameTextureDeferred(fcMP4Context ctx, IntPtr tex, fcPixelFormat fmt, double time, int id);
-        [DllImport ("FrameCapturer")] public static extern Bool             fcMP4AddAudioFrame(fcMP4Context ctx, float[] samples, int num_samples, double time = -1.0);
+        [DllImport ("fccore")] public static extern fcMP4Context     fcMP4CreateContext(ref fcMP4Config conf);
+        [DllImport ("fccore")] public static extern fcMP4Context     fcMP4OSCreateContext(ref fcMP4Config conf);
+        [DllImport ("fccore")] public static extern void             fcMP4DestroyContext(fcMP4Context ctx);
+        [DllImport ("fccore")] public static extern void             fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);
+        [DllImport ("fccore")] private static extern IntPtr          fcMP4GetAudioEncoderInfo(fcMP4Context ctx);
+        [DllImport ("fccore")] private static extern IntPtr          fcMP4GetVideoEncoderInfo(fcMP4Context ctx);
+        [DllImport ("fccore")] private static extern int             fcMP4AddVideoFrameTextureDeferred(fcMP4Context ctx, IntPtr tex, fcPixelFormat fmt, double time, int id);
+        [DllImport ("fccore")] public static extern Bool             fcMP4AddAudioFrame(fcMP4Context ctx, float[] samples, int num_samples, double time = -1.0);
 
         public static string fcMP4GetAudioEncoderInfoS(fcMP4Context ctx)
         {
@@ -354,6 +363,85 @@ namespace UTJ
         {
             return fcMP4AddVideoFrameTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), time, id);
         }
+
+
+        // -------------------------------------------------------------
+        // WebM Exporter
+        // -------------------------------------------------------------
+
+        public struct fcWebMContext
+        {
+            public IntPtr ptr;
+            public static implicit operator bool(fcWebMContext v) { return v.ptr != IntPtr.Zero; }
+        }
+
+        public enum fcWebMVideoEncoder
+        {
+            VP8,
+            VP9,
+        };
+        public enum fcWebMAudioEncoder
+        {
+            Vorbis,
+            Opus,
+        };
+
+        public struct fcWebMConfig
+        {
+            public fcWebMVideoEncoder video_encoder;
+            public fcWebMAudioEncoder audio_encoder;
+            public Bool video;
+            public Bool audio;
+
+            public int video_width;
+            public int video_height;
+            public int video_target_framerate;
+            public fcBitrateMode video_bitrate_mode;
+            public int video_target_bitrate;
+
+            public int audio_sample_rate;
+            public int audio_num_channels;
+            public fcBitrateMode audio_bitrate_mode;
+            public int audio_target_bitrate;
+
+            public static fcWebMConfig default_value
+            {
+                get
+                {
+                    return new fcWebMConfig
+                    {
+                        video_encoder = fcWebMVideoEncoder.VP8,
+                        audio_encoder = fcWebMAudioEncoder.Vorbis,
+                        video = true,
+                        audio = true,
+
+                        video_width = 0,
+                        video_height = 0,
+                        video_target_framerate = 60,
+                        video_bitrate_mode = fcBitrateMode.VBR,
+                        video_target_bitrate = 1024 * 1000,
+
+                        audio_sample_rate = 48000,
+                        audio_num_channels = 2,
+                        audio_bitrate_mode = fcBitrateMode.VBR,
+                        audio_target_bitrate = 64 * 1000,
+                    };
+                }
+            }
+        }
+
+        [DllImport ("fccore")] public static extern fcWebMContext fcWebMCreateContext(ref fcWebMConfig conf);
+        [DllImport ("fccore")] public static extern void fcWebMDestroyContext(fcWebMContext ctx);
+        [DllImport ("fccore")] public static extern void fcWebMAddOutputStream(fcWebMContext ctx, fcStream stream);
+        // timestamp=-1 is treated as current time.
+        [DllImport ("fccore")] private static extern int fcWebMAddVideoFrameTextureDeferred(fcWebMContext ctx, IntPtr tex, fcPixelFormat fmt, double timestamp, int id);
+        // timestamp=-1 is treated as current time.
+        [DllImport ("fccore")] public static extern Bool fcWebMAddAudioFrame(fcWebMContext ctx, float[] samples, int num_samples, double timestamp = -1.0);
+
+        public static int fcWebMAddVideoFrameTexture(fcWebMContext ctx, RenderTexture tex, double time, int id)
+        {
+            return fcWebMAddVideoFrameTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), time, id);
+        }
     }
 
 
@@ -361,17 +449,15 @@ namespace UTJ
     {
         public static Mesh CreateFullscreenQuad()
         {
-            Vector3[] vertices = new Vector3[4] {
+            var r = new Mesh();
+            r.vertices = new Vector3[4] {
                     new Vector3( 1.0f, 1.0f, 0.0f),
                     new Vector3(-1.0f, 1.0f, 0.0f),
                     new Vector3(-1.0f,-1.0f, 0.0f),
                     new Vector3( 1.0f,-1.0f, 0.0f),
                 };
-            int[] indices = new int[6] { 0, 1, 2, 2, 3, 0 };
-
-            Mesh r = new Mesh();
-            r.vertices = vertices;
-            r.triangles = indices;
+            r.triangles = new int[6] { 0, 1, 2, 2, 3, 0 };
+            r.UploadMeshData(true);
             return r;
         }
 
