@@ -1,8 +1,9 @@
+#include "pch.h"
 #ifdef _WIN32
 #include <d3d11.h>
 #pragma comment(lib, "d3d11.lib")
 
-#include "../FrameCapturer.h"
+#include "../fccore/fccore.h"
 
 
 bool InitializeD3D11()

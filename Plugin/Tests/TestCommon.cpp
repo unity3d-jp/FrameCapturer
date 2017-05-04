@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "TestCommon.h"
 #ifdef _WIN32
     #pragma comment(lib, "Half.lib")
