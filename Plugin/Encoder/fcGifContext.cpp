@@ -5,13 +5,6 @@
 #include "fcGifContext.h"
 #include "external/jo_gif.cpp"
 
-#ifdef fcSupportHalfPixelFormat
-    #include <half.h>
-    #ifdef fcWindows
-        #pragma comment(lib, "Half.lib")
-    #endif
-#endif // fcSupportHalfPixelFormat
-
 
 typedef jo_gif_frame_t fcGifFrame;
 
@@ -52,21 +45,19 @@ private:
 
 private:
     fcGifConfig m_conf;
-    fcIGraphicsDevice *m_dev;
+    fcIGraphicsDevice *m_dev = nullptr;
     std::vector<fcGifTaskData> m_buffers;
     std::vector<fcGifTaskData*> m_buffers_unused;
     std::list<fcGifFrame> m_gif_frames;
     jo_gif_t m_gif;
     fcTaskGroup m_tasks;
     std::mutex m_mutex;
-    int m_frame;
+    int m_frame = 0;
 };
 
 
 fcGifContext::fcGifContext(const fcGifConfig &conf, fcIGraphicsDevice *dev)
-    : m_conf(conf)
-    , m_dev(dev)
-    , m_frame()
+    : m_dev(dev)
 {
     m_gif = jo_gif_start(m_conf.width, m_conf.height, 0, m_conf.num_colors);
 

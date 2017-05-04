@@ -50,7 +50,7 @@ fcGraphicsDeviceD3D9::~fcGraphicsDeviceD3D9()
 }
 
 void* fcGraphicsDeviceD3D9::getDevicePtr() { return m_device; }
-fcGfxDeviceType fcGraphicsDeviceD3D9::getDeviceType() { return fcGfxDeviceType_D3D9; }
+fcGfxDeviceType fcGraphicsDeviceD3D9::getDeviceType() { return fcGfxDeviceType::D3D9; }
 
 
 void fcGraphicsDeviceD3D9::clearStagingTextures()

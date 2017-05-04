@@ -4,6 +4,7 @@
 #include "fcFoundation.h"
 #include "fcGraphicsDevice.h"
 #include <d3d11.h>
+
 const int fcD3D11MaxStagingTextures = 32;
 
 
@@ -63,7 +64,7 @@ fcGraphicsDeviceD3D11::~fcGraphicsDeviceD3D11()
 }
 
 void* fcGraphicsDeviceD3D11::getDevicePtr() { return m_device; }
-fcGfxDeviceType fcGraphicsDeviceD3D11::getDeviceType() { return fcGfxDeviceType_D3D11; }
+fcGfxDeviceType fcGraphicsDeviceD3D11::getDeviceType() { return fcGfxDeviceType::D3D11; }
 
 
 static DXGI_FORMAT fcGetInternalFormatD3D11(fcPixelFormat fmt)

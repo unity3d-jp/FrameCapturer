@@ -1,15 +1,15 @@
 ﻿#include "pch.h"
 
-enum fcGfxDeviceType
+enum class fcGfxDeviceType
 {
-    fcGfxDeviceType_Unknown,
-    fcGfxDeviceType_D3D9,
-    fcGfxDeviceType_D3D10,
-    fcGfxDeviceType_D3D11,
-    fcGfxDeviceType_D3D12,
-    fcGfxDeviceType_OpenGL,
-    fcGfxDeviceType_Vulkan,
-    fcGfxDeviceType_CUDA,
+    Unknown,
+    D3D9,
+    D3D10,
+    D3D11,
+    D3D12,
+    OpenGL,
+    Vulkan,
+    CUDA,
 };
 
 

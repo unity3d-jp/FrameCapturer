@@ -5,11 +5,9 @@
 #include "fcPngContext.h"
 
 #include <libpng/png.h>
-#include <half.h>
 #ifdef fcWindows
     #pragma comment(lib, "libpng16_static.lib")
     #pragma comment(lib, "zlibstatic.lib")
-    #pragma comment(lib, "Half.lib")
 #endif
 
 
@@ -18,12 +16,10 @@ struct fcPngTaskData
     std::string path;
     Buffer pixels;
     Buffer buf; // buffer for conversion
-    int width;
-    int height;
-    fcPixelFormat format;
-    bool flipY;
-
-    fcPngTaskData() : width(), height(), format(), flipY() {}
+    int width = 0;
+    int height = 0;
+    fcPixelFormat format = fcPixelFormat_Unknown;
+    bool flipY = false;
 };
 
 class fcPngContext : public fcIPngContext
@@ -41,15 +37,15 @@ private:
 
 private:
     fcPngConfig m_conf;
-    fcIGraphicsDevice *m_dev;
+    fcIGraphicsDevice *m_dev = nullptr;
     fcTaskGroup m_tasks;
-    std::atomic_int m_active_task_count;
+    std::atomic_int m_active_task_count = 0;
 };
 
 fcPngContext::fcPngContext(const fcPngConfig& conf, fcIGraphicsDevice *dev)
-    : m_conf(), m_dev(dev), m_active_task_count()
+    : m_conf(conf)
+    , m_dev(dev)
 {
-    m_conf = conf;
     if (m_conf.max_active_tasks <= 0) {
         m_conf.max_active_tasks = std::thread::hardware_concurrency();
     }

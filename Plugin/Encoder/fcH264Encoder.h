@@ -3,11 +3,11 @@
 
 struct fcH264EncoderConfig
 {
-    int width;
-    int height;
-    int target_framerate;
-    fcBitrateMode bitrate_mode;
-    int target_bitrate;
+    int width = 0;
+    int height = 0;
+    int target_framerate = 30;
+    fcBitrateMode bitrate_mode = fcCBR;
+    int target_bitrate = 128000;
 };
 
 

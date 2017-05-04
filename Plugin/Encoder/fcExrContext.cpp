@@ -1,6 +1,5 @@
 ﻿#include "pch.h"
 
-#include <half.h>
 #include <ImfRgbaFile.h>
 #include <ImfOutputFile.h>
 #include <ImfInputFile.h>
@@ -13,7 +12,7 @@
 #include "GraphicsDevice/fcGraphicsDevice.h"
 #include "fcExrContext.h"
 
-#if defined(fcWindows) && !defined(fcNoAutoLink)
+#if defined(fcWindows)
     #pragma comment(lib, "Half.lib")
     #pragma comment(lib, "Iex-2_2.lib")
     #pragma comment(lib, "IexMath-2_2.lib")
@@ -56,25 +55,19 @@ private:
 
 private:
     fcExrConfig m_conf;
-    fcIGraphicsDevice *m_dev;
-    fcExrTaskData *m_task;
+    fcIGraphicsDevice *m_dev = nullptr;
+    fcExrTaskData *m_task = nullptr;
     fcTaskGroup m_tasks;
-    std::atomic_int m_active_task_count;
+    std::atomic_int m_active_task_count = 0;
 
-    const void *m_frame_prev;
-    Buffer *m_src_prev;
-    fcPixelFormat m_fmt_prev;
+    const void *m_frame_prev = nullptr;
+    Buffer *m_src_prev = nullptr;
+    fcPixelFormat m_fmt_prev = fcPixelFormat_Unknown;
 };
 
 
 fcExrContext::fcExrContext(const fcExrConfig& conf, fcIGraphicsDevice *dev)
-    : m_conf()
-    , m_dev(dev)
-    , m_task(nullptr)
-    , m_active_task_count(0)
-    , m_frame_prev(nullptr)
-    , m_src_prev(nullptr)
-    , m_fmt_prev()
+    : m_dev(dev)
 {
     m_conf = conf;
     if (m_conf.max_active_tasks <= 0) {
