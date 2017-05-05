@@ -149,17 +149,11 @@ struct fcGifConfig
 };
 fcAPI fcIGifContext*  fcGifCreateContext(const fcGifConfig *conf);
 fcAPI void            fcGifDestroyContext(fcIGifContext *ctx);
+fcAPI void            fcGifAddOutputStream(fcIGifContext *ctx, fcStream *stream);
 // timestamp=-1 is treated as current time.
 fcAPI bool            fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
 fcAPI bool            fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
-fcAPI bool            fcGifWrite(fcIGifContext *ctx, fcStream *stream, int begin_frame = 0, int end_frame = -1);
-
-fcAPI void            fcGifClearFrame(fcIGifContext *ctx);
-fcAPI int             fcGifGetFrameCount(fcIGifContext *ctx);
-fcAPI void            fcGifGetFrameData(fcIGifContext *ctx, void *tex, int frame);
-fcAPI int             fcGifGetExpectedDataSize(fcIGifContext *ctx, int begin_frame, int end_frame);
-fcAPI void            fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, int end_frame);
 
 
 // -------------------------------------------------------------

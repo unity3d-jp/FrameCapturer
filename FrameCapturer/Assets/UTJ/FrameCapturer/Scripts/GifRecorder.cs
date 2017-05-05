@@ -30,6 +30,8 @@ namespace UTJ
 
         string m_output_file;
         fcAPI.fcGIFContext m_ctx;
+        fcAPI.fcStream m_ostream;
+
         Material m_mat_copy;
         Mesh m_quad;
         CommandBuffer m_cb;
@@ -54,6 +56,10 @@ namespace UTJ
                 conf.num_colors = Mathf.Clamp(m_numColors, 1, 256);
                 conf.max_active_tasks = 0;
                 m_ctx = fcAPI.fcGifCreateContext(ref conf);
+
+                m_output_file = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
+                m_ostream = fcAPI.fcCreateFileStream(GetOutputPath());
+                fcAPI.fcGifAddOutputStream(m_ctx, m_ostream);
             }
 
             // initialize command buffer
@@ -84,10 +90,15 @@ namespace UTJ
                 fcAPI.fcEraseDeferredCall(m_callback);
                 m_callback = 0;
 
-                if (m_ctx.ptr != IntPtr.Zero)
+                if (m_ctx)
                 {
                     fcAPI.fcGifDestroyContext(m_ctx);
                     m_ctx.ptr = IntPtr.Zero;
+                }
+                if (m_ostream)
+                {
+                    fcAPI.fcDestroyStream(m_ostream);
+                    m_ostream.ptr = IntPtr.Zero;
                 }
             });
         }
@@ -127,10 +138,7 @@ namespace UTJ
             }
         }
 
-
-        public override bool IsSeekable() { return true; }
-        public override bool IsEditable() { return true; }
-
+        
         public override bool BeginRecording()
         {
             if (m_recording) { return false; }
@@ -156,55 +164,11 @@ namespace UTJ
         public override bool recording
         {
             get { return m_recording; }
-            set { m_recording = value; }
         }
 
         public override string GetOutputPath()
         {
             return m_outputDir.GetPath() + "/" + m_output_file;
-        }
-
-        public override bool Flush()
-        {
-            return Flush(0, -1);
-        }
-
-        public override bool Flush(int begin_frame, int end_frame)
-        {
-            bool ret = false;
-            if (m_ctx.ptr != IntPtr.Zero && m_num_video_frames > 0)
-            {
-                m_output_file = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
-                var path = GetOutputPath();
-                fcAPI.fcGuard(() =>
-                {
-                    ret = fcAPI.fcGifWriteFile(m_ctx, path, begin_frame, end_frame);
-                });
-                Debug.Log("GifRecorder.FlushFile(" + begin_frame + ", " + end_frame + "): " + path);
-            }
-            return ret;
-        }
-
-        public override RenderTexture GetScratchBuffer() { return m_scratch_buffer; }
-
-        public override void EraseFrame(int begin_frame, int end_frame)
-        {
-            fcAPI.fcGifEraseFrame(m_ctx, begin_frame, end_frame);
-        }
-
-        public override int GetExpectedFileSize(int begin_frame = 0, int end_frame = -1)
-        {
-            return fcAPI.fcGifGetExpectedDataSize(m_ctx, begin_frame, end_frame);
-        }
-
-        public override int GetFrameCount()
-        {
-            return fcAPI.fcGifGetFrameCount(m_ctx);
-        }
-
-        public override void GetFrameData(RenderTexture rt, int frame)
-        {
-            fcAPI.fcGifGetFrameData(m_ctx, rt.GetNativeTexturePtr(), frame);
         }
 
         public fcAPI.fcGIFContext GetGifContext() { return m_ctx; }

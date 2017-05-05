@@ -142,10 +142,6 @@ namespace UTJ
         }
 
 
-
-        public override bool IsSeekable() { return false; }
-        public override bool IsEditable() { return false; }
-
         public override bool BeginRecording()
         {
             if (m_recording) { return false; }
@@ -170,7 +166,6 @@ namespace UTJ
         public override bool recording
         {
             get { return m_recording; }
-            set { m_recording = value; }
         }
 
 
@@ -181,35 +176,6 @@ namespace UTJ
             ret += m_output_file;
             return ret;
         }
-        public override RenderTexture GetScratchBuffer() { return m_scratch_buffer; }
-        public override int GetFrameCount() { return m_num_video_frames; }
-
-        public override bool Flush()
-        {
-            return EndRecording();
-        }
-
-        public override bool Flush(int begin_frame, int end_frame)
-        {
-            return EndRecording();
-        }
-
-        // N/A
-        public override int GetExpectedFileSize(int begin_frame, int end_frame)
-        {
-            return 0;
-        }
-
-        // N/A
-        public override void GetFrameData(RenderTexture rt, int frame)
-        {
-        }
-
-        // N/A
-        public override void EraseFrame(int begin_frame, int end_frame)
-        {
-        }
-
 
         public fcAPI.fcMP4Context GetMP4Context() { return m_ctx; }
 
