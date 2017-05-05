@@ -31,6 +31,7 @@ public:
     fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev);
     ~fcMP4Context();
     void release() override;
+    bool isValid() const override;
 
     const char* getVideoEncoderInfo() override;
     const char* getAudioEncoderInfo() override;
@@ -200,6 +201,11 @@ void fcMP4Context::release()
     delete this;
 }
 
+bool fcMP4Context::isValid() const
+{
+    return m_video_encoder || m_audio_encoder;
+}
+
 const char* fcMP4Context::getAudioEncoderInfo()
 {
     if (!m_audio_encoder) { return ""; }
@@ -343,11 +349,12 @@ const std::string& fcMP4GetFAACPackagePath() { return g_faac_package_path; }
 
 fcIMP4Context* fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev)
 {
-    if (fcLoadOpenH264Module()) {
-        fcLoadFAACModule();
-        return new fcMP4Context(conf, dev);
+    auto ret = new fcMP4Context(conf, dev);
+    if (!ret->isValid()) {
+        delete ret;
+        ret = nullptr;
     }
-    return nullptr;
+    return ret;
 }
 
 void fcMP4SetModulePathImpl(const char *path)

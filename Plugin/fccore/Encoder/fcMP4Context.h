@@ -4,6 +4,7 @@ class fcIMP4Context
 {
 public:
     virtual void release() = 0;
+    virtual bool isValid() const = 0;
 
     virtual const char* getVideoEncoderInfo() = 0;
     virtual const char* getAudioEncoderInfo() = 0;

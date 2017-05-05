@@ -68,7 +68,8 @@ private:
 
 
 fcExrContext::fcExrContext(const fcExrConfig& conf, fcIGraphicsDevice *dev)
-    : m_dev(dev)
+    : m_conf(conf)
+    , m_dev(dev)
 {
     m_conf = conf;
     if (m_conf.max_active_tasks <= 0) {

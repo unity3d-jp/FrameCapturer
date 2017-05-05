@@ -43,7 +43,6 @@ private:
 
 
 static module_t g_mod_nvenc;
-static NVENCSTATUS (NVENCAPI *NvEncodeAPICreateInstance_)(NV_ENCODE_API_FUNCTION_LIST *functionList);
 static NV_ENCODE_API_FUNCTION_LIST nvenc;
 
 static bool LoadNVENCModule()
@@ -53,6 +52,7 @@ static bool LoadNVENCModule()
     NVENCSTATUS stat;
     g_mod_nvenc = DLLLoad(NVEncoderDLL);
     if (g_mod_nvenc) {
+        NVENCSTATUS(NVENCAPI *NvEncodeAPICreateInstance_)(NV_ENCODE_API_FUNCTION_LIST *functionList);
         (void*&)NvEncodeAPICreateInstance_ = DLLGetSymbol(g_mod_nvenc, "NvEncodeAPICreateInstance");
         if (NvEncodeAPICreateInstance_) {
             nvenc.version = NV_ENCODE_API_FUNCTION_LIST_VER;
@@ -67,7 +67,6 @@ fcH264EncoderNVIDIA::fcH264EncoderNVIDIA(const fcH264EncoderConfig& conf, void *
     : m_conf(conf)
 {
     if (!LoadNVENCModule()) { return; }
-    ;
 
     NVENCSTATUS stat;
     {

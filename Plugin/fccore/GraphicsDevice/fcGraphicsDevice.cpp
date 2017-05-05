@@ -95,8 +95,7 @@ static void UNITY_INTERFACE_API UnityOnGraphicsDeviceEvent(UnityGfxDeviceEventTy
         }
 #endif
 #ifdef fcSupportOpenGL
-        if (api == kUnityGfxRendererOpenGL ||
-            api == kUnityGfxRendererOpenGLCore ||
+        if (api == kUnityGfxRendererOpenGLCore ||
             api == kUnityGfxRendererOpenGLES20 ||
             api == kUnityGfxRendererOpenGLES30)
         {

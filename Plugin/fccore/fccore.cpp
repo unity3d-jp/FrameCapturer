@@ -3,8 +3,8 @@
 #include "Foundation/fcFoundation.h"
 #include "GraphicsDevice/fcGraphicsDevice.h"
 
-#define fcTraceFunc(...)  DebugLogImpl(__FUNCTION__, "\n")
-//#define fcTraceFunc(...)
+//#define fcTraceFunc(...)  DebugLogImpl(__FUNCTION__ "\n")
+#define fcTraceFunc(...)
 
 
 

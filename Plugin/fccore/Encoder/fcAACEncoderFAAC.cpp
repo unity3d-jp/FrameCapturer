@@ -7,14 +7,12 @@
 
 #ifdef fcSupportAAC_FAAC
 #include <libfaac/faac.h>
-#ifdef fcWindows
-    #ifdef _M_AMD64
-        #define FAACDLL "libfaac-win64.dll"
-    #elif _M_IX86
-        #define FAACDLL "libfaac-win32.dll"
-    #endif
-#else
-    #define FAACDLL "libfaac" fcDLLExt
+#if defined(fcWindows)
+    #define FAACDLL "libfaac.dll"
+#elif defined(fcMac)
+    #define FAACDLL "libfaac.dylib"
+#elif defined(fcLinux)
+    #define FAACDLL "libfaac.so"
 #endif
 
 class fcAACEncoderFAAC : public fcIAACEncoder
@@ -42,12 +40,12 @@ private:
 
 
 
-typedef faacEncConfigurationPtr (FAACAPI* faacEncGetCurrentConfiguration_t)(faacEncHandle hEncoder);
-typedef int(FAACAPI* faacEncSetConfiguration_t)(faacEncHandle hEncoder, faacEncConfigurationPtr config);
-typedef faacEncHandle(FAACAPI* faacEncOpen_t)(unsigned long sampleRate, unsigned int numChannels, unsigned long *inputSamples, unsigned long *maxOutputBytes);
-typedef int(FAACAPI* faacEncGetDecoderSpecificInfo_t)(faacEncHandle hEncoder, unsigned char **ppBuffer, unsigned long *pSizeOfDecoderSpecificInfo);
-typedef int(FAACAPI* faacEncEncode_t)(faacEncHandle hEncoder, int32_t * inputBuffer, unsigned int samplesInput, unsigned char *outputBuffer, unsigned int bufferSize);
-typedef int(FAACAPI* faacEncClose_t)(faacEncHandle hEncoder);
+using faacEncGetCurrentConfiguration_t = faacEncConfigurationPtr (FAACAPI*)(faacEncHandle hEncoder);
+using faacEncSetConfiguration_t = int(FAACAPI*)(faacEncHandle hEncoder, faacEncConfigurationPtr config);
+using faacEncOpen_t = faacEncHandle(FAACAPI*)(unsigned long sampleRate, unsigned int numChannels, unsigned long *inputSamples, unsigned long *maxOutputBytes);
+using faacEncGetDecoderSpecificInfo_t = int(FAACAPI*)(faacEncHandle hEncoder, unsigned char **ppBuffer, unsigned long *pSizeOfDecoderSpecificInfo);
+using faacEncEncode_t = int(FAACAPI*)(faacEncHandle hEncoder, int32_t * inputBuffer, unsigned int samplesInput, unsigned char *outputBuffer, unsigned int bufferSize);
+using faacEncClose_t = int(FAACAPI*)(faacEncHandle hEncoder);
 
 #define EachFAACFunctions(Body)\
     Body(faacEncGetCurrentConfiguration)\
@@ -57,9 +55,9 @@ typedef int(FAACAPI* faacEncClose_t)(faacEncHandle hEncoder);
     Body(faacEncEncode)\
     Body(faacEncClose)
 
-#define decl(name) static name##_t name##_;
-    EachFAACFunctions(decl)
-#undef decl
+#define Decl(name) static name##_t name##_;
+    EachFAACFunctions(Decl)
+#undef Decl
 
 static module_t g_faac;
 
@@ -71,17 +69,22 @@ bool fcLoadFAACModule()
     g_faac = DLLLoad(FAACDLL);
     if (g_faac == nullptr) { return false; }
 
-#define imp(name) (void*&)name##_ = DLLGetSymbol(g_faac, #name);
-    EachFAACFunctions(imp)
-#undef imp
-        return true;
+    bool ok = true;
+#define Imp(Name) (void*&)Name##_ = DLLGetSymbol(g_faac, #Name); if(!Name##_) { ok = false; }
+    EachFAACFunctions(Imp)
+#undef Imp
+
+    if (!ok) {
+        DLLUnload(g_faac);
+        g_faac = nullptr;
+    }
+
+    return ok;
 }
 
 fcAACEncoderFAAC::fcAACEncoderFAAC(const fcAACEncoderConfig& conf)
     : m_conf(conf), m_handle(nullptr), m_num_read_samples(), m_output_size()
 {
-    if (!fcLoadFAACModule()) { return; }
-
     m_handle = faacEncOpen_(conf.sample_rate, conf.num_channels, &m_num_read_samples, &m_output_size);
 
     faacEncConfigurationPtr config = faacEncGetCurrentConfiguration_(m_handle);
@@ -156,6 +159,8 @@ const Buffer& fcAACEncoderFAAC::getDecoderSpecificInfo()
 
 fcIAACEncoder* fcCreateAACEncoderFAAC(const fcAACEncoderConfig& conf)
 {
+    if (!fcLoadFAACModule()) { return nullptr; }
+
     auto *ret = new fcAACEncoderFAAC(conf);
     if (!ret->isValid()) {
         delete ret;
