@@ -119,7 +119,17 @@ namespace UTJ.FrameCapturer
 
         public void CreateDirectory()
         {
-            System.IO.Directory.CreateDirectory(GetFullPath());
+            try
+            {
+                var path = GetFullPath();
+                if(path.Length > 0)
+                {
+                    System.IO.Directory.CreateDirectory(path);
+                }
+            }
+            catch(Exception)
+            {
+            }
         }
     }
 }
