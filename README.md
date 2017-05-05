@@ -107,32 +107,6 @@ Twitter 投稿は GifRecorder と全く同じ手順で機能します。
 - Audio Bitrate  
   ビットレート指定です。画質や音質を決定するパラメータになります。  
 
-##### ライセンス料対策について
-
-MP4 の使用には通常ライセンス料が科せられますが、本プラグインはそれを回避するための対策が施してあります。
-その引き換えに、使用には若干の不便を伴うようになっています。以下はその詳細になります。
-
-動画エンコーダには OpenH264 というソフトウェアを利用しています。ありがたいことに、これは一定の条件を満たせばライセンス料を免除できるようになっています。  
-
-1. OpenH264 のバイナリはソフトウェア本体とは別にダウンロードするようになっている
-2. ユーザーは OpenH264 を使用するか否かをコントロールできるようになっている
-3. OpenH264 の使用をコントロールする場所に次の一文を明記してある: "OpenH264 Video Codec provided by Cisco Systems, Inc."
-4. これらの条件のライセンスの条文 ( http://www.openh264.org/BINARY_LICENSE.txt 下部) が参照可能になっている
-
-1 の条件を満たすため、OpenH264 の dll はパッケージには含んでおらず、実行時にダウンロードしてくるようになっています。
-ダウンロード＆展開は Output Dir に自動的に行われ、大抵は数秒で終わり、一度行えば以後不要です。しかし、ダウンロードが終わっていない時や何らかの事情で失敗した場合など、
-録画できないケースがありうるということは気に留めておいた方がいいでしょう。
-また、バイナリライセンスの条文は StreamingAssets/UTJ/FrameCapturer の中にファイルがあります。
-
-音声エンコーダにもライセンス料の問題があります。
-音声エンコーダはバイナリを配布するとライセンス料を科せられるようになっており、こちらは OpenH264 のような親切なエンコーダがおそらく存在しないため、別の方法で対策しています。  
-ライセンス料が科せられるのはバイナリを配布する場合のみであり、ソースコードの配布にはライセンス料は科せられません。つまり、ソースコードで配布してユーザーの手元でビルドすれば条件には引っかかりません。このため、FAACSelfBuild.unitypackage には音声エンコーダ (FAAC) のソースとコンパイラ (clang) をパッケージングしてあり、実行時にビルドするようになっています。  
-ビルドは Output Dir 内で自動的に行われ、一度行えば以後不要です。しかし、ビルドには数秒の時間がかかり、その間合計 80MB ほどのファイル郡が生成されることは気に留めておいた方がいいかもしれません。
-
-OpenH264 のダウンロード、および FAAC のビルドは MP4Recorder や MP4OffscreenRecorder の Start() の中で開始され、別スレッドで行われます (=メインスレッドをブロックしない)。録画 / 録音ができるようになるまでに数秒ラグがあること、失敗するケースがありうることを除けば使用者が気にすることは特にないはずです。  
-しかしながら、どちらも不格好な回避策であり、ある程度の規模のソフトウェアになるとライセンス料を支払ってパッケージに含めることも視野に入れるべきかもしれません。
-
-
 ## Exr Recorder  
 Exr は主に映像業界で使われる画像フォーマットで、float や half のピクセルデータで構成された画像、いわゆる HDR 画像を保持できます。
 ExrRecorder および PngRecorder は映像制作用のツールとして作られており、
@@ -180,67 +154,5 @@ png は 16 bit 整数カラーをサポートしており、half や float の R
 
 ![PngRecorder](Screenshots/PngRecorder.png) ![PngOffscreenRecorder](Screenshots/PngOffscreenRecorder.png)
 
----
-
-## C++ Interface
-本プラグインは、画面のキャプチャから各種ファイルへのエクスポートはネイティブコードの DLL として実装されています。この DLL は Unity への依存はなく、非 Unity のアプリケーションへも容易に組み込めるようになっています。使い方は [テストコード](Plugin/Tests) と [FrameCapturer.h](Plugin/FrameCapturer.h) を読むと大体わかると思います。  
-ソースからビルドすればスタティックリンクライブラリを作ることもできます。ビルドの手順は、このリポジトリを pull して setup.bat を実行した後、Plugin/FrameCapturer.sln をビルドするだけです。MasterLib がスタティックリンクライブラリをビルドする設定になっています。
-
-## History
-- 2016/03/13
-  - FAAC セルフビルドパッケージを追加
-- 2016/03/10
-  - MP4 Recorder
-  - PNG Recorder
-  - GL Core モードをサポート
-  - これまで未対応だったファイルフォーマットとカラーフォーマットの組み合わせをサポート  
-    - ファイルフォーマットがサポートしていないカラーフォーマットも変換を挟むことでエクスポートできるようにした
-    - gif や mp4 の場合 16/32bit カラーは 8bit カラーに変換してエンコード、exr の場合 8bit カラーは 16bit カラーに変換してエクスポート、など
-  - C++ インターフェースの整備
-  - 既存コンポーネントも色々改良
-- 2016/01/07
-  - MP4 Recorder (beta)
-- 2015/06/10
-  - Twitter 投稿機能
-- 2015/06/05
-  - Exr Recorder
-- 2015/06/01
-  - Gif Recorder
-
-## Todo
-  - MP4: 使える環境ではハードウェアエンコーダを使う
-    -  GeForce の 600 系以降などを使用時にエンコードの大幅な高速化が見込める
-  - MP4: RTMP ストリーミング対応
-    - Twitch など各種配信サイトへの対応
-
-## Thanks
-- gif エクスポートに Jon Olick 氏の GIF Writer に手を加えたものを使用しています。オリジナルからの主な変更点は、出力先をファイルからメモリに変えたことです。  
-  - オリジナル: http://www.jonolick.com/home/gif-writer  
-  - fork: https://github.com/unity3d-jp/FrameCapturer/blob/master/Plugin/external/jo_gif.cpp
-- mp4 エクスポートに以下のライブラリ群を使用しています。
-  - OpenH264 http://www.openh264.org/
-  - libyuv https://code.google.com/p/libyuv/
-  - FAAC http://www.audiocoding.com/faac.html  
-  - libcurl (OpenH264 ダウンローダに使用) http://curl.haxx.se/libcurl/
-  - bzip2 (OpenH264 ダウンローダに使用) http://www.bzip.org/
-  - libzip (FAAC セルフビルドに使用) http://www.nih.at/libzip/
-  - 7zip (FAAC セルフビルドに使用) http://www.7-zip.org/
-  - clang (FAAC セルフビルドに使用) http://clang.llvm.org/
-- exr エクスポート以下のライブラリ群を使用しています。
-  - OpenEXR http://www.openexr.com/  
-  - zlib http://www.zlib.net/  
-- png エクスポート以下のライブラリ群を使用しています。
-  - libpng http://www.libpng.org/pub/png/libpng.html
-- Twitter への投稿に TweetMedia を使用しています。  
-  - https://github.com/unity3d-jp/TweetMedia
-- Intel ISPC を用いて一部の処理を高速化しています
-  - http://ispc.github.io/
-
 ## License
-MIT License:
-
-  Copyright (C) 2015-2016 Unity Technologies Japan, G.K.
-
-  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+[MIT](LICENSE.txt)
