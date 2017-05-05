@@ -24,12 +24,12 @@ namespace UTJ
 
         // common settings
         [SerializeField] public MovieRecorderContext.Type m_format = MovieRecorderContext.Type.WebM;
-        [SerializeField] public CaptureTarget m_captureTarget = CaptureTarget.FrameBuffer;
-        [SerializeField] public RenderTexture m_targetRT;
         [SerializeField] public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "");
 
         // video settings
         [SerializeField] public bool m_captureVideo = true;
+        [SerializeField] public CaptureTarget m_captureTarget = CaptureTarget.FrameBuffer;
+        [SerializeField] public RenderTexture m_targetRT;
         [SerializeField] public int m_resolutionWidth = -1;
         [SerializeField] public int m_videoBitrate = 8192000;
         [SerializeField] public FrameRateMode m_frameRateMode = FrameRateMode.Variable;
@@ -57,6 +57,7 @@ namespace UTJ
             set { m_format = value; ValidateImpl(); }
         }
         public bool captureVideo { get { return m_captureVideo; } }
+        public CaptureTarget captureTarget { get { return m_captureTarget; } }
         public bool captureAudio { get { return m_captureAudio; } }
         public bool isRecording { get { return m_recording; } }
         public DataPath outputDir { get { return m_outputDir; } }
