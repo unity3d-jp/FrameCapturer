@@ -261,12 +261,3 @@ fcAPI bool            fcWebMAddVideoFramePixels(fcIWebMContext *ctx, const void 
 fcAPI bool            fcWebMAddVideoFrameTexture(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
 fcAPI bool            fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
-
-
-// -------------------------------------------------------------
-// Graphics Device initializer for texture load and hardware H264 encoder
-// -------------------------------------------------------------
-
-fcAPI void fcGfxInitializeOpenGL();
-fcAPI void fcGfxInitializeD3D9(void *device);
-fcAPI void fcGfxInitializeD3D11(void *device);
