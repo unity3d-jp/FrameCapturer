@@ -14,7 +14,6 @@ namespace UTJ.FrameCapturer
         }
 
         public abstract Type type { get; }
-        public abstract bool supportAudio { get; }
 
         public abstract void Initialize(MovieRecorder recorder);
         public abstract void Release();

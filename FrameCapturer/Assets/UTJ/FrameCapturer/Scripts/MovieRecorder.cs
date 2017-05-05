@@ -27,22 +27,19 @@ namespace UTJ.FrameCapturer
         [SerializeField] public MovieRecorderContext.Type m_format = MovieRecorderContext.Type.WebM;
 
         // video settings
-        [SerializeField] public bool m_captureVideo = true;
         [SerializeField] public CaptureTarget m_captureTarget = CaptureTarget.FrameBuffer;
         [SerializeField] public RenderTexture m_targetRT;
         [SerializeField] public int m_resolutionWidth = -1;
-        [SerializeField] public int m_videoBitrate = 8192000;
-        [SerializeField] public FrameRateMode m_frameRateMode = FrameRateMode.Variable;
+        [SerializeField] public FrameRateMode m_framerateMode = FrameRateMode.Constant;
         [SerializeField] public int m_targetFramerate = 30;
-        [SerializeField] public bool m_fixDeltaTime = false;
+        [SerializeField] public bool m_fixDeltaTime = true;
         [SerializeField] public int m_captureEveryNthFrame = 1;
-
-        // audio settings
-        [SerializeField] public bool m_captureAudio = true;
-        [SerializeField] public int m_audioBitrate = 64000;
 
         // internal
         [SerializeField] MovieRecorderContext m_ctx;
+        [SerializeField] GifContext.EncoderConfig m_gifEncoderConfig = new GifContext.EncoderConfig();
+        [SerializeField] WebMContext.EncoderConfig m_webmEncoderConfig = new WebMContext.EncoderConfig();
+        [SerializeField] MP4Context.EncoderConfig m_mp4EncoderConfig = new MP4Context.EncoderConfig();
         [SerializeField] Shader m_shCopy;
 
         Material m_matCopy;
@@ -57,12 +54,14 @@ namespace UTJ.FrameCapturer
             get { return m_format; }
             set { m_format = value; ValidateContext(); }
         }
-        public bool captureVideo { get { return m_captureVideo; } }
         public CaptureTarget captureTarget { get { return m_captureTarget; } }
-        public bool captureAudio { get { return m_captureAudio; } }
         public bool isRecording { get { return m_recording; } }
         public DataPath outputDir { get { return m_outputDir; } }
         public RenderTexture scratchBuffer { get { return m_scratchBuffer; } }
+        public MovieRecorderContext context { get { ValidateContext(); return m_ctx; } }
+        public GifContext.EncoderConfig gifConfig { get { return m_gifEncoderConfig; } }
+        public WebMContext.EncoderConfig webmConfig { get { return m_webmEncoderConfig; } }
+        public MP4Context.EncoderConfig mp4Config { get { return m_mp4EncoderConfig; } }
 
 
         public bool BeginRecording()
@@ -84,12 +83,6 @@ namespace UTJ.FrameCapturer
 
             m_recording = true;
 
-#if UNITY_EDITOR
-            if (m_captureAudio && m_frameRateMode == FrameRateMode.Constant)
-            {
-                Debug.LogWarning("MovieRecorder: capture audio with Constant frame rate mode will cause desync");
-            }
-#endif
             m_outputDir.CreateDirectory();
             if (m_quad == null) m_quad = fcAPI.CreateFullscreenQuad();
             if (m_matCopy == null) m_matCopy = new Material(m_shCopy);
@@ -226,6 +219,7 @@ namespace UTJ.FrameCapturer
         void Reset()
         {
             m_shCopy = fcAPI.GetFrameBufferCopyShader();
+            ValidateContext();
         }
 #endif // UNITY_EDITOR
 
@@ -246,7 +240,7 @@ namespace UTJ.FrameCapturer
 
         void OnAudioFilterRead(float[] samples, int channels)
         {
-            if (m_recording && m_captureAudio && m_ctx != null)
+            if (m_recording && m_ctx != null)
             {
                 m_ctx.AddAudioFrame(samples);
             }
@@ -254,12 +248,12 @@ namespace UTJ.FrameCapturer
 
         IEnumerator OnPostRender()
         {
-            if (m_recording && m_captureVideo && m_ctx != null && Time.frameCount % m_captureEveryNthFrame == 0)
+            if (m_recording && m_ctx != null && Time.frameCount % m_captureEveryNthFrame == 0)
             {
                 yield return new WaitForEndOfFrame();
 
                 double timestamp = Time.unscaledTime;
-                if (m_frameRateMode == FrameRateMode.Constant)
+                if (m_framerateMode == FrameRateMode.Constant)
                 {
                     timestamp = 1.0 / m_targetFramerate * m_numVideoFrames;
                 }
