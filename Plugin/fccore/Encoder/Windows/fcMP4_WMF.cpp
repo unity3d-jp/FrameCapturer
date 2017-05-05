@@ -77,28 +77,15 @@ private:
 
 static HMODULE g_MFPlat;
 static HMODULE g_MFReadWrite;
+static HRESULT(STDAPICALLTYPE *MFStartup_)(ULONG Version, DWORD dwFlags);
+static HRESULT(STDAPICALLTYPE *MFShutdown_)();
+static HRESULT(STDAPICALLTYPE *MFCreateMemoryBuffer_)(DWORD cbMaxLength, IMFMediaBuffer **ppBuffer);
+static HRESULT(STDAPICALLTYPE *MFCreateSample_)(IMFSample **ppIMFSample);
+static HRESULT(STDAPICALLTYPE *MFCreateAttributes_)(IMFAttributes** ppMFAttributes, UINT32 cInitialSize);
+static HRESULT(STDAPICALLTYPE *MFCreateMediaType_)(IMFMediaType** ppMFType);
+static HRESULT(STDAPICALLTYPE *MFCreateSinkWriterFromURL_)(LPCWSTR pwszOutputURL, IMFByteStream *pByteStream, IMFAttributes *pAttributes, IMFSinkWriter **ppSinkWriter);
+
 static LazyInstance<MFInitializer> g_MFInitializer;
-
-using MFStartup_t = HRESULT(STDAPICALLTYPE*)(ULONG Version, DWORD dwFlags);
-using MFShutdown_t = HRESULT(STDAPICALLTYPE*)();
-using MFCreateMemoryBuffer_t = HRESULT(STDAPICALLTYPE*)(DWORD cbMaxLength, IMFMediaBuffer **ppBuffer);
-using MFCreateSample_t = HRESULT(STDAPICALLTYPE*)(IMFSample **ppIMFSample);
-using MFCreateAttributes_t = HRESULT(STDAPICALLTYPE*)(IMFAttributes** ppMFAttributes, UINT32 cInitialSize);
-using MFCreateMediaType_t = HRESULT(STDAPICALLTYPE*)(IMFMediaType** ppMFType);
-using MFCreateSinkWriterFromURL_t = HRESULT(STDAPICALLTYPE*)(LPCWSTR pwszOutputURL, IMFByteStream *pByteStream, IMFAttributes *pAttributes, IMFSinkWriter **ppSinkWriter);
-
-#define EachWMFFunctions(Body)\
-    Body(MFStartup)\
-    Body(MFShutdown)\
-    Body(MFCreateMemoryBuffer)\
-    Body(MFCreateSample)\
-    Body(MFCreateAttributes)\
-    Body(MFCreateMediaType)\
-    Body(MFCreateSinkWriterFromURL)
-
-#define Decl(name) static name##_t name##_;
-    EachWMFFunctions(Decl)
-#undef Decl
 
 
 MFInitializer::MFInitializer()
@@ -107,10 +94,17 @@ MFInitializer::MFInitializer()
     g_MFReadWrite = ::LoadLibraryA("MFReadWrite.dll");
     if (g_MFPlat && g_MFReadWrite) {
         bool ok = true;
-
-#define Imp(Name) (void*&)Name##_ = DLLGetSymbol(g_MFPlat, #Name); if(!Name##_) { ok = false; }
-        EachWMFFunctions(Imp)
-#undef Imp
+#define Import(Name) (void*&)Name##_ = ::GetProcAddress(g_MFPlat, #Name); if(!Name##_) { ok = false; }
+        Import(MFStartup);
+        Import(MFShutdown);
+        Import(MFCreateMemoryBuffer);
+        Import(MFCreateSample);
+        Import(MFCreateAttributes);
+        Import(MFCreateMediaType);
+#undef Import
+#define Import(Name) (void*&)Name##_ = ::GetProcAddress(g_MFReadWrite, #Name); if(!Name##_) { ok = false; }
+        Import(MFCreateSinkWriterFromURL);
+#undef Import
 
         if (ok) {
             CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);

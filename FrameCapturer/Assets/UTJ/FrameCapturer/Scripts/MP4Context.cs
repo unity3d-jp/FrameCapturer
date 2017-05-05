@@ -8,7 +8,6 @@ namespace UTJ
     {
         fcAPI.fcMP4Context m_ctx;
         fcAPI.fcMP4Config m_mp4conf = fcAPI.fcMP4Config.default_value;
-        fcAPI.fcStream m_ostream;
         int m_callback;
         int m_numVideoFrames;
 
@@ -27,11 +26,9 @@ namespace UTJ
             m_mp4conf.audio_target_bitrate = recorder.m_audioBitrate;
             m_mp4conf.audio_sample_rate = AudioSettings.outputSampleRate;
             m_mp4conf.audio_num_channels = fcAPI.fcGetNumAudioChannels();
-            m_ctx = fcAPI.fcMP4OSCreateContext(ref m_mp4conf);
 
             var path = recorder.outputDir.GetPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
-            m_ostream = fcAPI.fcCreateFileStream(path);
-            fcAPI.fcMP4AddOutputStream(m_ctx, m_ostream);
+            m_ctx = fcAPI.fcMP4OSCreateContext(ref m_mp4conf, path);
         }
 
         public override void Release()
@@ -41,15 +38,10 @@ namespace UTJ
                 fcAPI.fcEraseDeferredCall(m_callback);
                 m_callback = 0;
 
-                if (m_ctx.ptr != IntPtr.Zero)
+                if (m_ctx)
                 {
                     fcAPI.fcMP4DestroyContext(m_ctx);
                     m_ctx.ptr = IntPtr.Zero;
-                }
-                if (m_ostream.ptr != IntPtr.Zero)
-                {
-                    fcAPI.fcDestroyStream(m_ostream);
-                    m_ostream.ptr = IntPtr.Zero;
                 }
             });
         }
