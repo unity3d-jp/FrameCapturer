@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 
-namespace UTJ
+namespace UTJ.FrameCapturer
 {
     public abstract class ImageSequenceRecorderContext : ScriptableObject
     {

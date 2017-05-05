@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 
-namespace UTJ
+namespace UTJ.FrameCapturer
 {
     public class MP4Context : MovieRecorderContext
     {
@@ -27,7 +27,7 @@ namespace UTJ
             m_mp4conf.audio_sample_rate = AudioSettings.outputSampleRate;
             m_mp4conf.audio_num_channels = fcAPI.fcGetNumAudioChannels();
 
-            var path = recorder.outputDir.GetPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
+            var path = recorder.outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
             m_ctx = fcAPI.fcMP4OSCreateContext(ref m_mp4conf, path);
         }
 

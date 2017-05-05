@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 
-namespace UTJ
+namespace UTJ.FrameCapturer
 {
     public class GifContext : MovieRecorderContext
     {
@@ -28,7 +28,7 @@ namespace UTJ
             conf.max_active_tasks = 0;
             m_ctx = fcAPI.fcGifCreateContext(ref conf);
 
-            var path = recorder.outputDir.GetPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
+            var path = recorder.outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
             m_ostream = fcAPI.fcCreateFileStream(path);
             fcAPI.fcGifAddOutputStream(m_ctx, m_ostream);
         }

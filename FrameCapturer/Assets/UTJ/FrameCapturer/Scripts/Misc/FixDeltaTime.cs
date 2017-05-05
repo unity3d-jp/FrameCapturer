@@ -6,7 +6,7 @@ using UnityEditor;
 #endif // UNITY_EDITOR
 
 
-namespace UTJ
+namespace UTJ.FrameCapturer
 {
     [AddComponentMenu("UTJ/Misc/FixDeltaTime")]
     public class FixDeltaTime : MonoBehaviour

@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 
-namespace UTJ
+namespace UTJ.FrameCapturer
 {
     [AddComponentMenu("UTJ/FrameCapturer/PngOffscreenRecorder")]
     [RequireComponent(typeof(Camera))]
@@ -21,7 +21,7 @@ namespace UTJ
         {
             Debug.Log("PngOffscreenRecorder: exporting frame " + Time.frameCount);
 
-            string dir = m_outputDir.GetPath();
+            string dir = m_outputDir.GetFullPath();
             string ext = Time.frameCount.ToString("0000") + ".png";
 
             if (m_callbacks == null)
