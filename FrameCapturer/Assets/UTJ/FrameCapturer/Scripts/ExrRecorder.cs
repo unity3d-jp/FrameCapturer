@@ -273,7 +273,7 @@ namespace UTJ.FrameCapturer
         {
             int frame = Time.frameCount;
 
-            if (frame == m_beginFrame)
+            if (frame == m_startFrame)
             {
                 AddCommandBuffers();
             }
@@ -286,7 +286,7 @@ namespace UTJ.FrameCapturer
         IEnumerator OnPostRender()
         {
             int frame = Time.frameCount;
-            if (frame >= m_beginFrame && frame <= m_endFrame)
+            if (frame >= m_startFrame && frame <= m_endFrame)
             {
                 yield return new WaitForEndOfFrame();
                 DoExport();
