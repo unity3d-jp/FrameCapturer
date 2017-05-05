@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 
-namespace UTJ
+namespace UTJ.FrameCapturer
 {
     public class WebMContext : MovieRecorderContext
     {
@@ -28,7 +28,7 @@ namespace UTJ
             m_webmconf.audio_num_channels = fcAPI.fcGetNumAudioChannels();
             m_ctx = fcAPI.fcWebMCreateContext(ref m_webmconf);
 
-            var path = recorder.outputDir.GetPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".webm";
+            var path = recorder.outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".webm";
             m_ostream = fcAPI.fcCreateFileStream(path);
             fcAPI.fcWebMAddOutputStream(m_ctx, m_ostream);
         }

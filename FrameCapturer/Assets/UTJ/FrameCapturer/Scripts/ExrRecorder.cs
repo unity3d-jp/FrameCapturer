@@ -6,7 +6,7 @@ using UnityEditor;
 #endif // UNITY_EDITOR
 
 
-namespace UTJ
+namespace UTJ.FrameCapturer
 {
     [AddComponentMenu("UTJ/FrameCapturer/ExrRecorder")]
     [RequireComponent(typeof(Camera))]
@@ -71,7 +71,7 @@ namespace UTJ
         {
             Debug.Log("ExrRecorder: exporting frame " + Time.frameCount);
 
-            string dir = m_outputDir.GetPath();
+            string dir = m_outputDir.GetFullPath();
             string ext = Time.frameCount.ToString("0000") + ".exr";
 
             if (m_captureFramebuffer)

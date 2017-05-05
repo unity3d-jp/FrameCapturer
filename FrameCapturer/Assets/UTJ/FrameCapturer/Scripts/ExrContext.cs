@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace UTJ
+namespace UTJ.FrameCapturer
 {
     public class ExrContext : ImageSequenceRecorderContext
     {

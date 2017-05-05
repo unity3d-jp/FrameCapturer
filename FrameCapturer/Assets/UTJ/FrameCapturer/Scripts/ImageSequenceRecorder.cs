@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 
-namespace UTJ
+namespace UTJ.FrameCapturer
 {
 
     [AddComponentMenu("UTJ/FrameCapturer/Image Sequence Recorder")]
@@ -43,7 +43,7 @@ namespace UTJ
 
 
         [SerializeField] public ImageSequenceRecorderContext.Type m_format = ImageSequenceRecorderContext.Type.Exr;
-        [SerializeField] public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "");
+        [SerializeField] public DataPath m_outputDir = new DataPath(DataPath.Root.Current, "");
         [SerializeField] public CaptureTarget m_captureTarget = CaptureTarget.FrameBuffer;
         [SerializeField] public FrameBufferConponents m_fbComponents = FrameBufferConponents.default_value;
         [SerializeField] public RenderTexture[] m_targetRT;

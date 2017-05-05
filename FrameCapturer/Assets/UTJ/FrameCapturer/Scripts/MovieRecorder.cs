@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 
-namespace UTJ
+namespace UTJ.FrameCapturer
 {
     [AddComponentMenu("UTJ/FrameCapturer/Movie Recorder")]
     [RequireComponent(typeof(Camera))]
@@ -24,7 +24,7 @@ namespace UTJ
 
         // base settings
         [SerializeField] public MovieRecorderContext.Type m_format = MovieRecorderContext.Type.WebM;
-        [SerializeField] public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "");
+        [SerializeField] public DataPath m_outputDir = new DataPath(DataPath.Root.Current, "");
 
         // video settings
         [SerializeField] public bool m_captureVideo = true;

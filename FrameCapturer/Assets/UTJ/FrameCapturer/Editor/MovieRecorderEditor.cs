@@ -2,7 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace UTJ
+namespace UTJ.FrameCapturer
 {
     [CustomEditor(typeof(MovieRecorder))]
     public class MovieRecorderEditor : Editor
