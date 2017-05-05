@@ -14,8 +14,8 @@ namespace UTJ.FrameCapturer
         {
             var recorder = target as MovieRecorder;
             var so = serializedObject;
-            recorder.format = (MovieRecorderContext.Type)EditorGUILayout.EnumPopup("Format", recorder.format);
             EditorGUILayout.PropertyField(so.FindProperty("m_outputDir"), true);
+            recorder.format = (MovieRecorderContext.Type)EditorGUILayout.EnumPopup("Format", recorder.format);
         }
 
         public virtual void VideoConfig()
@@ -37,7 +37,7 @@ namespace UTJ.FrameCapturer
             if(recorder.m_frameRateMode == MovieRecorder.FrameRateMode.Constant)
             {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(so.FindProperty("m_framerate"));
+                EditorGUILayout.PropertyField(so.FindProperty("m_targetFramerate"));
                 EditorGUILayout.PropertyField(so.FindProperty("m_fixDeltaTime"));
                 EditorGUI.indentLevel--;
             }

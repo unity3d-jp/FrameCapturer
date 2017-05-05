@@ -5,7 +5,6 @@ using UnityEngine.Rendering;
 
 namespace UTJ.FrameCapturer
 {
-    [AddComponentMenu("UTJ/FrameCapturer/ExrOffscreenRecorder")]
     [RequireComponent(typeof(Camera))]
     public class ExrOffscreenRecorder : ImageSequenceRecorder
     {

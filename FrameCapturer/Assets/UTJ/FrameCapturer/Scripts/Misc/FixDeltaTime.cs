@@ -8,7 +8,6 @@ using UnityEditor;
 
 namespace UTJ.FrameCapturer
 {
-    [AddComponentMenu("UTJ/Misc/FixDeltaTime")]
     public class FixDeltaTime : MonoBehaviour
     {
         public float m_targetFrameRate = 30.0f;

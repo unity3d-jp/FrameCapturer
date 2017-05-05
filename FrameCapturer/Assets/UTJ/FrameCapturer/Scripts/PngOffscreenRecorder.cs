@@ -5,7 +5,6 @@ using UnityEngine.Rendering;
 
 namespace UTJ.FrameCapturer
 {
-    [AddComponentMenu("UTJ/FrameCapturer/PngOffscreenRecorder")]
     [RequireComponent(typeof(Camera))]
     public class PngOffscreenRecorder : ImageSequenceRecorder
     {

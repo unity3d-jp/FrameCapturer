@@ -10,7 +10,6 @@ using UnityEditor;
 
 namespace UTJ.FrameCapturer
 {
-    [AddComponentMenu("UTJ/FrameCapturer/PngRecorder")]
     [RequireComponent(typeof(Camera))]
     public class PngRecorder : ImageSequenceRecorder
     {

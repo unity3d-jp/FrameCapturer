@@ -8,7 +8,6 @@ using UnityEditor;
 
 namespace UTJ.FrameCapturer
 {
-    [AddComponentMenu("UTJ/FrameCapturer/ExrRecorder")]
     [RequireComponent(typeof(Camera))]
     public class ExrRecorder : ImageSequenceRecorder
     {

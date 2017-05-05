@@ -23,8 +23,8 @@ namespace UTJ.FrameCapturer
         }
 
         // base settings
+        [SerializeField] public DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
         [SerializeField] public MovieRecorderContext.Type m_format = MovieRecorderContext.Type.WebM;
-        [SerializeField] public DataPath m_outputDir = new DataPath(DataPath.Root.Current, "");
 
         // video settings
         [SerializeField] public bool m_captureVideo = true;
@@ -33,7 +33,7 @@ namespace UTJ.FrameCapturer
         [SerializeField] public int m_resolutionWidth = -1;
         [SerializeField] public int m_videoBitrate = 8192000;
         [SerializeField] public FrameRateMode m_frameRateMode = FrameRateMode.Variable;
-        [SerializeField] public int m_framerate = 30;
+        [SerializeField] public int m_targetFramerate = 30;
         [SerializeField] public bool m_fixDeltaTime = false;
         [SerializeField] public int m_captureEveryNthFrame = 1;
 
@@ -79,11 +79,8 @@ namespace UTJ.FrameCapturer
                 return false;
             }
 
-            if (m_ctx == null)
-            {
-                CreateContext();
-                if (m_ctx == null) { return false; }
-            }
+            ValidateContext();
+            if (m_ctx == null) { return false; }
 
             m_recording = true;
 
@@ -212,6 +209,19 @@ namespace UTJ.FrameCapturer
             }
         }
 
+        IEnumerator Wait()
+        {
+            yield return new WaitForEndOfFrame();
+
+            // wait until current dt reaches target dt
+            float wt = Time.maximumDeltaTime;
+            while (Time.realtimeSinceStartup - Time.unscaledTime < wt)
+            {
+                System.Threading.Thread.Sleep(1);
+            }
+        }
+
+
 #if UNITY_EDITOR
         void Reset()
         {
@@ -222,6 +232,15 @@ namespace UTJ.FrameCapturer
         void OnDisable()
         {
             EndRecording();
+        }
+
+        void Update()
+        {
+            if (m_fixDeltaTime)
+            {
+                Time.maximumDeltaTime = (1.0f / m_targetFramerate);
+                StartCoroutine(Wait());
+            }
         }
 
 
@@ -242,7 +261,7 @@ namespace UTJ.FrameCapturer
                 double timestamp = Time.unscaledTime;
                 if (m_frameRateMode == FrameRateMode.Constant)
                 {
-                    timestamp = 1.0 / m_framerate * m_numVideoFrames;
+                    timestamp = 1.0 / m_targetFramerate * m_numVideoFrames;
                 }
 
                 int cb = m_ctx.AddVideoFrame(m_scratchBuffer, timestamp);

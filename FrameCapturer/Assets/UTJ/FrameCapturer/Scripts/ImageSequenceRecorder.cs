@@ -39,11 +39,11 @@ namespace UTJ.FrameCapturer
                         frameBuffer = true,
                         GBuffer = false,
                         albedo = true,
-                        occlusion = true,
+                        occlusion = false,
                         specular = true,
                         smoothness = true,
                         normal = true,
-                        emission = true,
+                        emission = false,
                         depth = true,
                     };
                     return ret;
@@ -52,8 +52,8 @@ namespace UTJ.FrameCapturer
         }
 
 
+        [SerializeField] public DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
         [SerializeField] public ImageSequenceRecorderContext.Type m_format = ImageSequenceRecorderContext.Type.Exr;
-        [SerializeField] public DataPath m_outputDir = new DataPath(DataPath.Root.Current, "");
         [SerializeField] public CaptureTarget m_captureTarget = CaptureTarget.FrameBuffer;
         [SerializeField] public FrameBufferConponents m_fbComponents = FrameBufferConponents.default_value;
         [SerializeField] public RenderTexture[] m_targetRT;
@@ -77,7 +77,7 @@ namespace UTJ.FrameCapturer
         public ImageSequenceRecorderContext.Type format
         {
             get { return m_format; }
-            set { m_format = value; }
+            set { m_format = value; ValidateContext(); }
         }
         public bool isRecording
         {
@@ -91,8 +91,22 @@ namespace UTJ.FrameCapturer
         }
 
 
-        public void BeginRecording()
+        public bool BeginRecording()
         {
+            if (m_shCopy == null)
+            {
+                Debug.LogError("ImageSequenceRecorder: copy shader is missing!");
+                return false;
+            }
+            if (m_captureTarget == CaptureTarget.RenderTexture && m_targetRT == null)
+            {
+                Debug.LogError("ImageSequenceRecorder: target RenderTexture is null!");
+                return false;
+            }
+
+            ValidateContext();
+            if (m_ctx == null) { return false; }
+
             m_outputDir.CreateDirectory();
             if (m_quad == null) m_quad = fcAPI.CreateFullscreenQuad();
             if (m_matCopy == null) m_matCopy = new Material(m_shCopy);
@@ -104,6 +118,10 @@ namespace UTJ.FrameCapturer
                 {
                     if (m_cbCopyFB == null)
                     {
+                        m_rtFB = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0, RenderTextureFormat.ARGBHalf);
+                        m_rtFB.wrapMode = TextureWrapMode.Repeat;
+                        m_rtFB.Create();
+
                         int tid = Shader.PropertyToID("_TmpFrameBuffer");
                         m_cbCopyFB = new CommandBuffer();
                         m_cbCopyFB.name = "ImageSequenceRecorder: Copy FrameBuffer";
@@ -119,6 +137,16 @@ namespace UTJ.FrameCapturer
                 {
                     if (m_cbCopyGB == null)
                     {
+                        m_rtGB = new RenderTexture[5];
+                        for (int i = 0; i < m_rtGB.Length; ++i)
+                        {
+                            // last one is depth (1 channel)
+                            m_rtGB[i] = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0,
+                                i == 4 ? RenderTextureFormat.RHalf : RenderTextureFormat.ARGBHalf);
+                            m_rtGB[i].filterMode = FilterMode.Point;
+                            m_rtGB[i].Create();
+                        }
+
                         m_cbCopyGB = new CommandBuffer();
                         m_cbCopyGB.name = "ImageSequenceRecorder: Copy GBuffer";
                         m_cbCopyGB.SetRenderTarget(
@@ -134,6 +162,14 @@ namespace UTJ.FrameCapturer
             {
                 if (m_cbCopyRT == null)
                 {
+                    m_rtScratch = new RenderTexture[m_targetRT.Length];
+                    for (int i = 0; i < m_rtScratch.Length; ++i)
+                    {
+                        var rt = m_targetRT[i];
+                        m_rtScratch[i] = new RenderTexture(rt.width, rt.height, 0, rt.format);
+                        m_rtScratch[i].Create();
+                    }
+
                     m_cbCopyRT = new CommandBuffer();
                     m_cbCopyRT.name = "ImageSequenceRecorder: Copy Targets";
                     for (int i = 0; i < m_targetRT.Length; ++i)
@@ -144,8 +180,9 @@ namespace UTJ.FrameCapturer
                     }
                     GetComponent<Camera>().AddCommandBuffer(CameraEvent.AfterEverything, m_cbCopyRT);
                 }
-
             }
+
+            return true;
         }
 
         public void EndRecording()
@@ -201,6 +238,20 @@ namespace UTJ.FrameCapturer
                 }
             }
         }
+
+        IEnumerator Wait()
+        {
+            yield return new WaitForEndOfFrame();
+
+            // wait until current dt reaches target dt
+            float wt = Time.maximumDeltaTime;
+            while (Time.realtimeSinceStartup - Time.unscaledTime < wt)
+            {
+                System.Threading.Thread.Sleep(1);
+            }
+        }
+
+
 
 #if UNITY_EDITOR
         void Reset()
@@ -261,9 +312,15 @@ namespace UTJ.FrameCapturer
             {
                 EndRecording();
             }
+
+            if(m_fixDeltaTime)
+            {
+                Time.maximumDeltaTime = (1.0f / m_targetFramerate);
+                StartCoroutine(Wait());
+            }
         }
 
-        IEnumerator OnPostRender()
+    IEnumerator OnPostRender()
         {
             int frame = Time.frameCount;
             if (frame >= m_startFrame && frame <= m_endFrame)

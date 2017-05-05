@@ -14,8 +14,8 @@ namespace UTJ.FrameCapturer
             var recorder = target as ImageSequenceRecorder;
             var so = serializedObject;
 
-            recorder.format = (ImageSequenceRecorderContext.Type)EditorGUILayout.EnumPopup("Format", recorder.format);
             EditorGUILayout.PropertyField(so.FindProperty("m_outputDir"), true);
+            recorder.format = (ImageSequenceRecorderContext.Type)EditorGUILayout.EnumPopup("Format", recorder.format);
 
             EditorGUILayout.Space();
             EditorGUILayout.PropertyField(so.FindProperty("m_captureTarget"), true);
