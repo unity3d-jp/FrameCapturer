@@ -94,7 +94,7 @@ namespace UTJ
             }
 #endif
             m_outputDir.CreateDirectory();
-            if (m_quad == null) m_quad = FrameCapturerUtils.CreateFullscreenQuad();
+            if (m_quad == null) m_quad = fcAPI.CreateFullscreenQuad();
             if (m_matCopy == null) m_matCopy = new Material(m_shCopy);
 
             var cam = GetComponent<Camera>();
@@ -215,7 +215,7 @@ namespace UTJ
 #if UNITY_EDITOR
         void Reset()
         {
-            m_shCopy = FrameCapturerUtils.GetFrameBufferCopyShader();
+            m_shCopy = fcAPI.GetFrameBufferCopyShader();
         }
 #endif // UNITY_EDITOR
 

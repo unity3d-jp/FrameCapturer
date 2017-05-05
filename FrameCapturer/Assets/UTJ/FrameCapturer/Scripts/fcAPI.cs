@@ -437,11 +437,7 @@ namespace UTJ
         {
             return fcWebMAddVideoFrameTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), time, id);
         }
-    }
 
-
-    public static class FrameCapturerUtils
-    {
         public static Mesh CreateFullscreenQuad()
         {
             var r = new Mesh();
@@ -466,13 +462,12 @@ namespace UTJ
             }
             return false;
         }
-#endif // UNITY_EDITOR
 
-#if UNITY_EDITOR
         public static Shader GetFrameBufferCopyShader()
         {
             return AssetDatabase.LoadAssetAtPath<Shader>(AssetDatabase.GUIDToAssetPath("2283fb92223c7914c9096670e29202c8"));
         }
-    #endif
+#endif
+
     }
 }

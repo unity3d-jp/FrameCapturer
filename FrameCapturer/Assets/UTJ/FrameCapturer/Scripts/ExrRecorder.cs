@@ -170,7 +170,7 @@ namespace UTJ
         void OnEnable()
         {
             m_outputDir.CreateDirectory();
-            m_quad = FrameCapturerUtils.CreateFullscreenQuad();
+            m_quad = fcAPI.CreateFullscreenQuad();
             m_matCopy = new Material(m_shCopy);
 
             var cam = GetComponent<Camera>();
@@ -180,7 +180,7 @@ namespace UTJ
             }
 
 #if UNITY_EDITOR
-            if (m_captureGBuffer && !FrameCapturerUtils.IsRenderingPathDeferred(cam))
+            if (m_captureGBuffer && !fcAPI.IsRenderingPathDeferred(cam))
             {
                 Debug.LogWarning("ExrRecorder: Rendering Path must be deferred to use Capture GBuffer mode.");
                 m_captureGBuffer = false;

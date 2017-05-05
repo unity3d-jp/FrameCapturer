@@ -66,7 +66,7 @@ namespace UTJ
 #if UNITY_EDITOR
         void Reset()
         {
-            m_shCopy = FrameCapturerUtils.GetFrameBufferCopyShader();
+            m_shCopy = fcAPI.GetFrameBufferCopyShader();
         }
 
         void OnValidate()
