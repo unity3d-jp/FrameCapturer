@@ -9,6 +9,9 @@ namespace UTJ.FrameCapturer
         fcAPI.fcPNGContext m_ctx;
         List<int> m_callbacks;
 
+
+        public override Type type { get { return Type.Png; } }
+
         public override void Initialize(ImageSequenceRecorder recorder)
         {
 

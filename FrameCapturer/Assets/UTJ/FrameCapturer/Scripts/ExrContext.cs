@@ -9,6 +9,10 @@ namespace UTJ.FrameCapturer
         fcAPI.fcEXRContext m_ctx;
         List<int> m_callbacks;
 
+
+        public override Type type { get { return Type.Exr; } }
+
+
         public override void Initialize(ImageSequenceRecorder recorder)
         {
 

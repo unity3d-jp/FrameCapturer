@@ -13,6 +13,8 @@ namespace UTJ.FrameCapturer
         }
 
 
+        public abstract Type type { get; }
+
         public abstract void Initialize(ImageSequenceRecorder recorder);
         public abstract void Release();
 
