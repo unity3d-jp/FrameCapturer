@@ -7,7 +7,7 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/ExrOffscreenRecorder")]
     [RequireComponent(typeof(Camera))]
-    public class ExrOffscreenRecorder : ImageSequenceRecorderBase
+    public class ExrOffscreenRecorder : ImageSequenceRecorder
     {
         public RenderTexture[] m_targets;
 

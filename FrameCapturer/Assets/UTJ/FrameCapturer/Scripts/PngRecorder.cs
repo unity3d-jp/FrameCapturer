@@ -12,7 +12,7 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/PngRecorder")]
     [RequireComponent(typeof(Camera))]
-    public class PngRecorder : ImageSequenceRecorderBase
+    public class PngRecorder : ImageSequenceRecorder
     {
         public bool m_captureFramebuffer = true;
         public bool m_captureGBuffer = true;
