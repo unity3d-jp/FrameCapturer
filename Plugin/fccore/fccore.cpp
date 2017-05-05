@@ -250,7 +250,7 @@ fcAPI bool fcExrEndImage(fcIExrContext *ctx)
     return ctx->endFrame();
 }
 
-fcAPI int fcExrBeginFrameDeferred(fcIExrContext *ctx, const char *path_, int width, int height, int id)
+fcAPI int fcExrBeginImageDeferred(fcIExrContext *ctx, const char *path_, int width, int height, int id)
 {
     fcTraceFunc();
     if (!ctx) { return 0; }
@@ -270,7 +270,7 @@ fcAPI int fcExrAddLayerTextureDeferred(fcIExrContext *ctx, void *tex, fcPixelFor
     }, id);
 }
 
-fcAPI int fcExrEndFrameDeferred(fcIExrContext *ctx, int id)
+fcAPI int fcExrEndImageDeferred(fcIExrContext *ctx, int id)
 {
     fcTraceFunc();
     if (!ctx) { return 0; }

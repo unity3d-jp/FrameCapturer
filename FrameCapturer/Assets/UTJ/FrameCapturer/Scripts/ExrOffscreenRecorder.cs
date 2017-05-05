@@ -73,7 +73,7 @@ namespace UTJ
         void OnEnable()
         {
             m_outputDir.CreateDirectory();
-            m_quad = FrameCapturerUtils.CreateFullscreenQuad();
+            m_quad = fcAPI.CreateFullscreenQuad();
             m_matCopy = new Material(m_shCopy);
 
             // initialize exr context
