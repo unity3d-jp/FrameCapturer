@@ -7,55 +7,31 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/MP4Recorder")]
     [RequireComponent(typeof(Camera))]
-    public class MP4Recorder : IMovieRecorder
+    public class MP4Recorder : MovieRecorderBase
     {
-        public enum FrameRateMode
-        {
-            Variable,
-            Constant,
-        }
-
-        [Tooltip("output directory. filename is generated automatically.")]
-        public DataPath m_outputDir = new DataPath(DataPath.Root.PersistentDataPath, "");
-        public bool m_captureVideo = true;
-        public bool m_captureAudio = true;
-        public int m_resolutionWidth = 640;
-        public FrameRateMode m_frameRateMode = FrameRateMode.Variable;
-        [Tooltip("relevant only if FrameRateMode is Constant")]
-        public int m_framerate = 30;
-        public int m_captureEveryNthFrame = 1;
-        public int m_videoBitrate = 8192000;
-        public int m_audioBitrate = 64000;
-        public Shader m_shCopy;
-
-        string m_output_file;
         fcAPI.fcMP4Context m_ctx;
         fcAPI.fcMP4Config m_mp4conf = fcAPI.fcMP4Config.default_value;
         fcAPI.fcStream m_ostream;
 
-        Material m_mat_copy;
-        Mesh m_quad;
-        CommandBuffer m_cb;
-        RenderTexture m_scratch_buffer;
         int m_callback;
-        int m_num_video_frames;
-        bool m_recording = false;
+        int m_numVideoFrames;
 
 
         void InitializeContext()
         {
-            m_num_video_frames = 0;
+            m_numVideoFrames = 0;
 
             // initialize scratch buffer
-            UpdateScratchBuffer();
+            var cam = GetComponent<Camera>();
+            UpdateScratchBuffer(cam.pixelWidth, cam.pixelHeight);
 
             // initialize context and stream
             {
                 m_mp4conf = fcAPI.fcMP4Config.default_value;
                 m_mp4conf.video = m_captureVideo;
                 m_mp4conf.audio = m_captureAudio;
-                m_mp4conf.video_width = m_scratch_buffer.width;
-                m_mp4conf.video_height = m_scratch_buffer.height;
+                m_mp4conf.video_width = m_scratchBuffer.width;
+                m_mp4conf.video_height = m_scratchBuffer.height;
                 m_mp4conf.video_target_framerate = 60;
                 m_mp4conf.video_target_bitrate = m_videoBitrate;
                 m_mp4conf.audio_target_bitrate = m_audioBitrate;
@@ -63,8 +39,8 @@ namespace UTJ
                 m_mp4conf.audio_num_channels = fcAPI.fcGetNumAudioChannels();
                 m_ctx = fcAPI.fcMP4OSCreateContext(ref m_mp4conf);
 
-                m_output_file = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
-                m_ostream = fcAPI.fcCreateFileStream(GetOutputPath());
+                m_outputPath = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
+                m_ostream = fcAPI.fcCreateFileStream(m_outputPath);
                 fcAPI.fcMP4AddOutputStream(m_ctx, m_ostream);
             }
 
@@ -75,8 +51,8 @@ namespace UTJ
                 m_cb.name = "MP4Recorder: copy frame buffer";
                 m_cb.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Bilinear);
                 m_cb.Blit(BuiltinRenderTextureType.CurrentActive, tid);
-                m_cb.SetRenderTarget(m_scratch_buffer);
-                m_cb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 0);
+                m_cb.SetRenderTarget(m_scratchBuffer);
+                m_cb.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 0);
                 m_cb.ReleaseTemporaryRT(tid);
             }
         }
@@ -109,40 +85,6 @@ namespace UTJ
             });
         }
 
-        void UpdateScratchBuffer()
-        {
-            var cam = GetComponent<Camera>();
-            int capture_width = m_resolutionWidth;
-            int capture_height = (int)((float)m_resolutionWidth / ((float)cam.pixelWidth / (float)cam.pixelHeight));
-
-            if( m_scratch_buffer != null)
-            {
-                if( m_scratch_buffer.IsCreated() &&
-                    m_scratch_buffer.width == capture_width && m_scratch_buffer.height == capture_height)
-                {
-                    // update is not needed
-                    return;
-                }
-                else
-                {
-                    ReleaseScratchBuffer();
-                }
-            }
-
-            m_scratch_buffer = new RenderTexture(capture_width, capture_height, 0, RenderTextureFormat.ARGB32);
-            m_scratch_buffer.wrapMode = TextureWrapMode.Repeat;
-            m_scratch_buffer.Create();
-        }
-
-        void ReleaseScratchBuffer()
-        {
-            if (m_scratch_buffer != null)
-            {
-                m_scratch_buffer.Release();
-                m_scratch_buffer = null;
-            }
-        }
-
         
         public override bool BeginRecording()
         {
@@ -151,7 +93,7 @@ namespace UTJ
 
             InitializeContext();
             GetComponent<Camera>().AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
-            Debug.Log("MP4Recorder.BeginRecording(): " + GetOutputPath());
+            Debug.Log("MP4Recorder.BeginRecording(): " + outputPath);
             return true;
         }
 
@@ -162,37 +104,11 @@ namespace UTJ
 
             GetComponent<Camera>().RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb);
             ReleaseContext();
-            Debug.Log("MP4Recorder.EndRecording(): " + GetOutputPath());
+            Debug.Log("MP4Recorder.EndRecording(): " + outputPath);
             return true;
         }
 
-        public override bool recording
-        {
-            get { return m_recording; }
-        }
 
-
-        public override string GetOutputPath()
-        {
-            string ret = m_outputDir.GetPath();
-            if(ret.Length > 0) { ret += "/"; }
-            ret += m_output_file;
-            return ret;
-        }
-
-
-        public fcAPI.fcMP4Context GetMP4Context() { return m_ctx; }
-
-#if UNITY_EDITOR
-        void Reset()
-        {
-            m_shCopy = FrameCapturerUtils.GetFrameBufferCopyShader();
-        }
-#endif // UNITY_EDITOR
-
-        void Start()
-        {
-        }
 
         void OnEnable()
         {
@@ -204,11 +120,11 @@ namespace UTJ
 #endif
             m_outputDir.CreateDirectory();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
-            m_mat_copy = new Material(m_shCopy);
+            m_matCopy = new Material(m_shCopy);
 
             if (GetComponent<Camera>().targetTexture != null)
             {
-                m_mat_copy.EnableKeyword("OFFSCREEN");
+                m_matCopy.EnableKeyword("OFFSCREEN");
             }
         }
 
@@ -240,12 +156,12 @@ namespace UTJ
                 double timestamp = Time.unscaledTime;
                 if (m_frameRateMode == FrameRateMode.Constant)
                 {
-                    timestamp = 1.0 / m_framerate * m_num_video_frames;
+                    timestamp = 1.0 / m_framerate * m_numVideoFrames;
                 }
 
-                m_callback = fcAPI.fcMP4AddVideoFrameTexture(m_ctx, m_scratch_buffer, timestamp, m_callback);
+                m_callback = fcAPI.fcMP4AddVideoFrameTexture(m_ctx, m_scratchBuffer, timestamp, m_callback);
                 GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callback);
-                m_num_video_frames++;
+                m_numVideoFrames++;
             }
         }
     }
