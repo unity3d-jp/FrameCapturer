@@ -22,7 +22,7 @@ namespace UTJ
             Constant,
         }
 
-        // common settings
+        // base settings
         [SerializeField] public MovieRecorderContext.Type m_format = MovieRecorderContext.Type.WebM;
         [SerializeField] public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "");
 
@@ -42,19 +42,20 @@ namespace UTJ
         [SerializeField] public int m_audioBitrate = 64000;
 
         // internal
-        [SerializeField] protected MovieRecorderContext m_ctx;
-        [SerializeField] protected Shader m_shCopy;
-        protected Material m_matCopy;
-        protected Mesh m_quad;
-        protected CommandBuffer m_cb;
-        protected RenderTexture m_scratchBuffer;
-        protected bool m_recording = false;
-        protected int m_numVideoFrames = 0;
+        [SerializeField] MovieRecorderContext m_ctx;
+        [SerializeField] Shader m_shCopy;
+
+        Material m_matCopy;
+        Mesh m_quad;
+        CommandBuffer m_cb;
+        RenderTexture m_scratchBuffer;
+        bool m_recording = false;
+        int m_numVideoFrames = 0;
 
 
         public MovieRecorderContext.Type format {
             get { return m_format; }
-            set { m_format = value; ValidateImpl(); }
+            set { m_format = value; ValidateContext(); }
         }
         public bool captureVideo { get { return m_captureVideo; } }
         public CaptureTarget captureTarget { get { return m_captureTarget; } }
@@ -66,6 +67,7 @@ namespace UTJ
 
         public bool BeginRecording()
         {
+            if (m_recording) { return false; }
             if (m_shCopy == null)
             {
                 Debug.LogError("MovieRecorder: copy shader is missing!");
@@ -76,7 +78,13 @@ namespace UTJ
                 Debug.LogError("MovieRecorder: target RenderTexture is null!");
                 return false;
             }
-            if (m_recording) { return false; }
+
+            if (m_ctx == null)
+            {
+                CreateContext();
+                if (m_ctx == null) { return false; }
+            }
+
             m_recording = true;
 
 #if UNITY_EDITOR
@@ -144,14 +152,6 @@ namespace UTJ
                 }
             }
 
-            if (m_ctx == null)
-            {
-                if (!CreateImpl())
-                {
-                    EndRecording();
-                    return false;
-                }
-            }
             m_ctx.Initialize(this);
 
             cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
@@ -164,7 +164,7 @@ namespace UTJ
             if (!m_recording) { return; }
             m_recording = false;
 
-            ReleaseImpl();
+            ReleaseContext();
             if (m_cb != null)
             {
                 GetComponent<Camera>().RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb);
@@ -181,7 +181,7 @@ namespace UTJ
 
 
         #region impl
-        void ReleaseImpl()
+        void ReleaseContext()
         {
             if (m_ctx != null)
             {
@@ -190,24 +190,24 @@ namespace UTJ
             }
         }
 
-        bool CreateImpl()
+        bool CreateContext()
         {
             m_ctx = MovieRecorderContext.Create(m_format);
             return m_ctx != null;
         }
 
-        void ValidateImpl()
+        void ValidateContext()
         {
             if(m_ctx == null)
             {
-                CreateImpl();
+                CreateContext();
             }
             else
             {
                 if(m_ctx.type != m_format)
                 {
-                    ReleaseImpl();
-                    CreateImpl();
+                    ReleaseContext();
+                    CreateContext();
                 }
             }
         }

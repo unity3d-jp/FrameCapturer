@@ -222,7 +222,7 @@ fcAPI void fcExrDestroyContext(fcIExrContext *ctx)
     ctx->release();
 }
 
-fcAPI bool fcExrBeginFrame(fcIExrContext *ctx, const char *path, int width, int height)
+fcAPI bool fcExrBeginImage(fcIExrContext *ctx, const char *path, int width, int height)
 {
     fcTraceFunc();
     if (!ctx) { return false; }
@@ -243,7 +243,7 @@ fcAPI bool fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt
     return ctx->addLayerTexture(tex, fmt, ch, name, flipY);
 }
 
-fcAPI bool fcExrEndFrame(fcIExrContext *ctx)
+fcAPI bool fcExrEndImage(fcIExrContext *ctx)
 {
     fcTraceFunc();
     if (!ctx) { return false; }

@@ -11,11 +11,11 @@ void ExrTestImpl(fcIExrContext *ctx, const char *filename)
 
     RawVector<T> video_frame(Width * Height);
     CreateVideoData(&video_frame[0], Width, Height, 0);
-    fcExrBeginFrame(ctx, filename, Width, Height);
+    fcExrBeginImage(ctx, filename, Width, Height);
     for (int i = 0; i < channels; ++i) {
         fcExrAddLayerPixels(ctx, &video_frame[0], GetPixelFormat<T>::value, i, channel_names[i]);
     }
-    fcExrEndFrame(ctx);
+    fcExrEndImage(ctx);
 }
 
 void ExrTest()

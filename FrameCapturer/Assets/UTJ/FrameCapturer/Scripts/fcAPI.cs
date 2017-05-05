@@ -194,18 +194,18 @@ namespace UTJ
 
         [DllImport ("fccore")] public static extern fcEXRContext fcExrCreateContext(ref fcExrConfig conf);
         [DllImport ("fccore")] public static extern void         fcExrDestroyContext(fcEXRContext ctx);
-        [DllImport ("fccore")] private static extern int         fcExrBeginFrameDeferred(fcEXRContext ctx, string path, int width, int height, int id);
+        [DllImport ("fccore")] private static extern int         fcExrBeginImageDeferred(fcEXRContext ctx, string path, int width, int height, int id);
         [DllImport ("fccore")] private static extern int         fcExrAddLayerTextureDeferred(fcEXRContext ctx, IntPtr tex, fcPixelFormat f, int ch, string name, Bool flipY, int id);
-        [DllImport ("fccore")] private static extern int         fcExrEndFrameDeferred(fcEXRContext ctx, int id);
+        [DllImport ("fccore")] private static extern int         fcExrEndImageDeferred(fcEXRContext ctx, int id);
 
-        public static int fcExrBeginFrame(fcEXRContext ctx, string path, int width, int height, int id)
+        public static int fcExrBeginImage(fcEXRContext ctx, string path, int width, int height, int id)
         {
-            return fcExrBeginFrameDeferred(ctx, path, width, height, id);
+            return fcExrBeginImageDeferred(ctx, path, width, height, id);
         }
 
-        public static int fcExrEndFrame(fcEXRContext ctx, int id)
+        public static int fcExrEndImage(fcEXRContext ctx, int id)
         {
-            return fcExrEndFrameDeferred(ctx, id);
+            return fcExrEndImageDeferred(ctx, id);
         }
 
         public static int fcExrAddLayerTexture(fcEXRContext ctx, RenderTexture tex, int ch, string name, int id)
