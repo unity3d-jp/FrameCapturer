@@ -9,19 +9,17 @@
 
 #include <openh264/codec_api.h>
 
-#define OpenH264Version "1.5.0"
-#ifdef fcWindows
+#define OpenH264Version "1.6.0"
+#if defined(fcWindows)
     #if defined(_M_AMD64)
-        #define OpenH264URL "http://ciscobinary.openh264.org/openh264-" OpenH264Version "-win64msvc.dll.bz2"
         #define OpenH264DLL "openh264-" OpenH264Version "-win64msvc.dll"
     #elif defined(_M_IX86)
-        #define OpenH264URL "http://ciscobinary.openh264.org/openh264-" OpenH264Version "-win32msvc.dll.bz2"
         #define OpenH264DLL "openh264-" OpenH264Version "-win32msvc.dll"
     #endif
-#else 
-    // Mac
-    #define OpenH264URL "http://ciscobinary.openh264.org/libopenh264-" OpenH264Version "-osx64.dylib.bz2"
+#elif defined(fcMac) 
     #define OpenH264DLL "libopenh264-" OpenH264Version "-osx64.dylib"
+#elif defined(fcLinux)
+    #define OpenH264DLL "libopenh264-" OpenH264Version "-linux64.3.so"
 #endif
 
 
@@ -53,9 +51,9 @@ typedef void (*WelsDestroySVCEncoder_t)(ISVCEncoder* pEncoder);
     Body(WelsCreateSVCEncoder)\
     Body(WelsDestroySVCEncoder)
 
-#define decl(name) static name##_t name##_;
-EachOpenH264Functions(decl)
-#undef decl
+#define Decl(name) static name##_t name##_;
+    EachOpenH264Functions(Decl)
+#undef Decl
 
 static module_t g_openh264;
 
@@ -67,10 +65,16 @@ bool fcLoadOpenH264Module()
     g_openh264 = DLLLoad(OpenH264DLL);
     if (g_openh264 == nullptr) { return false; }
 
-#define imp(name) (void*&)name##_ = DLLGetSymbol(g_openh264, #name);
-    EachOpenH264Functions(imp)
-#undef imp
-    return true;
+    bool ok = true;
+#define Imp(Name) (void*&)Name##_ = DLLGetSymbol(g_openh264, #Name); if(!Name##_) { ok = false; }
+    EachOpenH264Functions(Imp)
+#undef Imp
+
+    if (!ok) {
+        DLLUnload(g_openh264);
+        g_openh264 = nullptr;
+    }
+    return ok;
 }
 
 

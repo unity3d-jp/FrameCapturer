@@ -58,7 +58,8 @@ private:
 
 
 fcGifContext::fcGifContext(const fcGifConfig &conf, fcIGraphicsDevice *dev)
-    : m_dev(dev)
+    : m_conf(conf)
+    , m_dev(dev)
 {
     m_gif = jo_gif_start(m_conf.width, m_conf.height, 0, m_conf.num_colors);
 

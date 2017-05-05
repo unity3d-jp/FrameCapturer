@@ -66,6 +66,9 @@ void MP4Test(int video_encoder, int audio_encoder, const char *filename)
 
     fcStream* fstream = fcCreateFileStream(filename);
     fcIMP4Context *ctx = fcMP4CreateContext(&conf);
+    if (!ctx) {
+        printf("  Failed to create context. Possibly H264 or AAC encoder is not available.\n");
+    }
     fcMP4AddOutputStream(ctx, fstream);
     WriteMovieData(ctx);
     fcMP4DestroyContext(ctx);
@@ -97,15 +100,6 @@ void MP4TestWMF(const char *filename)
 
 void MP4Test()
 {
-    //// download OpenH264 codec
-    //fcMP4DownloadCodecBegin();
-    //for (int i = 0; i < 30; ++i) {
-    //    if (fcMP4DownloadCodecGetState() == fcDownloadState_InProgress) {
-    //        std::this_thread::sleep_for(1s);
-    //    }
-    //    else { break; }
-    //}
-
     MP4Test(fcMP4_H264NVIDIA, 0, "NVIDIA.mp4");
     MP4Test(fcMP4_H264AMD, 0, "AMD.mp4");
     MP4Test(fcMP4_H264IntelHW, 0, "IntelHW.mp4");

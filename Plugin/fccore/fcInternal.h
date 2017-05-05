@@ -15,10 +15,8 @@
 #endif
 
 
-#define fcEnableLogging
-
-#define fcSupportOpenGL
 #ifdef _WIN32
+    #define fcSupportOpenGL
     #define fcSupportD3D9
     #define fcSupportD3D11
 
@@ -29,9 +27,9 @@
     #define fcSupportWebM
 
     //// MP4-related encoders
-    //#define fcSupportAAC_FAAC
+    #define fcSupportAAC_FAAC
     //#define fcSupportAAC_Intel
-    //#define fcSupportH264_OpenH264
+    #define fcSupportH264_OpenH264
     //#define fcSupportH264_NVIDIA
     //#define fcSupportH264_AMD
     //#define fcSupportH264_Intel
@@ -42,6 +40,7 @@
     //#define fcSupportOpus
 #endif
 
+#define fcEnableLogging
 
 #ifdef fcEnableLogging
     void DebugLogImpl(const char* fmt, ...);
