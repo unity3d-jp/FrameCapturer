@@ -7,22 +7,20 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/PngOffscreenRecorder")]
     [RequireComponent(typeof(Camera))]
-    public class PngOffscreenRecorder : IImageSequenceRecorder
+    public class PngOffscreenRecorder : ImageSequenceRecorderBase
     {
         public RenderTexture[] m_targets;
 
-        [Tooltip("output directory. filename is generated automatically.")]
-        public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "PngOutput");
         public string m_outputFilename = "RenderTarget";
         public int m_beginFrame = 1;
         public int m_endFrame = 100;
         public Shader m_shCopy;
 
         fcAPI.fcPNGContext m_ctx;
-        Material m_mat_copy;
+        Material m_matCopy;
         Mesh m_quad;
         CommandBuffer m_cb_copy;
-        RenderTexture[] m_scratch_buffers;
+        RenderTexture[] m_scratchBuffers;
         int[] m_callbacks;
 
 
@@ -47,12 +45,12 @@ namespace UTJ
 
             if (m_callbacks == null)
             {
-                m_callbacks = new int[m_scratch_buffers.Length];
+                m_callbacks = new int[m_scratchBuffers.Length];
             }
             for (int i = 0; i < m_callbacks.Length; ++i)
             {
                 string path = dir + "/" + m_outputFilename + "[" + i + "]_" + ext;
-                m_callbacks[i] = fcAPI.fcPngExportTexture(m_ctx, path, m_scratch_buffers[i], m_callbacks[i]);
+                m_callbacks[i] = fcAPI.fcPngExportTexture(m_ctx, path, m_scratchBuffers[i], m_callbacks[i]);
                 GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacks[i]);
             }
         }
@@ -96,19 +94,19 @@ namespace UTJ
         {
             m_outputDir.CreateDirectory();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
-            m_mat_copy = new Material(m_shCopy);
+            m_matCopy = new Material(m_shCopy);
 
             // initialize png context
             fcAPI.fcPngConfig conf = fcAPI.fcPngConfig.default_value;
             m_ctx = fcAPI.fcPngCreateContext(ref conf);
 
             // initialize render targets
-            m_scratch_buffers = new RenderTexture[m_targets.Length];
-            for (int i = 0; i < m_scratch_buffers.Length; ++i)
+            m_scratchBuffers = new RenderTexture[m_targets.Length];
+            for (int i = 0; i < m_scratchBuffers.Length; ++i)
             {
                 var rt = m_targets[i];
-                m_scratch_buffers[i] = new RenderTexture(rt.width, rt.height, 0, rt.format);
-                m_scratch_buffers[i].Create();
+                m_scratchBuffers[i] = new RenderTexture(rt.width, rt.height, 0, rt.format);
+                m_scratchBuffers[i].Create();
             }
 
             // initialize command buffers
@@ -117,9 +115,9 @@ namespace UTJ
                 m_cb_copy.name = "PngOffscreenRecorder: Copy";
                 for (int i = 0; i < m_targets.Length; ++i)
                 {
-                    m_cb_copy.SetRenderTarget(m_scratch_buffers[i]);
+                    m_cb_copy.SetRenderTarget(m_scratchBuffers[i]);
                     m_cb_copy.SetGlobalTexture("_TmpRenderTarget", m_targets[i]);
-                    m_cb_copy.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 3);
+                    m_cb_copy.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 3);
                 }
             }
         }
@@ -134,11 +132,11 @@ namespace UTJ
                 m_cb_copy = null;
             }
 
-            for (int i = 0; i < m_scratch_buffers.Length; ++i)
+            for (int i = 0; i < m_scratchBuffers.Length; ++i)
             {
-                m_scratch_buffers[i].Release();
+                m_scratchBuffers[i].Release();
             }
-            m_scratch_buffers = null;
+            m_scratchBuffers = null;
 
             fcAPI.fcGuard(() =>
             {

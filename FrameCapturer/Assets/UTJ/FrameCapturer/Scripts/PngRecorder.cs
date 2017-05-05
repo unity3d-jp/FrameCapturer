@@ -12,19 +12,17 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/PngRecorder")]
     [RequireComponent(typeof(Camera))]
-    public class PngRecorder : IImageSequenceRecorder
+    public class PngRecorder : ImageSequenceRecorderBase
     {
         public bool m_captureFramebuffer = true;
         public bool m_captureGBuffer = true;
 
-        [Tooltip("output directory. filename is generated automatically.")]
-        public DataPath m_outputDir = new DataPath(DataPath.Root.CurrentDirectory, "PngOutput");
         public int m_beginFrame = 1;
         public int m_endFrame = 100;
         public Shader m_shCopy;
 
         fcAPI.fcPNGContext m_ctx;
-        Material m_mat_copy;
+        Material m_matCopy;
         Mesh m_quad;
         CommandBuffer m_cb_copy_fb;
         CommandBuffer m_cb_copy_gb;
@@ -152,12 +150,12 @@ namespace UTJ
         {
             m_outputDir.CreateDirectory();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
-            m_mat_copy = new Material(m_shCopy);
+            m_matCopy = new Material(m_shCopy);
 
             var cam = GetComponent<Camera>();
             if (cam.targetTexture != null)
             {
-                m_mat_copy.EnableKeyword("OFFSCREEN");
+                m_matCopy.EnableKeyword("OFFSCREEN");
             }
 
 #if UNITY_EDITOR
@@ -206,17 +204,17 @@ namespace UTJ
                 m_cb_copy_fb.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Point);
                 m_cb_copy_fb.Blit(BuiltinRenderTextureType.CurrentActive, tid);
                 m_cb_copy_fb.SetRenderTarget(m_frame_buffer);
-                m_cb_copy_fb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 0);
+                m_cb_copy_fb.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 0);
                 m_cb_copy_fb.ReleaseTemporaryRT(tid);
 
                 m_cb_copy_gb = new CommandBuffer();
                 m_cb_copy_gb.name = "PngRecorder: Copy G-Buffer";
                 m_cb_copy_gb.SetRenderTarget(
                     new RenderTargetIdentifier[] { m_gbuffer[0], m_gbuffer[1], m_gbuffer[2], m_gbuffer[3] }, m_gbuffer[0]);
-                m_cb_copy_gb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 4);
+                m_cb_copy_gb.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 4);
                 m_cb_copy_gb.SetRenderTarget(
                     new RenderTargetIdentifier[] { m_gbuffer[4], m_gbuffer[5], m_gbuffer[6], m_gbuffer[3] }, m_gbuffer[0]);
-                m_cb_copy_gb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 5);
+                m_cb_copy_gb.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 5);
             }
         }
 
