@@ -12,29 +12,10 @@ namespace UTJ
         public RenderTexture[] m_targets;
 
         public string m_outputFilename = "RenderTarget";
-        public int m_beginFrame = 1;
-        public int m_endFrame = 100;
-        public Shader m_shCopy;
 
         fcAPI.fcPNGContext m_ctx;
-        Material m_matCopy;
-        Mesh m_quad;
-        CommandBuffer m_cb_copy;
-        RenderTexture[] m_scratchBuffers;
         int[] m_callbacks;
 
-
-        public override int beginFrame
-        {
-            get { return m_beginFrame; }
-            set { m_beginFrame = value; }
-        }
-
-        public override int endFrame
-        {
-            get { return m_endFrame; }
-            set { m_endFrame = value; }
-        }
 
         void DoExport()
         {
@@ -45,12 +26,12 @@ namespace UTJ
 
             if (m_callbacks == null)
             {
-                m_callbacks = new int[m_scratchBuffers.Length];
+                m_callbacks = new int[m_rtScratch.Length];
             }
             for (int i = 0; i < m_callbacks.Length; ++i)
             {
                 string path = dir + "/" + m_outputFilename + "[" + i + "]_" + ext;
-                m_callbacks[i] = fcAPI.fcPngExportTexture(m_ctx, path, m_scratchBuffers[i], m_callbacks[i]);
+                m_callbacks[i] = fcAPI.fcPngExportTexture(m_ctx, path, m_rtScratch[i], m_callbacks[i]);
                 GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacks[i]);
             }
         }
@@ -69,26 +50,14 @@ namespace UTJ
 
         void AddCommandBuffers()
         {
-            GetComponent<Camera>().AddCommandBuffer(CameraEvent.AfterEverything, m_cb_copy);
+            GetComponent<Camera>().AddCommandBuffer(CameraEvent.AfterEverything, m_cbCopyRT);
         }
 
         void RemoveCommandBuffers()
         {
-            GetComponent<Camera>().RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb_copy);
+            GetComponent<Camera>().RemoveCommandBuffer(CameraEvent.AfterEverything, m_cbCopyRT);
         }
 
-
-#if UNITY_EDITOR
-        void Reset()
-        {
-            m_shCopy = FrameCapturerUtils.GetFrameBufferCopyShader();
-        }
-
-        void OnValidate()
-        {
-            m_beginFrame = Mathf.Max(1, m_beginFrame);
-        }
-#endif // UNITY_EDITOR
 
         void OnEnable()
         {
@@ -101,23 +70,23 @@ namespace UTJ
             m_ctx = fcAPI.fcPngCreateContext(ref conf);
 
             // initialize render targets
-            m_scratchBuffers = new RenderTexture[m_targets.Length];
-            for (int i = 0; i < m_scratchBuffers.Length; ++i)
+            m_rtScratch = new RenderTexture[m_targets.Length];
+            for (int i = 0; i < m_rtScratch.Length; ++i)
             {
                 var rt = m_targets[i];
-                m_scratchBuffers[i] = new RenderTexture(rt.width, rt.height, 0, rt.format);
-                m_scratchBuffers[i].Create();
+                m_rtScratch[i] = new RenderTexture(rt.width, rt.height, 0, rt.format);
+                m_rtScratch[i].Create();
             }
 
             // initialize command buffers
             {
-                m_cb_copy = new CommandBuffer();
-                m_cb_copy.name = "PngOffscreenRecorder: Copy";
+                m_cbCopyRT = new CommandBuffer();
+                m_cbCopyRT.name = "PngOffscreenRecorder: Copy";
                 for (int i = 0; i < m_targets.Length; ++i)
                 {
-                    m_cb_copy.SetRenderTarget(m_scratchBuffers[i]);
-                    m_cb_copy.SetGlobalTexture("_TmpRenderTarget", m_targets[i]);
-                    m_cb_copy.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 3);
+                    m_cbCopyRT.SetRenderTarget(m_rtScratch[i]);
+                    m_cbCopyRT.SetGlobalTexture("_TmpRenderTarget", m_targets[i]);
+                    m_cbCopyRT.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 3);
                 }
             }
         }
@@ -126,17 +95,17 @@ namespace UTJ
         {
             RemoveCommandBuffers();
 
-            if (m_cb_copy != null)
+            if (m_cbCopyRT != null)
             {
-                m_cb_copy.Release();
-                m_cb_copy = null;
+                m_cbCopyRT.Release();
+                m_cbCopyRT = null;
             }
 
-            for (int i = 0; i < m_scratchBuffers.Length; ++i)
+            for (int i = 0; i < m_rtScratch.Length; ++i)
             {
-                m_scratchBuffers[i].Release();
+                m_rtScratch[i].Release();
             }
-            m_scratchBuffers = null;
+            m_rtScratch = null;
 
             fcAPI.fcGuard(() =>
             {

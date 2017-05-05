@@ -17,52 +17,29 @@ namespace UTJ
         public bool m_captureFramebuffer = true;
         public bool m_captureGBuffer = true;
 
-        public int m_beginFrame = 1;
-        public int m_endFrame = 100;
-        public Shader m_shCopy;
-
         fcAPI.fcPNGContext m_ctx;
-        Material m_matCopy;
-        Mesh m_quad;
-        CommandBuffer m_cb_copy_fb;
-        CommandBuffer m_cb_copy_gb;
-        RenderTexture m_frame_buffer;
-        RenderTexture[] m_gbuffer;
-        int[] m_callbacks_fb;
-        int[] m_callbacks_gb;
-
-
-        public override int beginFrame
-        {
-            get { return m_beginFrame; }
-            set { m_beginFrame = value; }
-        }
-
-        public override int endFrame
-        {
-            get { return m_endFrame; }
-            set { m_endFrame = value; }
-        }
+        int[] m_callbacksFB;
+        int[] m_callbacksGB;
 
 
         void EraseCallbacks()
         {
-            if (m_callbacks_fb != null)
+            if (m_callbacksFB != null)
             {
-                for (int i = 0; i < m_callbacks_fb.Length; ++i)
+                for (int i = 0; i < m_callbacksFB.Length; ++i)
                 {
-                    fcAPI.fcEraseDeferredCall(m_callbacks_fb[i]);
+                    fcAPI.fcEraseDeferredCall(m_callbacksFB[i]);
                 }
-                m_callbacks_fb = null;
+                m_callbacksFB = null;
             }
 
-            if (m_callbacks_gb != null)
+            if (m_callbacksGB != null)
             {
-                for (int i = 0; i < m_callbacks_gb.Length; ++i)
+                for (int i = 0; i < m_callbacksGB.Length; ++i)
                 {
-                    fcAPI.fcEraseDeferredCall(m_callbacks_gb[i]);
+                    fcAPI.fcEraseDeferredCall(m_callbacksGB[i]);
                 }
-                m_callbacks_gb = null;
+                m_callbacksGB = null;
             }
         }
 
@@ -71,11 +48,11 @@ namespace UTJ
             var cam = GetComponent<Camera>();
             if (m_captureFramebuffer)
             {
-                cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb_copy_fb);
+                cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cbCopyFB);
             }
             if (m_captureGBuffer)
             {
-                cam.AddCommandBuffer(CameraEvent.BeforeLighting, m_cb_copy_gb);
+                cam.AddCommandBuffer(CameraEvent.BeforeLighting, m_cbCopyGB);
             }
         }
 
@@ -84,11 +61,11 @@ namespace UTJ
             var cam = GetComponent<Camera>();
             if (m_captureFramebuffer)
             {
-                cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb_copy_fb);
+                cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cbCopyFB);
             }
             if (m_captureGBuffer)
             {
-                cam.RemoveCommandBuffer(CameraEvent.BeforeLighting, m_cb_copy_gb);
+                cam.RemoveCommandBuffer(CameraEvent.BeforeLighting, m_cbCopyGB);
             }
         }
 
@@ -102,12 +79,12 @@ namespace UTJ
             // callback for frame buffer
             {
                 string path = dir + "/FrameBuffer_" + ext;
-                if(m_callbacks_fb == null)
+                if(m_callbacksFB == null)
                 {
-                    m_callbacks_fb = new int[1];
+                    m_callbacksFB = new int[1];
                 }
-                m_callbacks_fb[0] = fcAPI.fcPngExportTexture(m_ctx, path, m_frame_buffer, m_callbacks_fb[0]);
-                GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacks_fb[0]);
+                m_callbacksFB[0] = fcAPI.fcPngExportTexture(m_ctx, path, m_rtFB, m_callbacksFB[0]);
+                GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacksFB[0]);
             }
 
             // callbacks for gbuffer
@@ -121,30 +98,18 @@ namespace UTJ
                     dir + "/Emission_" + ext,
                     dir + "/Depth_" + ext,
                 };
-                if (m_callbacks_gb == null)
+                if (m_callbacksGB == null)
                 {
-                    m_callbacks_gb = new int[m_gbuffer.Length];
+                    m_callbacksGB = new int[m_rtGB.Length];
                 }
-                for (int i = 0; i < m_callbacks_gb.Length; ++i)
+                for (int i = 0; i < m_callbacksGB.Length; ++i)
                 {
-                    m_callbacks_gb[i] = fcAPI.fcPngExportTexture(m_ctx, path[i], m_gbuffer[i], m_callbacks_gb[i]);
-                    GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacks_gb[i]);
+                    m_callbacksGB[i] = fcAPI.fcPngExportTexture(m_ctx, path[i], m_rtGB[i], m_callbacksGB[i]);
+                    GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacksGB[i]);
                 }
             }
         }
 
-
-#if UNITY_EDITOR
-        void Reset()
-        {
-            m_shCopy = FrameCapturerUtils.GetFrameBufferCopyShader();
-        }
-
-        void OnValidate()
-        {
-            m_beginFrame = Mathf.Max(1, m_beginFrame);
-        }
-#endif // UNITY_EDITOR
 
         void OnEnable()
         {
@@ -172,9 +137,9 @@ namespace UTJ
 
             // initialize render targets
             {
-                m_frame_buffer = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0, RenderTextureFormat.ARGBHalf);
-                m_frame_buffer.wrapMode = TextureWrapMode.Repeat;
-                m_frame_buffer.Create();
+                m_rtFB = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0, RenderTextureFormat.ARGBHalf);
+                m_rtFB.wrapMode = TextureWrapMode.Repeat;
+                m_rtFB.Create();
 
                 var formats = new RenderTextureFormat[7] {
                     RenderTextureFormat.ARGBHalf,   // albedo (RGB)
@@ -185,13 +150,13 @@ namespace UTJ
                     RenderTextureFormat.ARGBHalf,   // emission (RGB)
                     RenderTextureFormat.RHalf,      // depth (R)
                 };
-                m_gbuffer = new RenderTexture[7];
-                for (int i = 0; i < m_gbuffer.Length; ++i)
+                m_rtGB = new RenderTexture[7];
+                for (int i = 0; i < m_rtGB.Length; ++i)
                 {
                     // last one is depth (1 channel)
-                    m_gbuffer[i] = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0, formats[i]);
-                    m_gbuffer[i].filterMode = FilterMode.Point;
-                    m_gbuffer[i].Create();
+                    m_rtGB[i] = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0, formats[i]);
+                    m_rtGB[i].filterMode = FilterMode.Point;
+                    m_rtGB[i].Create();
                 }
             }
 
@@ -199,22 +164,22 @@ namespace UTJ
             {
                 int tid = Shader.PropertyToID("_TmpFrameBuffer");
 
-                m_cb_copy_fb = new CommandBuffer();
-                m_cb_copy_fb.name = "PngRecorder: Copy FrameBuffer";
-                m_cb_copy_fb.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Point);
-                m_cb_copy_fb.Blit(BuiltinRenderTextureType.CurrentActive, tid);
-                m_cb_copy_fb.SetRenderTarget(m_frame_buffer);
-                m_cb_copy_fb.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 0);
-                m_cb_copy_fb.ReleaseTemporaryRT(tid);
+                m_cbCopyFB = new CommandBuffer();
+                m_cbCopyFB.name = "PngRecorder: Copy FrameBuffer";
+                m_cbCopyFB.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Point);
+                m_cbCopyFB.Blit(BuiltinRenderTextureType.CurrentActive, tid);
+                m_cbCopyFB.SetRenderTarget(m_rtFB);
+                m_cbCopyFB.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 0);
+                m_cbCopyFB.ReleaseTemporaryRT(tid);
 
-                m_cb_copy_gb = new CommandBuffer();
-                m_cb_copy_gb.name = "PngRecorder: Copy G-Buffer";
-                m_cb_copy_gb.SetRenderTarget(
-                    new RenderTargetIdentifier[] { m_gbuffer[0], m_gbuffer[1], m_gbuffer[2], m_gbuffer[3] }, m_gbuffer[0]);
-                m_cb_copy_gb.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 4);
-                m_cb_copy_gb.SetRenderTarget(
-                    new RenderTargetIdentifier[] { m_gbuffer[4], m_gbuffer[5], m_gbuffer[6], m_gbuffer[3] }, m_gbuffer[0]);
-                m_cb_copy_gb.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 5);
+                m_cbCopyGB = new CommandBuffer();
+                m_cbCopyGB.name = "PngRecorder: Copy G-Buffer";
+                m_cbCopyGB.SetRenderTarget(
+                    new RenderTargetIdentifier[] { m_rtGB[0], m_rtGB[1], m_rtGB[2], m_rtGB[3] }, m_rtGB[0]);
+                m_cbCopyGB.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 4);
+                m_cbCopyGB.SetRenderTarget(
+                    new RenderTargetIdentifier[] { m_rtGB[4], m_rtGB[5], m_rtGB[6], m_rtGB[3] }, m_rtGB[0]);
+                m_cbCopyGB.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 5);
             }
         }
 
@@ -222,30 +187,30 @@ namespace UTJ
         {
             RemoveCommandBuffers();
 
-            if (m_cb_copy_gb != null)
+            if (m_cbCopyGB != null)
             {
-                m_cb_copy_gb.Release();
-                m_cb_copy_gb = null;
+                m_cbCopyGB.Release();
+                m_cbCopyGB = null;
             }
 
-            if (m_cb_copy_fb != null)
+            if (m_cbCopyFB != null)
             {
-                m_cb_copy_fb.Release();
-                m_cb_copy_fb = null;
+                m_cbCopyFB.Release();
+                m_cbCopyFB = null;
             }
 
-            if (m_frame_buffer != null)
+            if (m_rtFB != null)
             {
-                m_frame_buffer.Release();
-                m_frame_buffer = null;
+                m_rtFB.Release();
+                m_rtFB = null;
             }
-            if (m_gbuffer != null)
+            if (m_rtGB != null)
             {
-                for (int i = 0; i < m_gbuffer.Length; ++i)
+                for (int i = 0; i < m_rtGB.Length; ++i)
                 {
-                    m_gbuffer[i].Release();
+                    m_rtGB[i].Release();
                 }
-                m_gbuffer = null;
+                m_rtGB = null;
             }
 
             fcAPI.fcGuard(() =>

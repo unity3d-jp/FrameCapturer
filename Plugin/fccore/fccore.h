@@ -130,10 +130,10 @@ struct fcExrConfig
 };
 fcAPI fcIExrContext*  fcExrCreateContext(const fcExrConfig *conf = nullptr);
 fcAPI void            fcExrDestroyContext(fcIExrContext *ctx);
-fcAPI bool            fcExrBeginFrame(fcIExrContext *ctx, const char *path, int width, int height);
+fcAPI bool            fcExrBeginImage(fcIExrContext *ctx, const char *path, int width, int height);
 fcAPI bool            fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name, bool flipY = false);
 fcAPI bool            fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name, bool flipY = false);
-fcAPI bool            fcExrEndFrame(fcIExrContext *ctx);
+fcAPI bool            fcExrEndImage(fcIExrContext *ctx);
 
 
 // -------------------------------------------------------------
