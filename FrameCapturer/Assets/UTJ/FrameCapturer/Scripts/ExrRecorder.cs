@@ -10,7 +10,7 @@ namespace UTJ
 {
     [AddComponentMenu("UTJ/FrameCapturer/ExrRecorder")]
     [RequireComponent(typeof(Camera))]
-    public class ExrRecorder : ImageSequenceRecorderBase
+    public class ExrRecorder : ImageSequenceRecorder
     {
         public bool m_captureFramebuffer = true;
         public bool m_captureGBuffer = true;
