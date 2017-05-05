@@ -11,7 +11,9 @@ void GifTestImpl(const char *filename)
     fcGifConfig conf;
     conf.width = Width;
     conf.height = Height;
+    fcStream *fstream = fcCreateFileStream(filename);
     fcIGifContext *ctx = fcGifCreateContext(&conf);
+    fcGifAddOutputStream(ctx, fstream);
 
     fcTime t = 0;
     RawVector<T> video_frame(Width * Height);
@@ -21,10 +23,8 @@ void GifTestImpl(const char *filename)
         t += 1.0 / 30.0;
     }
 
-    fcStream *fstream = fcCreateFileStream(filename);
-    fcGifWrite(ctx, fstream);
-    fcDestroyStream(fstream);
     fcGifDestroyContext(ctx);
+    fcDestroyStream(fstream);
 }
 
 void GifTest()

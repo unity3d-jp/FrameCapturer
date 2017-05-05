@@ -22,13 +22,10 @@ namespace UTJ
                 if (value)
                 {
                     m_recorder.BeginRecording();
-                    m_recorder.recording = true;
                     GetComponent<Image>().color = new Color(1.0f, 0.5f, 0.5f, 0.5f);
-                    UpdatePreviewImage(m_recorder.GetScratchBuffer());
                 }
                 else
                 {
-                    m_recorder.Flush();
                     m_recorder.EndRecording();
                     GetComponent<Image>().color = new Color(1.0f, 1.0f, 1.0f, 0.5f);
                 }
@@ -43,15 +40,6 @@ namespace UTJ
         public override string GetOutputPath()
         {
             return m_recorder.GetOutputPath();
-        }
-
-        public override void Flush()
-        {
-            m_recorder.Flush();
-        }
-
-        public override void Restart()
-        {
         }
 
 
@@ -84,8 +72,6 @@ namespace UTJ
             if (m_updateStatus || record)
             {
                 m_updateStatus = false;
-                int recoded_frames = m_recorder.GetFrameCount();
-                m_textInfo.text = recoded_frames.ToString() + " recoded frames";
             }
         }
     }

@@ -247,14 +247,9 @@ namespace UTJ
 
         [DllImport ("fccore")] public static extern fcGIFContext fcGifCreateContext(ref fcGifConfig conf);
         [DllImport ("fccore")] public static extern void         fcGifDestroyContext(fcGIFContext ctx);
+        [DllImport ("fccore")] public static extern void         fcGifAddOutputStream(fcGIFContext ctx, fcStream stream);
         [DllImport ("fccore")] private static extern int         fcGifAddFrameTextureDeferred(fcGIFContext ctx, IntPtr tex, fcPixelFormat fmt, Bool keyframe, double timestamp, int id);
         [DllImport ("fccore")] public static extern Bool         fcGifWrite(fcGIFContext ctx, fcStream stream, int begin_frame=0, int end_frame=-1);
-
-        [DllImport ("fccore")] public static extern void         fcGifClearFrame(fcGIFContext ctx);
-        [DllImport ("fccore")] public static extern int          fcGifGetFrameCount(fcGIFContext ctx);
-        [DllImport ("fccore")] public static extern void         fcGifGetFrameData(fcGIFContext ctx, IntPtr tex, int frame);
-        [DllImport ("fccore")] public static extern int          fcGifGetExpectedDataSize(fcGIFContext ctx, int begin_frame, int end_frame);
-        [DllImport ("fccore")] public static extern void         fcGifEraseFrame(fcGIFContext ctx, int begin_frame, int end_frame);
 
         public static int fcGifAddFrameTexture(fcGIFContext ctx, RenderTexture tex, bool keyframe, double timestamp, int id)
         {

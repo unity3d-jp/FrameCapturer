@@ -304,6 +304,13 @@ fcAPI void fcGifDestroyContext(fcIGifContext *ctx)
     ctx->release();
 }
 
+fcAPI void fcGifAddOutputStream(fcIGifContext *ctx, fcStream *stream)
+{
+    fcTraceFunc();
+    if (!ctx) { return; }
+    return ctx->addOutputStream(stream);
+}
+
 fcAPI bool fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
 {
     fcTraceFunc();
@@ -323,48 +330,6 @@ fcAPI int fcGifAddFrameTextureDeferred(fcIGifContext *ctx, void *tex, fcPixelFor
     return fcAddDeferredCall([=]() {
         return ctx->addFrameTexture(tex, fmt, keyframe, timestamp);
     }, id);
-}
-
-fcAPI bool fcGifWrite(fcIGifContext *ctx, fcStream *stream, int begin_frame, int end_frame)
-{
-    fcTraceFunc();
-    if (!ctx || !stream) { return false; }
-    return ctx->write(*stream, begin_frame, end_frame);
-}
-
-fcAPI void fcGifClearFrame(fcIGifContext *ctx)
-{
-    fcTraceFunc();
-    if (!ctx) { return; }
-    ctx->clearFrame();
-}
-
-fcAPI int fcGifGetFrameCount(fcIGifContext *ctx)
-{
-    fcTraceFunc();
-    if (!ctx) { return 0; }
-    return ctx->getFrameCount();
-}
-
-fcAPI void fcGifGetFrameData(fcIGifContext *ctx, void *tex, int frame)
-{
-    fcTraceFunc();
-    if (!ctx) { return; }
-    return ctx->getFrameData(tex, frame);
-}
-
-fcAPI int fcGifGetExpectedDataSize(fcIGifContext *ctx, int begin_frame, int end_frame)
-{
-    fcTraceFunc();
-    if (!ctx) { return 0; }
-    return ctx->getExpectedDataSize(begin_frame, end_frame);
-}
-
-fcAPI void fcGifEraseFrame(fcIGifContext *ctx, int begin_frame, int end_frame)
-{
-    fcTraceFunc();
-    if (!ctx) { return; }
-    ctx->eraseFrame(begin_frame, end_frame);
 }
 #endif // fcSupportGIF
 
