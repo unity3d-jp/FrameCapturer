@@ -17,7 +17,7 @@ namespace UTJ.FrameCapturer
             var indent = EditorGUI.indentLevel;
             EditorGUI.indentLevel = 0;
 
-            float rootWidth = 110;
+            float rootWidth = 70;
             float leafWidth = position.width - rootWidth - 5;
             Rect rootRect = new Rect(position.x, position.y, rootWidth, position.height);
             Rect leafRect = new Rect(position.x + rootWidth + 5, position.y, leafWidth, position.height);

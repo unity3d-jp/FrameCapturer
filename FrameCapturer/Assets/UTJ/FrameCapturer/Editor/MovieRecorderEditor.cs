@@ -22,6 +22,7 @@ namespace UTJ.FrameCapturer
         {
             var recorder = target as MovieRecorder;
             var so = serializedObject;
+            var ctx = recorder.context;
 
             EditorGUILayout.PropertyField(so.FindProperty("m_captureTarget"));
             if(recorder.captureTarget == MovieRecorder.CaptureTarget.RenderTexture)
@@ -32,9 +33,8 @@ namespace UTJ.FrameCapturer
             }
 
             EditorGUILayout.PropertyField(so.FindProperty("m_resolutionWidth"));
-            EditorGUILayout.PropertyField(so.FindProperty("m_videoBitrate"));
-            EditorGUILayout.PropertyField(so.FindProperty("m_frameRateMode"));
-            if(recorder.m_frameRateMode == MovieRecorder.FrameRateMode.Constant)
+            EditorGUILayout.PropertyField(so.FindProperty("m_framerateMode"));
+            if(recorder.m_framerateMode == MovieRecorder.FrameRateMode.Constant)
             {
                 EditorGUI.indentLevel++;
                 EditorGUILayout.PropertyField(so.FindProperty("m_targetFramerate"));
@@ -42,37 +42,31 @@ namespace UTJ.FrameCapturer
                 EditorGUI.indentLevel--;
             }
             EditorGUILayout.PropertyField(so.FindProperty("m_captureEveryNthFrame"));
-
-            m_videoAdvanced = EditorGUILayout.Toggle("Advanced Settings", m_videoAdvanced);
-            if(m_videoAdvanced)
-            {
-                EditorGUI.indentLevel++;
-                VideoConfigAdvanced();
-                EditorGUI.indentLevel--;
-            }
-        }
-
-        public virtual void VideoConfigAdvanced()
-        {
         }
 
 
         public virtual void AudioConfig()
         {
-            var so = serializedObject;
-            EditorGUILayout.PropertyField(so.FindProperty("m_audioBitrate"));
-
-            m_audioAdvanced = EditorGUILayout.Toggle("Advanced Settings", m_audioAdvanced);
-            if (m_audioAdvanced)
-            {
-                EditorGUI.indentLevel++;
-                AudioConfigAdvanced();
-                EditorGUI.indentLevel--;
-            }
         }
 
-        public virtual void AudioConfigAdvanced()
+        public virtual void EncoderConfig()
         {
+            var recorder = target as MovieRecorder;
+            var so = serializedObject;
+            var ctx = recorder.context;
+
+            if (ctx.type == MovieRecorderContext.Type.Gif)
+            {
+                EditorGUILayout.PropertyField(so.FindProperty("m_gifEncoderConfig"), true);
+            }
+            else if (ctx.type == MovieRecorderContext.Type.WebM)
+            {
+                EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig"), true);
+            }
+            else if (ctx.type == MovieRecorderContext.Type.MP4)
+            {
+                EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig"), true);
+            }
         }
 
 
@@ -105,32 +99,64 @@ namespace UTJ.FrameCapturer
 
             var recorder = target as MovieRecorder;
             var so = serializedObject;
+            var ctx = recorder.context;
 
             CommonConfig();
 
-            EditorGUILayout.Space();
-
-            EditorGUILayout.PropertyField(so.FindProperty("m_captureVideo"));
-            if (recorder.m_captureVideo)
+            if(ctx != null)
             {
-                EditorGUI.indentLevel++;
-                VideoConfig();
-                EditorGUI.indentLevel--;
+                EditorGUILayout.Space();
+
+                if(ctx.type == MovieRecorderContext.Type.Gif)
+                {
+                    VideoConfig();
+                }
+                else if (ctx.type == MovieRecorderContext.Type.WebM)
+                {
+                    EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig.captureVideo"));
+                    if (recorder.webmConfig.captureVideo)
+                    {
+                        EditorGUI.indentLevel++;
+                        VideoConfig();
+                        EditorGUI.indentLevel--;
+                    }
+                    EditorGUILayout.Space();
+                    EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig.captureAudio"));
+                    if (recorder.webmConfig.captureAudio)
+                    {
+                        EditorGUI.indentLevel++;
+                        AudioConfig();
+                        EditorGUI.indentLevel--;
+                    }
+                }
+                else if (ctx.type == MovieRecorderContext.Type.MP4)
+                {
+                    EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig.captureVideo"));
+                    if (recorder.mp4Config.captureVideo)
+                    {
+                        EditorGUI.indentLevel++;
+                        VideoConfig();
+                        EditorGUI.indentLevel--;
+                    }
+                    EditorGUILayout.Space();
+                    EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig.captureAudio"));
+                    if (recorder.mp4Config.captureAudio)
+                    {
+                        EditorGUI.indentLevel++;
+                        AudioConfig();
+                        EditorGUI.indentLevel--;
+                    }
+                }
+
+                EditorGUILayout.Space();
+
+                EncoderConfig();
+
+                so.ApplyModifiedProperties();
+
+                RecordingControl();
+
             }
-
-            EditorGUILayout.Space();
-
-            EditorGUILayout.PropertyField(so.FindProperty("m_captureAudio"));
-            if (recorder.m_captureAudio)
-            {
-                EditorGUI.indentLevel++;
-                AudioConfig();
-                EditorGUI.indentLevel--;
-            }
-
-            so.ApplyModifiedProperties();
-
-            RecordingControl();
         }
     }
 }
