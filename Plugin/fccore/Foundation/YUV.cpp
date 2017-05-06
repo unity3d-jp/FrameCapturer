@@ -14,10 +14,11 @@
 void I420Image::resize(int width, int height)
 {
     int s = roundup<2>(width) * roundup<2>(height);
-    m_buffer.resize(s + (s >> 2) + (s >> 2));
+    int sq = s / 4;
+    m_buffer.resize(s + sq + sq);
     m_data.y = m_buffer.data();
     m_data.u = (char*)m_data.y + s;
-    m_data.v = (char*)m_data.u + (s >> 2);
+    m_data.v = (char*)m_data.u + sq;
     m_data.pitch_y = width;
     m_data.pitch_u = m_data.pitch_v = width / 4;
     m_data.height = height;
@@ -68,7 +69,8 @@ void AnyToI420(I420Image& dst, Buffer& tmp, const void *pixels, fcPixelFormat fm
 void NV12Image::resize(int width, int height)
 {
     int s = roundup<2>(width) * roundup<2>(height);
-    m_buffer.resize(s + (s >> 1));
+    int sh = s / 2;
+    m_buffer.resize(s + sh);
     m_data.y = m_buffer.data();
     m_data.uv = (char*)m_data.y + s;
     m_data.pitch_y = width;

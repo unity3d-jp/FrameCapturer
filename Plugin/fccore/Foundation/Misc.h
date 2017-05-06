@@ -67,7 +67,7 @@ inline u64 u64_be(Int v_)
 template<class IntType>
 inline IntType ceildiv(IntType a, IntType b)
 {
-    return a / b + (a%b == 0 ? 0 : 1);
+    return (a + b - 1) / b;
 }
 
 // i.e:
@@ -77,7 +77,8 @@ inline IntType ceildiv(IntType a, IntType b)
 template<int N, class IntType>
 inline IntType roundup(IntType v)
 {
-    return ceildiv(v, N) * N;
+    IntType mask = N - 1;
+    return (v + mask) & ~mask;
 }
 
 

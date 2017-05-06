@@ -67,11 +67,7 @@ fcVPXEncoder::fcVPXEncoder(const fcVPXEncoderConfig& conf, fcWebMVideoEncoder en
         break;
     }
     vpx_codec_enc_init(&m_vpx_ctx, m_vpx_iface, &vpx_config, 0);
-
-    // just fill vpx_image_t fields. memory is not needed.
-    vpx_img_alloc(&m_vpx_img, VPX_IMG_FMT_I420, conf.width, conf.height, 32);
-    vpx_img_free(&m_vpx_img);
-    m_vpx_img.img_data = nullptr;
+    vpx_img_wrap(&m_vpx_img, VPX_IMG_FMT_I420, m_conf.width, m_conf.height, 2, nullptr);
 }
 
 fcVPXEncoder::~fcVPXEncoder()
