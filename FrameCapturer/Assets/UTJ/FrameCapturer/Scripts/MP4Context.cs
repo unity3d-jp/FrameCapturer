@@ -16,7 +16,7 @@ namespace UTJ.FrameCapturer
         }
 
         fcAPI.fcMP4Context m_ctx;
-        int m_callback;
+        fcAPI.fcDeferredCall m_callback;
         int m_numVideoFrames;
 
         public override Type type { get { return Type.MP4; } }
@@ -44,14 +44,8 @@ namespace UTJ.FrameCapturer
         {
             fcAPI.fcGuard(() =>
             {
-                fcAPI.fcEraseDeferredCall(m_callback);
-                m_callback = 0;
-
-                if (m_ctx)
-                {
-                    fcAPI.fcMP4DestroyContext(m_ctx);
-                    m_ctx.ptr = IntPtr.Zero;
-                }
+                m_callback.Release();
+                m_ctx.Release();
             });
         }
 

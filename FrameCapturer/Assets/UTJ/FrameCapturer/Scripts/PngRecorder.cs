@@ -17,8 +17,8 @@ namespace UTJ.FrameCapturer
         public bool m_captureGBuffer = true;
 
         fcAPI.fcPNGContext m_ctx;
-        int[] m_callbacksFB;
-        int[] m_callbacksGB;
+        fcAPI.fcDeferredCall[] m_callbacksFB;
+        fcAPI.fcDeferredCall[] m_callbacksGB;
 
 
         void EraseCallbacks()
@@ -27,7 +27,7 @@ namespace UTJ.FrameCapturer
             {
                 for (int i = 0; i < m_callbacksFB.Length; ++i)
                 {
-                    fcAPI.fcEraseDeferredCall(m_callbacksFB[i]);
+                    m_callbacksFB[i].Release();
                 }
                 m_callbacksFB = null;
             }
@@ -36,7 +36,7 @@ namespace UTJ.FrameCapturer
             {
                 for (int i = 0; i < m_callbacksGB.Length; ++i)
                 {
-                    fcAPI.fcEraseDeferredCall(m_callbacksGB[i]);
+                    m_callbacksGB[i].Release();
                 }
                 m_callbacksGB = null;
             }
@@ -80,7 +80,7 @@ namespace UTJ.FrameCapturer
                 string path = dir + "/FrameBuffer_" + ext;
                 if(m_callbacksFB == null)
                 {
-                    m_callbacksFB = new int[1];
+                    m_callbacksFB = new fcAPI.fcDeferredCall[1];
                 }
                 m_callbacksFB[0] = fcAPI.fcPngExportTexture(m_ctx, path, m_rtFB, m_callbacksFB[0]);
                 GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callbacksFB[0]);
@@ -99,7 +99,7 @@ namespace UTJ.FrameCapturer
                 };
                 if (m_callbacksGB == null)
                 {
-                    m_callbacksGB = new int[m_rtGB.Length];
+                    m_callbacksGB = new fcAPI.fcDeferredCall[m_rtGB.Length];
                 }
                 for (int i = 0; i < m_callbacksGB.Length; ++i)
                 {
@@ -215,8 +215,7 @@ namespace UTJ.FrameCapturer
             fcAPI.fcGuard(() =>
             {
                 EraseCallbacks();
-                fcAPI.fcPngDestroyContext(m_ctx);
-                m_ctx.ptr = System.IntPtr.Zero;
+                m_ctx.Release();
             });
         }
 

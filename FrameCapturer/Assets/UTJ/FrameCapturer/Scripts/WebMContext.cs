@@ -17,7 +17,7 @@ namespace UTJ.FrameCapturer
 
         fcAPI.fcWebMContext m_ctx;
         fcAPI.fcStream m_ostream;
-        int m_callback = 0;
+        fcAPI.fcDeferredCall m_callback;
 
         public override Type type { get { return Type.WebM; } }
 
@@ -46,19 +46,9 @@ namespace UTJ.FrameCapturer
         {
             fcAPI.fcGuard(() =>
             {
-                fcAPI.fcEraseDeferredCall(m_callback);
-                m_callback = 0;
-
-                if (m_ctx)
-                {
-                    fcAPI.fcWebMDestroyContext(m_ctx);
-                    m_ctx.ptr = IntPtr.Zero;
-                }
-                if (m_ostream)
-                {
-                    fcAPI.fcDestroyStream(m_ostream);
-                    m_ostream.ptr = IntPtr.Zero;
-                }
+                m_callback.Release();
+                m_ctx.Release();
+                m_ostream.Release();
             });
         }
 

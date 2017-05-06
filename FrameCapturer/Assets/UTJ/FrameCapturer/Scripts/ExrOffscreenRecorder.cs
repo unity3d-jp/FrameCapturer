@@ -13,7 +13,7 @@ namespace UTJ.FrameCapturer
         public string m_outputFilename = "RenderTarget";
 
         fcAPI.fcEXRContext m_ctx;
-        int[] m_callbacks;
+        fcAPI.fcDeferredCall[] m_callbacks;
 
 
         void EraseCallbacks()
@@ -22,7 +22,7 @@ namespace UTJ.FrameCapturer
             {
                 for (int i = 0; i < m_callbacks.Length; ++i)
                 {
-                    fcAPI.fcEraseDeferredCall(m_callbacks[i]);
+                    m_callbacks[i].Release();
                 }
                 m_callbacks = null;
             }
@@ -47,7 +47,7 @@ namespace UTJ.FrameCapturer
 
             if (m_callbacks == null)
             {
-                m_callbacks = new int[m_rtScratch.Length * 6];
+                m_callbacks = new fcAPI.fcDeferredCall[m_rtScratch.Length * 6];
             }
             for (int i = 0; i < m_rtScratch.Length; ++i)
             {
@@ -120,8 +120,7 @@ namespace UTJ.FrameCapturer
             fcAPI.fcGuard(() =>
             {
                 EraseCallbacks();
-                fcAPI.fcExrDestroyContext(m_ctx);
-                m_ctx.ptr = System.IntPtr.Zero;
+                m_ctx.Release();
             });
         }
 
