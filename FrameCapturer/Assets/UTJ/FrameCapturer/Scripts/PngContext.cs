@@ -7,6 +7,7 @@ namespace UTJ.FrameCapturer
 {
     public class PngContext : ImageSequenceRecorderContext
     {
+        #region inner_types
         class Command
         {
             DataPath m_path;
@@ -37,6 +38,7 @@ namespace UTJ.FrameCapturer
                 m_call = fcAPI.fcPngExportTexture(ctx, path, m_target, m_call);
             }
         }
+        #endregion
 
         fcAPI.fcPNGContext m_ctx;
         ImageSequenceRecorder m_recorder;

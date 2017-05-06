@@ -11,6 +11,7 @@ namespace UTJ.FrameCapturer
     [RequireComponent(typeof(Camera))]
     public class ImageSequenceRecorder : MonoBehaviour
     {
+        #region inner_types
         public enum CaptureTarget
         {
             FrameBuffer,
@@ -50,43 +51,70 @@ namespace UTJ.FrameCapturer
                 }
             }
         }
+        #endregion
 
 
-        [SerializeField] public DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
-        [SerializeField] public ImageSequenceRecorderContext.Type m_format = ImageSequenceRecorderContext.Type.Exr;
-        [SerializeField] public CaptureTarget m_captureTarget = CaptureTarget.FrameBuffer;
-        [SerializeField] public FrameBufferConponents m_fbComponents = FrameBufferConponents.default_value;
-        [SerializeField] public RenderTexture[] m_targetRT;
-        [SerializeField] public bool m_fixDeltaTime = true;
-        [SerializeField] public int m_targetFramerate = 30;
-        [SerializeField] public int m_startFrame = 0;
-        [SerializeField] public int m_endFrame = 0;
+        #region fields
+        [SerializeField] DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
+        [SerializeField] ImageSequenceRecorderContext.Type m_format = ImageSequenceRecorderContext.Type.Exr;
+        [SerializeField] CaptureTarget m_captureTarget = CaptureTarget.FrameBuffer;
+        [SerializeField] FrameBufferConponents m_fbComponents = FrameBufferConponents.default_value;
+        [SerializeField] RenderTexture[] m_targetRT;
+        [SerializeField] bool m_fixDeltaTime = true;
+        [SerializeField] int m_targetFramerate = 30;
+        [SerializeField] int m_startFrame = 0;
+        [SerializeField] int m_endFrame = 0;
 
-        [SerializeField] protected ImageSequenceRecorderContext m_ctx;
-        [SerializeField] protected Shader m_shCopy;
-        protected Material m_matCopy;
-        protected Mesh m_quad;
-        protected CommandBuffer m_cbCopyFB;
-        protected CommandBuffer m_cbCopyGB;
-        protected CommandBuffer m_cbCopyRT;
-        protected RenderTexture m_rtFB;
-        protected RenderTexture[] m_rtGB;
-        protected RenderTexture[] m_rtScratch;
+        [SerializeField] ImageSequenceRecorderContext m_ctx;
+        [SerializeField] Shader m_shCopy;
+        Material m_matCopy;
+        Mesh m_quad;
+        CommandBuffer m_cbCopyFB;
+        CommandBuffer m_cbCopyGB;
+        CommandBuffer m_cbCopyRT;
+        RenderTexture m_rtFB;
+        RenderTexture[] m_rtGB;
+        RenderTexture[] m_rtScratch;
+        #endregion
 
 
-        public DataPath outputDir { get { return m_outputDir; } }
+        #region properties
+        public DataPath outputDir
+        {
+            get { return m_outputDir; }
+            set { m_outputDir = value; }
+        }
         public ImageSequenceRecorderContext.Type format
         {
             get { return m_format; }
             set { m_format = value; ValidateContext(); }
         }
-        public CaptureTarget captureTarget { get { return m_captureTarget; } }
-        public RenderTexture[] targetRT { get { return m_targetRT; } }
+        public CaptureTarget captureTarget
+        {
+            get { return m_captureTarget; }
+            set { m_captureTarget = value; }
+        }
+        public FrameBufferConponents fbComponents
+        {
+            get { return m_fbComponents; }
+            set { m_fbComponents = value; }
+        }
+        public RenderTexture[] targetRT
+        {
+            get { return m_targetRT; }
+            set { m_targetRT = value; }
+        }
+        public bool fixDeltaTime
+        {
+            get { return m_fixDeltaTime; }
+            set { m_fixDeltaTime = value; }
+        }
 
         public bool isRecording
         {
             get { return false; } // todo
         }
+        #endregion
 
 
         public void Export()
@@ -102,9 +130,10 @@ namespace UTJ.FrameCapturer
                 Debug.LogError("ImageSequenceRecorder: copy shader is missing!");
                 return false;
             }
-            if (m_captureTarget == CaptureTarget.RenderTexture && m_targetRT == null)
+            if (m_captureTarget == CaptureTarget.RenderTexture &&
+                (m_targetRT == null || m_targetRT.Length == 0))
             {
-                Debug.LogError("ImageSequenceRecorder: target RenderTexture is null!");
+                Debug.LogError("ImageSequenceRecorder: target RenderTexture is empty!");
                 return false;
             }
 

@@ -20,9 +20,9 @@ namespace UTJ.FrameCapturer
             EditorGUILayout.Space();
             EditorGUILayout.PropertyField(so.FindProperty("m_captureTarget"), true);
             EditorGUI.indentLevel++;
-            if (recorder.m_captureTarget == ImageSequenceRecorder.CaptureTarget.FrameBuffer)
+            if (recorder.captureTarget == ImageSequenceRecorder.CaptureTarget.FrameBuffer)
             {
-                var fbc = recorder.m_fbComponents;
+                var fbc = recorder.fbComponents;
                 fbc.frameBuffer = EditorGUILayout.Toggle("Frame Buffer", fbc.frameBuffer);
                 fbc.GBuffer = EditorGUILayout.Toggle("GBuffer", fbc.GBuffer);
                 if (fbc.GBuffer)
@@ -36,11 +36,10 @@ namespace UTJ.FrameCapturer
                     fbc.emission    = EditorGUILayout.Toggle("Emission", fbc.emission);
                     fbc.depth       = EditorGUILayout.Toggle("Depth", fbc.depth);
                     EditorGUI.indentLevel--;
-
                 }
-                recorder.m_fbComponents = fbc;
+                recorder.fbComponents = fbc;
             }
-            else if (recorder.m_captureTarget == ImageSequenceRecorder.CaptureTarget.RenderTexture)
+            else if (recorder.captureTarget == ImageSequenceRecorder.CaptureTarget.RenderTexture)
             {
                 EditorGUILayout.PropertyField(so.FindProperty("m_targetRT"), true);
             }
@@ -49,7 +48,7 @@ namespace UTJ.FrameCapturer
             EditorGUILayout.Space();
 
             EditorGUILayout.PropertyField(so.FindProperty("m_fixDeltaTime"), true);
-            if(recorder.m_fixDeltaTime)
+            if(recorder.fixDeltaTime)
             {
                 EditorGUI.indentLevel++;
                 EditorGUILayout.PropertyField(so.FindProperty("m_targetFramerate"), true);

@@ -64,7 +64,7 @@ fcWebMWriter::fcWebMWriter(BinaryStream &stream, const fcWebMConfig &conf)
         m_audio_track_id = m_segment.AddAudioTrack(conf.audio_sample_rate, conf.audio_num_channels, 0);
     }
 
-    mkvmuxer::SegmentInfo* const info = m_segment.GetSegmentInfo();
+    auto info = m_segment.GetSegmentInfo();
     info->set_writing_app("Unity WebM Recorder");
 }
 
@@ -75,7 +75,7 @@ fcWebMWriter::~fcWebMWriter()
 
 void fcWebMWriter::setVideoEncoderInfo(const fcIWebMVideoEncoder& encoder)
 {
-    auto* track = dynamic_cast<mkvmuxer::VideoTrack*>(m_segment.GetTrackByNumber(m_video_track_id));
+    auto track = dynamic_cast<mkvmuxer::VideoTrack*>(m_segment.GetTrackByNumber(m_video_track_id));
     if (track) {
         track->set_codec_id(encoder.getMatroskaCodecID());
     }
@@ -83,7 +83,7 @@ void fcWebMWriter::setVideoEncoderInfo(const fcIWebMVideoEncoder& encoder)
 
 void fcWebMWriter::setAudioEncoderInfo(const fcIWebMAudioEncoder& encoder)
 {
-    auto* track = dynamic_cast<mkvmuxer::AudioTrack*>(m_segment.GetTrackByNumber(m_audio_track_id));
+    auto track = dynamic_cast<mkvmuxer::AudioTrack*>(m_segment.GetTrackByNumber(m_audio_track_id));
     if (track) {
         track->set_codec_id(encoder.getMatroskaCodecID());
 
