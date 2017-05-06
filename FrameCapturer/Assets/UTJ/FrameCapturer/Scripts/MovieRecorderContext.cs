@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 
 namespace UTJ.FrameCapturer
@@ -17,7 +18,11 @@ namespace UTJ.FrameCapturer
 
         public abstract void Initialize(MovieRecorder recorder);
         public abstract void Release();
-        public abstract void AddVideoFrame(RenderTexture frame, double timestamp = -1.0);
+        public abstract void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp = -1.0);
+        public virtual void AddVideoFrame(Texture2D tex, double timestamp = -1.0)
+        {
+            AddVideoFrame(tex.GetRawTextureData(), fcAPI.fcGetPixelFormat(tex.format), timestamp);
+        }
         public abstract void AddAudioFrame(float[] samples, double timestamp = -1.0);
 
         public static MovieRecorderContext Create(Type t)

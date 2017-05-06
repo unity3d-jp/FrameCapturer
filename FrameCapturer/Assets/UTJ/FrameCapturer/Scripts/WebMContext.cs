@@ -17,7 +17,6 @@ namespace UTJ.FrameCapturer
 
         fcAPI.fcWebMContext m_ctx;
         fcAPI.fcStream m_ostream;
-        fcAPI.fcDeferredCall m_callback;
         EncoderConfig m_config;
 
         public override Type type { get { return Type.WebM; } }
@@ -41,26 +40,22 @@ namespace UTJ.FrameCapturer
             var path = recorder.outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".webm";
             m_ostream = fcAPI.fcCreateFileStream(path);
             fcAPI.fcWebMAddOutputStream(m_ctx, m_ostream);
-
-            m_callback = fcAPI.fcAllocateDeferredCall();
-            recorder.commandBuffer.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callback);
         }
 
         public override void Release()
         {
             fcAPI.fcGuard(() =>
             {
-                m_callback.Release();
                 m_ctx.Release();
                 m_ostream.Release();
             });
         }
 
-        public override void AddVideoFrame(RenderTexture frame, double timestamp)
+        public override void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp)
         {
-            if(m_config.captureVideo)
+            if (m_config.captureVideo)
             {
-                m_callback = fcAPI.fcWebMAddVideoFrameTexture(m_ctx, frame, timestamp, m_callback);
+                fcAPI.fcWebMAddVideoFramePixels(m_ctx, frame, format, timestamp);
             }
         }
 

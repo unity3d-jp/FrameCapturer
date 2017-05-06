@@ -286,16 +286,27 @@ namespace UTJ.FrameCapturer
                 Time.maximumDeltaTime = (1.0f / m_targetFramerate);
                 StartCoroutine(Wait());
             }
+        }
 
-            if (m_recording && Time.frameCount % m_captureEveryNthFrame == 0)
+        IEnumerator OnPostRender()
+        {
+            if (m_recording && m_ctx != null && Time.frameCount % m_captureEveryNthFrame == 0)
             {
+                yield return new WaitForEndOfFrame();
+
                 double timestamp = Time.unscaledTime;
                 if (m_framerateMode == FrameRateMode.Constant)
                 {
                     timestamp = 1.0 / m_targetFramerate * m_numVideoFrames;
                 }
 
-                m_ctx.AddVideoFrame(m_scratchBuffer, timestamp);
+                var tex = new Texture2D(m_scratchBuffer.width, m_scratchBuffer.height, TextureFormat.RGB24, false);
+                RenderTexture.active = m_scratchBuffer;
+                tex.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0, false);
+                tex.Apply();
+                m_ctx.AddVideoFrame(tex, timestamp);
+                Destroy(tex);
+
                 m_numVideoFrames++;
             }
         }
