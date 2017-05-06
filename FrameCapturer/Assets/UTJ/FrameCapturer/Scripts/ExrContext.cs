@@ -18,6 +18,8 @@ namespace UTJ.FrameCapturer
         public override void Initialize(ImageSequenceRecorder recorder)
         {
             m_recorder = recorder;
+            var exrconf = m_recorder.exrConfig;
+            m_ctx = fcAPI.fcExrCreateContext(ref exrconf);
         }
 
         public override void Release()
@@ -27,13 +29,8 @@ namespace UTJ.FrameCapturer
 
         public override void Export(RenderTexture frame, int channels, string name)
         {
-            if (!m_recorder) { return; }
-            if (!m_ctx)
-            {
-                var exrconf = m_recorder.exrConfig;
-                m_ctx = fcAPI.fcExrCreateContext(ref exrconf);
-            }
-            string path = m_recorder.outputDir.GetFullPath() + "/" + name + "_" + Time.frameCount.ToString("0000") + ".exr";
+            if (!m_recorder || !m_ctx) { return; }
+            string path = m_recorder.outputDir.GetFullPath() + "/" + name + "_" + m_recorder.frame.ToString("0000") + ".exr";
 
             fcAPI.fcExrBeginImage(m_ctx, path, frame.width, frame.height);
             fcAPI.fcLock(frame, (data, fmt) => {

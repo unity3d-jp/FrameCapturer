@@ -19,6 +19,12 @@ namespace UTJ.FrameCapturer
             RenderTexture,
         }
 
+        public enum CaptureControl
+        {
+            Manual,
+            SelectedRange,
+        }
+
         [Serializable]
         public struct FrameBufferConponents
         {
@@ -63,8 +69,9 @@ namespace UTJ.FrameCapturer
         [SerializeField] RenderTexture[] m_targetRT;
         [SerializeField] bool m_fixDeltaTime = true;
         [SerializeField] int m_targetFramerate = 30;
+        [SerializeField] CaptureControl m_captureControl = CaptureControl.SelectedRange;
         [SerializeField] int m_startFrame = 0;
-        [SerializeField] int m_endFrame = 0;
+        [SerializeField] int m_endFrame = 100;
 
         [SerializeField] fcAPI.fcPngConfig m_pngConfig = fcAPI.fcPngConfig.default_value;
         [SerializeField] fcAPI.fcExrConfig m_exrConfig = fcAPI.fcExrConfig.default_value;
@@ -79,6 +86,9 @@ namespace UTJ.FrameCapturer
         RenderTexture m_rtFB;
         RenderTexture[] m_rtGB;
         RenderTexture[] m_rtScratch;
+        int m_frame;
+        bool m_recording;
+        bool m_oneShot;
         #endregion
 
 
@@ -113,20 +123,40 @@ namespace UTJ.FrameCapturer
             get { return m_fixDeltaTime; }
             set { m_fixDeltaTime = value; }
         }
+        public int targetFramerate
+        {
+            get { return m_targetFramerate; }
+            set { m_targetFramerate = value; }
+        }
+
+        public CaptureControl captureControl
+        {
+            get { return m_captureControl; }
+            set { m_captureControl = value; }
+        }
+        public int startFrame
+        {
+            get { return m_startFrame; }
+            set { m_startFrame = value; }
+        }
+        public int endFrame
+        {
+            get { return m_endFrame; }
+            set { m_endFrame = value; }
+        }
 
         public fcAPI.fcPngConfig pngConfig { get { return m_pngConfig; } }
         public fcAPI.fcExrConfig exrConfig { get { return m_exrConfig; } }
 
-        public bool isRecording
-        {
-            get { return false; } // todo
-        }
+        public bool isRecording { get { return m_recording; } }
+        public int frame { get { return m_frame; } }
         #endregion
 
 
 
         public bool BeginRecording()
         {
+            if (m_recording) { return false; }
             if (m_shCopy == null)
             {
                 Debug.LogError("ImageSequenceRecorder: copy shader is missing!");
@@ -141,6 +171,9 @@ namespace UTJ.FrameCapturer
 
             ValidateContext();
             if (m_ctx == null) { return false; }
+            m_ctx.Initialize(this);
+
+            m_recording = true;
 
             m_outputDir.CreateDirectory();
             if (m_quad == null) m_quad = fcAPI.CreateFullscreenQuad();
@@ -222,6 +255,9 @@ namespace UTJ.FrameCapturer
 
         public void EndRecording()
         {
+            if (!m_recording) { return; }
+            m_recording = false;
+
             var cam = GetComponent<Camera>();
             if (m_cbCopyFB != null)
             {
@@ -235,11 +271,12 @@ namespace UTJ.FrameCapturer
             {
                 cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cbCopyRT);
             }
+            m_ctx.Release();
         }
 
         public void OneShot()
         {
-
+            m_oneShot = true;
         }
 
         #region impl
@@ -283,7 +320,6 @@ namespace UTJ.FrameCapturer
         bool CreateContext()
         {
             m_ctx = ImageSequenceRecorderContext.Create(m_format);
-            if(m_ctx) { m_ctx.Initialize(this); }
             return m_ctx != null;
         }
 
@@ -325,7 +361,8 @@ namespace UTJ.FrameCapturer
 
         void OnValidate()
         {
-            m_startFrame = Mathf.Max(1, m_startFrame);
+            m_startFrame = Mathf.Max(0, m_startFrame);
+            m_endFrame = Mathf.Max(m_startFrame, m_endFrame);
         }
 #endif // UNITY_EDITOR
 
@@ -366,18 +403,36 @@ namespace UTJ.FrameCapturer
 
         void Update()
         {
-            int frame = Time.frameCount;
+            m_frame = Time.frameCount;
 
-            if (frame == m_startFrame)
+            if (m_captureControl == CaptureControl.SelectedRange)
             {
-                BeginRecording();
+                if (m_frame >= m_startFrame && m_frame <= m_endFrame)
+                {
+                    if (!m_recording) { BeginRecording(); }
+                }
+                else if(m_recording)
+                {
+                    EndRecording();
+                }
             }
-            if (frame == m_endFrame + 1)
+            else if (m_captureControl == CaptureControl.Manual)
             {
-                EndRecording();
+                if(m_oneShot)
+                {
+                    if (!m_recording)
+                    {
+                        BeginRecording();
+                    }
+                    else
+                    {
+                        EndRecording();
+                        m_oneShot = false;
+                    }
+                }
             }
 
-            if(m_fixDeltaTime)
+            if (m_fixDeltaTime)
             {
                 Time.maximumDeltaTime = (1.0f / m_targetFramerate);
                 StartCoroutine(Wait());
@@ -386,8 +441,7 @@ namespace UTJ.FrameCapturer
 
         IEnumerator OnPostRender()
         {
-            int frame = Time.frameCount;
-            if (frame >= m_startFrame && frame <= m_endFrame)
+            if (m_recording)
             {
                 yield return new WaitForEndOfFrame();
                 Export();

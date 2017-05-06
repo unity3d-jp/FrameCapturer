@@ -68,34 +68,41 @@ namespace UTJ.FrameCapturer
 
             EditorGUILayout.Space();
 
-            EditorGUILayout.PropertyField(so.FindProperty("m_startFrame"), true);
-            EditorGUILayout.PropertyField(so.FindProperty("m_endFrame"), true);
+            // capture control
+            EditorGUILayout.PropertyField(so.FindProperty("m_captureControl"), true);
+            EditorGUI.indentLevel++;
+            if (recorder.captureControl == ImageSequenceRecorder.CaptureControl.SelectedRange)
+            {
+                EditorGUILayout.PropertyField(so.FindProperty("m_startFrame"), true);
+                EditorGUILayout.PropertyField(so.FindProperty("m_endFrame"), true);
+            }
+            else if (recorder.captureControl == ImageSequenceRecorder.CaptureControl.Manual)
+            {
+                EditorGUILayout.Space();
+                if (!recorder.isRecording)
+                {
+                    if (GUILayout.Button("Begin Recording"))
+                    {
+                        recorder.BeginRecording();
+                    }
+                    EditorGUILayout.Space();
+                    if (GUILayout.Button("One Shot"))
+                    {
+                        recorder.OneShot();
+                    }
+                }
+                else
+                {
+                    if (GUILayout.Button("End Recording"))
+                    {
+                        recorder.EndRecording();
+                    }
+                }
+            }
+            EditorGUI.indentLevel--;
+
 
             so.ApplyModifiedProperties();
-
-
-            // recording control
-
-            EditorGUILayout.Space();
-            if (!recorder.isRecording)
-            {
-                if (GUILayout.Button("Begin Recording"))
-                {
-                    recorder.BeginRecording();
-                }
-                EditorGUILayout.Space();
-                if (GUILayout.Button("One Shot"))
-                {
-                    recorder.OneShot();
-                }
-            }
-            else
-            {
-                if (GUILayout.Button("End Recording"))
-                {
-                    recorder.EndRecording();
-                }
-            }
         }
 
     }
