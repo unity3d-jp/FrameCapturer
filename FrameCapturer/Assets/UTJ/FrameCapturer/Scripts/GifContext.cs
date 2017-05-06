@@ -15,7 +15,6 @@ namespace UTJ.FrameCapturer
 
         fcAPI.fcGIFContext m_ctx;
         fcAPI.fcStream m_ostream;
-        fcAPI.fcDeferredCall m_callback;
         EncoderConfig m_config;
         int m_numVideoFrames;
 
@@ -36,29 +35,26 @@ namespace UTJ.FrameCapturer
             var path = recorder.outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
             m_ostream = fcAPI.fcCreateFileStream(path);
             fcAPI.fcGifAddOutputStream(m_ctx, m_ostream);
-
-            m_callback = fcAPI.fcAllocateDeferredCall();
-            recorder.commandBuffer.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callback);
         }
 
         public override void Release()
         {
             fcAPI.fcGuard(() =>
             {
-                m_callback.Release();
                 m_ctx.Release();
                 m_ostream.Release();
             });
         }
 
-        public override void AddVideoFrame(RenderTexture frame, double timestamp)
+        public override void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp)
         {
             bool keyframe = m_config.keyframeInterval > 0 && m_numVideoFrames % m_config.keyframeInterval == 0;
-            m_callback = fcAPI.fcGifAddFrameTexture(m_ctx, frame, keyframe, timestamp, m_callback);
+            fcAPI.fcGifAddFramePixels(m_ctx, frame, format, keyframe, timestamp);
         }
 
         public override void AddAudioFrame(float[] samples, double timestamp)
         {
+            // not supported
         }
     }
 }

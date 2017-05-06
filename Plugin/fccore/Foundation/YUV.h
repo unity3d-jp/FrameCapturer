@@ -22,6 +22,7 @@ class I420Image
 public:
     void resize(int width, int height);
     size_t size() const;
+    I420Data& data();
     const I420Data& data() const;
 
 private:
@@ -29,8 +30,6 @@ private:
     I420Data m_data;
 };
 
-void RGBAToI420(I420Image& dst, const void *rgba_pixels, int width, int height);
-void RGBAToI420(const I420Data& dst, const void *rgba_pixels, int width, int height);
 void AnyToI420(I420Image& dst, Buffer& tmp, const void *pixels, fcPixelFormat fmt, int width, int height);
 
 
@@ -50,6 +49,7 @@ class NV12Image
 public:
     void resize(int width, int height);
     size_t size() const;
+    NV12Data& data();
     const NV12Data& data() const;
 
 private:

@@ -16,7 +16,6 @@ namespace UTJ.FrameCapturer
         }
 
         fcAPI.fcMP4Context m_ctx;
-        fcAPI.fcDeferredCall m_callback;
         EncoderConfig m_config;
 
         public override Type type { get { return Type.MP4; } }
@@ -38,25 +37,21 @@ namespace UTJ.FrameCapturer
 
             var path = recorder.outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
             m_ctx = fcAPI.fcMP4OSCreateContext(ref mp4conf, path);
-
-            m_callback = fcAPI.fcAllocateDeferredCall();
-            recorder.commandBuffer.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callback);
         }
 
         public override void Release()
         {
             fcAPI.fcGuard(() =>
             {
-                m_callback.Release();
                 m_ctx.Release();
             });
         }
 
-        public override void AddVideoFrame(RenderTexture frame, double timestamp)
+        public override void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp)
         {
             if (m_config.captureVideo)
             {
-                m_callback = fcAPI.fcMP4AddVideoFrameTexture(m_ctx, frame, timestamp, m_callback);
+                fcAPI.fcMP4AddVideoFramePixels(m_ctx, frame, format, timestamp);
             }
         }
 

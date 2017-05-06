@@ -28,38 +28,42 @@ size_t I420Image::size() const
 {
     return m_buffer.size();
 }
-
+I420Data& I420Image::data()
+{
+    return m_data;
+}
 const I420Data& I420Image::data() const
 {
     return m_data;
 }
 
-
-void RGBAToI420(I420Image& dst, const void *rgba_pixels, int width, int height)
-{
-    dst.resize(width, height);
-    RGBAToI420(dst.data(), rgba_pixels, width, height);
-}
-
-void RGBAToI420(const I420Data& dst, const void *rgba_pixels, int width, int height)
-{
-    libyuv::ABGRToI420(
-        (const uint8*)rgba_pixels, width * 4,
-        (uint8*)dst.y, width,
-        (uint8*)dst.u, width >> 1,
-        (uint8*)dst.v, width >> 1,
-        width, height);
-}
-
 void AnyToI420(I420Image& dst, Buffer& tmp, const void *pixels, fcPixelFormat fmt, int width, int height)
 {
-    if (fmt != fcPixelFormat_RGBAu8) {
+    if (fmt != fcPixelFormat_RGBAu8 && fmt != fcPixelFormat_RGBu8) {
         tmp.resize(width * height * 4);
         fcConvertPixelFormat(tmp.data(), fcPixelFormat_RGBAu8, pixels, fmt, width * height);
         pixels = tmp.data();
         fmt = fcPixelFormat_RGBAu8;
     }
-    RGBAToI420(dst, pixels, width, height);
+
+    dst.resize(width, height);
+    auto& data = dst.data();
+    if (fmt == fcPixelFormat_RGBAu8) {
+        libyuv::ABGRToI420(
+            (const uint8*)pixels, width * 4,
+            (uint8*)data.y, width,
+            (uint8*)data.u, width >> 1,
+            (uint8*)data.v, width >> 1,
+            width, height);
+    }
+    else if (fmt == fcPixelFormat_RGBu8) {
+        libyuv::RAWToI420(
+            (const uint8*)pixels, width * 3,
+            (uint8*)data.y, width,
+            (uint8*)data.u, width >> 1,
+            (uint8*)data.v, width >> 1,
+            width, height);
+    }
 }
 
 
@@ -82,25 +86,13 @@ size_t NV12Image::size() const
 {
     return m_buffer.size();
 }
-
-const NV12Data& NV12Image::data() const
+NV12Data& NV12Image::data()
 {
     return m_data;
 }
-
-void RGBAToNV12(NV12Image& dst, const void *rgba_pixels, int width, int height)
+const NV12Data& NV12Image::data() const
 {
-    dst.resize(width, height);
-    RGBAToNV12(dst.data(), rgba_pixels, width, height);
-}
-
-void RGBAToNV12(const NV12Data& dst, const void *rgba_pixels, int width, int height)
-{
-    libyuv::ARGBToNV12(
-        (const uint8*)rgba_pixels, width * 4,
-        (uint8*)dst.y, width,
-        (uint8*)dst.uv, width,
-        width, height);
+    return m_data;
 }
 
 void AnyToNV12(NV12Image& dst, Buffer& tmp, const void *pixels, fcPixelFormat fmt, int width, int height)
@@ -111,5 +103,14 @@ void AnyToNV12(NV12Image& dst, Buffer& tmp, const void *pixels, fcPixelFormat fm
         pixels = tmp.data();
         fmt = fcPixelFormat_RGBAu8;
     }
-    RGBAToNV12(dst, pixels, width, height);
+
+    dst.resize(width, height);
+    auto& data = dst.data();
+    if (fmt == fcPixelFormat_RGBAu8) {
+        libyuv::ARGBToNV12(
+            (const uint8*)pixels, width * 4,
+            (uint8*)data.y, width,
+            (uint8*)data.uv, width,
+            width, height);
+    }
 }

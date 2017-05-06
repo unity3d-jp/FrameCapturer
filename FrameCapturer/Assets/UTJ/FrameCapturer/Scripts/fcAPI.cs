@@ -260,9 +260,9 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] public static extern fcGIFContext fcGifCreateContext(ref fcGifConfig conf);
         [DllImport ("fccore")] private static extern void        fcGifDestroyContext(fcGIFContext ctx);
         [DllImport ("fccore")] public static extern void         fcGifAddOutputStream(fcGIFContext ctx, fcStream stream);
-        [DllImport ("fccore")] private static extern fcDeferredCall fcGifAddFrameTextureDeferred(fcGIFContext ctx, IntPtr tex, fcPixelFormat fmt, Bool keyframe, double timestamp, fcDeferredCall id);
-        [DllImport ("fccore")] public static extern Bool         fcGifWrite(fcGIFContext ctx, fcStream stream, int begin_frame=0, int end_frame=-1);
+        [DllImport ("fccore")] public static extern Bool         fcGifAddFramePixels(fcGIFContext ctx, byte[] pixels, fcPixelFormat fmt, bool keyframe = false, double timestamp = -1.0);
 
+        [DllImport ("fccore")] private static extern fcDeferredCall fcGifAddFrameTextureDeferred(fcGIFContext ctx, IntPtr tex, fcPixelFormat fmt, Bool keyframe, double timestamp, fcDeferredCall id);
         public static fcDeferredCall fcGifAddFrameTexture(fcGIFContext ctx, RenderTexture tex, bool keyframe, double timestamp, fcDeferredCall id)
         {
             return fcGifAddFrameTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), keyframe, timestamp, id);
@@ -346,8 +346,8 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] public static extern void             fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);
         [DllImport ("fccore")] private static extern IntPtr          fcMP4GetAudioEncoderInfo(fcMP4Context ctx);
         [DllImport ("fccore")] private static extern IntPtr          fcMP4GetVideoEncoderInfo(fcMP4Context ctx);
-        [DllImport ("fccore")] private static extern fcDeferredCall fcMP4AddVideoFrameTextureDeferred(fcMP4Context ctx, IntPtr tex, fcPixelFormat fmt, double time, fcDeferredCall id);
-        [DllImport ("fccore")] public static extern Bool             fcMP4AddAudioFrame(fcMP4Context ctx, float[] samples, int num_samples, double time = -1.0);
+        [DllImport ("fccore")] public static extern Bool             fcMP4AddVideoFramePixels(fcMP4Context ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
+        [DllImport ("fccore")] public static extern Bool             fcMP4AddAudioFrame(fcMP4Context ctx, float[] samples, int num_samples, double timestamp = -1.0);
 
         public static string fcMP4GetAudioEncoderInfoS(fcMP4Context ctx)
         {
@@ -359,6 +359,7 @@ namespace UTJ.FrameCapturer
             return Marshal.PtrToStringAnsi(fcMP4GetVideoEncoderInfo(ctx));
         }
 
+        [DllImport ("fccore")] private static extern fcDeferredCall fcMP4AddVideoFrameTextureDeferred(fcMP4Context ctx, IntPtr tex, fcPixelFormat fmt, double time, fcDeferredCall id);
         public static fcDeferredCall fcMP4AddVideoFrameTexture(fcMP4Context ctx, RenderTexture tex, double time, fcDeferredCall id)
         {
             return fcMP4AddVideoFrameTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), time, id);
@@ -435,13 +436,14 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] private static extern void fcWebMDestroyContext(fcWebMContext ctx);
         [DllImport ("fccore")] public static extern void fcWebMAddOutputStream(fcWebMContext ctx, fcStream stream);
         // timestamp=-1 is treated as current time.
-        [DllImport ("fccore")] private static extern fcDeferredCall fcWebMAddVideoFrameTextureDeferred(fcWebMContext ctx, IntPtr tex, fcPixelFormat fmt, double timestamp, fcDeferredCall id);
+        [DllImport ("fccore")] public static extern Bool fcWebMAddVideoFramePixels(fcWebMContext ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
         // timestamp=-1 is treated as current time.
         [DllImport ("fccore")] public static extern Bool fcWebMAddAudioFrame(fcWebMContext ctx, float[] samples, int num_samples, double timestamp = -1.0);
 
+        [DllImport ("fccore")] private static extern fcDeferredCall fcWebMAddVideoFrameTexture(fcWebMContext ctx, IntPtr tex, fcPixelFormat fmt, double timestamp, fcDeferredCall id);
         public static fcDeferredCall fcWebMAddVideoFrameTexture(fcWebMContext ctx, RenderTexture tex, double time, fcDeferredCall id)
         {
-            return fcWebMAddVideoFrameTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), time, id);
+            return fcWebMAddVideoFrameTexture(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), time, id);
         }
 
         public static Mesh CreateFullscreenQuad()
