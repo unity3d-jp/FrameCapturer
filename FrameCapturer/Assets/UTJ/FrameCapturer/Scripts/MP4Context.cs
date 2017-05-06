@@ -17,27 +17,30 @@ namespace UTJ.FrameCapturer
 
         fcAPI.fcMP4Context m_ctx;
         fcAPI.fcDeferredCall m_callback;
-        int m_numVideoFrames;
+        EncoderConfig m_config;
 
         public override Type type { get { return Type.MP4; } }
 
         public override void Initialize(MovieRecorder recorder)
         {
-            var c = recorder.mp4Config;
+            m_config = recorder.mp4Config;
             fcAPI.fcMP4Config mp4conf = fcAPI.fcMP4Config.default_value;
             mp4conf = fcAPI.fcMP4Config.default_value;
-            mp4conf.video = c.captureVideo;
-            mp4conf.audio = c.captureAudio;
+            mp4conf.video = m_config.captureVideo;
+            mp4conf.audio = m_config.captureAudio;
             mp4conf.video_width = recorder.scratchBuffer.width;
             mp4conf.video_height = recorder.scratchBuffer.height;
             mp4conf.video_target_framerate = 60;
-            mp4conf.video_target_bitrate = c.videoBitrate;
-            mp4conf.audio_target_bitrate = c.audioBitrate;
+            mp4conf.video_target_bitrate = m_config.videoBitrate;
+            mp4conf.audio_target_bitrate = m_config.audioBitrate;
             mp4conf.audio_sample_rate = AudioSettings.outputSampleRate;
             mp4conf.audio_num_channels = fcAPI.fcGetNumAudioChannels();
 
             var path = recorder.outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
             m_ctx = fcAPI.fcMP4OSCreateContext(ref mp4conf, path);
+
+            m_callback = fcAPI.fcAllocateDeferredCall();
+            recorder.commandBuffer.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callback);
         }
 
         public override void Release()
@@ -49,15 +52,20 @@ namespace UTJ.FrameCapturer
             });
         }
 
-        public override int AddVideoFrame(RenderTexture frame, double timestamp)
+        public override void AddVideoFrame(RenderTexture frame, double timestamp)
         {
-            m_callback = fcAPI.fcMP4AddVideoFrameTexture(m_ctx, frame, timestamp, m_callback);
-            return m_callback;
+            if (m_config.captureVideo)
+            {
+                m_callback = fcAPI.fcMP4AddVideoFrameTexture(m_ctx, frame, timestamp, m_callback);
+            }
         }
 
         public override void AddAudioFrame(float[] samples, double timestamp)
         {
-            fcAPI.fcMP4AddAudioFrame(m_ctx, samples, samples.Length);
+            if (m_config.captureAudio)
+            {
+                fcAPI.fcMP4AddAudioFrame(m_ctx, samples, samples.Length);
+            }
         }
     }
 }

@@ -17,7 +17,7 @@ namespace UTJ.FrameCapturer
 
         public abstract void Initialize(MovieRecorder recorder);
         public abstract void Release();
-        public abstract int AddVideoFrame(RenderTexture frame, double timestamp = -1.0);
+        public abstract void AddVideoFrame(RenderTexture frame, double timestamp = -1.0);
         public abstract void AddAudioFrame(float[] samples, double timestamp = -1.0);
 
         public static MovieRecorderContext Create(Type t)

@@ -64,6 +64,7 @@ namespace UTJ.FrameCapturer
         public MP4Context.EncoderConfig mp4Config { get { return m_mp4EncoderConfig; } }
 
         public RenderTexture scratchBuffer { get { return m_scratchBuffer; } }
+        public CommandBuffer commandBuffer { get { return m_cb; } }
         public bool isRecording { get { return m_recording; } }
 
 
@@ -116,6 +117,13 @@ namespace UTJ.FrameCapturer
                     int div = System.Math.Abs(m_resolutionWidth);
                     captureWidth = targetWidth / div;
                     captureHeight = targetHeight / div;
+                }
+
+                if( m_ctx.type == MovieRecorderContext.Type.MP4 ||
+                    m_ctx.type == MovieRecorderContext.Type.WebM)
+                {
+                    captureWidth = (captureWidth + 1) & ~1;
+                    captureHeight = (captureHeight + 1) & ~1;
                 }
 
                 m_scratchBuffer = new RenderTexture(captureWidth, captureHeight, 0, RenderTextureFormat.ARGB32);
@@ -191,6 +199,7 @@ namespace UTJ.FrameCapturer
 
         void ValidateContext()
         {
+            if(m_recording) { return; }
             if(m_ctx == null)
             {
                 CreateContext();
@@ -238,32 +247,25 @@ namespace UTJ.FrameCapturer
                 Time.maximumDeltaTime = (1.0f / m_targetFramerate);
                 StartCoroutine(Wait());
             }
-        }
 
-
-        void OnAudioFilterRead(float[] samples, int channels)
-        {
-            if (m_recording && m_ctx != null)
+            if (m_recording && Time.frameCount % m_captureEveryNthFrame == 0)
             {
-                m_ctx.AddAudioFrame(samples);
-            }
-        }
-
-        IEnumerator OnPostRender()
-        {
-            if (m_recording && m_ctx != null && Time.frameCount % m_captureEveryNthFrame == 0)
-            {
-                yield return new WaitForEndOfFrame();
-
                 double timestamp = Time.unscaledTime;
                 if (m_framerateMode == FrameRateMode.Constant)
                 {
                     timestamp = 1.0 / m_targetFramerate * m_numVideoFrames;
                 }
 
-                int cb = m_ctx.AddVideoFrame(m_scratchBuffer, timestamp);
-                GL.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), cb);
+                m_ctx.AddVideoFrame(m_scratchBuffer, timestamp);
                 m_numVideoFrames++;
+            }
+        }
+
+        void OnAudioFilterRead(float[] samples, int channels)
+        {
+            if (m_recording && m_ctx != null)
+            {
+                m_ctx.AddAudioFrame(samples);
             }
         }
         #endregion
