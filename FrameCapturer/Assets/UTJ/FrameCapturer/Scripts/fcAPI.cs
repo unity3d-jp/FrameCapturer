@@ -144,9 +144,18 @@ namespace UTJ.FrameCapturer
         // PNG Exporter
         // -------------------------------------------------------------
 
+        public enum fcPngPixelFormat
+        {
+            Adaptive, // select optimal one for input data
+            UInt8,
+            UInt16,
+        };
+
+        [Serializable]
         public struct fcPngConfig
         {
-            public int max_active_tasks;
+            public int maxTasks;
+            public fcPngPixelFormat pixelFormat;
 
             public static fcPngConfig default_value
             {
@@ -154,30 +163,52 @@ namespace UTJ.FrameCapturer
                 {
                     return new fcPngConfig
                     {
-                        max_active_tasks = 24,
+                        maxTasks = 24,
+                        pixelFormat = fcPngPixelFormat.Adaptive,
                     };
                 }
             }
         };
-        public struct fcPNGContext
+
+        public struct fcPngContext
         {
             public IntPtr ptr;
             public void Release() { fcPngDestroyContext(this); ptr = IntPtr.Zero; }
-            public static implicit operator bool(fcPNGContext v) { return v.ptr != IntPtr.Zero; }
+            public static implicit operator bool(fcPngContext v) { return v.ptr != IntPtr.Zero; }
         }
 
-        [DllImport ("fccore")] public static extern fcPNGContext fcPngCreateContext(ref fcPngConfig conf);
-        [DllImport ("fccore")] private static extern void        fcPngDestroyContext(fcPNGContext ctx);
-        [DllImport ("fccore")] public static extern Bool         fcPngExportPixels(fcPNGContext ctx, string path, byte[] pixels, int width, int height, fcPixelFormat fmt, Bool flipY);
+        [DllImport ("fccore")] public static extern fcPngContext fcPngCreateContext(ref fcPngConfig conf);
+        [DllImport ("fccore")] private static extern void        fcPngDestroyContext(fcPngContext ctx);
+        [DllImport ("fccore")] public static extern Bool         fcPngExportPixels(fcPngContext ctx, string path, byte[] pixels, int width, int height, fcPixelFormat fmt, Bool flipY);
 
 
         // -------------------------------------------------------------
         // EXR Exporter
         // -------------------------------------------------------------
 
+        public enum fcExrPixelFormat
+        {
+            Adaptive, // select optimal one for input data
+            Half,
+            Float,
+            Int,
+        };
+
+        public enum fcExrCompression
+        {
+            None,
+            RLE,
+            ZipS, // par-line
+            Zip,  // block
+            PIZ,
+        };
+
+        [Serializable]
         public struct fcExrConfig
         {
-            public int max_active_tasks;
+            public int maxTasks;
+            public fcExrPixelFormat pixelFormat;
+            public fcExrCompression compression;
 
             public static fcExrConfig default_value
             {
@@ -185,29 +216,33 @@ namespace UTJ.FrameCapturer
                 {
                     return new fcExrConfig
                     {
-                        max_active_tasks = 24,
+                        maxTasks = 24,
+                        pixelFormat = fcExrPixelFormat.Adaptive,
+                        compression = fcExrCompression.Zip,
                     };
                 }
             }
         };
-        public struct fcEXRContext
+
+        public struct fcExrContext
         {
             public IntPtr ptr;
             public void Release() { fcExrDestroyContext(this); ptr = IntPtr.Zero; }
-            public static implicit operator bool(fcEXRContext v) { return v.ptr != IntPtr.Zero; }
+            public static implicit operator bool(fcExrContext v) { return v.ptr != IntPtr.Zero; }
         }
 
-        [DllImport ("fccore")] public static extern fcEXRContext fcExrCreateContext(ref fcExrConfig conf);
-        [DllImport ("fccore")] private static extern void        fcExrDestroyContext(fcEXRContext ctx);
-        [DllImport ("fccore")] public static extern Bool         fcExrBeginImage(fcEXRContext ctx, string path, int width, int height);
-        [DllImport ("fccore")] public static extern Bool         fcExrAddLayerPixels(fcEXRContext ctx, byte[] pixels, fcPixelFormat fmt, int ch, string name, Bool flipY);
-        [DllImport ("fccore")] public static extern Bool         fcExrEndImage(fcEXRContext ctx);
+        [DllImport ("fccore")] public static extern fcExrContext fcExrCreateContext(ref fcExrConfig conf);
+        [DllImport ("fccore")] private static extern void        fcExrDestroyContext(fcExrContext ctx);
+        [DllImport ("fccore")] public static extern Bool         fcExrBeginImage(fcExrContext ctx, string path, int width, int height);
+        [DllImport ("fccore")] public static extern Bool         fcExrAddLayerPixels(fcExrContext ctx, byte[] pixels, fcPixelFormat fmt, int ch, string name, Bool flipY);
+        [DllImport ("fccore")] public static extern Bool         fcExrEndImage(fcExrContext ctx);
 
 
         // -------------------------------------------------------------
         // GIF Exporter
         // -------------------------------------------------------------
 
+        [Serializable]
         public struct fcGifConfig
         {
             public int width;
@@ -229,20 +264,20 @@ namespace UTJ.FrameCapturer
                 }
             }
         };
-        public struct fcGIFContext
+        public struct fcGifContext
         {
             public IntPtr ptr;
             public void Release() { fcGifDestroyContext(this); ptr = IntPtr.Zero; }
-            public static implicit operator bool(fcGIFContext v) { return v.ptr != IntPtr.Zero; }
+            public static implicit operator bool(fcGifContext v) { return v.ptr != IntPtr.Zero; }
         }
 
-        [DllImport ("fccore")] public static extern fcGIFContext fcGifCreateContext(ref fcGifConfig conf);
-        [DllImport ("fccore")] private static extern void        fcGifDestroyContext(fcGIFContext ctx);
-        [DllImport ("fccore")] public static extern void         fcGifAddOutputStream(fcGIFContext ctx, fcStream stream);
-        [DllImport ("fccore")] public static extern Bool         fcGifAddFramePixels(fcGIFContext ctx, byte[] pixels, fcPixelFormat fmt, bool keyframe = false, double timestamp = -1.0);
+        [DllImport ("fccore")] public static extern fcGifContext fcGifCreateContext(ref fcGifConfig conf);
+        [DllImport ("fccore")] private static extern void        fcGifDestroyContext(fcGifContext ctx);
+        [DllImport ("fccore")] public static extern void         fcGifAddOutputStream(fcGifContext ctx, fcStream stream);
+        [DllImport ("fccore")] public static extern Bool         fcGifAddFramePixels(fcGifContext ctx, byte[] pixels, fcPixelFormat fmt, bool keyframe = false, double timestamp = -1.0);
 
-        [DllImport ("fccore")] private static extern fcDeferredCall fcGifAddFrameTextureDeferred(fcGIFContext ctx, IntPtr tex, fcPixelFormat fmt, Bool keyframe, double timestamp, fcDeferredCall id);
-        public static fcDeferredCall fcGifAddFrameTexture(fcGIFContext ctx, RenderTexture tex, bool keyframe, double timestamp, fcDeferredCall id)
+        [DllImport ("fccore")] private static extern fcDeferredCall fcGifAddFrameTextureDeferred(fcGifContext ctx, IntPtr tex, fcPixelFormat fmt, Bool keyframe, double timestamp, fcDeferredCall id);
+        public static fcDeferredCall fcGifAddFrameTexture(fcGifContext ctx, RenderTexture tex, bool keyframe, double timestamp, fcDeferredCall id)
         {
             return fcGifAddFrameTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), keyframe, timestamp, id);
         }
@@ -269,6 +304,7 @@ namespace UTJ.FrameCapturer
             AACMask = AACIntel | AACFAAC,
         };
 
+        [Serializable]
         public struct fcMP4Config
         {
             public Bool video;
@@ -367,6 +403,7 @@ namespace UTJ.FrameCapturer
             Opus,
         };
 
+        [Serializable]
         public struct fcWebMConfig
         {
             public fcWebMVideoEncoder video_encoder;
@@ -444,14 +481,14 @@ namespace UTJ.FrameCapturer
                 case RenderTextureFormat.DefaultHDR:
                 case RenderTextureFormat.ARGB2101010:
                 case RenderTextureFormat.RGB111110Float:
-                case RenderTextureFormat.ARGBHalf: dstfmt = TextureFormat.RGBAHalf; break;
-                case RenderTextureFormat.RGHalf: dstfmt = TextureFormat.RGHalf; break;
+                case RenderTextureFormat.ARGBHalf:
+                case RenderTextureFormat.RGHalf:
                 case RenderTextureFormat.Depth:
                 case RenderTextureFormat.Shadowmap:
-                case RenderTextureFormat.RHalf: dstfmt = TextureFormat.RHalf; break;
-                case RenderTextureFormat.ARGBFloat: dstfmt = TextureFormat.RGBAFloat; break;
-                case RenderTextureFormat.RGFloat: dstfmt = TextureFormat.RGFloat; break;
-                case RenderTextureFormat.RFloat: dstfmt = TextureFormat.RFloat; break;
+                case RenderTextureFormat.RHalf: dstfmt = TextureFormat.RGBAHalf; break;
+                case RenderTextureFormat.ARGBFloat:
+                case RenderTextureFormat.RGFloat:
+                case RenderTextureFormat.RFloat: dstfmt = TextureFormat.RGBAFloat; break;
             }
             fcLock(src, dstfmt, body);
         }

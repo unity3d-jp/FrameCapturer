@@ -1,14 +1,12 @@
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 
 namespace UTJ.FrameCapturer
 {
     public class PngContext : ImageSequenceRecorderContext
     {
-        ImageSequenceRecorder m_recorder;
-        fcAPI.fcPNGContext m_ctx;
+        [SerializeField] ImageSequenceRecorder m_recorder;
+        fcAPI.fcPngContext m_ctx;
 
 
         public override Type type { get { return Type.Png; } }
@@ -16,8 +14,6 @@ namespace UTJ.FrameCapturer
         public override void Initialize(ImageSequenceRecorder recorder)
         {
             m_recorder = recorder;
-            var pngconf = fcAPI.fcPngConfig.default_value;
-            m_ctx = fcAPI.fcPngCreateContext(ref pngconf);
         }
 
         public override void Release()
@@ -27,6 +23,12 @@ namespace UTJ.FrameCapturer
 
         public override void Export(RenderTexture frame, int channels, string name)
         {
+            if (!m_recorder) { return; }
+            if (!m_ctx)
+            {
+                var pngconf = m_recorder.pngConfig;
+                m_ctx = fcAPI.fcPngCreateContext(ref pngconf);
+            }
             string path = m_recorder.outputDir.GetFullPath() + "/" + name + "_" + Time.frameCount.ToString("0000") + ".png";
 
             fcAPI.fcLock(frame, (data, fmt) =>

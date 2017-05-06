@@ -13,7 +13,7 @@ namespace UTJ.FrameCapturer
             public int keyframeInterval = 30;
         }
 
-        fcAPI.fcGIFContext m_ctx;
+        fcAPI.fcGifContext m_ctx;
         fcAPI.fcStream m_ostream;
         EncoderConfig m_config;
         int m_numVideoFrames;

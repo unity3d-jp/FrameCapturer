@@ -57,6 +57,17 @@ namespace UTJ.FrameCapturer
 
             EditorGUILayout.Space();
 
+            if (recorder.format == ImageSequenceRecorderContext.Type.Png)
+            {
+                EditorGUILayout.PropertyField(so.FindProperty("m_pngConfig"), true);
+            }
+            else if (recorder.format == ImageSequenceRecorderContext.Type.Exr)
+            {
+                EditorGUILayout.PropertyField(so.FindProperty("m_exrConfig"), true);
+            }
+
+            EditorGUILayout.Space();
+
             EditorGUILayout.PropertyField(so.FindProperty("m_startFrame"), true);
             EditorGUILayout.PropertyField(so.FindProperty("m_endFrame"), true);
 

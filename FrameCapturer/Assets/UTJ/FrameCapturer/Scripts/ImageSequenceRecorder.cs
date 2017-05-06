@@ -66,6 +66,9 @@ namespace UTJ.FrameCapturer
         [SerializeField] int m_startFrame = 0;
         [SerializeField] int m_endFrame = 0;
 
+        [SerializeField] fcAPI.fcPngConfig m_pngConfig = fcAPI.fcPngConfig.default_value;
+        [SerializeField] fcAPI.fcExrConfig m_exrConfig = fcAPI.fcExrConfig.default_value;
+
         [SerializeField] ImageSequenceRecorderContext m_ctx;
         [SerializeField] Shader m_shCopy;
         Material m_matCopy;
@@ -110,6 +113,9 @@ namespace UTJ.FrameCapturer
             get { return m_fixDeltaTime; }
             set { m_fixDeltaTime = value; }
         }
+
+        public fcAPI.fcPngConfig pngConfig { get { return m_pngConfig; } }
+        public fcAPI.fcExrConfig exrConfig { get { return m_exrConfig; } }
 
         public bool isRecording
         {
@@ -239,6 +245,7 @@ namespace UTJ.FrameCapturer
         #region impl
         public void Export()
         {
+            ValidateContext();
             if (!m_ctx) { return; }
 
             if (m_captureTarget == CaptureTarget.FrameBuffer)
@@ -276,6 +283,7 @@ namespace UTJ.FrameCapturer
         bool CreateContext()
         {
             m_ctx = ImageSequenceRecorderContext.Create(m_format);
+            if(m_ctx) { m_ctx.Initialize(this); }
             return m_ctx != null;
         }
 

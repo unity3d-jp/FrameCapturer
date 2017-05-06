@@ -86,10 +86,13 @@ namespace UTJ.FrameCapturer
 
         public string GetFullPath()
         {
-            if (m_root == Root.Absolute ||
-                m_root == Root.Current)
+            if (m_root == Root.Absolute)
             {
                 return m_leaf;
+            }
+            if (m_root == Root.Current)
+            {
+                return m_leaf.Length == 0 ? "." : "./" + m_leaf;
             }
 
             string ret = "";
