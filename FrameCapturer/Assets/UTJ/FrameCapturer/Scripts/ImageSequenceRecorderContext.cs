@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 
 namespace UTJ.FrameCapturer
@@ -18,9 +19,9 @@ namespace UTJ.FrameCapturer
         public abstract void Initialize(ImageSequenceRecorder recorder);
         public abstract void Release();
 
-        public abstract void BeginFrame();
-        public abstract void Export(RenderTexture frame, int channels, string path);
-        public abstract void EndFrame();
+        public abstract void AddCommand(CommandBuffer cb, RenderTexture frame, int channels, string name);
+        public abstract void Update();
+
 
         public static ImageSequenceRecorderContext Create(Type t)
         {
