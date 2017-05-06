@@ -18,21 +18,22 @@ namespace UTJ.FrameCapturer
         fcAPI.fcWebMContext m_ctx;
         fcAPI.fcStream m_ostream;
         fcAPI.fcDeferredCall m_callback;
+        EncoderConfig m_config;
 
         public override Type type { get { return Type.WebM; } }
 
         public override void Initialize(MovieRecorder recorder)
         {
-            var c = recorder.webmConfig;
+            m_config = recorder.webmConfig;
             fcAPI.fcWebMConfig webmconf = fcAPI.fcWebMConfig.default_value;
             webmconf = fcAPI.fcWebMConfig.default_value;
-            webmconf.video = c.captureVideo;
-            webmconf.audio = c.captureAudio;
+            webmconf.video = m_config.captureVideo;
+            webmconf.audio = m_config.captureAudio;
             webmconf.video_width = recorder.scratchBuffer.width;
             webmconf.video_height = recorder.scratchBuffer.height;
             webmconf.video_target_framerate = 60;
-            webmconf.video_target_bitrate = c.videoBitrate;
-            webmconf.audio_target_bitrate = c.audioBitrate;
+            webmconf.video_target_bitrate = m_config.videoBitrate;
+            webmconf.audio_target_bitrate = m_config.audioBitrate;
             webmconf.audio_sample_rate = AudioSettings.outputSampleRate;
             webmconf.audio_num_channels = fcAPI.fcGetNumAudioChannels();
             m_ctx = fcAPI.fcWebMCreateContext(ref webmconf);
@@ -40,6 +41,9 @@ namespace UTJ.FrameCapturer
             var path = recorder.outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".webm";
             m_ostream = fcAPI.fcCreateFileStream(path);
             fcAPI.fcWebMAddOutputStream(m_ctx, m_ostream);
+
+            m_callback = fcAPI.fcAllocateDeferredCall();
+            recorder.commandBuffer.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), m_callback);
         }
 
         public override void Release()
@@ -52,15 +56,20 @@ namespace UTJ.FrameCapturer
             });
         }
 
-        public override int AddVideoFrame(RenderTexture frame, double timestamp)
+        public override void AddVideoFrame(RenderTexture frame, double timestamp)
         {
-            m_callback = fcAPI.fcWebMAddVideoFrameTexture(m_ctx, frame, timestamp, m_callback);
-            return m_callback;
+            if(m_config.captureVideo)
+            {
+                m_callback = fcAPI.fcWebMAddVideoFrameTexture(m_ctx, frame, timestamp, m_callback);
+            }
         }
 
         public override void AddAudioFrame(float[] samples, double timestamp)
         {
-            fcAPI.fcWebMAddAudioFrame(m_ctx, samples, samples.Length);
+            if (m_config.captureAudio)
+            {
+                fcAPI.fcWebMAddAudioFrame(m_ctx, samples, samples.Length);
+            }
         }
     }
 }
