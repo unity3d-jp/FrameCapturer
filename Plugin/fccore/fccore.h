@@ -110,10 +110,19 @@ fcAPI uint64_t        fcStreamGetWrittenSize(fcStream *s);
 // PNG Exporter
 // -------------------------------------------------------------
 
+enum class fcPngPixelFormat
+{
+    Adaptive, // select optimal one for input data
+    UInt8,
+    UInt16,
+};
+
 struct fcPngConfig
 {
-    int max_active_tasks = 8;
+    int max_active_tasks = 24;
+    fcPngPixelFormat pixel_format = fcPngPixelFormat::Adaptive;
 };
+
 fcAPI fcIPngContext*  fcPngCreateContext(const fcPngConfig *conf = nullptr);
 fcAPI void            fcPngDestroyContext(fcIPngContext *ctx);
 fcAPI bool            fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, bool flipY = false);
@@ -124,10 +133,30 @@ fcAPI bool            fcPngExportTexture(fcIPngContext *ctx, const char *path, v
 // EXR Exporter
 // -------------------------------------------------------------
 
+enum class fcExrPixelFormat
+{
+    Adaptive, // select optimal one for input data
+    Half,
+    Float,
+    Int,
+};
+
+enum class fcExrCompression
+{
+    None,
+    RLE,
+    ZipS, // par-line
+    Zip,  // block
+    PIZ,
+};
+
 struct fcExrConfig
 {
-    int max_active_tasks = 8;
+    int max_active_tasks = 24;
+    fcExrPixelFormat pixel_format = fcExrPixelFormat::Adaptive;
+    fcExrCompression compression = fcExrCompression::Zip;
 };
+
 fcAPI fcIExrContext*  fcExrCreateContext(const fcExrConfig *conf = nullptr);
 fcAPI void            fcExrDestroyContext(fcIExrContext *ctx);
 fcAPI bool            fcExrBeginImage(fcIExrContext *ctx, const char *path, int width, int height);

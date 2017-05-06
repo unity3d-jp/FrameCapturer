@@ -27,15 +27,22 @@
 struct fcExrTaskData
 {
     std::string path;
-    int width, height;
+    int width = 0;
+    int height = 0;
     std::list<Buffer> pixels;
     Imf::Header header;
     Imf::FrameBuffer frame_buffer;
 
-    fcExrTaskData(const char *p, int w, int h)
+    fcExrTaskData(const char *p, int w, int h, fcExrCompression compression)
         : path(p), width(w), height(h), header(w, h)
     {
-        header.compression() = Imf::ZIPS_COMPRESSION;
+        switch (compression) {
+        case fcExrCompression::None:    header.compression() = Imf::NO_COMPRESSION; break;
+        case fcExrCompression::RLE:     header.compression() = Imf::RLE_COMPRESSION; break;
+        case fcExrCompression::ZipS:    header.compression() = Imf::ZIPS_COMPRESSION; break;
+        case fcExrCompression::Zip:     header.compression() = Imf::ZIP_COMPRESSION; break;
+        case fcExrCompression::PIZ:     header.compression() = Imf::PIZ_COMPRESSION; break;
+        }
     }
 };
 
@@ -105,7 +112,7 @@ bool fcExrContext::beginFrame(const char *path, int width, int height)
         }
     }
 
-    m_task = new fcExrTaskData(path, width, height);
+    m_task = new fcExrTaskData(path, width, height, m_conf.compression);
     return true;
 }
 
@@ -187,27 +194,68 @@ bool fcExrContext::addLayerPixels(const void *pixels, fcPixelFormat fmt, int cha
         m_task->pixels.emplace_back(Buffer());
         raw_frame = &m_task->pixels.back();
 
-        // convert pixel format if it is not supported by exr
-        if ((fmt & fcPixelFormat_TypeMask) == fcPixelFormat_Type_u8) {
-            int channels = fmt & fcPixelFormat_ChannelMask;
+        if (m_conf.pixel_format == fcExrPixelFormat::Half) {
             auto src_fmt = fmt;
+            int channels = fmt & fcPixelFormat_ChannelMask;
             fmt = fcPixelFormat(fcPixelFormat_Type_f16 | channels);
-            raw_frame->resize(m_task->width * m_task->height * (2 * channels));
-            fcConvertPixelFormat(&(*raw_frame)[0], fmt, pixels, src_fmt, m_task->width * m_task->height);
-        }
-        else {
             raw_frame->resize(m_task->width * m_task->height * fcGetPixelSize(fmt));
-            memcpy(&(*raw_frame)[0], pixels, raw_frame->size());
+            if (src_fmt != fmt) {
+                fcConvertPixelFormat(raw_frame->data(), fmt, pixels, src_fmt, m_task->width * m_task->height);
+            }
+            else {
+                memcpy(raw_frame->data(), pixels, raw_frame->size());
+            }
         }
+        else if (m_conf.pixel_format == fcExrPixelFormat::Float) {
+            auto src_fmt = fmt;
+            int channels = fmt & fcPixelFormat_ChannelMask;
+            fmt = fcPixelFormat(fcPixelFormat_Type_f32 | channels);
+            raw_frame->resize(m_task->width * m_task->height * fcGetPixelSize(fmt));
+            if (src_fmt != fmt) {
+                fcConvertPixelFormat(raw_frame->data(), fmt, pixels, src_fmt, m_task->width * m_task->height);
+            }
+            else {
+                memcpy(raw_frame->data(), pixels, raw_frame->size());
+            }
+
+        }
+        else if (m_conf.pixel_format == fcExrPixelFormat::Int) {
+            auto src_fmt = fmt;
+            int channels = fmt & fcPixelFormat_ChannelMask;
+            fmt = fcPixelFormat(fcPixelFormat_Type_i32 | channels);
+            raw_frame->resize(m_task->width * m_task->height * fcGetPixelSize(fmt));
+            if (src_fmt != fmt) {
+                fcConvertPixelFormat(raw_frame->data(), fmt, pixels, src_fmt, m_task->width * m_task->height);
+            }
+            else {
+                memcpy(raw_frame->data(), pixels, raw_frame->size());
+            }
+
+        }
+        else { // adaptive
+            // convert pixel format if it is not supported by exr
+            if ((fmt & fcPixelFormat_TypeMask) == fcPixelFormat_Type_u8) {
+                auto src_fmt = fmt;
+                int channels = fmt & fcPixelFormat_ChannelMask;
+                fmt = fcPixelFormat(fcPixelFormat_Type_f16 | channels);
+                raw_frame->resize(m_task->width * m_task->height * fcGetPixelSize(fmt));
+                fcConvertPixelFormat(raw_frame->data(), fmt, pixels, src_fmt, m_task->width * m_task->height);
+            }
+            else {
+                raw_frame->resize(m_task->width * m_task->height * fcGetPixelSize(fmt));
+                memcpy(raw_frame->data(), pixels, raw_frame->size());
+            }
+        }
+
         if (flipY) {
-            fcImageFlipY(&(*raw_frame)[0], m_task->width, m_task->height, fmt);
+            fcImageFlipY(raw_frame->data(), m_task->width, m_task->height, fmt);
         }
 
         m_src_prev = raw_frame;
         m_fmt_prev = fmt;
     }
 
-    return addLayerImpl(&(*raw_frame)[0], fmt, channel, name);
+    return addLayerImpl(raw_frame->data(), fmt, channel, name);
 }
 
 bool fcExrContext::addLayerImpl(char *pixels, fcPixelFormat fmt, int channel, const char *name)
