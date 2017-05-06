@@ -23,17 +23,17 @@ namespace UTJ.FrameCapturer
         }
 
         // base settings
-        [SerializeField] public DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
-        [SerializeField] public MovieRecorderContext.Type m_format = MovieRecorderContext.Type.WebM;
+        [SerializeField] DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
+        [SerializeField] MovieRecorderContext.Type m_format = MovieRecorderContext.Type.WebM;
 
         // video settings
-        [SerializeField] public CaptureTarget m_captureTarget = CaptureTarget.FrameBuffer;
-        [SerializeField] public RenderTexture m_targetRT;
-        [SerializeField] public int m_resolutionWidth = -1;
-        [SerializeField] public FrameRateMode m_framerateMode = FrameRateMode.Constant;
-        [SerializeField] public int m_targetFramerate = 30;
-        [SerializeField] public bool m_fixDeltaTime = true;
-        [SerializeField] public int m_captureEveryNthFrame = 1;
+        [SerializeField] CaptureTarget m_captureTarget = CaptureTarget.FrameBuffer;
+        [SerializeField] RenderTexture m_targetRT;
+        [SerializeField] int m_resolutionWidth = -1;
+        [SerializeField] FrameRateMode m_framerateMode = FrameRateMode.Constant;
+        [SerializeField] int m_targetFramerate = 30;
+        [SerializeField] bool m_fixDeltaTime = true;
+        [SerializeField] int m_captureEveryNthFrame = 1;
 
         // internal
         [SerializeField] MovieRecorderContext m_ctx;
@@ -50,18 +50,21 @@ namespace UTJ.FrameCapturer
         int m_numVideoFrames = 0;
 
 
+        public DataPath outputDir { get { return m_outputDir; } }
         public MovieRecorderContext.Type format {
             get { return m_format; }
             set { m_format = value; ValidateContext(); }
         }
         public CaptureTarget captureTarget { get { return m_captureTarget; } }
-        public bool isRecording { get { return m_recording; } }
-        public DataPath outputDir { get { return m_outputDir; } }
-        public RenderTexture scratchBuffer { get { return m_scratchBuffer; } }
+        public FrameRateMode framerateMode { get { return m_framerateMode; } }
+
         public MovieRecorderContext context { get { ValidateContext(); return m_ctx; } }
         public GifContext.EncoderConfig gifConfig { get { return m_gifEncoderConfig; } }
         public WebMContext.EncoderConfig webmConfig { get { return m_webmEncoderConfig; } }
         public MP4Context.EncoderConfig mp4Config { get { return m_mp4EncoderConfig; } }
+
+        public RenderTexture scratchBuffer { get { return m_scratchBuffer; } }
+        public bool isRecording { get { return m_recording; } }
 
 
         public bool BeginRecording()

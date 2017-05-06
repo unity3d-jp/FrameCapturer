@@ -57,19 +57,28 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] public static extern void         fcSetModulePath(string path);
         [DllImport ("fccore")] public static extern double       fcGetTime();
 
+        public struct fcDeferredCall
+        {
+            public int handle;
+            public void Release() { fcReleaseDeferredCall(this); handle = 0; }
+            public static implicit operator int(fcDeferredCall v) { return v.handle; }
+        }
+
         public struct fcStream
         {
             public IntPtr ptr;
+            public void Release() { fcDestroyStream(this); ptr = IntPtr.Zero; }
             public static implicit operator bool(fcStream v) { return v.ptr != IntPtr.Zero; }
         }
         [DllImport ("fccore")] public static extern fcStream     fcCreateFileStream(string path);
         [DllImport ("fccore")] public static extern fcStream     fcCreateMemoryStream();
-        [DllImport ("fccore")] public static extern void         fcDestroyStream(fcStream s);
+        [DllImport ("fccore")] private static extern void        fcDestroyStream(fcStream s);
         [DllImport ("fccore")] public static extern ulong        fcStreamGetWrittenSize(fcStream s);
 
         [DllImport ("fccore")] public static extern void         fcGuardBegin();
         [DllImport ("fccore")] public static extern void         fcGuardEnd();
-        [DllImport ("fccore")] public static extern void         fcEraseDeferredCall(int id);
+        [DllImport ("fccore")] public static extern fcDeferredCall fcAllocateDeferredCall();
+        [DllImport ("fccore")] private static extern void        fcReleaseDeferredCall(fcDeferredCall dc);
         [DllImport ("fccore")] public static extern IntPtr       fcGetRenderEventFunc();
 
         public static void fcGuard(Action body)
@@ -153,14 +162,15 @@ namespace UTJ.FrameCapturer
         public struct fcPNGContext
         {
             public IntPtr ptr;
+            public void Release() { fcPngDestroyContext(this); ptr = IntPtr.Zero; }
             public static implicit operator bool(fcPNGContext v) { return v.ptr != IntPtr.Zero; }
         }
 
         [DllImport ("fccore")] public static extern fcPNGContext fcPngCreateContext(ref fcPngConfig conf);
-        [DllImport ("fccore")] public static extern void         fcPngDestroyContext(fcPNGContext ctx);
-        [DllImport ("fccore")] private static extern int         fcPngExportTextureDeferred(fcPNGContext ctx, string path, IntPtr tex, int width, int height, fcPixelFormat f, Bool flipY, int id);
+        [DllImport ("fccore")] private static extern void        fcPngDestroyContext(fcPNGContext ctx);
+        [DllImport ("fccore")] private static extern fcDeferredCall fcPngExportTextureDeferred(fcPNGContext ctx, string path, IntPtr tex, int width, int height, fcPixelFormat f, Bool flipY, fcDeferredCall id);
 
-        public static int fcPngExportTexture(fcPNGContext ctx, string path, RenderTexture tex, int pos)
+        public static fcDeferredCall fcPngExportTexture(fcPNGContext ctx, string path, RenderTexture tex, fcDeferredCall pos)
         {
             return fcPngExportTextureDeferred(ctx, path,
                 tex.GetNativeTexturePtr(), tex.width, tex.height, fcGetPixelFormat(tex.format), false, pos);
@@ -189,26 +199,27 @@ namespace UTJ.FrameCapturer
         public struct fcEXRContext
         {
             public IntPtr ptr;
+            public void Release() { fcExrDestroyContext(this); ptr = IntPtr.Zero; }
             public static implicit operator bool(fcEXRContext v) { return v.ptr != IntPtr.Zero; }
         }
 
         [DllImport ("fccore")] public static extern fcEXRContext fcExrCreateContext(ref fcExrConfig conf);
-        [DllImport ("fccore")] public static extern void         fcExrDestroyContext(fcEXRContext ctx);
-        [DllImport ("fccore")] private static extern int         fcExrBeginImageDeferred(fcEXRContext ctx, string path, int width, int height, int id);
-        [DllImport ("fccore")] private static extern int         fcExrAddLayerTextureDeferred(fcEXRContext ctx, IntPtr tex, fcPixelFormat f, int ch, string name, Bool flipY, int id);
-        [DllImport ("fccore")] private static extern int         fcExrEndImageDeferred(fcEXRContext ctx, int id);
+        [DllImport ("fccore")] private static extern void           fcExrDestroyContext(fcEXRContext ctx);
+        [DllImport ("fccore")] private static extern fcDeferredCall fcExrBeginImageDeferred(fcEXRContext ctx, string path, int width, int height, fcDeferredCall id);
+        [DllImport ("fccore")] private static extern fcDeferredCall fcExrAddLayerTextureDeferred(fcEXRContext ctx, IntPtr tex, fcPixelFormat f, int ch, string name, Bool flipY, fcDeferredCall id);
+        [DllImport ("fccore")] private static extern fcDeferredCall fcExrEndImageDeferred(fcEXRContext ctx, fcDeferredCall id);
 
-        public static int fcExrBeginImage(fcEXRContext ctx, string path, int width, int height, int id)
+        public static fcDeferredCall fcExrBeginImage(fcEXRContext ctx, string path, int width, int height, fcDeferredCall id)
         {
             return fcExrBeginImageDeferred(ctx, path, width, height, id);
         }
 
-        public static int fcExrEndImage(fcEXRContext ctx, int id)
+        public static fcDeferredCall fcExrEndImage(fcEXRContext ctx, fcDeferredCall id)
         {
             return fcExrEndImageDeferred(ctx, id);
         }
 
-        public static int fcExrAddLayerTexture(fcEXRContext ctx, RenderTexture tex, int ch, string name, int id)
+        public static fcDeferredCall fcExrAddLayerTexture(fcEXRContext ctx, RenderTexture tex, int ch, string name, fcDeferredCall id)
         {
             return fcExrAddLayerTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), ch, name, false, id);
         }
@@ -242,26 +253,19 @@ namespace UTJ.FrameCapturer
         public struct fcGIFContext
         {
             public IntPtr ptr;
+            public void Release() { fcGifDestroyContext(this); ptr = IntPtr.Zero; }
             public static implicit operator bool(fcGIFContext v) { return v.ptr != IntPtr.Zero; }
         }
 
         [DllImport ("fccore")] public static extern fcGIFContext fcGifCreateContext(ref fcGifConfig conf);
-        [DllImport ("fccore")] public static extern void         fcGifDestroyContext(fcGIFContext ctx);
+        [DllImport ("fccore")] private static extern void        fcGifDestroyContext(fcGIFContext ctx);
         [DllImport ("fccore")] public static extern void         fcGifAddOutputStream(fcGIFContext ctx, fcStream stream);
-        [DllImport ("fccore")] private static extern int         fcGifAddFrameTextureDeferred(fcGIFContext ctx, IntPtr tex, fcPixelFormat fmt, Bool keyframe, double timestamp, int id);
+        [DllImport ("fccore")] private static extern fcDeferredCall fcGifAddFrameTextureDeferred(fcGIFContext ctx, IntPtr tex, fcPixelFormat fmt, Bool keyframe, double timestamp, fcDeferredCall id);
         [DllImport ("fccore")] public static extern Bool         fcGifWrite(fcGIFContext ctx, fcStream stream, int begin_frame=0, int end_frame=-1);
 
-        public static int fcGifAddFrameTexture(fcGIFContext ctx, RenderTexture tex, bool keyframe, double timestamp, int id)
+        public static fcDeferredCall fcGifAddFrameTexture(fcGIFContext ctx, RenderTexture tex, bool keyframe, double timestamp, fcDeferredCall id)
         {
             return fcGifAddFrameTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), keyframe, timestamp, id);
-        }
-
-        public static Bool fcGifWriteFile(fcGIFContext ctx, string path, int begin_frame = 0, int end_frame = -1)
-        {
-            fcStream fstream = fcCreateFileStream(path);
-            Bool ret = fcGifWrite(ctx, fstream, begin_frame, end_frame);
-            fcDestroyStream(fstream);
-            return ret;
         }
 
 
@@ -332,16 +336,17 @@ namespace UTJ.FrameCapturer
         public struct fcMP4Context
         {
             public IntPtr ptr;
+            public void Release() { fcMP4DestroyContext(this); ptr = IntPtr.Zero; }
             public static implicit operator bool(fcMP4Context v) { return v.ptr != IntPtr.Zero; }
         }
 
         [DllImport ("fccore")] public static extern fcMP4Context     fcMP4CreateContext(ref fcMP4Config conf);
         [DllImport ("fccore")] public static extern fcMP4Context     fcMP4OSCreateContext(ref fcMP4Config conf, string path);
-        [DllImport ("fccore")] public static extern void             fcMP4DestroyContext(fcMP4Context ctx);
+        [DllImport ("fccore")] private static extern void            fcMP4DestroyContext(fcMP4Context ctx);
         [DllImport ("fccore")] public static extern void             fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);
         [DllImport ("fccore")] private static extern IntPtr          fcMP4GetAudioEncoderInfo(fcMP4Context ctx);
         [DllImport ("fccore")] private static extern IntPtr          fcMP4GetVideoEncoderInfo(fcMP4Context ctx);
-        [DllImport ("fccore")] private static extern int             fcMP4AddVideoFrameTextureDeferred(fcMP4Context ctx, IntPtr tex, fcPixelFormat fmt, double time, int id);
+        [DllImport ("fccore")] private static extern fcDeferredCall fcMP4AddVideoFrameTextureDeferred(fcMP4Context ctx, IntPtr tex, fcPixelFormat fmt, double time, fcDeferredCall id);
         [DllImport ("fccore")] public static extern Bool             fcMP4AddAudioFrame(fcMP4Context ctx, float[] samples, int num_samples, double time = -1.0);
 
         public static string fcMP4GetAudioEncoderInfoS(fcMP4Context ctx)
@@ -354,7 +359,7 @@ namespace UTJ.FrameCapturer
             return Marshal.PtrToStringAnsi(fcMP4GetVideoEncoderInfo(ctx));
         }
 
-        public static int fcMP4AddVideoFrameTexture(fcMP4Context ctx, RenderTexture tex, double time, int id)
+        public static fcDeferredCall fcMP4AddVideoFrameTexture(fcMP4Context ctx, RenderTexture tex, double time, fcDeferredCall id)
         {
             return fcMP4AddVideoFrameTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), time, id);
         }
@@ -367,6 +372,7 @@ namespace UTJ.FrameCapturer
         public struct fcWebMContext
         {
             public IntPtr ptr;
+            public void Release() { fcWebMDestroyContext(this); ptr = IntPtr.Zero; }
             public static implicit operator bool(fcWebMContext v) { return v.ptr != IntPtr.Zero; }
         }
 
@@ -426,14 +432,14 @@ namespace UTJ.FrameCapturer
         }
 
         [DllImport ("fccore")] public static extern fcWebMContext fcWebMCreateContext(ref fcWebMConfig conf);
-        [DllImport ("fccore")] public static extern void fcWebMDestroyContext(fcWebMContext ctx);
+        [DllImport ("fccore")] private static extern void fcWebMDestroyContext(fcWebMContext ctx);
         [DllImport ("fccore")] public static extern void fcWebMAddOutputStream(fcWebMContext ctx, fcStream stream);
         // timestamp=-1 is treated as current time.
-        [DllImport ("fccore")] private static extern int fcWebMAddVideoFrameTextureDeferred(fcWebMContext ctx, IntPtr tex, fcPixelFormat fmt, double timestamp, int id);
+        [DllImport ("fccore")] private static extern fcDeferredCall fcWebMAddVideoFrameTextureDeferred(fcWebMContext ctx, IntPtr tex, fcPixelFormat fmt, double timestamp, fcDeferredCall id);
         // timestamp=-1 is treated as current time.
         [DllImport ("fccore")] public static extern Bool fcWebMAddAudioFrame(fcWebMContext ctx, float[] samples, int num_samples, double timestamp = -1.0);
 
-        public static int fcWebMAddVideoFrameTexture(fcWebMContext ctx, RenderTexture tex, double time, int id)
+        public static fcDeferredCall fcWebMAddVideoFrameTexture(fcWebMContext ctx, RenderTexture tex, double time, fcDeferredCall id)
         {
             return fcWebMAddVideoFrameTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), time, id);
         }

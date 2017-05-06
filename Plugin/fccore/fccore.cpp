@@ -101,6 +101,26 @@ fcAPI void fcGuardEnd()
     g_deferred_calls_mutex.unlock();
 }
 
+fcAPI int fcAllocateDeferredCall()
+{
+    fcTraceFunc();
+
+    // search empty object and return its position if found
+    for (int i = 1; i < (int)g_deferred_calls.size(); ++i) {
+        if (!g_deferred_calls[i]) {
+            g_deferred_calls[i] = fcDeferredCall();
+            return i;
+        }
+    }
+
+    // 0th is "null" object
+    if (g_deferred_calls.empty()) { g_deferred_calls.emplace_back(fcDeferredCall()); }
+
+    // allocate new one
+    g_deferred_calls.emplace_back(fcDeferredCall());
+    return (int)g_deferred_calls.size() - 1;
+}
+
 fcAPI int fcAddDeferredCall(const fcDeferredCall& dc, int id)
 {
     fcTraceFunc();
@@ -130,7 +150,7 @@ fcAPI int fcAddDeferredCall(const fcDeferredCall& dc, int id)
     }
 }
 
-fcAPI void fcEraseDeferredCall(int id)
+fcAPI void fcReleaseDeferredCall(int id)
 {
     fcTraceFunc();
     if (id <= 0 || id >= (int)g_deferred_calls.size()) { return; }
