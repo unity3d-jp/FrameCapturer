@@ -9,6 +9,7 @@ namespace UTJ.FrameCapturer
 
     [AddComponentMenu("UTJ/FrameCapturer/Image Sequence Recorder")]
     [RequireComponent(typeof(Camera))]
+    [ExecuteInEditMode]
     public class ImageSequenceRecorder : MonoBehaviour
     {
         #region inner_types
@@ -116,11 +117,6 @@ namespace UTJ.FrameCapturer
         }
         #endregion
 
-
-        public void Export()
-        {
-
-        }
 
 
         public bool BeginRecording()
@@ -241,6 +237,33 @@ namespace UTJ.FrameCapturer
         }
 
         #region impl
+        public void Export()
+        {
+            if (!m_ctx) { return; }
+
+            if (m_captureTarget == CaptureTarget.FrameBuffer)
+            {
+                if (m_fbComponents.frameBuffer)     { m_ctx.Export(m_rtFB, 4, "FrameBuffer"); }
+                if (m_fbComponents.GBuffer)
+                {
+                    if (m_fbComponents.albedo)      { m_ctx.Export(m_rtGB[0], 3, "Albedo"); }
+                    if (m_fbComponents.occlusion)   { m_ctx.Export(m_rtGB[0], 1, "Occlusion"); }
+                    if (m_fbComponents.specular)    { m_ctx.Export(m_rtGB[1], 3, "Specular"); }
+                    if (m_fbComponents.smoothness)  { m_ctx.Export(m_rtGB[1], 1, "Smoothness"); }
+                    if (m_fbComponents.normal)      { m_ctx.Export(m_rtGB[2], 3, "Normal"); }
+                    if (m_fbComponents.emission)    { m_ctx.Export(m_rtGB[3], 3, "Emission"); }
+                    if (m_fbComponents.depth)       { m_ctx.Export(m_rtGB[4], 1, "Depth"); }
+                }
+            }
+            else if (m_captureTarget == CaptureTarget.RenderTexture)
+            {
+                for (int i = 0; i < m_targetRT.Length; ++i)
+                {
+                    m_ctx.Export(m_targetRT[i], 4, "Target" + i);
+                }
+            }
+        }
+
         void ReleaseContext()
         {
             if (m_ctx != null)
@@ -353,7 +376,7 @@ namespace UTJ.FrameCapturer
             }
         }
 
-    IEnumerator OnPostRender()
+        IEnumerator OnPostRender()
         {
             int frame = Time.frameCount;
             if (frame >= m_startFrame && frame <= m_endFrame)

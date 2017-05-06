@@ -154,7 +154,7 @@ namespace UTJ.FrameCapturer
                 {
                     return new fcPngConfig
                     {
-                        max_active_tasks = 0,
+                        max_active_tasks = 24,
                     };
                 }
             }
@@ -168,13 +168,7 @@ namespace UTJ.FrameCapturer
 
         [DllImport ("fccore")] public static extern fcPNGContext fcPngCreateContext(ref fcPngConfig conf);
         [DllImport ("fccore")] private static extern void        fcPngDestroyContext(fcPNGContext ctx);
-        [DllImport ("fccore")] private static extern fcDeferredCall fcPngExportTextureDeferred(fcPNGContext ctx, string path, IntPtr tex, int width, int height, fcPixelFormat f, Bool flipY, fcDeferredCall id);
-
-        public static fcDeferredCall fcPngExportTexture(fcPNGContext ctx, string path, RenderTexture tex, fcDeferredCall pos)
-        {
-            return fcPngExportTextureDeferred(ctx, path,
-                tex.GetNativeTexturePtr(), tex.width, tex.height, fcGetPixelFormat(tex.format), false, pos);
-        }
+        [DllImport ("fccore")] public static extern Bool         fcPngExportPixels(fcPNGContext ctx, string path, byte[] pixels, int width, int height, fcPixelFormat fmt, Bool flipY);
 
 
         // -------------------------------------------------------------
@@ -191,7 +185,7 @@ namespace UTJ.FrameCapturer
                 {
                     return new fcExrConfig
                     {
-                        max_active_tasks = 0,
+                        max_active_tasks = 24,
                     };
                 }
             }
@@ -204,25 +198,10 @@ namespace UTJ.FrameCapturer
         }
 
         [DllImport ("fccore")] public static extern fcEXRContext fcExrCreateContext(ref fcExrConfig conf);
-        [DllImport ("fccore")] private static extern void           fcExrDestroyContext(fcEXRContext ctx);
-        [DllImport ("fccore")] private static extern fcDeferredCall fcExrBeginImageDeferred(fcEXRContext ctx, string path, int width, int height, fcDeferredCall id);
-        [DllImport ("fccore")] private static extern fcDeferredCall fcExrAddLayerTextureDeferred(fcEXRContext ctx, IntPtr tex, fcPixelFormat f, int ch, string name, Bool flipY, fcDeferredCall id);
-        [DllImport ("fccore")] private static extern fcDeferredCall fcExrEndImageDeferred(fcEXRContext ctx, fcDeferredCall id);
-
-        public static fcDeferredCall fcExrBeginImage(fcEXRContext ctx, string path, int width, int height, fcDeferredCall id)
-        {
-            return fcExrBeginImageDeferred(ctx, path, width, height, id);
-        }
-
-        public static fcDeferredCall fcExrEndImage(fcEXRContext ctx, fcDeferredCall id)
-        {
-            return fcExrEndImageDeferred(ctx, id);
-        }
-
-        public static fcDeferredCall fcExrAddLayerTexture(fcEXRContext ctx, RenderTexture tex, int ch, string name, fcDeferredCall id)
-        {
-            return fcExrAddLayerTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), ch, name, false, id);
-        }
+        [DllImport ("fccore")] private static extern void        fcExrDestroyContext(fcEXRContext ctx);
+        [DllImport ("fccore")] public static extern Bool         fcExrBeginImage(fcEXRContext ctx, string path, int width, int height);
+        [DllImport ("fccore")] public static extern Bool         fcExrAddLayerPixels(fcEXRContext ctx, byte[] pixels, fcPixelFormat fmt, int ch, string name, Bool flipY);
+        [DllImport ("fccore")] public static extern Bool         fcExrEndImage(fcEXRContext ctx);
 
 
         // -------------------------------------------------------------
@@ -444,6 +423,37 @@ namespace UTJ.FrameCapturer
         public static fcDeferredCall fcWebMAddVideoFrameTexture(fcWebMContext ctx, RenderTexture tex, double time, fcDeferredCall id)
         {
             return fcWebMAddVideoFrameTexture(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), time, id);
+        }
+
+
+        public static void fcLock(RenderTexture src, TextureFormat dstfmt, Action<byte[], fcPixelFormat> body)
+        {
+            var tex = new Texture2D(src.width, src.height, dstfmt, false);
+            RenderTexture.active = src;
+            tex.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0, false);
+            tex.Apply();
+            body(tex.GetRawTextureData(), fcGetPixelFormat(tex.format));
+            UnityEngine.Object.Destroy(tex);
+        }
+
+        public static void fcLock(RenderTexture src, Action<byte[], fcPixelFormat> body)
+        {
+            TextureFormat dstfmt = TextureFormat.RGBA32;
+            switch (src.format)
+            {
+                case RenderTextureFormat.DefaultHDR:
+                case RenderTextureFormat.ARGB2101010:
+                case RenderTextureFormat.RGB111110Float:
+                case RenderTextureFormat.ARGBHalf: dstfmt = TextureFormat.RGBAHalf; break;
+                case RenderTextureFormat.RGHalf: dstfmt = TextureFormat.RGHalf; break;
+                case RenderTextureFormat.Depth:
+                case RenderTextureFormat.Shadowmap:
+                case RenderTextureFormat.RHalf: dstfmt = TextureFormat.RHalf; break;
+                case RenderTextureFormat.ARGBFloat: dstfmt = TextureFormat.RGBAFloat; break;
+                case RenderTextureFormat.RGFloat: dstfmt = TextureFormat.RGFloat; break;
+                case RenderTextureFormat.RFloat: dstfmt = TextureFormat.RFloat; break;
+            }
+            fcLock(src, dstfmt, body);
         }
 
         public static Mesh CreateFullscreenQuad()

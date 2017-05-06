@@ -7,42 +7,8 @@ namespace UTJ.FrameCapturer
 {
     public class PngContext : ImageSequenceRecorderContext
     {
-        #region inner_types
-        class Command
-        {
-            DataPath m_path;
-            string m_name;
-            RenderTexture m_target;
-            int m_channels;
-            fcAPI.fcDeferredCall m_call;
-
-            public fcAPI.fcDeferredCall call { get { return m_call; } }
-
-
-            public Command(DataPath path, string name, RenderTexture rt, int ch)
-            {
-                m_path = path;
-                m_target = rt;
-                m_channels = ch;
-                m_call = fcAPI.fcAllocateDeferredCall();
-            }
-
-            public void Release()
-            {
-                m_call.Release();
-            }
-
-            public void Update(fcAPI.fcPNGContext ctx)
-            {
-                string path = m_path.GetFullPath() + "/" + m_name + "_" + Time.frameCount.ToString("0000") + ".png";
-                m_call = fcAPI.fcPngExportTexture(ctx, path, m_target, m_call);
-            }
-        }
-        #endregion
-
-        fcAPI.fcPNGContext m_ctx;
         ImageSequenceRecorder m_recorder;
-        List<Command> m_commands;
+        fcAPI.fcPNGContext m_ctx;
 
 
         public override Type type { get { return Type.Png; } }
@@ -50,28 +16,23 @@ namespace UTJ.FrameCapturer
         public override void Initialize(ImageSequenceRecorder recorder)
         {
             m_recorder = recorder;
+            var pngconf = fcAPI.fcPngConfig.default_value;
+            m_ctx = fcAPI.fcPngCreateContext(ref pngconf);
         }
 
         public override void Release()
         {
-            foreach (var cb in m_commands) { cb.Release(); }
-            m_commands.Clear();
+            m_ctx.Release();
         }
 
-        public override void AddCommand(CommandBuffer cb, RenderTexture frame, int channels, string name)
+        public override void Export(RenderTexture frame, int channels, string name)
         {
-            var cmd = new Command(m_recorder.outputDir, name, frame, channels);
-            cb.IssuePluginEvent(fcAPI.fcGetRenderEventFunc(), cmd.call);
-            m_commands.Add(cmd);
-        }
+            string path = m_recorder.outputDir.GetFullPath() + "/" + name + "_" + Time.frameCount.ToString("0000") + ".png";
 
-        public override void Update()
-        {
-            foreach (var cmd in m_commands)
+            fcAPI.fcLock(frame, (data, fmt) =>
             {
-                cmd.Update(m_ctx);
-            }
+                fcAPI.fcPngExportPixels(m_ctx, path, data, frame.width, frame.height, fmt, false);
+            });
         }
-
     }
 }
