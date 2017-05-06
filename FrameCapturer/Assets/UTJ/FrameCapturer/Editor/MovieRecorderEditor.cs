@@ -72,23 +72,37 @@ namespace UTJ.FrameCapturer
         public virtual void RecordingControl()
         {
             var recorder = target as MovieRecorder;
+            var so = serializedObject;
 
             EditorGUILayout.Space();
 
-            if (!recorder.isRecording)
+            // capture control
+            EditorGUILayout.PropertyField(so.FindProperty("m_captureControl"), true);
+            EditorGUI.indentLevel++;
+            if (recorder.captureControl == MovieRecorder.CaptureControl.SelectedRange)
             {
-                if(GUILayout.Button("Begin Recording"))
+                EditorGUILayout.PropertyField(so.FindProperty("m_startFrame"), true);
+                EditorGUILayout.PropertyField(so.FindProperty("m_endFrame"), true);
+            }
+            else if (recorder.captureControl == MovieRecorder.CaptureControl.Manual)
+            {
+                EditorGUILayout.Space();
+                if (!recorder.isRecording)
                 {
-                    recorder.BeginRecording();
+                    if (GUILayout.Button("Begin Recording"))
+                    {
+                        recorder.BeginRecording();
+                    }
+                }
+                else
+                {
+                    if (GUILayout.Button("End Recording"))
+                    {
+                        recorder.EndRecording();
+                    }
                 }
             }
-            else
-            {
-                if (GUILayout.Button("End Recording"))
-                {
-                    recorder.EndRecording();
-                }
-            }
+            EditorGUI.indentLevel--;
         }
 
 
@@ -151,9 +165,9 @@ namespace UTJ.FrameCapturer
 
                 EncoderConfig();
 
-                so.ApplyModifiedProperties();
-
                 RecordingControl();
+
+                so.ApplyModifiedProperties();
             }
         }
     }

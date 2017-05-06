@@ -9,8 +9,8 @@ namespace UTJ.FrameCapturer
         [Serializable]
         public class EncoderConfig
         {
-            public int numColors = 256;
-            public int keyframeInterval = 30;
+            [Range(1, 256)] public int numColors = 256;
+            [Range(1, 120)] public int keyframeInterval = 30;
         }
 
         fcAPI.fcGifContext m_ctx;
