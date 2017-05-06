@@ -16,19 +16,19 @@ namespace UTJ.FrameCapturer
             FrameBuffer,
             RenderTexture,
         }
-        
+
         [Serializable]
         public struct FrameBufferConponents
         {
             public bool frameBuffer;
             public bool GBuffer;
-            public bool  albedo;
-            public bool  occlusion;
-            public bool  specular;
-            public bool  smoothness;
-            public bool  normal;
-            public bool  emission;
-            public bool  depth;
+            public bool albedo;
+            public bool occlusion;
+            public bool specular;
+            public bool smoothness;
+            public bool normal;
+            public bool emission;
+            public bool depth;
 
             public static FrameBufferConponents default_value
             {
@@ -74,11 +74,15 @@ namespace UTJ.FrameCapturer
         protected RenderTexture[] m_rtScratch;
 
 
+        public DataPath outputDir { get { return m_outputDir; } }
         public ImageSequenceRecorderContext.Type format
         {
             get { return m_format; }
             set { m_format = value; ValidateContext(); }
         }
+        public CaptureTarget captureTarget { get { return m_captureTarget; } }
+        public RenderTexture[] targetRT { get { return m_targetRT; } }
+
         public bool isRecording
         {
             get { return false; } // todo
