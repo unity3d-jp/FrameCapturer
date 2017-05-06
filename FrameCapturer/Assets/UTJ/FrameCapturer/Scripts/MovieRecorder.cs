@@ -8,6 +8,7 @@ namespace UTJ.FrameCapturer
 {
     [AddComponentMenu("UTJ/FrameCapturer/Movie Recorder")]
     [RequireComponent(typeof(Camera))]
+    [ExecuteInEditMode]
     public class MovieRecorder : MonoBehaviour
     {
         #region inner_types
@@ -300,13 +301,9 @@ namespace UTJ.FrameCapturer
                     timestamp = 1.0 / m_targetFramerate * m_numVideoFrames;
                 }
 
-                var tex = new Texture2D(m_scratchBuffer.width, m_scratchBuffer.height, TextureFormat.RGB24, false);
-                RenderTexture.active = m_scratchBuffer;
-                tex.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0, false);
-                tex.Apply();
-                m_ctx.AddVideoFrame(tex, timestamp);
-                Destroy(tex);
-
+                fcAPI.fcLock(m_scratchBuffer, TextureFormat.RGB24, (data, fmt) => {
+                    m_ctx.AddVideoFrame(data, fmt, timestamp);
+                });
                 m_numVideoFrames++;
             }
         }

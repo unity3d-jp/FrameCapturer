@@ -18,9 +18,8 @@ namespace UTJ.FrameCapturer
 
         public abstract void Initialize(ImageSequenceRecorder recorder);
         public abstract void Release();
+        public abstract void Export(RenderTexture frame, int channels, string name);
 
-        public abstract void AddCommand(CommandBuffer cb, RenderTexture frame, int channels, string name);
-        public abstract void Update();
 
 
         public static ImageSequenceRecorderContext Create(Type t)
