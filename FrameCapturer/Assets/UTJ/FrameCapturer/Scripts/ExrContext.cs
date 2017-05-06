@@ -7,6 +7,7 @@ namespace UTJ.FrameCapturer
 {
     public class ExrContext : ImageSequenceRecorderContext
     {
+        #region inner_types
         public class Command
         {
             static readonly string[] s_channelNames = { "R", "G", "B", "A" };
@@ -54,6 +55,7 @@ namespace UTJ.FrameCapturer
                 m_calls[ci] = fcAPI.fcExrEndImage(ctx, m_calls[ci]); ++ci;
             }
         }
+        #endregion
 
         fcAPI.fcEXRContext m_ctx;
         ImageSequenceRecorder m_recorder;

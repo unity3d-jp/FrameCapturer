@@ -10,6 +10,7 @@ namespace UTJ.FrameCapturer
     [RequireComponent(typeof(Camera))]
     public class MovieRecorder : MonoBehaviour
     {
+        #region inner_types
         public enum CaptureTarget
         {
             FrameBuffer,
@@ -21,7 +22,10 @@ namespace UTJ.FrameCapturer
             Variable,
             Constant,
         }
+        #endregion
 
+
+        #region fields
         // base settings
         [SerializeField] DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
         [SerializeField] MovieRecorderContext.Type m_format = MovieRecorderContext.Type.WebM;
@@ -48,15 +52,49 @@ namespace UTJ.FrameCapturer
         RenderTexture m_scratchBuffer;
         bool m_recording = false;
         int m_numVideoFrames = 0;
+        #endregion
 
 
-        public DataPath outputDir { get { return m_outputDir; } }
+        #region properties
+        public DataPath outputDir
+        {
+            get { return m_outputDir; }
+            set { m_outputDir = value; }
+        }
         public MovieRecorderContext.Type format {
             get { return m_format; }
             set { m_format = value; ValidateContext(); }
         }
-        public CaptureTarget captureTarget { get { return m_captureTarget; } }
-        public FrameRateMode framerateMode { get { return m_framerateMode; } }
+        public CaptureTarget captureTarget
+        {
+            get { return m_captureTarget; }
+            set { m_captureTarget = value; }
+        }
+        public RenderTexture targetRT
+        {
+            get { return m_targetRT; }
+            set { m_targetRT = value; }
+        }
+        public FrameRateMode framerateMode
+        {
+            get { return m_framerateMode; }
+            set { m_framerateMode = value; }
+        }
+        public int targetFramerate
+        {
+            get { return m_targetFramerate; }
+            set { m_targetFramerate = value; }
+        }
+        public bool fixDeltaTime
+        {
+            get { return m_fixDeltaTime; }
+            set { m_fixDeltaTime = value; }
+        }
+        public int captureEveryNthFrame
+        {
+            get { return m_captureEveryNthFrame; }
+            set { m_captureEveryNthFrame = value; }
+        }
 
         public MovieRecorderContext context { get { ValidateContext(); return m_ctx; } }
         public GifContext.EncoderConfig gifConfig { get { return m_gifEncoderConfig; } }
@@ -66,6 +104,7 @@ namespace UTJ.FrameCapturer
         public RenderTexture scratchBuffer { get { return m_scratchBuffer; } }
         public CommandBuffer commandBuffer { get { return m_cb; } }
         public bool isRecording { get { return m_recording; } }
+        #endregion
 
 
         public bool BeginRecording()
