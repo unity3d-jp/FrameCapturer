@@ -1,20 +1,37 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-PROJECT(usdi)
+PROJECT(fccore)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 FIND_PACKAGE(OpenEXR QUIET)
-FIND_PACKAGE(OpenGL QUIET)
-FIND_PACKAGE(GLEW QUIET)
+FIND_PACKAGE(ZLIB QUIET)
+FIND_PACKAGE(PNG QUIET)
+FIND_PACKAGE(YUV QUIET)
+FIND_PACKAGE(WEBM QUIET)
+FIND_PACKAGE(VPX QUIET)
+FIND_PACKAGE(OGG QUIET)
+FIND_PACKAGE(VORBIS QUIET)
+FIND_PACKAGE(OPUS QUIET)
+FIND_PACKAGE(OPENH264 QUIET)
+FIND_PACKAGE(FAAC QUIET)
 
 SET(ISPC "/usr/local/bin/ispc" CACHE PATH "Path to Intel ISPC")
 MARK_AS_ADVANCED(FORCE ISPC)
 
-OPTION(FC_ENABLE_PNG "Enable Png sequence recorder." ON)
-OPTION(FC_ENABLE_EXR "Enable Exr sequence recorder." ON)
-OPTION(FC_ENABLE_GIF "Enable Gif recorder." ON)
-OPTION(FC_ENABLE_WEBM "Enable WebM recorder." ON)
-OPTION(FC_ENABLE_MP4 "Enable MP4 recorder." ON)
 OPTION(FC_ENABLE_ISPC "Use Intel ISPC to generate SIMDified code. It can significantly boost performance." ON)
+OPTION(FC_ENABLE_PNG "Enable Png sequence exporter." ON)
+OPTION(FC_ENABLE_EXR "Enable Exr sequence exporter." ON)
+OPTION(FC_ENABLE_GIF "Enable Gif exporter." ON)
+OPTION(FC_ENABLE_WEBM "Enable WebM exporter." ON)
+IF(FC_ENABLE_WEBM)
+    OPTION(FC_ENABLE_VPX "Enable VPX encoder." ON)
+    OPTION(FC_ENABLE_VORBIS "Enable vorbis encoder." ON)
+    OPTION(FC_ENABLE_OPUS "Enable opus encoder." ON)
+ENDIF()
+OPTION(FC_ENABLE_MP4 "Enable MP4 exporter." ON)
+IF(FC_ENABLE_MP4)
+    OPTION(FC_ENABLE_OPENH264 "Enable OpenH264 encoder." ON)
+    OPTION(FC_ENABLE_FAAC "Enable FAAC encoder." ON)
+ENDIF()
 
 OPTION(FC_ENABLE_DEBUG "Enable debug functionalities." ON)
 OPTION(FC_ENABLE_TESTS "Build tests." ON)
@@ -42,20 +59,7 @@ INCLUDE_DIRECTORIES(
     .
     ${INCLUDES}
     ${OPENEXR_INCLUDE_DIRS}
-    ${GLEW_INCLUDE_DIR}
 )
-
-
-# GraphicsInterface
-IF(USDI_ENABLE_GRAPHICS_INTERFACE)
-    FILE(GLOB GI_CXX_FILES GraphicsInterface/*.cpp)
-    FILE(GLOB GI_H_FILES GraphicsInterface/*.h)
-    ADD_LIBRARY(GraphicsInterface STATIC ${GI_CXX_FILES} ${GI_H_FILES})
-    TARGET_INCLUDE_DIRECTORIES(GraphicsInterface PUBLIC
-        ./GraphicsInterface
-        ./External/Unity/include
-    )
-ENDIF()
 
 
 # MeshUtils
@@ -80,50 +84,39 @@ IF(FC_ENABLE_ISPC)
         ENDIF()
     ENDIF()
 
-    SET(MUCORE_DIR ${CMAKE_CURRENT_BINARY_DIR}/MeshUtilsCore)
-    ADD_CUSTOM_TARGET(MeshUtilsCore ALL
+    SET(FCISPC_DIR ${CMAKE_CURRENT_BINARY_DIR}/fccoreISPC)
+    ADD_CUSTOM_TARGET(fccoreISPC ALL
         # not use --opt=force-aligned-memory as I can't force USD to align memory to 0x20.
         # (Windows port is using with patched USD)
-        COMMAND ${ISPC} ${CMAKE_CURRENT_SOURCE_DIR}/MeshUtils/MeshUtilsCore.ispc -o ${MUCORE_DIR}/MeshUtilsCore${CMAKE_CXX_OUTPUT_EXTENSION} -h ${MUCORE_DIR}/MeshUtilsCore.h --pic --target=sse2,sse4,avx --arch=x86-64 --opt=fast-masked-vload --opt=fast-math
+        COMMAND ${ISPC} ${CMAKE_CURRENT_SOURCE_DIR}/fccore/Foundation/ConvertKernel.ispc -o ${FCISPC_DIR}/ConvertKernel${CMAKE_CXX_OUTPUT_EXTENSION} -h ${FCISPC_DIR}/ConvertKernel.h --pic --target=sse2,sse4,avx --arch=x86-64 --opt=fast-masked-vload --opt=fast-math
     )
-    SET(MUCORE_FILES
-        ${MUCORE_DIR}/MeshUtilsCore.h
-        ${MUCORE_DIR}/MeshUtilsCore${CMAKE_CXX_OUTPUT_EXTENSION}
-        ${MUCORE_DIR}/MeshUtilsCore_sse2${CMAKE_CXX_OUTPUT_EXTENSION}
-        ${MUCORE_DIR}/MeshUtilsCore_sse4${CMAKE_CXX_OUTPUT_EXTENSION}
-        ${MUCORE_DIR}/MeshUtilsCore_avx${CMAKE_CXX_OUTPUT_EXTENSION}
+    SET(FCISPCFCISPC_FILES
+        ${FCISPC_DIR}/ConvertKernel.h
+        ${FCISPC_DIR}/ConvertKernel${CMAKE_CXX_OUTPUT_EXTENSION}
+        ${FCISPC_DIR}/ConvertKernel_sse2${CMAKE_CXX_OUTPUT_EXTENSION}
+        ${FCISPC_DIR}/ConvertKernel_sse4${CMAKE_CXX_OUTPUT_EXTENSION}
+        ${FCISPC_DIR}/ConvertKernel_avx${CMAKE_CXX_OUTPUT_EXTENSION}
     )
 
     # create dummy files to make cmake can find it
-    FOREACH(F ${MUCORE_FILES})
+    FOREACH(F ${FCISPC})
         FILE(WRITE ${F} "")
     ENDFOREACH(F)
 ENDIF()
 
-FILE(GLOB MU_CXX_FILES MeshUtils/*.cpp MeshUtils/*.c)
-FILE(GLOB MU_H_FILES MeshUtils/*.h)
-ADD_LIBRARY(MeshUtils STATIC ${MU_CXX_FILES} ${MU_H_FILES} ${MUCORE_FILES})
-TARGET_INCLUDE_DIRECTORIES(MeshUtils PUBLIC ./MeshUtils)
-IF(FC_ENABLE_ISPC)
-    ADD_DEFINITIONS(-DmuEnableISPC)
-    ADD_DEPENDENCIES(MeshUtils MeshUtilsCore)
-    TARGET_INCLUDE_DIRECTORIES(MeshUtils PUBLIC ${MUCORE_DIR})
-ENDIF()
-
-
 
 # fccore
-FILE(GLOB FC_CXX_FILES ./*.cpp Foundation/*.cpp Encoder/*.cpp GraphicsDevice/*.cpp)
-FILE(GLOB FC_H_FILES ./*.h Foundation/*.h Encoder/*.h GraphicsDevice/*.h)
+FILE(GLOB FC_CXX_FILES fccore/*.cpp fccore/Foundation/*.cpp fccore/Encoder/*.cpp fccore/GraphicsDevice/*.cpp)
+FILE(GLOB FC_H_FILES fccore/*.h fccore/Foundation/*.h fccore/Encoder/*.h fccore/GraphicsDevice/*.h)
 IF(FC_ENABLE_OSX_BUNDLE)
     ADD_LIBRARY(fccore MODULE ${FC_CXX_FILES} ${FC_H_FILES})
 ELSE()
     ADD_LIBRARY(fccore SHARED ${FC_CXX_FILES} ${FC_H_FILES})
 ENDIF()
-ADD_DEPENDENCIES(usdi MeshUtils)
+ADD_DEPENDENCIES(fccore fccoreISPC)
 TARGET_INCLUDE_DIRECTORIES(fccore PUBLIC .)
 TARGET_LINK_LIBRARIES(fccore
-    ${OPENEXR_Half_LIBRARY}
+    ${OPENEXR_LIBRARIES}
 )
 
 IF(FC_ENABLE_GIF)
@@ -139,10 +132,28 @@ IF(FC_ENABLE_EXR)
 ENDIF()
 IF(FC_ENABLE_WEBM)
     ADD_DEFINITIONS(-DfcSupportWebM)
-    TARGET_LINK_LIBRARIES(fccore ${VPX_LIBRARY} ${OGGVORBIS_LIBRARY})
+    IF(FC_ENABLE_VPX)
+        ADD_DEFINITIONS(-DfcSupportVPX)
+        TARGET_LINK_LIBRARIES(fccore ${VPX_LIBRARY})
+    ENDIF()
+    IF(FC_ENABLE_VORBIS)
+        ADD_DEFINITIONS(-DfcSupportVorbis)
+        TARGET_LINK_LIBRARIES(fccore ${OGG_LIBRARY})
+        TARGET_LINK_LIBRARIES(fccore ${VORBIS_LIBRARY})
+    ENDIF()
+    IF(FC_ENABLE_OPUS)
+        ADD_DEFINITIONS(-DfcSupportOpus)
+        TARGET_LINK_LIBRARIES(fccore ${OPUS_ALL_LIBRARY})
+    ENDIF()
 ENDIF()
 IF(FC_ENABLE_MP4)
     ADD_DEFINITIONS(-DfcSupportMP4)
+    IF(FC_ENABLE_FAAC)
+        ADD_DEFINITIONS(-DfcSupportAAC_FAAC)
+    ENDIF()
+    IF(FC_ENABLE_OPENH264)
+        ADD_DEFINITIONS(-DfcSupportH264_OpenH264)
+    ENDIF()
 ENDIF()
 
 
