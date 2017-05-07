@@ -81,6 +81,7 @@ namespace UTJ.FrameCapturer
         Mesh m_quad;
         CommandBuffer m_cbCopyFB;
         CommandBuffer m_cbCopyGB;
+        CommandBuffer m_cbClearGB;
         CommandBuffer m_cbCopyRT;
         RenderTexture m_rtFB;
         RenderTexture[] m_rtGB;
@@ -212,12 +213,27 @@ namespace UTJ.FrameCapturer
                             m_rtGB[i].Create();
                         }
 
+                        // clear gbuffer (Unity doesn't clear emission buffer - it is not needed usually)
+                        m_cbClearGB = new CommandBuffer();
+                        m_cbClearGB.name = "ImageSequenceRecorder: Cleanup GBuffer";
+                        if (cam.allowHDR)
+                        {
+                            m_cbClearGB.SetRenderTarget(BuiltinRenderTextureType.CameraTarget);
+                        }
+                        else
+                        {
+                            m_cbClearGB.SetRenderTarget(BuiltinRenderTextureType.GBuffer3);
+                        }
+                        m_cbClearGB.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 3);
+
+                        // copy gbuffer
                         m_cbCopyGB = new CommandBuffer();
                         m_cbCopyGB.name = "ImageSequenceRecorder: Copy GBuffer";
                         m_cbCopyGB.SetRenderTarget(
                             new RenderTargetIdentifier[] { m_rtGB[0], m_rtGB[1], m_rtGB[2], m_rtGB[3], m_rtGB[4], m_rtGB[5], m_rtGB[6] }, m_rtGB[0]);
                         m_cbCopyGB.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 2);
                     }
+                    cam.AddCommandBuffer(CameraEvent.BeforeGBuffer, m_cbClearGB);
                     cam.AddCommandBuffer(CameraEvent.BeforeLighting, m_cbCopyGB);
                 }
             }
@@ -258,6 +274,10 @@ namespace UTJ.FrameCapturer
             {
                 cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cbCopyFB);
             }
+            if (m_cbClearGB != null)
+            {
+                cam.RemoveCommandBuffer(CameraEvent.BeforeGBuffer, m_cbCopyGB);
+            }
             if (m_cbCopyGB != null)
             {
                 cam.RemoveCommandBuffer(CameraEvent.BeforeLighting, m_cbCopyGB);
@@ -290,7 +310,7 @@ namespace UTJ.FrameCapturer
                     if (m_fbComponents.specular)    { m_ctx.Export(m_rtGB[2], 3, "Specular"); }
                     if (m_fbComponents.smoothness)  { m_ctx.Export(m_rtGB[3], 1, "Smoothness"); }
                     if (m_fbComponents.normal)      { m_ctx.Export(m_rtGB[4], 3, "Normal"); }
-                    if (m_fbComponents.emission)    { m_ctx.Export(m_rtGB[5], 4, "Emission"); }
+                    if (m_fbComponents.emission)    { m_ctx.Export(m_rtGB[5], 3, "Emission"); }
                     if (m_fbComponents.depth)       { m_ctx.Export(m_rtGB[6], 1, "Depth"); }
                 }
             }
@@ -363,15 +383,20 @@ namespace UTJ.FrameCapturer
 
         void OnDisable()
         {
-            if (m_cbCopyGB != null)
-            {
-                m_cbCopyGB.Release();
-                m_cbCopyGB = null;
-            }
             if (m_cbCopyFB != null)
             {
                 m_cbCopyFB.Release();
                 m_cbCopyFB = null;
+            }
+            if (m_cbClearGB != null)
+            {
+                m_cbClearGB.Release();
+                m_cbClearGB = null;
+            }
+            if (m_cbCopyGB != null)
+            {
+                m_cbCopyGB.Release();
+                m_cbCopyGB = null;
             }
             if (m_cbCopyRT != null)
             {

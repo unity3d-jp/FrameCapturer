@@ -97,6 +97,27 @@ gbuffer_out copy_gbuffer(v2f I)
     O.depth = half4(depth.rrr, 1.0);
     return O;
 }
+
+
+// clear gbuffer
+struct clear_out
+{
+    half4 gb0   : SV_Target0;
+    half4 gb1   : SV_Target1;
+    half4 gb2   : SV_Target2;
+    half4 gb3   : SV_Target3;
+    float depth : SV_Depth;
+};
+clear_out clear_gbuffer(v2f I)
+{
+    clear_out O;
+    O.gb0.xyzw = 0.0;
+    O.gb1.xyzw = 0.0;
+    O.gb2.xyzw = 0.0;
+    O.gb3.xyzw = 0.0;
+    O.depth = 1.0;
+    return O;
+}
 ENDCG
 
 Subshader {
@@ -119,11 +140,20 @@ Subshader {
     }
 
     // Pass 2: gbuffer
-    Pass {
+    Pass{
         Blend Off Cull Off ZTest Off ZWrite Off
         CGPROGRAM
         #pragma vertex vert
         #pragma fragment copy_gbuffer
+        ENDCG
+    }
+
+    // Pass 3: clear
+    Pass {
+        Blend Off Cull Off ZTest Off ZWrite Off
+        CGPROGRAM
+        #pragma vertex vert
+        #pragma fragment clear_gbuffer
         ENDCG
     }
 }
