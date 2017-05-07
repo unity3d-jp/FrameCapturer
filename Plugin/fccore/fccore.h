@@ -125,8 +125,8 @@ struct fcPngConfig
 
 fcAPI fcIPngContext*  fcPngCreateContext(const fcPngConfig *conf = nullptr);
 fcAPI void            fcPngDestroyContext(fcIPngContext *ctx);
-fcAPI bool            fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, int num_channels = 0, bool flipY = false);
-fcAPI bool            fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, int num_channels = 0, bool flipY = false);
+fcAPI bool            fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, int num_channels = 0);
+fcAPI bool            fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, int num_channels = 0);
 
 
 // -------------------------------------------------------------
@@ -160,8 +160,8 @@ struct fcExrConfig
 fcAPI fcIExrContext*  fcExrCreateContext(const fcExrConfig *conf = nullptr);
 fcAPI void            fcExrDestroyContext(fcIExrContext *ctx);
 fcAPI bool            fcExrBeginImage(fcIExrContext *ctx, const char *path, int width, int height);
-fcAPI bool            fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name, bool flipY = false);
-fcAPI bool            fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name, bool flipY = false);
+fcAPI bool            fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name);
+fcAPI bool            fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name);
 fcAPI bool            fcExrEndImage(fcIExrContext *ctx);
 
 

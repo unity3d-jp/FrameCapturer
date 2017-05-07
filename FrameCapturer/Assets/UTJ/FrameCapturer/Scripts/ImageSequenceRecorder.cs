@@ -250,7 +250,7 @@ namespace UTJ.FrameCapturer
                             m_cbCopyVelocity.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 4);
                         }
                         cam.AddCommandBuffer(CameraEvent.BeforeImageEffectsOpaque, m_cbCopyVelocity);
-                        cam.depthTextureMode = cam.depthTextureMode | DepthTextureMode.Depth | DepthTextureMode.MotionVectors;
+                        cam.depthTextureMode = DepthTextureMode.Depth | DepthTextureMode.MotionVectors;
                     }
                 }
             }

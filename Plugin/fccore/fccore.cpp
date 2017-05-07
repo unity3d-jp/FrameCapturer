@@ -193,28 +193,28 @@ fcAPI void fcPngDestroyContext(fcIPngContext *ctx)
     ctx->release();
 }
 
-fcAPI bool fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, int num_channels, bool flipY)
+fcAPI bool fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, int num_channels)
 {
     fcTraceFunc();
     if (!ctx) { return false; }
-    return ctx->exportPixels(path, pixels, width, height, fmt, num_channels, flipY);
+    return ctx->exportPixels(path, pixels, width, height, fmt, num_channels);
 }
 
-fcAPI bool fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, int num_channels, bool flipY)
+fcAPI bool fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, int num_channels)
 {
     fcTraceFunc();
     if (!ctx) { return false; }
-    return ctx->exportTexture(path, tex, width, height, fmt, num_channels, flipY);
+    return ctx->exportTexture(path, tex, width, height, fmt, num_channels);
 }
 
-fcAPI int fcPngExportTextureDeferred(fcIPngContext *ctx, const char *path_, void *tex, int width, int height, fcPixelFormat fmt, int num_channels, bool flipY, int id)
+fcAPI int fcPngExportTextureDeferred(fcIPngContext *ctx, const char *path_, void *tex, int width, int height, fcPixelFormat fmt, int num_channels, int id)
 {
     fcTraceFunc();
     if (!ctx) { return 0; }
 
     std::string path = path_;
     return fcAddDeferredCall([=]() {
-        ctx->exportTexture(path.c_str(), tex, width, height, fmt, num_channels, flipY);
+        ctx->exportTexture(path.c_str(), tex, width, height, fmt, num_channels);
     }, id);
 }
 #endif // fcSupportPNG
@@ -249,18 +249,18 @@ fcAPI bool fcExrBeginImage(fcIExrContext *ctx, const char *path, int width, int 
     return ctx->beginFrame(path, width, height);
 }
 
-fcAPI bool fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name, bool flipY)
+fcAPI bool fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name)
 {
     fcTraceFunc();
     if (!ctx) { return false; }
-    return ctx->addLayerPixels(pixels, fmt, ch, name, flipY);
+    return ctx->addLayerPixels(pixels, fmt, ch, name);
 }
 
-fcAPI bool fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name, bool flipY)
+fcAPI bool fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name)
 {
     fcTraceFunc();
     if (!ctx) { return false; }
-    return ctx->addLayerTexture(tex, fmt, ch, name, flipY);
+    return ctx->addLayerTexture(tex, fmt, ch, name);
 }
 
 fcAPI bool fcExrEndImage(fcIExrContext *ctx)
@@ -280,13 +280,13 @@ fcAPI int fcExrBeginImageDeferred(fcIExrContext *ctx, const char *path_, int wid
     }, id);
 }
 
-fcAPI int fcExrAddLayerTextureDeferred(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name_, bool flipY, int id)
+fcAPI int fcExrAddLayerTextureDeferred(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name_, int id)
 {
     fcTraceFunc();
     if (!ctx) { return 0; }
     std::string name = name_;
     return fcAddDeferredCall([=]() {
-        return ctx->addLayerTexture(tex, fmt, ch, name.c_str(), flipY);
+        return ctx->addLayerTexture(tex, fmt, ch, name.c_str());
     }, id);
 }
 

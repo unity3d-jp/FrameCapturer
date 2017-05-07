@@ -179,7 +179,7 @@ namespace UTJ.FrameCapturer
 
         [DllImport ("fccore")] public static extern fcPngContext fcPngCreateContext(ref fcPngConfig conf);
         [DllImport ("fccore")] private static extern void        fcPngDestroyContext(fcPngContext ctx);
-        [DllImport ("fccore")] public static extern Bool         fcPngExportPixels(fcPngContext ctx, string path, byte[] pixels, int width, int height, fcPixelFormat fmt, int num_channels, Bool flipY);
+        [DllImport ("fccore")] public static extern Bool         fcPngExportPixels(fcPngContext ctx, string path, byte[] pixels, int width, int height, fcPixelFormat fmt, int num_channels);
 
 
         // -------------------------------------------------------------
@@ -234,7 +234,7 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] public static extern fcExrContext fcExrCreateContext(ref fcExrConfig conf);
         [DllImport ("fccore")] private static extern void        fcExrDestroyContext(fcExrContext ctx);
         [DllImport ("fccore")] public static extern Bool         fcExrBeginImage(fcExrContext ctx, string path, int width, int height);
-        [DllImport ("fccore")] public static extern Bool         fcExrAddLayerPixels(fcExrContext ctx, byte[] pixels, fcPixelFormat fmt, int ch, string name, Bool flipY);
+        [DllImport ("fccore")] public static extern Bool         fcExrAddLayerPixels(fcExrContext ctx, byte[] pixels, fcPixelFormat fmt, int ch, string name);
         [DllImport ("fccore")] public static extern Bool         fcExrEndImage(fcExrContext ctx);
 
 
