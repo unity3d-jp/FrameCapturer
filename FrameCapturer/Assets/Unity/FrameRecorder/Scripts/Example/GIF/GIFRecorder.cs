@@ -9,13 +9,12 @@ namespace UnityEngine.Recorder.FrameRecorder
     [FrameRecorderClass]
     public class GIFRecorder : RenderTextureRecorder<GIFRecorderSettings>
     {
-        static readonly string[] s_channelNames = { "R", "G", "B", "A" };
         fcAPI.fcGifContext m_ctx;
         fcAPI.fcStream m_stream;
 
         public static RecorderInfo GetRecorderInfo()
         {
-            return RecorderInfo.Instantiate<GIFRecorder, GIFRecorderSettings>("Video", "EXR Recorder");
+            return RecorderInfo.Instantiate<GIFRecorder, GIFRecorderSettings>("Video", "GIF Recorder");
         }
 
         public override bool BeginRecording(RecordingSession session)
@@ -57,7 +56,7 @@ namespace UnityEngine.Recorder.FrameRecorder
             var outputPath = m_Settings.m_DestinationPath;
             if (outputPath.Length > 0 && !outputPath.EndsWith("/"))
                 outputPath += "/";
-            outputPath += m_OutputFile + (settings as GIFRecorderSettings).m_BaseFileName + recordedFramesCount + ".gif";
+            outputPath += m_OutputFile + (settings as GIFRecorderSettings).m_BaseFileName + ".gif";
             return outputPath;
         }
     }

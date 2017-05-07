@@ -1,3 +1,5 @@
+using UTJ.FrameCapturer;
+
 namespace UnityEngine.Recorder.FrameRecorder
 {
     [ExecuteInEditMode]
@@ -5,6 +7,7 @@ namespace UnityEngine.Recorder.FrameRecorder
     {
         public string m_BaseFileName  = "pngFile";
         public string m_DestinationPath = "Recorder";
+        public fcAPI.fcPngConfig m_PngConfig = fcAPI.fcPngConfig.default_value;
 
         public override bool isValid
         {

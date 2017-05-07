@@ -43,16 +43,16 @@ namespace UnityEngine.Recorder.FrameRecorder
             var source = (RenderTextureSource)m_BoxedSources[0].m_Source;
             var frame = source.buffer;
 
-            fcAPI.fcExrBeginImage(m_ctx, path, frame.width, frame.height);
             fcAPI.fcLock(frame, (data, fmt) =>
             {
+                fcAPI.fcExrBeginImage(m_ctx, path, frame.width, frame.height);
                 int channels = (int)fmt & 7;
                 for (int i = 0; i < channels; ++i)
                 {
                     fcAPI.fcExrAddLayerPixels(m_ctx, data, fmt, i, s_channelNames[i]);
                 }
+                fcAPI.fcExrEndImage(m_ctx);
             });
-            fcAPI.fcExrEndImage(m_ctx);
         }
 
         string BuildOutputPath(RecordingSession session)
@@ -60,7 +60,7 @@ namespace UnityEngine.Recorder.FrameRecorder
             var outputPath = m_Settings.m_DestinationPath;
             if (outputPath.Length > 0 && !outputPath.EndsWith("/"))
                 outputPath += "/";
-            outputPath += m_OutputFile + (settings as EXRRecorderSettings).m_BaseFileName + recordedFramesCount + ".exr";
+            outputPath += m_OutputFile + (settings as EXRRecorderSettings).m_BaseFileName + recordedFramesCount.ToString("0000") + ".exr";
             return outputPath;
         }
     }

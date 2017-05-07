@@ -2,48 +2,58 @@ using System;
 using System.IO;
 using UnityEngine.Recorder.FrameRecorder.DataSource;
 using UnityEngine.Recorder.FrameRecorder.Utilities;
+using UTJ.FrameCapturer;
 
 namespace UnityEngine.Recorder.FrameRecorder
 {
     [FrameRecorderClass]
     public class PNGRecorder : RenderTextureRecorder<PNGRecorderSettings>
     {
+        fcAPI.fcPngContext m_ctx;
+
         public static RecorderInfo GetRecorderInfo()
         {
-            return RecorderInfo.Instantiate<PNGRecorder, PNGRecorderSettings>("Video", "PNG Recorder");
+            return RecorderInfo.Instantiate<EXRRecorder, EXRRecorderSettings>("Video", "PNG Recorder");
         }
 
-        public override void RecordFrame(RecordingSession ctx)
+        public override bool BeginRecording(RecordingSession session)
         {
-            if (m_BoxedSources.Count != 1)
-                throw new Exception("Unsupported number of sources");
-
-            var source = (RenderTextureSource)m_BoxedSources[0].m_Source;
-
-            var width = source.buffer.width;
-            var height = source.buffer.height;
-            var tex = new Texture2D(width, height, TextureFormat.RGB24, false);
-            var backupActive = RenderTexture.active;
-            RenderTexture.active = source.buffer;
-            tex.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-            tex.Apply();
-            RenderTexture.active = backupActive;
-
-            var bytes = tex.EncodeToPNG();
-            UnityHelpers.Destroy(tex);
+            if (!base.BeginRecording(session)) { return false; }
 
             if (!Directory.Exists(m_Settings.m_DestinationPath))
                 Directory.CreateDirectory(m_Settings.m_DestinationPath);
 
-            File.WriteAllBytes(BuildOutputPath(ctx), bytes);
+            m_ctx = fcAPI.fcPngCreateContext(ref m_Settings.m_PngConfig);
+            return m_ctx;
         }
 
-        string BuildOutputPath(RecordingSession ctx)
+        public override void EndRecording(RecordingSession session)
+        {
+            m_ctx.Release();
+            base.EndRecording(session);
+        }
+
+        public override void RecordFrame(RecordingSession session)
+        {
+            if (m_BoxedSources.Count != 1)
+                throw new Exception("Unsupported number of sources");
+
+            var path = BuildOutputPath(session);
+            var source = (RenderTextureSource)m_BoxedSources[0].m_Source;
+            var frame = source.buffer;
+
+            fcAPI.fcLock(frame, (data, fmt) =>
+            {
+                fcAPI.fcPngExportPixels(m_ctx, path, data, frame.width, frame.height, fmt, 0);
+            });
+        }
+
+        string BuildOutputPath(RecordingSession session)
         {
             var outputPath = m_Settings.m_DestinationPath;
             if (outputPath.Length > 0 && !outputPath.EndsWith("/"))
                 outputPath += "/";
-            outputPath += m_OutputFile + (settings as PNGRecorderSettings).m_BaseFileName + recordedFramesCount + ".png";
+            outputPath += m_OutputFile + (settings as EXRRecorderSettings).m_BaseFileName + recordedFramesCount.ToString("0000") + ".png";
             return outputPath;
         }
     }

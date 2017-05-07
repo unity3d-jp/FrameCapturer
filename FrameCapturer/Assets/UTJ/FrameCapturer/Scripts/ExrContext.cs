@@ -32,15 +32,15 @@ namespace UTJ.FrameCapturer
             if (!m_recorder || !m_ctx) { return; }
             string path = m_recorder.outputDir.GetFullPath() + "/" + name + "_" + m_recorder.frame.ToString("0000") + ".exr";
 
-            fcAPI.fcExrBeginImage(m_ctx, path, frame.width, frame.height);
             fcAPI.fcLock(frame, (data, fmt) => {
+                fcAPI.fcExrBeginImage(m_ctx, path, frame.width, frame.height);
                 channels = System.Math.Min(channels, (int)fmt & 7);
                 for (int i = 0; i < channels; ++i)
                 {
                     fcAPI.fcExrAddLayerPixels(m_ctx, data, fmt, i, s_channelNames[i]);
                 }
+                fcAPI.fcExrEndImage(m_ctx);
             });
-            fcAPI.fcExrEndImage(m_ctx);
         }
     }
 }

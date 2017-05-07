@@ -12,7 +12,7 @@ namespace UTJ.FrameRecorder
         protected override void OnEncodingGui()
         {
             base.OnEncodingGui();
-            m_LayoutHelper.AddIntProperty("Bitrate", serializedObject, () => (target as MP4RecorderSettings).m_VideoBitrate);
+            //m_LayoutHelper.AddIntProperty("Bitrate", serializedObject, () => (target as MP4RecorderSettings).m_VideoBitrate);
         }
 
         protected override void OnOutputGui()

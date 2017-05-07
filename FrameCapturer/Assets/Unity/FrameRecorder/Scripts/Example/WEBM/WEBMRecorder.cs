@@ -9,13 +9,12 @@ namespace UnityEngine.Recorder.FrameRecorder
     [FrameRecorderClass]
     public class WEBMRecorder : RenderTextureRecorder<WEBMRecorderSettings>
     {
-        static readonly string[] s_channelNames = { "R", "G", "B", "A" };
         fcAPI.fcWebMContext m_ctx;
         fcAPI.fcStream m_stream;
 
         public static RecorderInfo GetRecorderInfo()
         {
-            return RecorderInfo.Instantiate<WEBMRecorder, WEBMRecorderSettings>("Video", "EXR Recorder");
+            return RecorderInfo.Instantiate<WEBMRecorder, WEBMRecorderSettings>("Video", "WEBM Recorder");
         }
 
         public override bool BeginRecording(RecordingSession session)
@@ -57,7 +56,7 @@ namespace UnityEngine.Recorder.FrameRecorder
             var outputPath = m_Settings.m_DestinationPath;
             if (outputPath.Length > 0 && !outputPath.EndsWith("/"))
                 outputPath += "/";
-            outputPath += m_OutputFile + (settings as WEBMRecorderSettings).m_BaseFileName + recordedFramesCount + ".webm";
+            outputPath += m_OutputFile + (settings as WEBMRecorderSettings).m_BaseFileName + ".webm";
             return outputPath;
         }
     }

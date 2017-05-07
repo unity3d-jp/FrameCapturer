@@ -1,14 +1,15 @@
 using UnityEngine;
 using UnityEngine.Recorder.FrameRecorder;
+using UTJ.FrameCapturer;
 
 namespace UTJ.FrameRecorder
 {
     [ExecuteInEditMode]
     public class MP4RecorderSettings : ImageRecorderSettings
     {
-        public int m_VideoBitrate = 8192000;
         public string m_BaseFileName  = "mp4File";
         public string m_DestinationPath = "Recorder";
+        public fcAPI.fcMP4Config m_MP4Config = fcAPI.fcMP4Config.default_value;
 
         public override bool isValid
         {
