@@ -82,9 +82,9 @@ namespace UTJ.FrameCapturer
         CommandBuffer m_cbCopyFB;
         CommandBuffer m_cbCopyGB;
         CommandBuffer m_cbCopyRT;
-        [SerializeField] RenderTexture m_rtFB;
-        [SerializeField] RenderTexture[] m_rtGB;
-        [SerializeField] RenderTexture[] m_rtScratch;
+        RenderTexture m_rtFB;
+        RenderTexture[] m_rtGB;
+        RenderTexture[] m_rtScratch;
         int m_frame;
         bool m_recording;
         bool m_oneShot;
