@@ -20,7 +20,6 @@ struct fcPngTaskData
     int height = 0;
     fcPixelFormat format = fcPixelFormat_Unknown;
     int num_channels = 4;
-    bool flipY = false;
 };
 
 class fcPngContext : public fcIPngContext
@@ -29,8 +28,8 @@ public:
     fcPngContext(const fcPngConfig& conf, fcIGraphicsDevice *dev);
     ~fcPngContext() override;
     void release() override;
-    bool exportTexture(const char *path, void *tex, int width, int height, fcPixelFormat fmt, int num_channels, bool flipY) override;
-    bool exportPixels(const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, int num_channels, bool flipY) override;
+    bool exportTexture(const char *path, void *tex, int width, int height, fcPixelFormat fmt, int num_channels) override;
+    bool exportPixels(const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, int num_channels) override;
 
 private:
     void waitSome();
@@ -62,7 +61,7 @@ void fcPngContext::release()
     delete this;
 }
 
-bool fcPngContext::exportTexture(const char *path_, void *tex, int width, int height, fcPixelFormat fmt, int num_channels, bool flipY)
+bool fcPngContext::exportTexture(const char *path_, void *tex, int width, int height, fcPixelFormat fmt, int num_channels)
 {
     if (m_dev == nullptr) {
         fcDebugLog("fcPngContext::exportTexture(): gfx device is null.");
@@ -76,7 +75,6 @@ bool fcPngContext::exportTexture(const char *path_, void *tex, int width, int he
     data->height = height;
     data->format = fmt;
     data->num_channels = num_channels;
-    data->flipY = flipY;
 
     // get surface data
     data->pixels.resize(width * height * fcGetPixelSize(fmt));
@@ -96,7 +94,7 @@ bool fcPngContext::exportTexture(const char *path_, void *tex, int width, int he
     return false;
 }
 
-bool fcPngContext::exportPixels(const char *path_, const void *pixels_, int width, int height, fcPixelFormat fmt, int num_channels, bool flipY)
+bool fcPngContext::exportPixels(const char *path_, const void *pixels_, int width, int height, fcPixelFormat fmt, int num_channels)
 {
     waitSome();
 
@@ -106,7 +104,6 @@ bool fcPngContext::exportPixels(const char *path_, const void *pixels_, int widt
     data->height = height;
     data->format = fmt;
     data->num_channels = num_channels;
-    data->flipY = flipY;
     data->pixels.assign((char*)pixels_, width * height * fcGetPixelSize(fmt));
 
     // kick export task
@@ -137,10 +134,6 @@ bool fcPngContext::exportTask(fcPngTaskData& data)
     int bit_depth = 0;
     int num_channels = 0;
     int color_type = 0;
-
-    if (data.flipY) {
-        fcImageFlipY(&data.pixels[0], data.width, data.height, data.format);
-    }
 
     auto src_fmt = data.format;
     auto dst_fmt = src_fmt;

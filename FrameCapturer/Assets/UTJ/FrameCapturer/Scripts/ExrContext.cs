@@ -37,7 +37,7 @@ namespace UTJ.FrameCapturer
                 channels = System.Math.Min(channels, (int)fmt & 7);
                 for (int i = 0; i < channels; ++i)
                 {
-                    fcAPI.fcExrAddLayerPixels(m_ctx, data, fmt, i, s_channelNames[i], false);
+                    fcAPI.fcExrAddLayerPixels(m_ctx, data, fmt, i, s_channelNames[i]);
                 }
             });
             fcAPI.fcExrEndImage(m_ctx);

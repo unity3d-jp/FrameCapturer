@@ -37,9 +37,9 @@ namespace UTJ.FrameCapturer
         [SerializeField] MovieRecorderContext.Type m_format = MovieRecorderContext.Type.WebM;
 
         // video settings
+        [SerializeField] int m_resolutionWidth = -1;
         [SerializeField] CaptureTarget m_captureTarget = CaptureTarget.FrameBuffer;
         [SerializeField] RenderTexture m_targetRT;
-        [SerializeField] int m_resolutionWidth = -1;
         [SerializeField] FrameRateMode m_framerateMode = FrameRateMode.Constant;
         [SerializeField] int m_targetFramerate = 30;
         [SerializeField] bool m_fixDeltaTime = true;

@@ -53,8 +53,8 @@ public:
     ~fcExrContext();
     void release() override;
     bool beginFrame(const char *path, int width, int height) override;
-    bool addLayerTexture(void *tex, fcPixelFormat fmt, int channel, const char *name, bool flipY) override;
-    bool addLayerPixels(const void *pixels, fcPixelFormat fmt, int channel, const char *name, bool flipY) override;
+    bool addLayerTexture(void *tex, fcPixelFormat fmt, int channel, const char *name) override;
+    bool addLayerPixels(const void *pixels, fcPixelFormat fmt, int channel, const char *name) override;
     bool endFrame() override;
 
 private:
@@ -116,7 +116,7 @@ bool fcExrContext::beginFrame(const char *path, int width, int height)
     return true;
 }
 
-bool fcExrContext::addLayerTexture(void *tex, fcPixelFormat fmt, int channel, const char *name, bool flipY)
+bool fcExrContext::addLayerTexture(void *tex, fcPixelFormat fmt, int channel, const char *name)
 {
     if (m_dev == nullptr) {
         fcDebugLog("fcExrContext::addLayerTexture(): gfx device is null.");
@@ -148,9 +148,6 @@ bool fcExrContext::addLayerTexture(void *tex, fcPixelFormat fmt, int channel, co
             m_task->pixels.pop_back();
             return false;
         }
-        if (flipY) {
-            fcImageFlipY(&(*raw_frame)[0], m_task->width, m_task->height, fmt);
-        }
         m_src_prev = raw_frame;
 
         // convert pixel format if it is not supported by exr
@@ -173,7 +170,7 @@ bool fcExrContext::addLayerTexture(void *tex, fcPixelFormat fmt, int channel, co
     return addLayerImpl(&(*raw_frame)[0], fmt, channel, name);
 }
 
-bool fcExrContext::addLayerPixels(const void *pixels, fcPixelFormat fmt, int channel, const char *name, bool flipY)
+bool fcExrContext::addLayerPixels(const void *pixels, fcPixelFormat fmt, int channel, const char *name)
 {
     if (m_task == nullptr) {
         fcDebugLog("fcExrContext::addLayerPixels(): maybe beginFrame() is not called.");
@@ -245,10 +242,6 @@ bool fcExrContext::addLayerPixels(const void *pixels, fcPixelFormat fmt, int cha
                 raw_frame->resize(m_task->width * m_task->height * fcGetPixelSize(fmt));
                 memcpy(raw_frame->data(), pixels, raw_frame->size());
             }
-        }
-
-        if (flipY) {
-            fcImageFlipY(raw_frame->data(), m_task->width, m_task->height, fmt);
         }
 
         m_src_prev = raw_frame;

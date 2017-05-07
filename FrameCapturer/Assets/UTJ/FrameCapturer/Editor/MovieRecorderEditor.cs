@@ -23,6 +23,7 @@ namespace UTJ.FrameCapturer
             var recorder = target as MovieRecorder;
             var so = serializedObject;
 
+            EditorGUILayout.PropertyField(so.FindProperty("m_resolutionWidth"));
             EditorGUILayout.PropertyField(so.FindProperty("m_captureTarget"));
             if(recorder.captureTarget == MovieRecorder.CaptureTarget.RenderTexture)
             {
@@ -31,7 +32,6 @@ namespace UTJ.FrameCapturer
                 EditorGUI.indentLevel--;
             }
 
-            EditorGUILayout.PropertyField(so.FindProperty("m_resolutionWidth"));
             EditorGUILayout.PropertyField(so.FindProperty("m_framerateMode"));
             if(recorder.framerateMode == MovieRecorder.FrameRateMode.Constant)
             {
