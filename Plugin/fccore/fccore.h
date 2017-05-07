@@ -125,8 +125,8 @@ struct fcPngConfig
 
 fcAPI fcIPngContext*  fcPngCreateContext(const fcPngConfig *conf = nullptr);
 fcAPI void            fcPngDestroyContext(fcIPngContext *ctx);
-fcAPI bool            fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, bool flipY = false);
-fcAPI bool            fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, bool flipY = false);
+fcAPI bool            fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, int num_channels = 0, bool flipY = false);
+fcAPI bool            fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, int num_channels = 0, bool flipY = false);
 
 
 // -------------------------------------------------------------

@@ -19,6 +19,7 @@ struct fcPngTaskData
     int width = 0;
     int height = 0;
     fcPixelFormat format = fcPixelFormat_Unknown;
+    int num_channels = 4;
     bool flipY = false;
 };
 
@@ -28,12 +29,12 @@ public:
     fcPngContext(const fcPngConfig& conf, fcIGraphicsDevice *dev);
     ~fcPngContext() override;
     void release() override;
-    bool exportTexture(const char *path, void *tex, int width, int height, fcPixelFormat fmt, bool flipY) override;
-    bool exportPixels(const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, bool flipY) override;
+    bool exportTexture(const char *path, void *tex, int width, int height, fcPixelFormat fmt, int num_channels, bool flipY) override;
+    bool exportPixels(const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, int num_channels, bool flipY) override;
 
 private:
     void waitSome();
-    bool exportPixelsBody(fcPngTaskData& data);
+    bool exportTask(fcPngTaskData& data);
 
 private:
     fcPngConfig m_conf;
@@ -61,7 +62,7 @@ void fcPngContext::release()
     delete this;
 }
 
-bool fcPngContext::exportTexture(const char *path_, void *tex, int width, int height, fcPixelFormat fmt, bool flipY)
+bool fcPngContext::exportTexture(const char *path_, void *tex, int width, int height, fcPixelFormat fmt, int num_channels, bool flipY)
 {
     if (m_dev == nullptr) {
         fcDebugLog("fcPngContext::exportTexture(): gfx device is null.");
@@ -74,6 +75,7 @@ bool fcPngContext::exportTexture(const char *path_, void *tex, int width, int he
     data->width = width;
     data->height = height;
     data->format = fmt;
+    data->num_channels = num_channels;
     data->flipY = flipY;
 
     // get surface data
@@ -86,7 +88,7 @@ bool fcPngContext::exportTexture(const char *path_, void *tex, int width, int he
     // kick export task
     ++m_active_task_count;
     m_tasks.run([this, data]() {
-        exportPixelsBody(*data);
+        exportTask(*data);
         delete data;
         --m_active_task_count;
     });
@@ -94,7 +96,7 @@ bool fcPngContext::exportTexture(const char *path_, void *tex, int width, int he
     return false;
 }
 
-bool fcPngContext::exportPixels(const char *path_, const void *pixels_, int width, int height, fcPixelFormat fmt, bool flipY)
+bool fcPngContext::exportPixels(const char *path_, const void *pixels_, int width, int height, fcPixelFormat fmt, int num_channels, bool flipY)
 {
     waitSome();
 
@@ -103,13 +105,14 @@ bool fcPngContext::exportPixels(const char *path_, const void *pixels_, int widt
     data->width = width;
     data->height = height;
     data->format = fmt;
+    data->num_channels = num_channels;
     data->flipY = flipY;
     data->pixels.assign((char*)pixels_, width * height * fcGetPixelSize(fmt));
 
     // kick export task
     ++m_active_task_count;
     m_tasks.run([this, data]() {
-        exportPixelsBody(*data);
+        exportTask(*data);
         delete data;
         --m_active_task_count;
     });
@@ -126,7 +129,7 @@ void fcPngContext::waitSome()
     }
 }
 
-bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
+bool fcPngContext::exportTask(fcPngTaskData& data)
 {
     png_bytep pixels = (png_bytep)&data.pixels[0];
 
@@ -139,171 +142,100 @@ bool fcPngContext::exportPixelsBody(fcPngTaskData& data)
         fcImageFlipY(&data.pixels[0], data.width, data.height, data.format);
     }
 
-    if (m_conf.pixel_format == fcPngPixelFormat::UInt8) {
-        switch (data.format) {
-            // u8
-        case fcPixelFormat_RGBAu8:
-            bit_depth = 8;
-            num_channels = 4;
-            color_type = PNG_COLOR_TYPE_RGB_ALPHA;
-            break;
-        case fcPixelFormat_RGBu8:
-            bit_depth = 8;
-            num_channels = 3;
-            color_type = PNG_COLOR_TYPE_RGB;
-            break;
-        case fcPixelFormat_RGu8:
-            data.buf.resize(npixels * 3);
-            fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBu8, &data.pixels[0], data.format, npixels);
-            pixels = (png_bytep)&data.buf[0];
-            bit_depth = 8;
-            num_channels = 3;
-            color_type = PNG_COLOR_TYPE_RGB;
-            break;
-        case fcPixelFormat_Ru8:
-            bit_depth = 8;
-            num_channels = 1;
-            color_type = PNG_COLOR_TYPE_GRAY;
-            break;
+    auto src_fmt = data.format;
+    auto dst_fmt = src_fmt;
+    {
+        // determine dst format
+        auto dst_ch = src_fmt & fcPixelFormat_ChannelMask;
+        if (data.num_channels > 0) { dst_ch = std::min<int>(dst_ch, data.num_channels); }
+        if (dst_ch == 2) { dst_ch = 3; } // force to be 3ch as png doesn't support 2ch image
 
-        case fcPixelFormat_RGBAf32:
-        case fcPixelFormat_RGBAf16:
+        if (m_conf.pixel_format == fcPngPixelFormat::UInt8) {
+            dst_fmt = fcPixelFormat(fcPixelFormat_Type_u8 | dst_ch);
+        }
+        else if (m_conf.pixel_format == fcPngPixelFormat::UInt16) {
+            dst_fmt = fcPixelFormat(fcPixelFormat_Type_i16 | dst_ch);
+        }
+        else { // adaptive
+            if ((src_fmt & fcPixelFormat_TypeMask) == fcPixelFormat_Type_u8) {
+                dst_fmt = fcPixelFormat(fcPixelFormat_Type_u8 | dst_ch);
+            }
+            else {
+                dst_fmt = fcPixelFormat(fcPixelFormat_Type_i16 | dst_ch);
+            }
+        }
+    }
+
+    // convert pixels (if needed)
+    switch (dst_fmt) {
+    case fcPixelFormat_RGBAu8:
+        if (dst_fmt != src_fmt) {
             data.buf.resize(npixels * 4);
-            fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBAu8, &data.pixels[0], data.format, npixels);
-            pixels = (png_bytep)&data.buf[0];
-            bit_depth = 8;
-            num_channels = 4;
-            color_type = PNG_COLOR_TYPE_RGB_ALPHA;
-            break;
-        case fcPixelFormat_RGBf32:
-        case fcPixelFormat_RGf32:
-        case fcPixelFormat_RGBf16:
-        case fcPixelFormat_RGf16:
+            fcConvertPixelFormat(data.buf.data(), dst_fmt, pixels, src_fmt, npixels);
+            pixels = (png_bytep)data.buf.data();
+        }
+        bit_depth = 8;
+        num_channels = 4;
+        color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+        break;
+    case fcPixelFormat_RGBu8:
+        if (dst_fmt != src_fmt) {
             data.buf.resize(npixels * 3);
-            fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBu8, &data.pixels[0], data.format, npixels);
-            pixels = (png_bytep)&data.buf[0];
-            bit_depth = 8;
-            num_channels = 3;
-            color_type = PNG_COLOR_TYPE_RGB;
-            break;
-        case fcPixelFormat_Rf32:
-        case fcPixelFormat_Rf16:
+            fcConvertPixelFormat(data.buf.data(), dst_fmt, pixels, src_fmt, npixels);
+            pixels = (png_bytep)data.buf.data();
+        }
+        bit_depth = 8;
+        num_channels = 3;
+        color_type = PNG_COLOR_TYPE_RGB;
+        break;
+    case fcPixelFormat_Ru8:
+        if (dst_fmt != src_fmt) {
             data.buf.resize(npixels * 1);
-            fcConvertPixelFormat(&data.buf[0], fcPixelFormat_Ru8, &data.pixels[0], data.format, npixels);
-            pixels = (png_bytep)&data.buf[0];
-            bit_depth = 8;
-            num_channels = 1;
-            color_type = PNG_COLOR_TYPE_GRAY;
-            break;
-
-        default:
-            fcDebugLog("fcPngContext::exportPixelsBody(): unsupported pixel format");
-            return false;
+            fcConvertPixelFormat(data.buf.data(), dst_fmt, pixels, src_fmt, npixels);
+            pixels = (png_bytep)data.buf.data();
         }
-    }
-    else if (m_conf.pixel_format == fcPngPixelFormat::UInt16) {
-        switch (data.format) {
-        case fcPixelFormat_RGBAf32:
-        case fcPixelFormat_RGBAf16:
-        case fcPixelFormat_RGBAu8:
+        bit_depth = 8;
+        num_channels = 1;
+        color_type = PNG_COLOR_TYPE_GRAY;
+        break;
+
+    case fcPixelFormat_RGBAi16:
+        if (dst_fmt != src_fmt) {
             data.buf.resize(npixels * 8);
-            fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBAi16, &data.pixels[0], data.format, npixels);
-            pixels = (png_bytep)&data.buf[0];
-            bit_depth = 16;
-            num_channels = 4;
-            color_type = PNG_COLOR_TYPE_RGB_ALPHA;
-            break;
-        case fcPixelFormat_RGBf32:
-        case fcPixelFormat_RGf32:
-        case fcPixelFormat_RGBf16:
-        case fcPixelFormat_RGf16:
-        case fcPixelFormat_RGBu8:
-        case fcPixelFormat_RGu8:
-            data.buf.resize(npixels * 6);
-            fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBi16, &data.pixels[0], data.format, npixels);
-            pixels = (png_bytep)&data.buf[0];
-            bit_depth = 16;
-            num_channels = 3;
-            color_type = PNG_COLOR_TYPE_RGB;
-            break;
-        case fcPixelFormat_Rf32:
-        case fcPixelFormat_Rf16:
-        case fcPixelFormat_Ru8:
-            data.buf.resize(npixels * 2);
-            fcConvertPixelFormat(&data.buf[0], fcPixelFormat_Ri16, &data.pixels[0], data.format, npixels);
-            pixels = (png_bytep)&data.buf[0];
-            bit_depth = 16;
-            num_channels = 1;
-            color_type = PNG_COLOR_TYPE_GRAY;
-            break;
-        default:
-            fcDebugLog("fcPngContext::exportPixelsBody(): unsupported pixel format");
-            return false;
+            fcConvertPixelFormat(data.buf.data(), dst_fmt, pixels, src_fmt, npixels);
+            pixels = (png_bytep)data.buf.data();
         }
-    }
-    else { // adaptive
-        switch (data.format) {
-            // u8
-        case fcPixelFormat_RGBAu8:
-            bit_depth = 8;
-            num_channels = 4;
-            color_type = PNG_COLOR_TYPE_RGB_ALPHA;
-            break;
-        case fcPixelFormat_RGBu8:
-            bit_depth = 8;
-            num_channels = 3;
-            color_type = PNG_COLOR_TYPE_RGB;
-            break;
-        case fcPixelFormat_RGu8:
-            data.buf.resize(npixels * 3);
-            fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBu8, &data.pixels[0], data.format, npixels);
-            pixels = (png_bytep)&data.buf[0];
-            bit_depth = 8;
-            num_channels = 3;
-            color_type = PNG_COLOR_TYPE_RGB;
-            break;
-        case fcPixelFormat_Ru8:
-            bit_depth = 8;
-            num_channels = 1;
-            color_type = PNG_COLOR_TYPE_GRAY;
-            break;
-
-            // float/half -> i16
-        case fcPixelFormat_RGBAf32:
-        case fcPixelFormat_RGBAf16:
-            data.buf.resize(npixels * 8);
-            fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBAi16, &data.pixels[0], data.format, npixels);
-            pixels = (png_bytep)&data.buf[0];
-            bit_depth = 16;
-            num_channels = 4;
-            color_type = PNG_COLOR_TYPE_RGB_ALPHA;
-            break;
-        case fcPixelFormat_RGBf32:
-        case fcPixelFormat_RGf32:
-        case fcPixelFormat_RGBf16:
-        case fcPixelFormat_RGf16:
+        bit_depth = 16;
+        num_channels = 4;
+        color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+        break;
+    case fcPixelFormat_RGBi16:
+        if (dst_fmt != src_fmt) {
             data.buf.resize(npixels * 6);
-            fcConvertPixelFormat(&data.buf[0], fcPixelFormat_RGBi16, &data.pixels[0], data.format, npixels);
-            pixels = (png_bytep)&data.buf[0];
-            bit_depth = 16;
-            num_channels = 3;
-            color_type = PNG_COLOR_TYPE_RGB;
-            break;
-        case fcPixelFormat_Rf32:
-        case fcPixelFormat_Rf16:
-            data.buf.resize(npixels * 2);
-            fcConvertPixelFormat(&data.buf[0], fcPixelFormat_Ri16, &data.pixels[0], data.format, npixels);
-            pixels = (png_bytep)&data.buf[0];
-            bit_depth = 16;
-            num_channels = 1;
-            color_type = PNG_COLOR_TYPE_GRAY;
-            break;
-
-        default:
-            fcDebugLog("fcPngContext::exportPixelsBody(): unsupported pixel format");
-            return false;
+            fcConvertPixelFormat(data.buf.data(), dst_fmt, pixels, src_fmt, npixels);
+            pixels = (png_bytep)data.buf.data();
         }
+        bit_depth = 16;
+        num_channels = 3;
+        color_type = PNG_COLOR_TYPE_RGB;
+        break;
+    case fcPixelFormat_Ri16:
+        if (dst_fmt != src_fmt) {
+            data.buf.resize(npixels * 2);
+            fcConvertPixelFormat(data.buf.data(), dst_fmt, pixels, src_fmt, npixels);
+            pixels = (png_bytep)data.buf.data();
+        }
+        bit_depth = 16;
+        num_channels = 1;
+        color_type = PNG_COLOR_TYPE_GRAY;
+        break;
+
+    default:
+        fcDebugLog("fcPngContext::exportPixelsBody(): unsupported pixel format");
+        return false;
     }
+
+    // export
 
     png_structp png_ptr = ::png_create_write_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
     if (png_ptr == nullptr) {

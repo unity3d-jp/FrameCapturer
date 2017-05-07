@@ -215,7 +215,7 @@ namespace UTJ.FrameCapturer
                 {
                     m_cb.SetRenderTarget(m_scratchBuffer);
                     m_cb.SetGlobalTexture("_TmpRenderTarget", m_targetRT);
-                    m_cb.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 3);
+                    m_cb.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 1);
                 }
             }
 

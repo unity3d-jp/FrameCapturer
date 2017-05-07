@@ -179,7 +179,7 @@ namespace UTJ.FrameCapturer
 
         [DllImport ("fccore")] public static extern fcPngContext fcPngCreateContext(ref fcPngConfig conf);
         [DllImport ("fccore")] private static extern void        fcPngDestroyContext(fcPngContext ctx);
-        [DllImport ("fccore")] public static extern Bool         fcPngExportPixels(fcPngContext ctx, string path, byte[] pixels, int width, int height, fcPixelFormat fmt, Bool flipY);
+        [DllImport ("fccore")] public static extern Bool         fcPngExportPixels(fcPngContext ctx, string path, byte[] pixels, int width, int height, fcPixelFormat fmt, int num_channels, Bool flipY);
 
 
         // -------------------------------------------------------------
