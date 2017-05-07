@@ -1,8 +1,5 @@
 Shader "Hidden/UTJ/FrameCapturer/CopyFrameBuffer" {
 
-Properties {
-}
-
 CGINCLUDE
 #include "UnityCG.cginc"
 #pragma multi_compile ___ UNITY_HDR_ON
@@ -82,7 +79,10 @@ gbuffer_out copy_gbuffer(v2f I)
     half4 ss = tex2D(_CameraGBufferTexture1, t);
     half4 normal = tex2D(_CameraGBufferTexture2, t);
     half4 emission = tex2D(_CameraGBufferTexture3, t);
-    half4 depth = tex2D(_CameraDepthTexture, get_texcoord_gb(I)).rrrr;
+    half depth = tex2D(_CameraDepthTexture, get_texcoord_gb(I));
+#if defined(UNITY_REVERSED_Z)
+    depth = 1.0 - depth;
+#endif
 
     gbuffer_out O;
     O.albedo = half4(ao.rgb, 1.0);
