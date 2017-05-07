@@ -7,14 +7,15 @@ using UTJ.FrameCapturer;
 namespace UnityEngine.Recorder.FrameRecorder
 {
     [FrameRecorderClass]
-    public class EXRRecorder : RenderTextureRecorder<EXRRecorderSettings>
+    public class WEBMRecorder : RenderTextureRecorder<WEBMRecorderSettings>
     {
         static readonly string[] s_channelNames = { "R", "G", "B", "A" };
-        fcAPI.fcExrContext m_ctx;
+        fcAPI.fcWebMContext m_ctx;
+        fcAPI.fcStream m_stream;
 
         public static RecorderInfo GetRecorderInfo()
         {
-            return RecorderInfo.Instantiate<EXRRecorder, EXRRecorderSettings>("Video", "EXR Recorder");
+            return RecorderInfo.Instantiate<WEBMRecorder, WEBMRecorderSettings>("Video", "EXR Recorder");
         }
 
         public override bool BeginRecording(RecordingSession session)
@@ -24,13 +25,16 @@ namespace UnityEngine.Recorder.FrameRecorder
             if (!Directory.Exists(m_Settings.m_DestinationPath))
                 Directory.CreateDirectory(m_Settings.m_DestinationPath);
 
-            m_ctx = fcAPI.fcExrCreateContext(ref m_Settings.m_ExrConfig);
+            m_stream = fcAPI.fcCreateFileStream(BuildOutputPath(session));
+            m_ctx = fcAPI.fcWebMCreateContext(ref m_Settings.m_WebMConfig);
+            fcAPI.fcWebMAddOutputStream(m_ctx, m_stream);
             return m_ctx;
         }
 
         public override void EndRecording(RecordingSession session)
         {
             m_ctx.Release();
+            m_stream.Release();
             base.EndRecording(session);
         }
 
@@ -39,20 +43,13 @@ namespace UnityEngine.Recorder.FrameRecorder
             if (m_BoxedSources.Count != 1)
                 throw new Exception("Unsupported number of sources");
 
-            var path = BuildOutputPath(session);
             var source = (RenderTextureSource)m_BoxedSources[0].m_Source;
             var frame = source.buffer;
 
-            fcAPI.fcExrBeginImage(m_ctx, path, frame.width, frame.height);
-            fcAPI.fcLock(frame, (data, fmt) =>
+            fcAPI.fcLock(frame, TextureFormat.RGB24, (data, fmt) =>
             {
-                int channels = (int)fmt & 7;
-                for (int i = 0; i < channels; ++i)
-                {
-                    fcAPI.fcExrAddLayerPixels(m_ctx, data, fmt, i, s_channelNames[i]);
-                }
+                fcAPI.fcWebMAddVideoFramePixels(m_ctx, data, fmt, session.m_CurrentFrameStartTS);
             });
-            fcAPI.fcExrEndImage(m_ctx);
         }
 
         string BuildOutputPath(RecordingSession session)
@@ -60,7 +57,7 @@ namespace UnityEngine.Recorder.FrameRecorder
             var outputPath = m_Settings.m_DestinationPath;
             if (outputPath.Length > 0 && !outputPath.EndsWith("/"))
                 outputPath += "/";
-            outputPath += m_OutputFile + (settings as EXRRecorderSettings).m_BaseFileName + recordedFramesCount + ".exr";
+            outputPath += m_OutputFile + (settings as WEBMRecorderSettings).m_BaseFileName + recordedFramesCount + ".webm";
             return outputPath;
         }
     }
