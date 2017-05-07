@@ -36,6 +36,7 @@ namespace UTJ.FrameCapturer
             public bool normal;
             public bool emission;
             public bool depth;
+            public bool velocity;
 
             public static FrameBufferConponents default_value
             {
@@ -44,14 +45,15 @@ namespace UTJ.FrameCapturer
                     var ret = new FrameBufferConponents
                     {
                         frameBuffer = true,
-                        GBuffer = false,
+                        GBuffer = true,
                         albedo = true,
-                        occlusion = false,
+                        occlusion = true,
                         specular = true,
                         smoothness = true,
                         normal = true,
-                        emission = false,
+                        emission = true,
                         depth = true,
+                        velocity = true,
                     };
                     return ret;
                 }
@@ -82,6 +84,7 @@ namespace UTJ.FrameCapturer
         CommandBuffer m_cbCopyFB;
         CommandBuffer m_cbCopyGB;
         CommandBuffer m_cbClearGB;
+        CommandBuffer m_cbCopyVelocity;
         CommandBuffer m_cbCopyRT;
         RenderTexture m_rtFB;
         RenderTexture[] m_rtGB;
@@ -205,7 +208,7 @@ namespace UTJ.FrameCapturer
                 {
                     if (m_cbCopyGB == null)
                     {
-                        m_rtGB = new RenderTexture[7];
+                        m_rtGB = new RenderTexture[8];
                         for (int i = 0; i < m_rtGB.Length; ++i)
                         {
                             m_rtGB[i] = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0, RenderTextureFormat.ARGBHalf);
@@ -229,12 +232,26 @@ namespace UTJ.FrameCapturer
                         // copy gbuffer
                         m_cbCopyGB = new CommandBuffer();
                         m_cbCopyGB.name = "ImageSequenceRecorder: Copy GBuffer";
-                        m_cbCopyGB.SetRenderTarget(
-                            new RenderTargetIdentifier[] { m_rtGB[0], m_rtGB[1], m_rtGB[2], m_rtGB[3], m_rtGB[4], m_rtGB[5], m_rtGB[6] }, m_rtGB[0]);
+                        m_cbCopyGB.SetRenderTarget(new RenderTargetIdentifier[] {
+                            m_rtGB[0], m_rtGB[1], m_rtGB[2], m_rtGB[3], m_rtGB[4], m_rtGB[5], m_rtGB[6]
+                        }, m_rtGB[0]);
                         m_cbCopyGB.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 2);
                     }
                     cam.AddCommandBuffer(CameraEvent.BeforeGBuffer, m_cbClearGB);
                     cam.AddCommandBuffer(CameraEvent.BeforeLighting, m_cbCopyGB);
+
+                    if(m_fbComponents.velocity)
+                    {
+                        if(m_cbCopyVelocity == null)
+                        {
+                            m_cbCopyVelocity = new CommandBuffer();
+                            m_cbCopyVelocity.name = "ImageSequenceRecorder: Copy Velocity";
+                            m_cbCopyVelocity.SetRenderTarget(m_rtGB[7]);
+                            m_cbCopyVelocity.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 4);
+                        }
+                        cam.AddCommandBuffer(CameraEvent.BeforeImageEffectsOpaque, m_cbCopyVelocity);
+                        cam.depthTextureMode = cam.depthTextureMode | DepthTextureMode.Depth | DepthTextureMode.MotionVectors;
+                    }
                 }
             }
             else if (m_captureTarget == CaptureTarget.RenderTexture)
@@ -282,6 +299,10 @@ namespace UTJ.FrameCapturer
             {
                 cam.RemoveCommandBuffer(CameraEvent.BeforeLighting, m_cbCopyGB);
             }
+            if (m_cbCopyVelocity != null)
+            {
+                cam.RemoveCommandBuffer(CameraEvent.BeforeImageEffectsOpaque, m_cbCopyVelocity);
+            }
             if (m_cbCopyRT != null)
             {
                 cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cbCopyRT);
@@ -312,6 +333,7 @@ namespace UTJ.FrameCapturer
                     if (m_fbComponents.normal)      { m_ctx.Export(m_rtGB[4], 3, "Normal"); }
                     if (m_fbComponents.emission)    { m_ctx.Export(m_rtGB[5], 3, "Emission"); }
                     if (m_fbComponents.depth)       { m_ctx.Export(m_rtGB[6], 1, "Depth"); }
+                    if (m_fbComponents.velocity)    { m_ctx.Export(m_rtGB[7], 2, "Velocity"); }
                 }
             }
             else if (m_captureTarget == CaptureTarget.RenderTexture)
@@ -397,6 +419,11 @@ namespace UTJ.FrameCapturer
             {
                 m_cbCopyGB.Release();
                 m_cbCopyGB = null;
+            }
+            if (m_cbCopyVelocity != null)
+            {
+                m_cbCopyVelocity.Release();
+                m_cbCopyVelocity = null;
             }
             if (m_cbCopyRT != null)
             {

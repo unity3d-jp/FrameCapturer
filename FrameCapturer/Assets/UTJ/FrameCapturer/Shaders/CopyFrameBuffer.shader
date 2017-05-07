@@ -11,6 +11,7 @@ sampler2D _CameraGBufferTexture1;
 sampler2D _CameraGBufferTexture2;
 sampler2D _CameraGBufferTexture3;
 sampler2D_float _CameraDepthTexture;
+sampler2D_half _CameraMotionVectorsTexture;
 sampler2D _TmpRenderTarget;
 
 struct v2f {
@@ -61,7 +62,7 @@ half4 copy_rendertarget(v2f I) : SV_Target
 }
 
 
-// albedo, occlusion, specular, smoothness
+// gbuffer
 struct gbuffer_out
 {
     half4 albedo            : SV_Target0;
@@ -118,6 +119,22 @@ clear_out clear_gbuffer(v2f I)
     O.depth = 1.0;
     return O;
 }
+
+// velocity
+struct velocity_out
+{
+    half4 velocity : SV_Target0;
+};
+velocity_out copy_velocity(v2f I)
+{
+    float2 t = get_texcoord_gb(I);
+    half2 velocity = tex2D(_CameraMotionVectorsTexture, t).rg;
+
+    velocity_out O;
+    O.velocity = half4(velocity, 1.0, 1.0);
+    return O;
+}
+
 ENDCG
 
 Subshader {
@@ -154,6 +171,15 @@ Subshader {
         CGPROGRAM
         #pragma vertex vert
         #pragma fragment clear_gbuffer
+        ENDCG
+    }
+
+    // Pass 4: velocity
+    Pass{
+        Blend Off Cull Off ZTest Off ZWrite Off
+        CGPROGRAM
+        #pragma vertex vert
+        #pragma fragment copy_velocity
         ENDCG
     }
 }
