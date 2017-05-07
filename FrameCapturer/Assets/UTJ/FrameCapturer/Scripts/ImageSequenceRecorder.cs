@@ -9,7 +9,6 @@ namespace UTJ.FrameCapturer
 
     [AddComponentMenu("UTJ/FrameCapturer/Image Sequence Recorder")]
     [RequireComponent(typeof(Camera))]
-    [ExecuteInEditMode]
     public class ImageSequenceRecorder : MonoBehaviour
     {
         #region inner_types
@@ -83,9 +82,9 @@ namespace UTJ.FrameCapturer
         CommandBuffer m_cbCopyFB;
         CommandBuffer m_cbCopyGB;
         CommandBuffer m_cbCopyRT;
-        RenderTexture m_rtFB;
-        RenderTexture[] m_rtGB;
-        RenderTexture[] m_rtScratch;
+        [SerializeField] RenderTexture m_rtFB;
+        [SerializeField] RenderTexture[] m_rtGB;
+        [SerializeField] RenderTexture[] m_rtScratch;
         int m_frame;
         bool m_recording;
         bool m_oneShot;
@@ -205,12 +204,10 @@ namespace UTJ.FrameCapturer
                 {
                     if (m_cbCopyGB == null)
                     {
-                        m_rtGB = new RenderTexture[5];
+                        m_rtGB = new RenderTexture[7];
                         for (int i = 0; i < m_rtGB.Length; ++i)
                         {
-                            // last one is depth (1 channel)
-                            m_rtGB[i] = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0,
-                                i == 4 ? RenderTextureFormat.RHalf : RenderTextureFormat.ARGBHalf);
+                            m_rtGB[i] = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0, RenderTextureFormat.ARGBHalf);
                             m_rtGB[i].filterMode = FilterMode.Point;
                             m_rtGB[i].Create();
                         }
@@ -218,9 +215,7 @@ namespace UTJ.FrameCapturer
                         m_cbCopyGB = new CommandBuffer();
                         m_cbCopyGB.name = "ImageSequenceRecorder: Copy GBuffer";
                         m_cbCopyGB.SetRenderTarget(
-                            new RenderTargetIdentifier[] { m_rtGB[0], m_rtGB[1], m_rtGB[2], m_rtGB[3] }, m_rtGB[0]);
-                        m_cbCopyGB.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 1);
-                        m_cbCopyGB.SetRenderTarget(m_rtGB[4]); // depth
+                            new RenderTargetIdentifier[] { m_rtGB[0], m_rtGB[1], m_rtGB[2], m_rtGB[3], m_rtGB[4], m_rtGB[5], m_rtGB[6] }, m_rtGB[0]);
                         m_cbCopyGB.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 2);
                     }
                     cam.AddCommandBuffer(CameraEvent.BeforeLighting, m_cbCopyGB);
@@ -244,7 +239,7 @@ namespace UTJ.FrameCapturer
                     {
                         m_cbCopyRT.SetRenderTarget(m_rtScratch[i]);
                         m_cbCopyRT.SetGlobalTexture("_TmpRenderTarget", m_targetRT[i]);
-                        m_cbCopyRT.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 3);
+                        m_cbCopyRT.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 1);
                     }
                     GetComponent<Camera>().AddCommandBuffer(CameraEvent.AfterEverything, m_cbCopyRT);
                 }
@@ -291,12 +286,12 @@ namespace UTJ.FrameCapturer
                 if (m_fbComponents.GBuffer)
                 {
                     if (m_fbComponents.albedo)      { m_ctx.Export(m_rtGB[0], 3, "Albedo"); }
-                    if (m_fbComponents.occlusion)   { m_ctx.Export(m_rtGB[0], 1, "Occlusion"); }
-                    if (m_fbComponents.specular)    { m_ctx.Export(m_rtGB[1], 3, "Specular"); }
-                    if (m_fbComponents.smoothness)  { m_ctx.Export(m_rtGB[1], 1, "Smoothness"); }
-                    if (m_fbComponents.normal)      { m_ctx.Export(m_rtGB[2], 3, "Normal"); }
-                    if (m_fbComponents.emission)    { m_ctx.Export(m_rtGB[3], 3, "Emission"); }
-                    if (m_fbComponents.depth)       { m_ctx.Export(m_rtGB[4], 1, "Depth"); }
+                    if (m_fbComponents.occlusion)   { m_ctx.Export(m_rtGB[1], 1, "Occlusion"); }
+                    if (m_fbComponents.specular)    { m_ctx.Export(m_rtGB[2], 3, "Specular"); }
+                    if (m_fbComponents.smoothness)  { m_ctx.Export(m_rtGB[3], 1, "Smoothness"); }
+                    if (m_fbComponents.normal)      { m_ctx.Export(m_rtGB[4], 3, "Normal"); }
+                    if (m_fbComponents.emission)    { m_ctx.Export(m_rtGB[5], 4, "Emission"); }
+                    if (m_fbComponents.depth)       { m_ctx.Export(m_rtGB[6], 1, "Depth"); }
                 }
             }
             else if (m_captureTarget == CaptureTarget.RenderTexture)

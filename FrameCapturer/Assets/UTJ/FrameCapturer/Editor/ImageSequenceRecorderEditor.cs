@@ -102,6 +102,8 @@ namespace UTJ.FrameCapturer
             EditorGUI.indentLevel--;
 
 
+            EditorGUILayout.PropertyField(so.FindProperty("m_rtGB"), true);
+
             so.ApplyModifiedProperties();
         }
 

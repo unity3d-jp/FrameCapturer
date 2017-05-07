@@ -30,7 +30,7 @@ namespace UTJ.FrameCapturer
 
             fcAPI.fcLock(frame, (data, fmt) =>
             {
-                fcAPI.fcPngExportPixels(m_ctx, path, data, frame.width, frame.height, fmt, false);
+                fcAPI.fcPngExportPixels(m_ctx, path, data, frame.width, frame.height, fmt, channels, false);
             });
         }
     }
