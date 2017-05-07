@@ -338,9 +338,9 @@ namespace UTJ.FrameCapturer
             }
             else if (m_captureTarget == CaptureTarget.RenderTexture)
             {
-                for (int i = 0; i < m_targetRT.Length; ++i)
+                for (int i = 0; i < m_rtScratch.Length; ++i)
                 {
-                    m_ctx.Export(m_targetRT[i], 4, "Target" + i);
+                    m_ctx.Export(m_rtScratch[i], 4, "Target" + i);
                 }
             }
         }
