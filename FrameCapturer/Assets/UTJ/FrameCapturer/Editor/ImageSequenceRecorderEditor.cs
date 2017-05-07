@@ -35,6 +35,7 @@ namespace UTJ.FrameCapturer
                     fbc.normal      = EditorGUILayout.Toggle("Normal", fbc.normal);
                     fbc.emission    = EditorGUILayout.Toggle("Emission", fbc.emission);
                     fbc.depth       = EditorGUILayout.Toggle("Depth", fbc.depth);
+                    fbc.velocity    = EditorGUILayout.Toggle("Velocity", fbc.velocity);
                     EditorGUI.indentLevel--;
                 }
                 recorder.fbComponents = fbc;
