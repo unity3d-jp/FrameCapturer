@@ -249,6 +249,7 @@ namespace UTJ.FrameCapturer
             [HideInInspector] public int height;
             [Range(1, 256)] public int numColors;
             [Range(1, 64)] public int maxTasks;
+            [Range(1, 120)] public int keyframeInterval;
 
             public static fcGifConfig default_value
             {
@@ -260,6 +261,7 @@ namespace UTJ.FrameCapturer
                         height = 240,
                         numColors = 256,
                         maxTasks = 8,
+                        keyframeInterval = 30,
                     };
                 }
             }

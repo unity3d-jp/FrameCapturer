@@ -24,10 +24,7 @@ namespace UnityEngine.Recorder.FrameRecorder.Example
             if (!Directory.Exists(m_Settings.m_DestinationPath))
                 Directory.CreateDirectory(m_Settings.m_DestinationPath);
 
-            m_stream = fcAPI.fcCreateFileStream(BuildOutputPath(session));
-            m_ctx = fcAPI.fcGifCreateContext(ref m_Settings.m_GifEncoderSettings);
-            fcAPI.fcGifAddOutputStream(m_ctx, m_stream);
-            return m_ctx;
+            return true;
         }
 
         public override void EndRecording(RecordingSession session)
@@ -45,9 +42,20 @@ namespace UnityEngine.Recorder.FrameRecorder.Example
             var source = (RenderTextureSource)m_BoxedSources[0].m_Source;
             var frame = source.buffer;
 
+            if(!m_ctx)
+            {
+                var settings = m_Settings.m_GifEncoderSettings;
+                settings.width = frame.width;
+                settings.height = frame.height;
+                m_ctx = fcAPI.fcGifCreateContext(ref settings);
+                m_stream = fcAPI.fcCreateFileStream(BuildOutputPath(session));
+                fcAPI.fcGifAddOutputStream(m_ctx, m_stream);
+            }
+
             fcAPI.fcLock(frame, TextureFormat.RGB24, (data, fmt) =>
             {
-                fcAPI.fcGifAddFramePixels(m_ctx, data, fmt, false, session.m_CurrentFrameStartTS);
+                bool keyframe = session.m_FrameIndex % m_Settings.m_GifEncoderSettings.keyframeInterval == 0;
+                fcAPI.fcGifAddFramePixels(m_ctx, data, fmt, keyframe, session.m_CurrentFrameStartTS);
             });
         }
 

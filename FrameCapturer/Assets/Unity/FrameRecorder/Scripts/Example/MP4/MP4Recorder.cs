@@ -12,7 +12,6 @@ namespace UnityEngine.Recorder.FrameRecorder.Example
     public class MP4Recorder : RenderTextureRecorder<MP4RecorderSettings>
     {
         fcAPI.fcMP4Context m_ctx;
-        fcAPI.fcStream m_stream;
 
         public static RecorderInfo GetRecorderInfo()
         {
@@ -26,16 +25,12 @@ namespace UnityEngine.Recorder.FrameRecorder.Example
             if (!Directory.Exists(m_Settings.m_DestinationPath))
                 Directory.CreateDirectory(m_Settings.m_DestinationPath);
 
-            m_stream = fcAPI.fcCreateFileStream(BuildOutputPath(session));
-            m_ctx = fcAPI.fcMP4CreateContext(ref m_Settings.m_MP4EncoderSettings);
-            fcAPI.fcMP4AddOutputStream(m_ctx, m_stream);
-            return m_ctx;
+            return true;
         }
 
         public override void EndRecording(RecordingSession session)
         {
             m_ctx.Release();
-            m_stream.Release();
             base.EndRecording(session);
         }
 
@@ -46,6 +41,17 @@ namespace UnityEngine.Recorder.FrameRecorder.Example
 
             var source = (RenderTextureSource)m_BoxedSources[0].m_Source;
             var frame = source.buffer;
+
+            if(!m_ctx)
+            {
+                var settings = m_Settings.m_MP4EncoderSettings;
+                settings.video = true;
+                settings.audio = false;
+                settings.videoWidth = frame.width;
+                settings.videoHeight = frame.height;
+                settings.videoTargetFramerate = 60; // ?
+                m_ctx = fcAPI.fcMP4OSCreateContext(ref settings, BuildOutputPath(session));
+            }
 
             fcAPI.fcLock(frame, TextureFormat.RGB24, (data, fmt) =>
             {
@@ -58,7 +64,7 @@ namespace UnityEngine.Recorder.FrameRecorder.Example
             var outputPath = m_Settings.m_DestinationPath;
             if (outputPath.Length > 0 && !outputPath.EndsWith("/"))
                 outputPath += "/";
-            outputPath += m_OutputFile + (settings as WEBMRecorderSettings).m_BaseFileName + ".mp4";
+            outputPath += m_OutputFile + (settings as MP4RecorderSettings).m_BaseFileName + ".mp4";
             return outputPath;
         }
 

@@ -24,10 +24,7 @@ namespace UnityEngine.Recorder.FrameRecorder.Example
             if (!Directory.Exists(m_Settings.m_DestinationPath))
                 Directory.CreateDirectory(m_Settings.m_DestinationPath);
 
-            m_stream = fcAPI.fcCreateFileStream(BuildOutputPath(session));
-            m_ctx = fcAPI.fcWebMCreateContext(ref m_Settings.m_WebmEncoderSettings);
-            fcAPI.fcWebMAddOutputStream(m_ctx, m_stream);
-            return m_ctx;
+            return true;
         }
 
         public override void EndRecording(RecordingSession session)
@@ -44,6 +41,19 @@ namespace UnityEngine.Recorder.FrameRecorder.Example
 
             var source = (RenderTextureSource)m_BoxedSources[0].m_Source;
             var frame = source.buffer;
+
+            if (!m_ctx)
+            {
+                var settings = m_Settings.m_WebmEncoderSettings;
+                settings.video = true;
+                settings.audio = false;
+                settings.videoWidth = frame.width;
+                settings.videoHeight = frame.height;
+                settings.videoTargetFramerate = 60; // ?
+                m_ctx = fcAPI.fcWebMCreateContext(ref settings);
+                m_stream = fcAPI.fcCreateFileStream(BuildOutputPath(session));
+                fcAPI.fcWebMAddOutputStream(m_ctx, m_stream);
+            }
 
             fcAPI.fcLock(frame, TextureFormat.RGB24, (data, fmt) =>
             {

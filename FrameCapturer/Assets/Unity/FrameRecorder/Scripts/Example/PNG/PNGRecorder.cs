@@ -53,7 +53,7 @@ namespace UnityEngine.Recorder.FrameRecorder.Example
             var outputPath = m_Settings.m_DestinationPath;
             if (outputPath.Length > 0 && !outputPath.EndsWith("/"))
                 outputPath += "/";
-            outputPath += m_OutputFile + (settings as EXRRecorderSettings).m_BaseFileName + recordedFramesCount.ToString("0000") + ".png";
+            outputPath += m_OutputFile + (settings as PNGRecorderSettings).m_BaseFileName + recordedFramesCount.ToString("0000") + ".png";
             return outputPath;
         }
     }

@@ -41,7 +41,7 @@ namespace UnityEngine.Recorder.FrameRecorder.DataSource
                 {
                     // TODO: make this Non Editor compatible
                     // Figure out where this shader should reside.
-                    m_shCopy = AssetDatabase.LoadAssetAtPath<Shader>(AssetDatabase.GUIDToAssetPath("55d39f733f4029f4cbc92b5c2279e15b"));
+                    m_shCopy = AssetDatabase.LoadAssetAtPath<Shader>(AssetDatabase.GUIDToAssetPath("2283fb92223c7914c9096670e29202c8"));
                 }
                 return m_shCopy;
             }
