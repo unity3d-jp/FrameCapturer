@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Recorder.FrameRecorder;
 using UTJ.FrameCapturer;
 
-namespace UTJ.FrameRecorder
+namespace UnityEngine.Recorder.FrameRecorder
 {
     [ExecuteInEditMode]
     public class MP4RecorderSettings : ImageRecorderSettings

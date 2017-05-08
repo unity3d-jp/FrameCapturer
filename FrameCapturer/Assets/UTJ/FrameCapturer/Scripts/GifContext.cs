@@ -28,8 +28,8 @@ namespace UTJ.FrameCapturer
             fcAPI.fcGifConfig gifconf = fcAPI.fcGifConfig.default_value;
             gifconf.width = recorder.scratchBuffer.width;
             gifconf.height = recorder.scratchBuffer.height;
-            gifconf.num_colors = Mathf.Clamp(m_config.numColors, 1, 256);
-            gifconf.max_active_tasks = 0;
+            gifconf.numColors = Mathf.Clamp(m_config.numColors, 1, 256);
+            gifconf.maxTasks = 0;
             m_ctx = fcAPI.fcGifCreateContext(ref gifconf);
 
             var path = recorder.outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";

@@ -10,7 +10,10 @@ namespace UnityEngine.Recorder.FrameRecorder.DataSource
         Shader          m_shCopy;
         Material        m_mat_copy;
         Mesh            m_quad;
-        CommandBuffer   m_cb;
+        CommandBuffer   m_cbCopyFB;
+        CommandBuffer   m_cbCopyGB;
+        CommandBuffer   m_cbClearGB;
+        CommandBuffer   m_cbCopyVelocity;
         Camera          m_Camera;
         bool            m_cameraChanged;
         int             m_Width;
@@ -60,10 +63,10 @@ namespace UnityEngine.Recorder.FrameRecorder.DataSource
             // initialize command buffer
             if (m_Camera != null && m_cameraChanged || newTexture)
             {
-                if (m_cb != null)
+                if (m_cbCopyFB != null)
                 {
-                    m_Camera.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb);
-                    m_cb.Release();
+                    m_Camera.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cbCopyFB);
+                    m_cbCopyFB.Release();
                 }
 
                 // TODO: This should not be here!!!
@@ -72,13 +75,13 @@ namespace UnityEngine.Recorder.FrameRecorder.DataSource
                     m_mat_copy.EnableKeyword("OFFSCREEN");
 
                 var tid = Shader.PropertyToID("_TmpFrameBuffer");
-                m_cb = new CommandBuffer { name = "Frame Recorder: copy frame buffer" };
-                m_cb.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Bilinear);
-                m_cb.Blit(BuiltinRenderTextureType.CurrentActive, tid);
-                m_cb.SetRenderTarget(buffer);
-                m_cb.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 0);
-                m_cb.ReleaseTemporaryRT(tid);
-                m_Camera.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
+                m_cbCopyFB = new CommandBuffer { name = "Frame Recorder: copy frame buffer" };
+                m_cbCopyFB.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Bilinear);
+                m_cbCopyFB.Blit(BuiltinRenderTextureType.CurrentActive, tid);
+                m_cbCopyFB.SetRenderTarget(buffer);
+                m_cbCopyFB.DrawMesh(m_quad, Matrix4x4.identity, m_mat_copy, 0, 0);
+                m_cbCopyFB.ReleaseTemporaryRT(tid);
+                m_Camera.AddCommandBuffer(CameraEvent.AfterEverything, m_cbCopyFB);
 
                 m_cameraChanged = false;
             }
@@ -96,13 +99,13 @@ namespace UnityEngine.Recorder.FrameRecorder.DataSource
 
         protected virtual void ReleaseCamera()
         {
-            if (m_cb != null)
+            if (m_cbCopyFB != null)
             {
                 if (m_Camera != null)
-                    m_Camera.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb);
+                    m_Camera.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cbCopyFB);
 
-                m_cb.Release();
-                m_cb = null;
+                m_cbCopyFB.Release();
+                m_cbCopyFB = null;
             }
 
             if (m_mat_copy != null)

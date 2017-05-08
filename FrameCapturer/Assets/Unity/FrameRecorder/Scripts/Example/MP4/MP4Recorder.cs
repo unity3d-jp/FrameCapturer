@@ -6,7 +6,7 @@ using UnityEngine.Recorder.FrameRecorder.DataSource;
 using UTJ.FrameCapturer;
 
 
-namespace UTJ.FrameRecorder
+namespace UnityEngine.Recorder.FrameRecorder
 {
     [FrameRecorderClass]
     public class MP4Recorder : RenderTextureRecorder<MP4RecorderSettings>

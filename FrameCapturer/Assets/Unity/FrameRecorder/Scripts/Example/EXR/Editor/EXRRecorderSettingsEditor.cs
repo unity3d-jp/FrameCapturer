@@ -1,21 +1,23 @@
 using System;
-using UnityEngine;
+using UnityEditor;
 using UnityEngine.Recorder.FrameRecorder;
+using UnityEngine;
 
 namespace UnityEditor.Recorder.FrameRecorder
 {
-    [CustomEditor(typeof(PNGRecorderSettings))]
-    [RecorderEditor(typeof(PNGRecorder))]
-    public class PngRecorderSettingsEditor : DefaultImageRecorderSettingsEditor
+    [CustomEditor(typeof(EXRRecorderSettings))]
+    [RecorderEditor(typeof(EXRRecorder))]
+    public class EXRRecorderSettingsEditor : DefaultImageRecorderSettingsEditor
     {
-        public override Vector2 minSize
+        protected override void OnEncodingGui()
         {
-            get { return new Vector2(400, 340); }
+            base.OnEncodingGui();
+            //m_LayoutHelper.AddIntProperty("Bitrate", serializedObject, () => (target as MP4RecorderSettings).m_VideoBitrate);
         }
 
         protected override void OnOutputGui()
         {
-            var settingsObj = serializedObject.targetObject as PNGRecorderSettings;
+            var settingsObj = serializedObject.targetObject as EXRRecorderSettings;
 
             GUILayout.BeginHorizontal();
             m_LayoutHelper.AddPropertyLabel("Directory");
@@ -25,6 +27,11 @@ namespace UnityEditor.Recorder.FrameRecorder
             GUILayout.EndHorizontal();
 
             m_LayoutHelper.AddStringProperty("File name", serializedObject, () => settingsObj.m_BaseFileName);
+        }
+
+        public override Vector2 minSize
+        {
+            get { return new Vector2(400, 370); }
         }
     }
 }

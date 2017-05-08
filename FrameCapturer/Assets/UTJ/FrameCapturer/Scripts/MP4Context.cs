@@ -23,17 +23,16 @@ namespace UTJ.FrameCapturer
         public override void Initialize(MovieRecorder recorder)
         {
             m_config = recorder.mp4Config;
-            fcAPI.fcMP4Config mp4conf = fcAPI.fcMP4Config.default_value;
-            mp4conf = fcAPI.fcMP4Config.default_value;
+            var mp4conf = fcAPI.fcMP4Config.default_value;
             mp4conf.video = m_config.captureVideo;
             mp4conf.audio = m_config.captureAudio;
-            mp4conf.video_width = recorder.scratchBuffer.width;
-            mp4conf.video_height = recorder.scratchBuffer.height;
-            mp4conf.video_target_framerate = 60;
-            mp4conf.video_target_bitrate = m_config.videoBitrate;
-            mp4conf.audio_target_bitrate = m_config.audioBitrate;
-            mp4conf.audio_sample_rate = AudioSettings.outputSampleRate;
-            mp4conf.audio_num_channels = fcAPI.fcGetNumAudioChannels();
+            mp4conf.videoWidth = recorder.scratchBuffer.width;
+            mp4conf.videoHeight = recorder.scratchBuffer.height;
+            mp4conf.videoTargetFramerate = 60;
+            mp4conf.videoTargetBitrate = m_config.videoBitrate;
+            mp4conf.audioTargetBitrate = m_config.audioBitrate;
+            mp4conf.audioSampleRate = AudioSettings.outputSampleRate;
+            mp4conf.audioNumChannels = fcAPI.fcGetNumAudioChannels();
 
             var path = recorder.outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
             m_ctx = fcAPI.fcMP4OSCreateContext(ref mp4conf, path);

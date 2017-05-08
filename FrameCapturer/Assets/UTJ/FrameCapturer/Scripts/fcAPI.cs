@@ -247,8 +247,8 @@ namespace UTJ.FrameCapturer
         {
             public int width;
             public int height;
-            public int num_colors;
-            public int max_active_tasks;
+            public int numColors;
+            public int maxTasks;
 
             public static fcGifConfig default_value
             {
@@ -258,8 +258,8 @@ namespace UTJ.FrameCapturer
                     {
                         width = 320,
                         height = 240,
-                        num_colors = 256,
-                        max_active_tasks = 0,
+                        numColors = 256,
+                        maxTasks = 0,
                     };
                 }
             }
@@ -310,18 +310,18 @@ namespace UTJ.FrameCapturer
             public Bool video;
             public Bool audio;
 
-            public int video_width;
-            public int video_height;
-            public int video_target_framerate;
-            public fcBitrateMode video_bitrate_mode;
-            public int video_target_bitrate;
-            public int video_flags;
+            public int videoWidth;
+            public int videoHeight;
+            public int videoTargetFramerate;
+            public fcBitrateMode videoBitrateMode;
+            public int videoTargetBitrate;
+            public int videoFlags;
 
-            public int audio_sample_rate;
-            public int audio_num_channels;
-            public fcBitrateMode audio_bitrate_mode;
-            public int audio_target_bitrate;
-            public int audio_flags;
+            public int audioSampleRate;
+            public int audioNumChannels;
+            public fcBitrateMode audioBitrateMode;
+            public int audioTargetBitrate;
+            public int audioFlags;
 
             public static fcMP4Config default_value
             {
@@ -332,18 +332,18 @@ namespace UTJ.FrameCapturer
                         video = true,
                         audio = true,
 
-                        video_width = 0,
-                        video_height = 0,
-                        video_bitrate_mode = fcBitrateMode.CBR,
-                        video_target_bitrate = 1024 * 1000,
-                        video_target_framerate = 30,
-                        video_flags = (int)fcMP4VideoFlags.H264Mask,
+                        videoWidth = 0,
+                        videoHeight = 0,
+                        videoBitrateMode = fcBitrateMode.CBR,
+                        videoTargetBitrate = 1024 * 1000,
+                        videoTargetFramerate = 30,
+                        videoFlags = (int)fcMP4VideoFlags.H264Mask,
 
-                        audio_sample_rate = 48000,
-                        audio_num_channels = 2,
-                        audio_bitrate_mode = fcBitrateMode.CBR,
-                        audio_target_bitrate = 64000,
-                        audio_flags = (int)fcMP4AudioFlags.AACMask,
+                        audioSampleRate = 48000,
+                        audioNumChannels = 2,
+                        audioBitrateMode = fcBitrateMode.CBR,
+                        audioTargetBitrate = 64000,
+                        audioFlags = (int)fcMP4AudioFlags.AACMask,
                     };
                 }
             }
@@ -406,21 +406,21 @@ namespace UTJ.FrameCapturer
         [Serializable]
         public struct fcWebMConfig
         {
-            public fcWebMVideoEncoder video_encoder;
-            public fcWebMAudioEncoder audio_encoder;
+            public fcWebMVideoEncoder videoEncoder;
+            public fcWebMAudioEncoder audioEncoder;
             public Bool video;
             public Bool audio;
 
-            public int video_width;
-            public int video_height;
-            public int video_target_framerate;
-            public fcBitrateMode video_bitrate_mode;
-            public int video_target_bitrate;
+            public int videoWidth;
+            public int videoHeight;
+            public int videoTargetFramerate;
+            public fcBitrateMode videoBitrateMode;
+            public int videoTargetBitrate;
 
-            public int audio_sample_rate;
-            public int audio_num_channels;
-            public fcBitrateMode audio_bitrate_mode;
-            public int audio_target_bitrate;
+            public int audioSampleRate;
+            public int audioNumChannels;
+            public fcBitrateMode audioBitrateMode;
+            public int audioTargetBitrate;
 
             public static fcWebMConfig default_value
             {
@@ -428,21 +428,21 @@ namespace UTJ.FrameCapturer
                 {
                     return new fcWebMConfig
                     {
-                        video_encoder = fcWebMVideoEncoder.VP8,
-                        audio_encoder = fcWebMAudioEncoder.Vorbis,
+                        videoEncoder = fcWebMVideoEncoder.VP8,
+                        audioEncoder = fcWebMAudioEncoder.Vorbis,
                         video = true,
                         audio = true,
 
-                        video_width = 0,
-                        video_height = 0,
-                        video_target_framerate = 60,
-                        video_bitrate_mode = fcBitrateMode.VBR,
-                        video_target_bitrate = 1024 * 1000,
+                        videoWidth = 0,
+                        videoHeight = 0,
+                        videoTargetFramerate = 60,
+                        videoBitrateMode = fcBitrateMode.VBR,
+                        videoTargetBitrate = 1024 * 1000,
 
-                        audio_sample_rate = 48000,
-                        audio_num_channels = 2,
-                        audio_bitrate_mode = fcBitrateMode.VBR,
-                        audio_target_bitrate = 64 * 1000,
+                        audioSampleRate = 48000,
+                        audioNumChannels = 2,
+                        audioBitrateMode = fcBitrateMode.VBR,
+                        audioTargetBitrate = 64 * 1000,
                     };
                 }
             }

@@ -28,13 +28,13 @@ namespace UTJ.FrameCapturer
             webmconf = fcAPI.fcWebMConfig.default_value;
             webmconf.video = m_config.captureVideo;
             webmconf.audio = m_config.captureAudio;
-            webmconf.video_width = recorder.scratchBuffer.width;
-            webmconf.video_height = recorder.scratchBuffer.height;
-            webmconf.video_target_framerate = 60;
-            webmconf.video_target_bitrate = m_config.videoBitrate;
-            webmconf.audio_target_bitrate = m_config.audioBitrate;
-            webmconf.audio_sample_rate = AudioSettings.outputSampleRate;
-            webmconf.audio_num_channels = fcAPI.fcGetNumAudioChannels();
+            webmconf.videoWidth = recorder.scratchBuffer.width;
+            webmconf.videoHeight = recorder.scratchBuffer.height;
+            webmconf.videoTargetFramerate = 60;
+            webmconf.videoTargetBitrate = m_config.videoBitrate;
+            webmconf.audioTargetBitrate = m_config.audioBitrate;
+            webmconf.audioSampleRate = AudioSettings.outputSampleRate;
+            webmconf.audioNumChannels = fcAPI.fcGetNumAudioChannels();
             m_ctx = fcAPI.fcWebMCreateContext(ref webmconf);
 
             var path = recorder.outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".webm";

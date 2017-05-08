@@ -1,9 +1,9 @@
 using System;
 using UnityEditor;
-using UnityEditor.Recorder.FrameRecorder;
+using UnityEngine.Recorder.FrameRecorder;
 using UnityEngine;
 
-namespace UTJ.FrameRecorder
+namespace UnityEditor.Recorder.FrameRecorder
 {
     [CustomEditor(typeof(MP4RecorderSettings))]
     [RecorderEditor(typeof(MP4Recorder))]
@@ -17,7 +17,7 @@ namespace UTJ.FrameRecorder
 
         protected override void OnOutputGui()
         {
-            var settingsObj = (MP4RecorderSettings)serializedObject.targetObject;
+            var settingsObj = serializedObject.targetObject as MP4RecorderSettings;
 
             GUILayout.BeginHorizontal();
             m_LayoutHelper.AddPropertyLabel("Directory");
