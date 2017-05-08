@@ -154,7 +154,7 @@ namespace UTJ.FrameCapturer
         [Serializable]
         public struct fcPngConfig
         {
-            public int maxTasks;
+            [Range(1, 64)] public int maxTasks;
             public fcPngPixelFormat pixelFormat;
 
             public static fcPngConfig default_value
@@ -206,7 +206,7 @@ namespace UTJ.FrameCapturer
         [Serializable]
         public struct fcExrConfig
         {
-            public int maxTasks;
+            [Range(1, 64)] public int maxTasks;
             public fcExrPixelFormat pixelFormat;
             public fcExrCompression compression;
 
@@ -245,10 +245,10 @@ namespace UTJ.FrameCapturer
         [Serializable]
         public struct fcGifConfig
         {
-            public int width;
-            public int height;
-            public int numColors;
-            public int maxTasks;
+            [HideInInspector] public int width;
+            [HideInInspector] public int height;
+            [Range(1, 256)] public int numColors;
+            [Range(1, 64)] public int maxTasks;
 
             public static fcGifConfig default_value
             {
@@ -259,7 +259,7 @@ namespace UTJ.FrameCapturer
                         width = 320,
                         height = 240,
                         numColors = 256,
-                        maxTasks = 0,
+                        maxTasks = 8,
                     };
                 }
             }
@@ -307,21 +307,21 @@ namespace UTJ.FrameCapturer
         [Serializable]
         public struct fcMP4Config
         {
-            public Bool video;
-            public Bool audio;
+            [HideInInspector] public Bool video;
+            [HideInInspector] public Bool audio;
 
-            public int videoWidth;
-            public int videoHeight;
-            public int videoTargetFramerate;
+            [HideInInspector] public int videoWidth;
+            [HideInInspector] public int videoHeight;
+            [HideInInspector] public int videoTargetFramerate;
             public fcBitrateMode videoBitrateMode;
             public int videoTargetBitrate;
-            public int videoFlags;
+            [HideInInspector] public int videoFlags;
 
-            public int audioSampleRate;
-            public int audioNumChannels;
+            [HideInInspector] public int audioSampleRate;
+            [HideInInspector] public int audioNumChannels;
             public fcBitrateMode audioBitrateMode;
             public int audioTargetBitrate;
-            public int audioFlags;
+            [HideInInspector] public int audioFlags;
 
             public static fcMP4Config default_value
             {
@@ -334,14 +334,14 @@ namespace UTJ.FrameCapturer
 
                         videoWidth = 0,
                         videoHeight = 0,
-                        videoBitrateMode = fcBitrateMode.CBR,
+                        videoBitrateMode = fcBitrateMode.VBR,
                         videoTargetBitrate = 1024 * 1000,
                         videoTargetFramerate = 30,
                         videoFlags = (int)fcMP4VideoFlags.H264Mask,
 
                         audioSampleRate = 48000,
                         audioNumChannels = 2,
-                        audioBitrateMode = fcBitrateMode.CBR,
+                        audioBitrateMode = fcBitrateMode.VBR,
                         audioTargetBitrate = 64000,
                         audioFlags = (int)fcMP4AudioFlags.AACMask,
                     };
@@ -408,17 +408,17 @@ namespace UTJ.FrameCapturer
         {
             public fcWebMVideoEncoder videoEncoder;
             public fcWebMAudioEncoder audioEncoder;
-            public Bool video;
-            public Bool audio;
+            [HideInInspector] public Bool video;
+            [HideInInspector] public Bool audio;
 
-            public int videoWidth;
-            public int videoHeight;
-            public int videoTargetFramerate;
+            [HideInInspector] public int videoWidth;
+            [HideInInspector] public int videoHeight;
+            [HideInInspector] public int videoTargetFramerate;
             public fcBitrateMode videoBitrateMode;
             public int videoTargetBitrate;
 
-            public int audioSampleRate;
-            public int audioNumChannels;
+            [HideInInspector] public int audioSampleRate;
+            [HideInInspector] public int audioNumChannels;
             public fcBitrateMode audioBitrateMode;
             public int audioTargetBitrate;
 

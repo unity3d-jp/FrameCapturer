@@ -4,7 +4,7 @@ using UnityEngine.Recorder.FrameRecorder.DataSource;
 using UnityEngine.Recorder.FrameRecorder.Utilities;
 using UTJ.FrameCapturer;
 
-namespace UnityEngine.Recorder.FrameRecorder
+namespace UnityEngine.Recorder.FrameRecorder.Example
 {
     [FrameRecorderClass]
     public class GIFRecorder : RenderTextureRecorder<GIFRecorderSettings>
@@ -25,7 +25,7 @@ namespace UnityEngine.Recorder.FrameRecorder
                 Directory.CreateDirectory(m_Settings.m_DestinationPath);
 
             m_stream = fcAPI.fcCreateFileStream(BuildOutputPath(session));
-            m_ctx = fcAPI.fcGifCreateContext(ref m_Settings.m_GifConfig);
+            m_ctx = fcAPI.fcGifCreateContext(ref m_Settings.m_GifEncoderSettings);
             fcAPI.fcGifAddOutputStream(m_ctx, m_stream);
             return m_ctx;
         }

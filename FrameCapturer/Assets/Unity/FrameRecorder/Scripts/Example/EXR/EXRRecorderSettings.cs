@@ -1,13 +1,13 @@
 using UTJ.FrameCapturer;
 
-namespace UnityEngine.Recorder.FrameRecorder
+namespace UnityEngine.Recorder.FrameRecorder.Example
 {
     [ExecuteInEditMode]
     public class EXRRecorderSettings : ImageRecorderSettings
     {
         public string m_BaseFileName  = "exrFile";
         public string m_DestinationPath = "Recorder";
-        public fcAPI.fcExrConfig m_ExrConfig = fcAPI.fcExrConfig.default_value;
+        public fcAPI.fcExrConfig m_ExrEncoderSettings = fcAPI.fcExrConfig.default_value;
 
         public override bool isValid
         {

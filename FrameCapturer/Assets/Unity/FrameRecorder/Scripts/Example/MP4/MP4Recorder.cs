@@ -6,7 +6,7 @@ using UnityEngine.Recorder.FrameRecorder.DataSource;
 using UTJ.FrameCapturer;
 
 
-namespace UnityEngine.Recorder.FrameRecorder
+namespace UnityEngine.Recorder.FrameRecorder.Example
 {
     [FrameRecorderClass]
     public class MP4Recorder : RenderTextureRecorder<MP4RecorderSettings>
@@ -16,7 +16,7 @@ namespace UnityEngine.Recorder.FrameRecorder
 
         public static RecorderInfo GetRecorderInfo()
         {
-            return RecorderInfo.Instantiate<WEBMRecorder, WEBMRecorderSettings>("Video", "MP4 Recorder");
+            return RecorderInfo.Instantiate<MP4Recorder, MP4RecorderSettings>("Video", "MP4 Recorder");
         }
 
         public override bool BeginRecording(RecordingSession session)
@@ -27,7 +27,7 @@ namespace UnityEngine.Recorder.FrameRecorder
                 Directory.CreateDirectory(m_Settings.m_DestinationPath);
 
             m_stream = fcAPI.fcCreateFileStream(BuildOutputPath(session));
-            m_ctx = fcAPI.fcMP4CreateContext(ref m_Settings.m_MP4Config);
+            m_ctx = fcAPI.fcMP4CreateContext(ref m_Settings.m_MP4EncoderSettings);
             fcAPI.fcMP4AddOutputStream(m_ctx, m_stream);
             return m_ctx;
         }

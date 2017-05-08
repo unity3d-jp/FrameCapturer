@@ -4,7 +4,7 @@ using UnityEngine.Recorder.FrameRecorder.DataSource;
 using UnityEngine.Recorder.FrameRecorder.Utilities;
 using UTJ.FrameCapturer;
 
-namespace UnityEngine.Recorder.FrameRecorder
+namespace UnityEngine.Recorder.FrameRecorder.Example
 {
     [FrameRecorderClass]
     public class PNGRecorder : RenderTextureRecorder<PNGRecorderSettings>
@@ -13,7 +13,7 @@ namespace UnityEngine.Recorder.FrameRecorder
 
         public static RecorderInfo GetRecorderInfo()
         {
-            return RecorderInfo.Instantiate<EXRRecorder, EXRRecorderSettings>("Video", "PNG Recorder");
+            return RecorderInfo.Instantiate<PNGRecorder, PNGRecorderSettings>("Video", "PNG Recorder");
         }
 
         public override bool BeginRecording(RecordingSession session)
@@ -23,7 +23,7 @@ namespace UnityEngine.Recorder.FrameRecorder
             if (!Directory.Exists(m_Settings.m_DestinationPath))
                 Directory.CreateDirectory(m_Settings.m_DestinationPath);
 
-            m_ctx = fcAPI.fcPngCreateContext(ref m_Settings.m_PngConfig);
+            m_ctx = fcAPI.fcPngCreateContext(ref m_Settings.m_PngEncoderSettings);
             return m_ctx;
         }
 

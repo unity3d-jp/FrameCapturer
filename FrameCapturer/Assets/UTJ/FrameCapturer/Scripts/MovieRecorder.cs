@@ -162,6 +162,10 @@ namespace UTJ.FrameCapturer
             {
                 m_matCopy.EnableKeyword("OFFSCREEN");
             }
+            else
+            {
+                m_matCopy.DisableKeyword("OFFSCREEN");
+            }
 
 
             m_numVideoFrames = 0;

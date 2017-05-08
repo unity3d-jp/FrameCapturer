@@ -1,13 +1,13 @@
 using UTJ.FrameCapturer;
 
-namespace UnityEngine.Recorder.FrameRecorder
+namespace UnityEngine.Recorder.FrameRecorder.Example
 {
     [ExecuteInEditMode]
     public class WEBMRecorderSettings : ImageRecorderSettings
     {
         public string m_BaseFileName  = "webmFile";
         public string m_DestinationPath = "Recorder";
-        public fcAPI.fcWebMConfig m_WebMConfig = fcAPI.fcWebMConfig.default_value;
+        public fcAPI.fcWebMConfig m_WebmEncoderSettings = fcAPI.fcWebMConfig.default_value;
 
         public override bool isValid
         {

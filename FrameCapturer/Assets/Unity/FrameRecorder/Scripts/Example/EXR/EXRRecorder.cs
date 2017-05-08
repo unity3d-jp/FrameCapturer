@@ -4,7 +4,7 @@ using UnityEngine.Recorder.FrameRecorder.DataSource;
 using UnityEngine.Recorder.FrameRecorder.Utilities;
 using UTJ.FrameCapturer;
 
-namespace UnityEngine.Recorder.FrameRecorder
+namespace UnityEngine.Recorder.FrameRecorder.Example
 {
     [FrameRecorderClass]
     public class EXRRecorder : RenderTextureRecorder<EXRRecorderSettings>
@@ -24,7 +24,7 @@ namespace UnityEngine.Recorder.FrameRecorder
             if (!Directory.Exists(m_Settings.m_DestinationPath))
                 Directory.CreateDirectory(m_Settings.m_DestinationPath);
 
-            m_ctx = fcAPI.fcExrCreateContext(ref m_Settings.m_ExrConfig);
+            m_ctx = fcAPI.fcExrCreateContext(ref m_Settings.m_ExrEncoderSettings);
             return m_ctx;
         }
 

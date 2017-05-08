@@ -85,5 +85,19 @@ namespace UnityEditor.Recorder.FrameRecorder
         protected virtual void OnCustomInputGui()
         {
         }
+
+
+        // utility
+
+        protected string DestinationDirectoryGui(string path)
+        {
+            GUILayout.BeginHorizontal();
+            m_LayoutHelper.AddPropertyLabel("Directory");
+            path = EditorGUILayout.TextField(path);
+            if (GUILayout.Button("...", GUILayout.Width(30)))
+                path = EditorUtility.OpenFolderPanel(m_LayoutHelper + "Select output location", path, "");
+            GUILayout.EndHorizontal();
+            return path;
+        }
     }
 }

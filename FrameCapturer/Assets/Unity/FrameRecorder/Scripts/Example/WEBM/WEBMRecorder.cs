@@ -4,7 +4,7 @@ using UnityEngine.Recorder.FrameRecorder.DataSource;
 using UnityEngine.Recorder.FrameRecorder.Utilities;
 using UTJ.FrameCapturer;
 
-namespace UnityEngine.Recorder.FrameRecorder
+namespace UnityEngine.Recorder.FrameRecorder.Example
 {
     [FrameRecorderClass]
     public class WEBMRecorder : RenderTextureRecorder<WEBMRecorderSettings>
@@ -25,7 +25,7 @@ namespace UnityEngine.Recorder.FrameRecorder
                 Directory.CreateDirectory(m_Settings.m_DestinationPath);
 
             m_stream = fcAPI.fcCreateFileStream(BuildOutputPath(session));
-            m_ctx = fcAPI.fcWebMCreateContext(ref m_Settings.m_WebMConfig);
+            m_ctx = fcAPI.fcWebMCreateContext(ref m_Settings.m_WebmEncoderSettings);
             fcAPI.fcWebMAddOutputStream(m_ctx, m_stream);
             return m_ctx;
         }
