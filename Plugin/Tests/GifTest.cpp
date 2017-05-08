@@ -19,7 +19,7 @@ void GifTestImpl(const char *filename)
     RawVector<T> video_frame(Width * Height);
     for (int i = 0; i < frame_count; ++i) {
         CreateVideoData(&video_frame[0], Width, Height, i);
-        fcGifAddFramePixels(ctx, &video_frame[0], GetPixelFormat<T>::value, false, t);
+        fcGifAddFramePixels(ctx, &video_frame[0], GetPixelFormat<T>::value, t);
         t += 1.0 / 30.0;
     }
 

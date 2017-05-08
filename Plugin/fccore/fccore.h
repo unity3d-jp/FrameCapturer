@@ -174,15 +174,18 @@ struct fcGifConfig
     int width = 0;
     int height = 0;
     int num_colors = 256;
+    int keyframe_interval = 30;
     int max_active_tasks = 8;
 };
 fcAPI fcIGifContext*  fcGifCreateContext(const fcGifConfig *conf);
 fcAPI void            fcGifDestroyContext(fcIGifContext *ctx);
 fcAPI void            fcGifAddOutputStream(fcIGifContext *ctx, fcStream *stream);
 // timestamp=-1 is treated as current time.
-fcAPI bool            fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
+fcAPI bool            fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
-fcAPI bool            fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
+fcAPI bool            fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1.0);
+// force next frame to update palette
+fcAPI void            fcGifForceKeyframe(fcIGifContext *ctx);
 
 
 // -------------------------------------------------------------

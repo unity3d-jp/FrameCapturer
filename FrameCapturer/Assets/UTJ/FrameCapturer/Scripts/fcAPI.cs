@@ -248,8 +248,8 @@ namespace UTJ.FrameCapturer
             [HideInInspector] public int width;
             [HideInInspector] public int height;
             [Range(1, 256)] public int numColors;
-            [Range(1, 64)] public int maxTasks;
             [Range(1, 120)] public int keyframeInterval;
+            [Range(1, 64)] public int maxTasks;
 
             public static fcGifConfig default_value
             {
@@ -276,13 +276,7 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] public static extern fcGifContext fcGifCreateContext(ref fcGifConfig conf);
         [DllImport ("fccore")] private static extern void        fcGifDestroyContext(fcGifContext ctx);
         [DllImport ("fccore")] public static extern void         fcGifAddOutputStream(fcGifContext ctx, fcStream stream);
-        [DllImport ("fccore")] public static extern Bool         fcGifAddFramePixels(fcGifContext ctx, byte[] pixels, fcPixelFormat fmt, bool keyframe = false, double timestamp = -1.0);
-
-        [DllImport ("fccore")] private static extern fcDeferredCall fcGifAddFrameTextureDeferred(fcGifContext ctx, IntPtr tex, fcPixelFormat fmt, Bool keyframe, double timestamp, fcDeferredCall id);
-        public static fcDeferredCall fcGifAddFrameTexture(fcGifContext ctx, RenderTexture tex, bool keyframe, double timestamp, fcDeferredCall id)
-        {
-            return fcGifAddFrameTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), keyframe, timestamp, id);
-        }
+        [DllImport ("fccore")] public static extern Bool         fcGifAddFramePixels(fcGifContext ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
 
 
         // -------------------------------------------------------------
@@ -376,12 +370,6 @@ namespace UTJ.FrameCapturer
             return Marshal.PtrToStringAnsi(fcMP4GetVideoEncoderInfo(ctx));
         }
 
-        [DllImport ("fccore")] private static extern fcDeferredCall fcMP4AddVideoFrameTextureDeferred(fcMP4Context ctx, IntPtr tex, fcPixelFormat fmt, double time, fcDeferredCall id);
-        public static fcDeferredCall fcMP4AddVideoFrameTexture(fcMP4Context ctx, RenderTexture tex, double time, fcDeferredCall id)
-        {
-            return fcMP4AddVideoFrameTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), time, id);
-        }
-
 
         // -------------------------------------------------------------
         // WebM Exporter
@@ -402,7 +390,7 @@ namespace UTJ.FrameCapturer
         public enum fcWebMAudioEncoder
         {
             Vorbis,
-            Opus,
+            //Opus, // not implemented yet
         };
 
         [Serializable]
@@ -457,12 +445,6 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] public static extern Bool fcWebMAddVideoFramePixels(fcWebMContext ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
         // timestamp=-1 is treated as current time.
         [DllImport ("fccore")] public static extern Bool fcWebMAddAudioFrame(fcWebMContext ctx, float[] samples, int num_samples, double timestamp = -1.0);
-
-        [DllImport ("fccore")] private static extern fcDeferredCall fcWebMAddVideoFrameTexture(fcWebMContext ctx, IntPtr tex, fcPixelFormat fmt, double timestamp, fcDeferredCall id);
-        public static fcDeferredCall fcWebMAddVideoFrameTexture(fcWebMContext ctx, RenderTexture tex, double time, fcDeferredCall id)
-        {
-            return fcWebMAddVideoFrameTexture(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), time, id);
-        }
 
 
         public static void fcLock(RenderTexture src, TextureFormat dstfmt, Action<byte[], fcPixelFormat> body)

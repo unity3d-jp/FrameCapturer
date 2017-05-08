@@ -6,36 +6,21 @@ namespace UTJ.FrameCapturer
 {
     public class WebMContext : MovieRecorderContext
     {
-        [Serializable]
-        public class EncoderConfig
-        {
-            [HideInInspector] public bool captureVideo = true;
-            [HideInInspector] public bool captureAudio = true;
-            public int videoBitrate = 8192000;
-            public int audioBitrate = 64000;
-        }
-
         fcAPI.fcWebMContext m_ctx;
+        fcAPI.fcWebMConfig m_config;
         fcAPI.fcStream m_ostream;
-        EncoderConfig m_config;
 
         public override Type type { get { return Type.WebM; } }
 
         public override void Initialize(MovieRecorder recorder)
         {
             m_config = recorder.webmConfig;
-            fcAPI.fcWebMConfig webmconf = fcAPI.fcWebMConfig.default_value;
-            webmconf = fcAPI.fcWebMConfig.default_value;
-            webmconf.video = m_config.captureVideo;
-            webmconf.audio = m_config.captureAudio;
-            webmconf.videoWidth = recorder.scratchBuffer.width;
-            webmconf.videoHeight = recorder.scratchBuffer.height;
-            webmconf.videoTargetFramerate = 60;
-            webmconf.videoTargetBitrate = m_config.videoBitrate;
-            webmconf.audioTargetBitrate = m_config.audioBitrate;
-            webmconf.audioSampleRate = AudioSettings.outputSampleRate;
-            webmconf.audioNumChannels = fcAPI.fcGetNumAudioChannels();
-            m_ctx = fcAPI.fcWebMCreateContext(ref webmconf);
+            m_config.videoWidth = recorder.scratchBuffer.width;
+            m_config.videoHeight = recorder.scratchBuffer.height;
+            m_config.videoTargetFramerate = 60;
+            m_config.audioSampleRate = AudioSettings.outputSampleRate;
+            m_config.audioNumChannels = fcAPI.fcGetNumAudioChannels();
+            m_ctx = fcAPI.fcWebMCreateContext(ref m_config);
 
             var path = recorder.outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".webm";
             m_ostream = fcAPI.fcCreateFileStream(path);
@@ -53,7 +38,7 @@ namespace UTJ.FrameCapturer
 
         public override void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp)
         {
-            if (m_config.captureVideo)
+            if (m_config.video)
             {
                 fcAPI.fcWebMAddVideoFramePixels(m_ctx, frame, format, timestamp);
             }
@@ -61,7 +46,7 @@ namespace UTJ.FrameCapturer
 
         public override void AddAudioFrame(float[] samples, double timestamp)
         {
-            if (m_config.captureAudio)
+            if (m_config.audio)
             {
                 fcAPI.fcWebMAddAudioFrame(m_ctx, samples, samples.Length);
             }

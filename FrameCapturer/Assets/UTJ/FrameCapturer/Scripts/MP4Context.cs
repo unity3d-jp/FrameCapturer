@@ -6,36 +6,22 @@ namespace UTJ.FrameCapturer
 {
     public class MP4Context : MovieRecorderContext
     {
-        [Serializable]
-        public class EncoderConfig
-        {
-            [HideInInspector] public bool captureVideo = true;
-            [HideInInspector] public bool captureAudio = true;
-            public int videoBitrate = 8192000;
-            public int audioBitrate = 64000;
-        }
-
         fcAPI.fcMP4Context m_ctx;
-        EncoderConfig m_config;
+        fcAPI.fcMP4Config m_config;
 
         public override Type type { get { return Type.MP4; } }
 
         public override void Initialize(MovieRecorder recorder)
         {
             m_config = recorder.mp4Config;
-            var mp4conf = fcAPI.fcMP4Config.default_value;
-            mp4conf.video = m_config.captureVideo;
-            mp4conf.audio = m_config.captureAudio;
-            mp4conf.videoWidth = recorder.scratchBuffer.width;
-            mp4conf.videoHeight = recorder.scratchBuffer.height;
-            mp4conf.videoTargetFramerate = 60;
-            mp4conf.videoTargetBitrate = m_config.videoBitrate;
-            mp4conf.audioTargetBitrate = m_config.audioBitrate;
-            mp4conf.audioSampleRate = AudioSettings.outputSampleRate;
-            mp4conf.audioNumChannels = fcAPI.fcGetNumAudioChannels();
+            m_config.videoWidth = recorder.scratchBuffer.width;
+            m_config.videoHeight = recorder.scratchBuffer.height;
+            m_config.videoTargetFramerate = 60;
+            m_config.audioSampleRate = AudioSettings.outputSampleRate;
+            m_config.audioNumChannels = fcAPI.fcGetNumAudioChannels();
 
             var path = recorder.outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
-            m_ctx = fcAPI.fcMP4OSCreateContext(ref mp4conf, path);
+            m_ctx = fcAPI.fcMP4OSCreateContext(ref m_config, path);
         }
 
         public override void Release()
@@ -48,7 +34,7 @@ namespace UTJ.FrameCapturer
 
         public override void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp)
         {
-            if (m_config.captureVideo)
+            if (m_config.video)
             {
                 fcAPI.fcMP4AddVideoFramePixels(m_ctx, frame, format, timestamp);
             }
@@ -56,7 +42,7 @@ namespace UTJ.FrameCapturer
 
         public override void AddAudioFrame(float[] samples, double timestamp)
         {
-            if (m_config.captureAudio)
+            if (m_config.audio)
             {
                 fcAPI.fcMP4AddAudioFrame(m_ctx, samples, samples.Length);
             }

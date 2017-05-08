@@ -52,9 +52,9 @@ namespace UTJ.FrameCapturer
 
         // internal
         [SerializeField] MovieRecorderContext m_ctx;
-        [SerializeField] GifContext.EncoderConfig m_gifEncoderConfig = new GifContext.EncoderConfig();
-        [SerializeField] WebMContext.EncoderConfig m_webmEncoderConfig = new WebMContext.EncoderConfig();
-        [SerializeField] MP4Context.EncoderConfig m_mp4EncoderConfig = new MP4Context.EncoderConfig();
+        [SerializeField] fcAPI.fcGifConfig m_gifEncoderConfig = fcAPI.fcGifConfig.default_value;
+        [SerializeField] fcAPI.fcWebMConfig m_webmEncoderConfig = fcAPI.fcWebMConfig.default_value;
+        [SerializeField] fcAPI.fcMP4Config m_mp4EncoderConfig = fcAPI.fcMP4Config.default_value;
         [SerializeField] Shader m_shCopy;
 
         Material m_matCopy;
@@ -124,9 +124,9 @@ namespace UTJ.FrameCapturer
         }
 
         public MovieRecorderContext context { get { ValidateContext(); return m_ctx; } }
-        public GifContext.EncoderConfig gifConfig { get { return m_gifEncoderConfig; } }
-        public WebMContext.EncoderConfig webmConfig { get { return m_webmEncoderConfig; } }
-        public MP4Context.EncoderConfig mp4Config { get { return m_mp4EncoderConfig; } }
+        public fcAPI.fcGifConfig gifConfig { get { return m_gifEncoderConfig; } }
+        public fcAPI.fcWebMConfig webmConfig { get { return m_webmEncoderConfig; } }
+        public fcAPI.fcMP4Config mp4Config { get { return m_mp4EncoderConfig; } }
 
         public RenderTexture scratchBuffer { get { return m_scratchBuffer; } }
         public CommandBuffer commandBuffer { get { return m_cb; } }

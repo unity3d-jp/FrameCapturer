@@ -331,26 +331,34 @@ fcAPI void fcGifAddOutputStream(fcIGifContext *ctx, fcStream *stream)
     return ctx->addOutputStream(stream);
 }
 
-fcAPI bool fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
+fcAPI bool fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp)
 {
     fcTraceFunc();
     if (!ctx) { return false; }
-    return ctx->addFramePixels(pixels, fmt, keyframe, timestamp);
+    return ctx->addFramePixels(pixels, fmt, timestamp);
 }
-fcAPI bool fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
+fcAPI bool fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp)
 {
     fcTraceFunc();
     if (!ctx) { return false; }
-    return ctx->addFrameTexture(tex, fmt, keyframe, timestamp);
+    return ctx->addFrameTexture(tex, fmt, timestamp);
 }
-fcAPI int fcGifAddFrameTextureDeferred(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp, int id)
+fcAPI int fcGifAddFrameTextureDeferred(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp, int id)
 {
     fcTraceFunc();
     if (!ctx) { return 0; }
     return fcAddDeferredCall([=]() {
-        return ctx->addFrameTexture(tex, fmt, keyframe, timestamp);
+        return ctx->addFrameTexture(tex, fmt, timestamp);
     }, id);
 }
+fcAPI void fcGifForceKeyframe(fcIGifContext *ctx)
+{
+    fcTraceFunc();
+    if (!ctx) { return; }
+    ctx->forceKeyframe();
+
+}
+
 #endif // fcSupportGIF
 
 

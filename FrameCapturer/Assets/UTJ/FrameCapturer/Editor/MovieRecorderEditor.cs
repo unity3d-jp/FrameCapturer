@@ -126,16 +126,17 @@ namespace UTJ.FrameCapturer
                 }
                 else if (ctx.type == MovieRecorderContext.Type.WebM)
                 {
-                    EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig.captureVideo"));
-                    if (recorder.webmConfig.captureVideo)
+                    var c = recorder.webmConfig;
+                    EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig.video"));
+                    if (c.video)
                     {
                         EditorGUI.indentLevel++;
                         VideoConfig();
                         EditorGUI.indentLevel--;
                     }
                     EditorGUILayout.Space();
-                    EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig.captureAudio"));
-                    if (recorder.webmConfig.captureAudio)
+                    EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig.audio"));
+                    if (c.audio)
                     {
                         EditorGUI.indentLevel++;
                         AudioConfig();
@@ -144,16 +145,17 @@ namespace UTJ.FrameCapturer
                 }
                 else if (ctx.type == MovieRecorderContext.Type.MP4)
                 {
-                    EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig.captureVideo"));
-                    if (recorder.mp4Config.captureVideo)
+                    var c = recorder.mp4Config;
+                    EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig.video"));
+                    if (c.video)
                     {
                         EditorGUI.indentLevel++;
                         VideoConfig();
                         EditorGUI.indentLevel--;
                     }
                     EditorGUILayout.Space();
-                    EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig.captureAudio"));
-                    if (recorder.mp4Config.captureAudio)
+                    EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig.audio"));
+                    if (c.audio)
                     {
                         EditorGUI.indentLevel++;
                         AudioConfig();

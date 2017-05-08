@@ -54,8 +54,7 @@ namespace UnityEngine.Recorder.FrameRecorder.Example
 
             fcAPI.fcLock(frame, TextureFormat.RGB24, (data, fmt) =>
             {
-                bool keyframe = session.m_FrameIndex % m_Settings.m_GifEncoderSettings.keyframeInterval == 0;
-                fcAPI.fcGifAddFramePixels(m_ctx, data, fmt, keyframe, session.m_CurrentFrameStartTS);
+                fcAPI.fcGifAddFramePixels(m_ctx, data, fmt, session.m_CurrentFrameStartTS);
             });
         }
 
