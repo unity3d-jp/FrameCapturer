@@ -34,7 +34,7 @@ namespace UTJ.FrameCapturer
         #region fields
         // base settings
         [SerializeField] DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
-        [SerializeField] MovieRecorderContext.Type m_format = MovieRecorderContext.Type.WebM;
+        [SerializeField] MovieEncoder.Type m_format = MovieEncoder.Type.WebM;
 
         // video settings
         [SerializeField] int m_resolutionWidth = -1;
@@ -51,7 +51,7 @@ namespace UTJ.FrameCapturer
         [SerializeField] int m_endFrame = 100;
 
         // internal
-        [SerializeField] MovieRecorderContext m_ctx;
+        [SerializeField] MovieEncoder m_encoder;
         [SerializeField] fcAPI.fcGifConfig m_gifEncoderConfig = fcAPI.fcGifConfig.default_value;
         [SerializeField] fcAPI.fcWebMConfig m_webmEncoderConfig = fcAPI.fcWebMConfig.default_value;
         [SerializeField] fcAPI.fcMP4Config m_mp4EncoderConfig = fcAPI.fcMP4Config.default_value;
@@ -72,7 +72,7 @@ namespace UTJ.FrameCapturer
             get { return m_outputDir; }
             set { m_outputDir = value; }
         }
-        public MovieRecorderContext.Type format {
+        public MovieEncoder.Type format {
             get { return m_format; }
             set { m_format = value; ValidateContext(); }
         }
@@ -123,7 +123,7 @@ namespace UTJ.FrameCapturer
             set { m_endFrame = value; }
         }
 
-        public MovieRecorderContext context { get { ValidateContext(); return m_ctx; } }
+        public MovieEncoder context { get { ValidateContext(); return m_encoder; } }
         public fcAPI.fcGifConfig gifConfig { get { return m_gifEncoderConfig; } }
         public fcAPI.fcWebMConfig webmConfig { get { return m_webmEncoderConfig; } }
         public fcAPI.fcMP4Config mp4Config { get { return m_mp4EncoderConfig; } }
@@ -149,7 +149,7 @@ namespace UTJ.FrameCapturer
             }
 
             ValidateContext();
-            if (m_ctx == null) { return false; }
+            if (m_encoder == null) { return false; }
 
             m_recording = true;
 
@@ -189,8 +189,8 @@ namespace UTJ.FrameCapturer
                     captureHeight = targetHeight / div;
                 }
 
-                if( m_ctx.type == MovieRecorderContext.Type.MP4 ||
-                    m_ctx.type == MovieRecorderContext.Type.WebM)
+                if( m_encoder.type == MovieEncoder.Type.MP4 ||
+                    m_encoder.type == MovieEncoder.Type.WebM)
                 {
                     captureWidth = (captureWidth + 1) & ~1;
                     captureHeight = (captureHeight + 1) & ~1;
@@ -223,7 +223,7 @@ namespace UTJ.FrameCapturer
                 }
             }
 
-            m_ctx.Initialize(this);
+            m_encoder.Initialize(this);
 
             cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
             Debug.Log("MovieMRecorder: BeginRecording()");
@@ -254,29 +254,29 @@ namespace UTJ.FrameCapturer
         #region impl
         void ReleaseContext()
         {
-            if (m_ctx != null)
+            if (m_encoder != null)
             {
-                m_ctx.Release();
-                m_ctx = null;
+                m_encoder.Release();
+                m_encoder = null;
             }
         }
 
         bool CreateContext()
         {
-            m_ctx = MovieRecorderContext.Create(m_format);
-            return m_ctx != null;
+            m_encoder = MovieEncoder.Create(m_format);
+            return m_encoder != null;
         }
 
         void ValidateContext()
         {
             if(m_recording) { return; }
-            if(m_ctx == null)
+            if(m_encoder == null)
             {
                 CreateContext();
             }
             else
             {
-                if(m_ctx.type != m_format)
+                if(m_encoder.type != m_format)
                 {
                     ReleaseContext();
                     CreateContext();
@@ -344,7 +344,7 @@ namespace UTJ.FrameCapturer
 
         IEnumerator OnPostRender()
         {
-            if (m_recording && m_ctx != null && Time.frameCount % m_captureEveryNthFrame == 0)
+            if (m_recording && m_encoder != null && Time.frameCount % m_captureEveryNthFrame == 0)
             {
                 yield return new WaitForEndOfFrame();
 
@@ -355,7 +355,7 @@ namespace UTJ.FrameCapturer
                 }
 
                 fcAPI.fcLock(m_scratchBuffer, TextureFormat.RGB24, (data, fmt) => {
-                    m_ctx.AddVideoFrame(data, fmt, timestamp);
+                    m_encoder.AddVideoFrame(data, fmt, timestamp);
                 });
                 m_numVideoFrames++;
             }
@@ -363,9 +363,9 @@ namespace UTJ.FrameCapturer
 
         void OnAudioFilterRead(float[] samples, int channels)
         {
-            if (m_recording && m_ctx != null)
+            if (m_recording && m_encoder != null)
             {
-                m_ctx.AddAudioFrame(samples);
+                m_encoder.AddAudioFrame(samples);
             }
         }
         #endregion

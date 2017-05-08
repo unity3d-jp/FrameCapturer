@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 namespace UTJ.FrameCapturer
 {
-    public abstract class ImageSequenceRecorderContext : ScriptableObject
+    public abstract class ImageSequenceEncoder : ScriptableObject
     {
         public enum Type
         {
@@ -22,12 +22,12 @@ namespace UTJ.FrameCapturer
 
 
 
-        public static ImageSequenceRecorderContext Create(Type t)
+        public static ImageSequenceEncoder Create(Type t)
         {
             switch (t)
             {
-                case Type.Png: return CreateInstance<PngContext>();
-                case Type.Exr: return CreateInstance<ExrContext>();
+                case Type.Png: return CreateInstance<PngEncoder>();
+                case Type.Exr: return CreateInstance<ExrEncoder>();
             }
             return null;
         }

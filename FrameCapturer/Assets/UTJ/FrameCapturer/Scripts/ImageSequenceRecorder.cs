@@ -64,7 +64,7 @@ namespace UTJ.FrameCapturer
 
         #region fields
         [SerializeField] DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
-        [SerializeField] ImageSequenceRecorderContext.Type m_format = ImageSequenceRecorderContext.Type.Exr;
+        [SerializeField] ImageSequenceEncoder.Type m_format = ImageSequenceEncoder.Type.Exr;
         [SerializeField] CaptureTarget m_captureTarget = CaptureTarget.FrameBuffer;
         [SerializeField] FrameBufferConponents m_fbComponents = FrameBufferConponents.default_value;
         [SerializeField] RenderTexture[] m_targetRT;
@@ -77,7 +77,7 @@ namespace UTJ.FrameCapturer
         [SerializeField] fcAPI.fcPngConfig m_pngConfig = fcAPI.fcPngConfig.default_value;
         [SerializeField] fcAPI.fcExrConfig m_exrConfig = fcAPI.fcExrConfig.default_value;
 
-        [SerializeField] ImageSequenceRecorderContext m_ctx;
+        [SerializeField] ImageSequenceEncoder m_encoder;
         [SerializeField] Shader m_shCopy;
         Material m_matCopy;
         Mesh m_quad;
@@ -101,7 +101,7 @@ namespace UTJ.FrameCapturer
             get { return m_outputDir; }
             set { m_outputDir = value; }
         }
-        public ImageSequenceRecorderContext.Type format
+        public ImageSequenceEncoder.Type format
         {
             get { return m_format; }
             set { m_format = value; ValidateContext(); }
@@ -173,8 +173,8 @@ namespace UTJ.FrameCapturer
             }
 
             ValidateContext();
-            if (m_ctx == null) { return false; }
-            m_ctx.Initialize(this);
+            if (m_encoder == null) { return false; }
+            m_encoder.Initialize(this);
 
             m_recording = true;
 
@@ -307,7 +307,7 @@ namespace UTJ.FrameCapturer
             {
                 cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cbCopyRT);
             }
-            m_ctx.Release();
+            m_encoder.Release();
         }
 
         public void OneShot()
@@ -319,56 +319,56 @@ namespace UTJ.FrameCapturer
         public void Export()
         {
             ValidateContext();
-            if (!m_ctx) { return; }
+            if (!m_encoder) { return; }
 
             if (m_captureTarget == CaptureTarget.FrameBuffer)
             {
-                if (m_fbComponents.frameBuffer)     { m_ctx.Export(m_rtFB, 4, "FrameBuffer"); }
+                if (m_fbComponents.frameBuffer)     { m_encoder.Export(m_rtFB, 4, "FrameBuffer"); }
                 if (m_fbComponents.GBuffer)
                 {
-                    if (m_fbComponents.albedo)      { m_ctx.Export(m_rtGB[0], 3, "Albedo"); }
-                    if (m_fbComponents.occlusion)   { m_ctx.Export(m_rtGB[1], 1, "Occlusion"); }
-                    if (m_fbComponents.specular)    { m_ctx.Export(m_rtGB[2], 3, "Specular"); }
-                    if (m_fbComponents.smoothness)  { m_ctx.Export(m_rtGB[3], 1, "Smoothness"); }
-                    if (m_fbComponents.normal)      { m_ctx.Export(m_rtGB[4], 3, "Normal"); }
-                    if (m_fbComponents.emission)    { m_ctx.Export(m_rtGB[5], 3, "Emission"); }
-                    if (m_fbComponents.depth)       { m_ctx.Export(m_rtGB[6], 1, "Depth"); }
-                    if (m_fbComponents.velocity)    { m_ctx.Export(m_rtGB[7], 2, "Velocity"); }
+                    if (m_fbComponents.albedo)      { m_encoder.Export(m_rtGB[0], 3, "Albedo"); }
+                    if (m_fbComponents.occlusion)   { m_encoder.Export(m_rtGB[1], 1, "Occlusion"); }
+                    if (m_fbComponents.specular)    { m_encoder.Export(m_rtGB[2], 3, "Specular"); }
+                    if (m_fbComponents.smoothness)  { m_encoder.Export(m_rtGB[3], 1, "Smoothness"); }
+                    if (m_fbComponents.normal)      { m_encoder.Export(m_rtGB[4], 3, "Normal"); }
+                    if (m_fbComponents.emission)    { m_encoder.Export(m_rtGB[5], 3, "Emission"); }
+                    if (m_fbComponents.depth)       { m_encoder.Export(m_rtGB[6], 1, "Depth"); }
+                    if (m_fbComponents.velocity)    { m_encoder.Export(m_rtGB[7], 2, "Velocity"); }
                 }
             }
             else if (m_captureTarget == CaptureTarget.RenderTexture)
             {
                 for (int i = 0; i < m_rtScratch.Length; ++i)
                 {
-                    m_ctx.Export(m_rtScratch[i], 4, "Target" + i);
+                    m_encoder.Export(m_rtScratch[i], 4, "Target" + i);
                 }
             }
         }
 
         void ReleaseContext()
         {
-            if (m_ctx != null)
+            if (m_encoder != null)
             {
-                m_ctx.Release();
-                m_ctx = null;
+                m_encoder.Release();
+                m_encoder = null;
             }
         }
 
         bool CreateContext()
         {
-            m_ctx = ImageSequenceRecorderContext.Create(m_format);
-            return m_ctx != null;
+            m_encoder = ImageSequenceEncoder.Create(m_format);
+            return m_encoder != null;
         }
 
         void ValidateContext()
         {
-            if (m_ctx == null)
+            if (m_encoder == null)
             {
                 CreateContext();
             }
             else
             {
-                if (m_ctx.type != m_format)
+                if (m_encoder.type != m_format)
                 {
                     ReleaseContext();
                     CreateContext();

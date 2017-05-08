@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 namespace UTJ.FrameCapturer
 {
-    public class ExrContext : ImageSequenceRecorderContext
+    public class ExrEncoder : ImageSequenceEncoder
     {
         static readonly string[] s_channelNames = { "R", "G", "B", "A" };
         [SerializeField] ImageSequenceRecorder m_recorder;

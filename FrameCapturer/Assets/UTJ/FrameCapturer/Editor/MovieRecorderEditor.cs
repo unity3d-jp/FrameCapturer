@@ -15,7 +15,7 @@ namespace UTJ.FrameCapturer
             var recorder = target as MovieRecorder;
             var so = serializedObject;
             EditorGUILayout.PropertyField(so.FindProperty("m_outputDir"), true);
-            recorder.format = (MovieRecorderContext.Type)EditorGUILayout.EnumPopup("Format", recorder.format);
+            recorder.format = (MovieEncoder.Type)EditorGUILayout.EnumPopup("Format", recorder.format);
         }
 
         public virtual void VideoConfig()
@@ -54,15 +54,15 @@ namespace UTJ.FrameCapturer
             var so = serializedObject;
             var ctx = recorder.context;
 
-            if (ctx.type == MovieRecorderContext.Type.Gif)
+            if (ctx.type == MovieEncoder.Type.Gif)
             {
                 EditorGUILayout.PropertyField(so.FindProperty("m_gifEncoderConfig"), true);
             }
-            else if (ctx.type == MovieRecorderContext.Type.WebM)
+            else if (ctx.type == MovieEncoder.Type.WebM)
             {
                 EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig"), true);
             }
-            else if (ctx.type == MovieRecorderContext.Type.MP4)
+            else if (ctx.type == MovieEncoder.Type.MP4)
             {
                 EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig"), true);
             }
@@ -120,11 +120,11 @@ namespace UTJ.FrameCapturer
             {
                 EditorGUILayout.Space();
 
-                if(ctx.type == MovieRecorderContext.Type.Gif)
+                if(ctx.type == MovieEncoder.Type.Gif)
                 {
                     VideoConfig();
                 }
-                else if (ctx.type == MovieRecorderContext.Type.WebM)
+                else if (ctx.type == MovieEncoder.Type.WebM)
                 {
                     var c = recorder.webmConfig;
                     EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig.video"));
@@ -143,7 +143,7 @@ namespace UTJ.FrameCapturer
                         EditorGUI.indentLevel--;
                     }
                 }
-                else if (ctx.type == MovieRecorderContext.Type.MP4)
+                else if (ctx.type == MovieEncoder.Type.MP4)
                 {
                     var c = recorder.mp4Config;
                     EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig.video"));

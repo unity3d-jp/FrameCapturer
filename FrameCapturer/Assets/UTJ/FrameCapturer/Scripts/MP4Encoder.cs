@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UTJ.FrameCapturer
 {
-    public class MP4Context : MovieRecorderContext
+    public class MP4Encoder : MovieEncoder
     {
         fcAPI.fcMP4Context m_ctx;
         fcAPI.fcMP4Config m_config;

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UTJ.FrameCapturer
 {
-    public class PngContext : ImageSequenceRecorderContext
+    public class PngEncoder : ImageSequenceEncoder
     {
         [SerializeField] ImageSequenceRecorder m_recorder;
         fcAPI.fcPngContext m_ctx;

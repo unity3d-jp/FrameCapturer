@@ -15,7 +15,7 @@ namespace UTJ.FrameCapturer
             var so = serializedObject;
 
             EditorGUILayout.PropertyField(so.FindProperty("m_outputDir"), true);
-            recorder.format = (ImageSequenceRecorderContext.Type)EditorGUILayout.EnumPopup("Format", recorder.format);
+            recorder.format = (ImageSequenceEncoder.Type)EditorGUILayout.EnumPopup("Format", recorder.format);
 
             EditorGUILayout.Space();
             EditorGUILayout.PropertyField(so.FindProperty("m_captureTarget"), true);
@@ -58,11 +58,11 @@ namespace UTJ.FrameCapturer
 
             EditorGUILayout.Space();
 
-            if (recorder.format == ImageSequenceRecorderContext.Type.Png)
+            if (recorder.format == ImageSequenceEncoder.Type.Png)
             {
                 EditorGUILayout.PropertyField(so.FindProperty("m_pngConfig"), true);
             }
-            else if (recorder.format == ImageSequenceRecorderContext.Type.Exr)
+            else if (recorder.format == ImageSequenceEncoder.Type.Exr)
             {
                 EditorGUILayout.PropertyField(so.FindProperty("m_exrConfig"), true);
             }

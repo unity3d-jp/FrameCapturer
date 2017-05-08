@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 namespace UTJ.FrameCapturer
 {
-    public abstract class MovieRecorderContext : ScriptableObject
+    public abstract class MovieEncoder : ScriptableObject
     {
         public enum Type
         {
@@ -25,13 +25,13 @@ namespace UTJ.FrameCapturer
         }
         public abstract void AddAudioFrame(float[] samples, double timestamp = -1.0);
 
-        public static MovieRecorderContext Create(Type t)
+        public static MovieEncoder Create(Type t)
         {
             switch (t)
             {
-                case Type.Gif: return CreateInstance<GifContext>();
-                case Type.WebM: return CreateInstance<WebMContext>();
-                case Type.MP4: return CreateInstance<MP4Context>();
+                case Type.Gif: return CreateInstance<GifEncoder>();
+                case Type.WebM: return CreateInstance<WebMEncoder>();
+                case Type.MP4: return CreateInstance<MP4Encoder>();
             }
             return null;
         }

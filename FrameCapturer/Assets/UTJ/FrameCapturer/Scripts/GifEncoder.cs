@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UTJ.FrameCapturer
 {
-    public class GifContext : MovieRecorderContext
+    public class GifEncoder : MovieEncoder
     {
         fcAPI.fcGifContext m_ctx;
         fcAPI.fcGifConfig m_config;
