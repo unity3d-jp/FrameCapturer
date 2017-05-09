@@ -12,10 +12,9 @@ namespace UTJ.FrameCapturer
 
         public virtual void CommonConfig()
         {
-            var recorder = target as MovieRecorder;
             var so = serializedObject;
             EditorGUILayout.PropertyField(so.FindProperty("m_outputDir"), true);
-            recorder.format = (MovieEncoder.Type)EditorGUILayout.EnumPopup("Format", recorder.format);
+            EditorGUILayout.PropertyField(so.FindProperty("m_encoderConfigs"), true);
         }
 
         public virtual void VideoConfig()
@@ -47,26 +46,6 @@ namespace UTJ.FrameCapturer
         public virtual void AudioConfig()
         {
         }
-
-        public virtual void EncoderConfig()
-        {
-            var recorder = target as MovieRecorder;
-            var so = serializedObject;
-
-            switch (recorder.format)
-            {
-                case MovieEncoder.Type.Gif:
-                    EditorGUILayout.PropertyField(so.FindProperty("m_gifEncoderConfig"), true);
-                    break;
-                case MovieEncoder.Type.WebM:
-                    EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig"), true);
-                    break;
-                case MovieEncoder.Type.MP4:
-                    EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig"), true);
-                    break;
-            }
-        }
-
 
         public virtual void RecordingControl()
         {
@@ -116,42 +95,28 @@ namespace UTJ.FrameCapturer
 
             EditorGUILayout.Space();
 
-            if (recorder.format == MovieEncoder.Type.Gif)
+            var ec = recorder.encoderConfigs;
+            if (ec.supportVideo && !ec.supportAudio)
             {
                 VideoConfig();
             }
-            else if (recorder.format == MovieEncoder.Type.WebM)
+            else if (!ec.supportVideo && ec.supportAudio)
             {
-                var c = recorder.webmConfig;
-                EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig.video"));
-                if (c.video)
-                {
-                    EditorGUI.indentLevel++;
-                    VideoConfig();
-                    EditorGUI.indentLevel--;
-                }
-                EditorGUILayout.Space();
-                EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig.audio"));
-                if (c.audio)
-                {
-                    EditorGUI.indentLevel++;
-                    AudioConfig();
-                    EditorGUI.indentLevel--;
-                }
+                AudioConfig();
             }
-            else if (recorder.format == MovieEncoder.Type.MP4)
+            else if (ec.supportVideo && ec.supportAudio)
             {
-                var c = recorder.mp4Config;
-                EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig.video"));
-                if (c.video)
+                ec.captureVideo = EditorGUILayout.Toggle("Video", ec.captureVideo);
+                if(ec.captureVideo)
                 {
                     EditorGUI.indentLevel++;
                     VideoConfig();
                     EditorGUI.indentLevel--;
                 }
                 EditorGUILayout.Space();
-                EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig.audio"));
-                if (c.audio)
+
+                ec.captureAudio = EditorGUILayout.Toggle("Audio", ec.captureAudio);
+                if (ec.captureAudio)
                 {
                     EditorGUI.indentLevel++;
                     AudioConfig();
@@ -160,8 +125,6 @@ namespace UTJ.FrameCapturer
             }
 
             EditorGUILayout.Space();
-
-            EncoderConfig();
 
             RecordingControl();
 

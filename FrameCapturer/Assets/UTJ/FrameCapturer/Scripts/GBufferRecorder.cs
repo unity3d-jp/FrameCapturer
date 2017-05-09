@@ -59,10 +59,11 @@ namespace UTJ.FrameCapturer
         {
             RenderTexture m_rt;
             int m_channels;
+            int m_targetFramerate = 30;
             string m_name;
             MovieEncoder m_encoder;
 
-            public BufferRecorder(RenderTexture rt, int ch, string name)
+            public BufferRecorder(RenderTexture rt, int ch, string name, int tf)
             {
                 m_rt = rt;
                 m_channels = ch;
@@ -72,7 +73,7 @@ namespace UTJ.FrameCapturer
             public void Initialize(MovieEncoderConfigs c, DataPath p)
             {
                 string path = p.GetFullPath() + "/" + m_name;
-                c.SetResolution(m_rt.width, m_rt.height, m_channels);
+                c.Setup(m_rt.width, m_rt.height, m_channels, m_targetFramerate);
                 m_encoder = MovieEncoder.Create(c, path);
             }
 
@@ -102,6 +103,7 @@ namespace UTJ.FrameCapturer
 
         #region fields
         [SerializeField] DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
+        [SerializeField] MovieEncoderConfigs m_encoderConfigs = new MovieEncoderConfigs();
         [SerializeField] FrameBufferConponents m_fbComponents = FrameBufferConponents.default_value;
         [SerializeField] bool m_fixDeltaTime = true;
         [SerializeField] int m_targetFramerate = 30;
@@ -109,7 +111,6 @@ namespace UTJ.FrameCapturer
         [SerializeField] int m_startFrame = 0;
         [SerializeField] int m_endFrame = 100;
 
-        [SerializeField] MovieEncoderConfigs m_encoderConfigs = new MovieEncoderConfigs();
         [SerializeField] Shader m_shCopy;
         Material m_matCopy;
         Mesh m_quad;
@@ -257,17 +258,18 @@ namespace UTJ.FrameCapturer
                 }
             }
 
-            if (m_fbComponents.frameBuffer) { m_recorders.Add(new BufferRecorder(m_rtFB, 4, "FrameBuffer")); }
+            int framerate = m_targetFramerate;
+            if (m_fbComponents.frameBuffer) { m_recorders.Add(new BufferRecorder(m_rtFB, 4, "FrameBuffer", framerate)); }
             if (m_fbComponents.GBuffer)
             {
-                if (m_fbComponents.albedo)      { m_recorders.Add(new BufferRecorder(m_rtGB[0], 3, "Albedo")); }
-                if (m_fbComponents.occlusion)   { m_recorders.Add(new BufferRecorder(m_rtGB[1], 1, "Occlusion")); }
-                if (m_fbComponents.specular)    { m_recorders.Add(new BufferRecorder(m_rtGB[2], 3, "Specular")); }
-                if (m_fbComponents.smoothness)  { m_recorders.Add(new BufferRecorder(m_rtGB[3], 1, "Smoothness")); }
-                if (m_fbComponents.normal)      { m_recorders.Add(new BufferRecorder(m_rtGB[4], 3, "Normal")); }
-                if (m_fbComponents.emission)    { m_recorders.Add(new BufferRecorder(m_rtGB[5], 3, "Emission")); }
-                if (m_fbComponents.depth)       { m_recorders.Add(new BufferRecorder(m_rtGB[6], 1, "Depth")); }
-                if (m_fbComponents.velocity)    { m_recorders.Add(new BufferRecorder(m_rtGB[7], 2, "Velocity")); }
+                if (m_fbComponents.albedo)      { m_recorders.Add(new BufferRecorder(m_rtGB[0], 3, "Albedo", framerate)); }
+                if (m_fbComponents.occlusion)   { m_recorders.Add(new BufferRecorder(m_rtGB[1], 1, "Occlusion", framerate)); }
+                if (m_fbComponents.specular)    { m_recorders.Add(new BufferRecorder(m_rtGB[2], 3, "Specular", framerate)); }
+                if (m_fbComponents.smoothness)  { m_recorders.Add(new BufferRecorder(m_rtGB[3], 1, "Smoothness", framerate)); }
+                if (m_fbComponents.normal)      { m_recorders.Add(new BufferRecorder(m_rtGB[4], 3, "Normal", framerate)); }
+                if (m_fbComponents.emission)    { m_recorders.Add(new BufferRecorder(m_rtGB[5], 3, "Emission", framerate)); }
+                if (m_fbComponents.depth)       { m_recorders.Add(new BufferRecorder(m_rtGB[6], 1, "Depth", framerate)); }
+                if (m_fbComponents.velocity)    { m_recorders.Add(new BufferRecorder(m_rtGB[7], 2, "Velocity", framerate)); }
             }
             foreach (var rec in m_recorders) { rec.Initialize(m_encoderConfigs, m_outputDir); }
 

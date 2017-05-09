@@ -15,7 +15,70 @@ namespace UTJ.FrameCapturer
         public fcAPI.fcWebMConfig webmEncoderSettings = fcAPI.fcWebMConfig.default_value;
         public fcAPI.fcMP4Config mp4EncoderSettings = fcAPI.fcMP4Config.default_value;
 
-        public void SetResolution(int w, int h, int ch = 4)
+        public bool supportVideo
+        {
+            get {
+                return
+                  format == MovieEncoder.Type.Png ||
+                  format == MovieEncoder.Type.Exr ||
+                  format == MovieEncoder.Type.Gif ||
+                  format == MovieEncoder.Type.WebM ||
+                  format == MovieEncoder.Type.MP4;
+            }
+        }
+
+        public bool supportAudio
+        {
+            get
+            {
+                return
+                  format == MovieEncoder.Type.WebM ||
+                  format == MovieEncoder.Type.MP4;
+            }
+        }
+
+        public bool captureVideo
+        {
+            get
+            {
+                switch (format)
+                {
+                    case MovieEncoder.Type.Png: return true;
+                    case MovieEncoder.Type.Exr: return true;
+                    case MovieEncoder.Type.Gif: return true;
+                    case MovieEncoder.Type.WebM: return webmEncoderSettings.video;
+                    case MovieEncoder.Type.MP4: return webmEncoderSettings.video;
+                }
+                return false;
+            }
+            set
+            {
+                webmEncoderSettings.video =
+                mp4EncoderSettings.video = value;
+            }
+        }
+        public bool captureAudio
+        {
+            get
+            {
+                switch (format)
+                {
+                    case MovieEncoder.Type.Png: return false;
+                    case MovieEncoder.Type.Exr: return false;
+                    case MovieEncoder.Type.Gif: return false;
+                    case MovieEncoder.Type.WebM: return webmEncoderSettings.audio;
+                    case MovieEncoder.Type.MP4: return webmEncoderSettings.audio;
+                }
+                return false;
+            }
+            set
+            {
+                webmEncoderSettings.audio =
+                mp4EncoderSettings.audio = value;
+            }
+        }
+
+        public void Setup(int w, int h, int ch = 4, int targetFrameRate = 60)
         {
             pngEncoderSettings.width =
             exrEncoderSettings.width =
@@ -31,6 +94,9 @@ namespace UTJ.FrameCapturer
 
             pngEncoderSettings.channels =
             exrEncoderSettings.channels = ch;
+
+            webmEncoderSettings.videoTargetFramerate =
+            mp4EncoderSettings.videoTargetFramerate = targetFrameRate;
         }
     }
 
@@ -61,7 +127,7 @@ namespace UTJ.FrameCapturer
                 case Type.Png: return CreateInstance<PngEncoder>();
                 case Type.Exr: return CreateInstance<ExrEncoder>();
                 case Type.Gif: return CreateInstance<GifEncoder>();
-                case Type.WebM: return CreateInstance<WebMEncoder>();
+                case Type.WebM:return CreateInstance<WebMEncoder>();
                 case Type.MP4: return CreateInstance<MP4Encoder>();
             }
             return null;
@@ -75,7 +141,7 @@ namespace UTJ.FrameCapturer
                 case Type.Png: ret.Initialize(c.pngEncoderSettings, path); break;
                 case Type.Exr: ret.Initialize(c.exrEncoderSettings, path); break;
                 case Type.Gif: ret.Initialize(c.gifEncoderSettings, path); break;
-                case Type.WebM:ret.Initialize(c.webmEncoderSettings, path); break;
+                case Type.WebM:ret.Initialize(c.webmEncoderSettings,path); break;
                 case Type.MP4: ret.Initialize(c.mp4EncoderSettings, path); break;
             }
             return ret;

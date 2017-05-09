@@ -154,12 +154,12 @@ namespace UTJ.FrameCapturer
         [Serializable]
         public struct fcPngConfig
         {
-            [Range(1, 64)] public int maxTasks;
+            [Range(1, 32)] public int maxTasks;
             public fcPngPixelFormat pixelFormat;
             // C# ext
-            public int width;
-            public int height;
-            public int channels;
+            [HideInInspector] public int width;
+            [HideInInspector] public int height;
+            [HideInInspector] public int channels;
 
             public static fcPngConfig default_value
             {
@@ -210,13 +210,13 @@ namespace UTJ.FrameCapturer
         [Serializable]
         public struct fcExrConfig
         {
-            [Range(1, 64)] public int maxTasks;
+            [Range(1, 32)] public int maxTasks;
             public fcExrPixelFormat pixelFormat;
             public fcExrCompression compression;
             // C# ext
-            public int width;
-            public int height;
-            public int channels;
+            [HideInInspector] public int width;
+            [HideInInspector] public int height;
+            [HideInInspector] public int channels;
 
             public static fcExrConfig default_value
             {
@@ -257,7 +257,7 @@ namespace UTJ.FrameCapturer
             [HideInInspector] public int height;
             [Range(1, 256)] public int numColors;
             [Range(1, 120)] public int keyframeInterval;
-            [Range(1, 64)] public int maxTasks;
+            [Range(1, 32)] public int maxTasks;
 
             public static fcGifConfig default_value
             {

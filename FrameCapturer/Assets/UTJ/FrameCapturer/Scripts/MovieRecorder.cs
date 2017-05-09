@@ -34,7 +34,7 @@ namespace UTJ.FrameCapturer
         #region fields
         // base settings
         [SerializeField] DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
-        [SerializeField] MovieEncoder.Type m_format = MovieEncoder.Type.WebM;
+        [SerializeField] MovieEncoderConfigs m_encoderConfigs = new MovieEncoderConfigs();
 
         // video settings
         [SerializeField] int m_resolutionWidth = -1;
@@ -51,10 +51,6 @@ namespace UTJ.FrameCapturer
         [SerializeField] int m_endFrame = 100;
 
         // internal
-        [SerializeField] MovieEncoder m_encoder;
-        [SerializeField] fcAPI.fcGifConfig m_gifEncoderConfig = fcAPI.fcGifConfig.default_value;
-        [SerializeField] fcAPI.fcWebMConfig m_webmEncoderConfig = fcAPI.fcWebMConfig.default_value;
-        [SerializeField] fcAPI.fcMP4Config m_mp4EncoderConfig = fcAPI.fcMP4Config.default_value;
         [SerializeField] Shader m_shCopy;
 
         Material m_matCopy;
@@ -63,6 +59,8 @@ namespace UTJ.FrameCapturer
         RenderTexture m_scratchBuffer;
         bool m_recording = false;
         int m_numVideoFrames = 0;
+
+        MovieEncoder m_encoder;
         #endregion
 
 
@@ -71,10 +69,6 @@ namespace UTJ.FrameCapturer
         {
             get { return m_outputDir; }
             set { m_outputDir = value; }
-        }
-        public MovieEncoder.Type format {
-            get { return m_format; }
-            set { m_format = value; ValidateContext(); }
         }
         public CaptureTarget captureTarget
         {
@@ -122,10 +116,7 @@ namespace UTJ.FrameCapturer
             get { return m_endFrame; }
             set { m_endFrame = value; }
         }
-
-        public fcAPI.fcGifConfig gifConfig { get { return m_gifEncoderConfig; } }
-        public fcAPI.fcWebMConfig webmConfig { get { return m_webmEncoderConfig; } }
-        public fcAPI.fcMP4Config mp4Config { get { return m_mp4EncoderConfig; } }
+        public MovieEncoderConfigs encoderConfigs { get { return m_encoderConfigs; } }
 
         public RenderTexture scratchBuffer { get { return m_scratchBuffer; } }
         public CommandBuffer commandBuffer { get { return m_cb; } }
@@ -146,11 +137,6 @@ namespace UTJ.FrameCapturer
                 Debug.LogError("MovieRecorder: target RenderTexture is null!");
                 return false;
             }
-
-            m_encoder = MovieEncoder.Create(m_format);
-            if (!m_encoder) { return false; }
-
-            m_recording = true;
 
             m_outputDir.CreateDirectory();
             if (m_quad == null) m_quad = fcAPI.CreateFullscreenQuad();
@@ -188,8 +174,7 @@ namespace UTJ.FrameCapturer
                     captureHeight = targetHeight / div;
                 }
 
-                if( m_format == MovieEncoder.Type.MP4 ||
-                    m_format == MovieEncoder.Type.WebM)
+                if (m_encoderConfigs.format == MovieEncoder.Type.MP4)
                 {
                     captureWidth = (captureWidth + 1) & ~1;
                     captureHeight = (captureHeight + 1) & ~1;
@@ -209,25 +194,12 @@ namespace UTJ.FrameCapturer
                 }
                 string outPath = m_outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss");
 
-                switch (m_format)
+                m_encoderConfigs.Setup(m_scratchBuffer.width, m_scratchBuffer.height, 3, targetFramerate);
+                m_encoder = MovieEncoder.Create(m_encoderConfigs, outPath);
+                if (!m_encoder)
                 {
-                    case MovieEncoder.Type.Gif:
-                        m_gifEncoderConfig.width = m_scratchBuffer.width;
-                        m_gifEncoderConfig.height = m_scratchBuffer.height;
-                        m_encoder.Initialize(m_gifEncoderConfig, outPath);
-                        break;
-                    case MovieEncoder.Type.WebM:
-                        m_webmEncoderConfig.videoWidth = m_scratchBuffer.width;
-                        m_webmEncoderConfig.videoHeight = m_scratchBuffer.height;
-                        m_webmEncoderConfig.videoTargetFramerate = targetFramerate;
-                        m_encoder.Initialize(m_webmEncoderConfig, outPath);
-                        break;
-                    case MovieEncoder.Type.MP4:
-                        m_mp4EncoderConfig.videoWidth = m_scratchBuffer.width;
-                        m_mp4EncoderConfig.videoHeight = m_scratchBuffer.height;
-                        m_mp4EncoderConfig.videoTargetFramerate = targetFramerate;
-                        m_encoder.Initialize(m_mp4EncoderConfig, outPath);
-                        break;
+                    EndRecording();
+                    return false;
                 }
             }
 
@@ -254,16 +226,19 @@ namespace UTJ.FrameCapturer
             }
 
             cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
+
+            m_recording = true;
             Debug.Log("MovieMRecorder: BeginRecording()");
             return true;
         }
 
         public void EndRecording()
         {
-            if (!m_recording) { return; }
-            m_recording = false;
-
-            ReleaseContext();
+            if(m_encoder != null)
+            {
+                m_encoder.Release();
+                m_encoder = null;
+            }
             if (m_cb != null)
             {
                 GetComponent<Camera>().RemoveCommandBuffer(CameraEvent.AfterEverything, m_cb);
@@ -275,43 +250,12 @@ namespace UTJ.FrameCapturer
                 m_scratchBuffer.Release();
                 m_scratchBuffer = null;
             }
+            m_recording = false;
             Debug.Log("MovieMRecorder: EndRecording()");
         }
 
 
         #region impl
-        void ReleaseContext()
-        {
-            if (m_encoder != null)
-            {
-                m_encoder.Release();
-                m_encoder = null;
-            }
-        }
-
-        bool CreateContext()
-        {
-            m_encoder = MovieEncoder.Create(m_format);
-            return m_encoder != null;
-        }
-
-        void ValidateContext()
-        {
-            if(m_recording) { return; }
-            if(m_encoder == null)
-            {
-                CreateContext();
-            }
-            else
-            {
-                if(m_encoder.type != m_format)
-                {
-                    ReleaseContext();
-                    CreateContext();
-                }
-            }
-        }
-
         IEnumerator Wait()
         {
             yield return new WaitForEndOfFrame();
@@ -329,7 +273,6 @@ namespace UTJ.FrameCapturer
         void Reset()
         {
             m_shCopy = fcAPI.GetFrameBufferCopyShader();
-            ValidateContext();
         }
 
         void OnValidate()
