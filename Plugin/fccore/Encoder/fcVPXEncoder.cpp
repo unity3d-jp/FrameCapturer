@@ -5,8 +5,8 @@
 #include "fcVPXEncoder.h"
 
 #ifdef fcSupportVPX
-#include "libvpx/vpx/vpx_encoder.h"
-#include "libvpx/vpx/vp8cx.h"
+#include "vpx/vpx_encoder.h"
+#include "vpx/vp8cx.h"
 #ifdef _MSC_VER
     #pragma comment(lib, "vpxmt.lib")
 #endif // _MSC_VER

@@ -47,6 +47,7 @@ public:
     void flushAudio();
 
 private:
+    // Body: [](WriterPtr&) -> void
     template<class Body>
     void eachStreams(const Body &b)
     {
@@ -270,7 +271,7 @@ bool fcMP4Context::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt
 {
     // encode!
     if (m_video_encoder->encode(m_video_frame, pixels, fmt, timestamp)) {
-        eachStreams([this](auto& s) { s.addVideoFrame(m_video_frame); });
+        eachStreams([this](fcMP4Writer& s) { s.addVideoFrame(m_video_frame); });
 #ifndef fcMaster
         m_dbg_h264_out->write(m_video_frame.data.data(), m_video_frame.data.size());
 #endif // fcMaster
@@ -286,7 +287,7 @@ void fcMP4Context::flushVideo()
 
     m_video_tasks.run([this]() {
         if (m_video_encoder->flush(m_video_frame)) {
-            eachStreams([&](auto& writer) {
+            eachStreams([&](fcMP4Writer& writer) {
                 writer.addVideoFrame(m_video_frame);
             });
             m_video_frame.clear();
@@ -314,7 +315,7 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, fcTime t
 bool fcMP4Context::addAudioFrameImpl(const float *samples, int num_samples, fcTime timestamp)
 {
     if (m_audio_encoder->encode(m_audio_frame, samples, num_samples, timestamp)) {
-        eachStreams([this](auto& s) { s.addAudioFrame(m_audio_frame); });
+        eachStreams([this](fcMP4Writer& s) { s.addAudioFrame(m_audio_frame); });
 #ifndef fcMaster
         m_dbg_aac_out->write(m_audio_frame.data.data(), m_audio_frame.data.size());
 #endif // fcMaster
@@ -331,7 +332,7 @@ void fcMP4Context::flushAudio()
 
     m_audio_tasks.run([this]() {
         if (m_audio_encoder->flush(m_audio_frame)) {
-            eachStreams([&](auto& writer) {
+            eachStreams([&](fcMP4Writer& writer) {
                 writer.addAudioFrame(m_audio_frame);
             });
             m_audio_frame.clear();

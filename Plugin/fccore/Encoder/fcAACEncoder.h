@@ -28,7 +28,7 @@ struct fcAACFrame
         packets.clear();
     }
 
-    // Body: [](const char *data, const PacketInfo& pinfo) -> void
+    // Body: [](const char *data, const fcAACFrame::PacketInfo& pinfo) -> void
     template<class Body>
     void eachPackets(const Body& body) const
     {

@@ -186,7 +186,7 @@ bool fcWebMContext::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fm
 {
     // encode!
     if (m_video_encoder->encode(m_video_frame, pixels, fmt, timestamp)) {
-        eachStreams([&](auto& writer) {
+        eachStreams([&](fcIWebMWriter& writer) {
             writer.addVideoFrame(m_video_frame);
         });
         m_video_frame.clear();
@@ -201,7 +201,7 @@ void fcWebMContext::flushVideo()
 
     m_video_tasks.run([this]() {
         if (m_video_encoder->flush(m_video_frame)) {
-            eachStreams([&](auto& writer) {
+            eachStreams([&](fcIWebMWriter& writer) {
                 writer.addVideoFrame(m_video_frame);
             });
             m_video_frame.clear();
@@ -219,7 +219,7 @@ bool fcWebMContext::addAudioFrame(const float *samples, int num_samples, fcTime 
 
     m_audio_tasks.run([this, buf, timestamp]() {
         if (m_audio_encoder->encode(m_audio_frame, buf->data(), buf->size(), timestamp)) {
-            eachStreams([&](auto& writer) {
+            eachStreams([&](fcIWebMWriter& writer) {
                 writer.addAudioFrame(m_audio_frame);
             });
             m_audio_frame.clear();
@@ -235,7 +235,7 @@ void fcWebMContext::flushAudio()
 
     m_audio_tasks.run([this]() {
         if (m_audio_encoder->flush(m_audio_frame)) {
-            eachStreams([&](auto& writer) {
+            eachStreams([&](fcIWebMWriter& writer) {
                 writer.addAudioFrame(m_audio_frame);
             });
             m_audio_frame.clear();

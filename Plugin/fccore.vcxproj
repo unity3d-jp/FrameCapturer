@@ -141,25 +141,25 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>fccore;external;external\glew;external\OpenEXR;external\libzip;external\libwebm;external\libpng;external\libyuv;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>fccore;external;external\glew;external\OpenEXR;external\libzip;external\libwebm;external\libpng;external\libyuv;external\libvpx;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\win64;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>fccore;external;external\glew;external\OpenEXR;external\libzip;external\libwebm;external\libpng;external\libyuv;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>fccore;external;external\glew;external\OpenEXR;external\libzip;external\libwebm;external\libpng;external\libyuv;external\libvpx;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\win32;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|x64'">
-    <IncludePath>fccore;external;external\glew;external\OpenEXR;external\libzip;external\libwebm;external\libpng;external\libyuv;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>fccore;external;external\glew;external\OpenEXR;external\libzip;external\libwebm;external\libpng;external\libyuv;external\libvpx;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\win64;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">
-    <IncludePath>fccore;external;external\glew;external\OpenEXR;external\libzip;external\libwebm;external\libpng;external\libyuv;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>fccore;external;external\glew;external\OpenEXR;external\libzip;external\libwebm;external\libpng;external\libyuv;external\libvpx;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\win32;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>

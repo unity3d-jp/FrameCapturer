@@ -39,7 +39,7 @@ private:
     fcPngConfig m_conf;
     fcIGraphicsDevice *m_dev = nullptr;
     fcTaskGroup m_tasks;
-    std::atomic_int m_active_task_count = 0;
+    std::atomic_int m_active_task_count = { 0 };
 };
 
 fcPngContext::fcPngContext(const fcPngConfig& conf, fcIGraphicsDevice *dev)
