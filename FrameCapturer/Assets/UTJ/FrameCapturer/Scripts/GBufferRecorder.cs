@@ -267,7 +267,7 @@ namespace UTJ.FrameCapturer
                 if (m_fbComponents.specular)    { m_recorders.Add(new BufferRecorder(m_rtGB[2], 3, "Specular", framerate)); }
                 if (m_fbComponents.smoothness)  { m_recorders.Add(new BufferRecorder(m_rtGB[3], 1, "Smoothness", framerate)); }
                 if (m_fbComponents.normal)      { m_recorders.Add(new BufferRecorder(m_rtGB[4], 3, "Normal", framerate)); }
-                if (m_fbComponents.emission)    { m_recorders.Add(new BufferRecorder(m_rtGB[5], 3, "Emission", framerate)); }
+                if (m_fbComponents.emission)    { m_recorders.Add(new BufferRecorder(m_rtGB[5], 4, "Emission", framerate)); }
                 if (m_fbComponents.depth)       { m_recorders.Add(new BufferRecorder(m_rtGB[6], 1, "Depth", framerate)); }
                 if (m_fbComponents.velocity)    { m_recorders.Add(new BufferRecorder(m_rtGB[7], 2, "Velocity", framerate)); }
             }
