@@ -25,10 +25,10 @@ IF(FC_ENABLE_WEBM)
     OPTION(FC_ENABLE_VORBIS "Enable vorbis encoder." ON)
     OPTION(FC_ENABLE_OPUS "Enable opus encoder." OFF)
 ENDIF()
-OPTION(FC_ENABLE_MP4 "Enable MP4 exporter." ON)
+OPTION(FC_ENABLE_MP4 "Enable MP4 exporter." OFF)
 IF(FC_ENABLE_MP4)
-    OPTION(FC_ENABLE_OPENH264 "Enable OpenH264 encoder." ON)
-    OPTION(FC_ENABLE_FAAC "Enable FAAC encoder." ON)
+    OPTION(FC_ENABLE_OPENH264 "Enable OpenH264 encoder." OFF)
+    OPTION(FC_ENABLE_FAAC "Enable FAAC encoder." OFF)
 ENDIF()
 
 OPTION(FC_ENABLE_DEBUG "Enable debug functionalities." ON)
@@ -56,6 +56,7 @@ SET(PLUGINS_DIR "${ASSETS_DIR}/UTJ/FrameCapturer/Plugins/x86_64")
 INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/fccore
+    ${CMAKE_CURRENT_SOURCE_DIR}/external
     ${OPENEXR_INCLUDE_DIRS}
     ${YUV_INCLUDE_DIR}
     ${WEBM_INCLUDE_DIR}
