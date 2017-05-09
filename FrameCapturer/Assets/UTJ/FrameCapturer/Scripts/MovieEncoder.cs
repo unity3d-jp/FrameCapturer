@@ -6,14 +6,32 @@ using UnityEngine.Rendering;
 namespace UTJ.FrameCapturer
 {
     [Serializable]
-    public class EncoderConfigs
+    public class MovieEncoderConfigs
     {
-        public MovieEncoder.Type m_type = MovieEncoder.Type.WebM;
-        public fcAPI.fcPngConfig m_png = fcAPI.fcPngConfig.default_value;
-        public fcAPI.fcExrConfig m_exr = fcAPI.fcExrConfig.default_value;
-        public fcAPI.fcGifConfig m_gif = fcAPI.fcGifConfig.default_value;
-        public fcAPI.fcWebMConfig m_webm = fcAPI.fcWebMConfig.default_value;
-        public fcAPI.fcMP4Config m_mp4 = fcAPI.fcMP4Config.default_value;
+        public MovieEncoder.Type format = MovieEncoder.Type.WebM;
+        public fcAPI.fcPngConfig pngEncoderSettings = fcAPI.fcPngConfig.default_value;
+        public fcAPI.fcExrConfig exrEncoderSettings = fcAPI.fcExrConfig.default_value;
+        public fcAPI.fcGifConfig gifEncoderSettings = fcAPI.fcGifConfig.default_value;
+        public fcAPI.fcWebMConfig webmEncoderSettings = fcAPI.fcWebMConfig.default_value;
+        public fcAPI.fcMP4Config mp4EncoderSettings = fcAPI.fcMP4Config.default_value;
+
+        public void SetResolution(int w, int h, int ch = 4)
+        {
+            pngEncoderSettings.width =
+            exrEncoderSettings.width =
+            gifEncoderSettings.width = 
+            webmEncoderSettings.videoWidth =
+            mp4EncoderSettings.videoWidth = w;
+
+            pngEncoderSettings.height =
+            exrEncoderSettings.height =
+            gifEncoderSettings.height =
+            webmEncoderSettings.videoHeight =
+            mp4EncoderSettings.videoHeight = h;
+
+            pngEncoderSettings.channels =
+            exrEncoderSettings.channels = ch;
+        }
     }
 
     public abstract class MovieEncoder : ScriptableObject
@@ -40,11 +58,27 @@ namespace UTJ.FrameCapturer
         {
             switch (t)
             {
+                case Type.Png: return CreateInstance<PngEncoder>();
+                case Type.Exr: return CreateInstance<ExrEncoder>();
                 case Type.Gif: return CreateInstance<GifEncoder>();
                 case Type.WebM: return CreateInstance<WebMEncoder>();
                 case Type.MP4: return CreateInstance<MP4Encoder>();
             }
             return null;
+        }
+
+        public static MovieEncoder Create(MovieEncoderConfigs c, string path)
+        {
+            var ret = Create(c.format);
+            switch (c.format)
+            {
+                case Type.Png: ret.Initialize(c.pngEncoderSettings, path); break;
+                case Type.Exr: ret.Initialize(c.exrEncoderSettings, path); break;
+                case Type.Gif: ret.Initialize(c.gifEncoderSettings, path); break;
+                case Type.WebM:ret.Initialize(c.webmEncoderSettings, path); break;
+                case Type.MP4: ret.Initialize(c.mp4EncoderSettings, path); break;
+            }
+            return ret;
         }
     }
 }

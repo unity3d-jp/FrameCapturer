@@ -15,9 +15,10 @@ namespace UTJ.FrameCapturer
             var so = serializedObject;
 
             EditorGUILayout.PropertyField(so.FindProperty("m_outputDir"), true);
-            recorder.format = (MovieEncoder.Type)EditorGUILayout.EnumPopup("Format", recorder.format);
+            EditorGUILayout.PropertyField(so.FindProperty("m_encoderConfigs"), true);
 
             EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Capture Components");
             EditorGUI.indentLevel++;
             {
                 var fbc = recorder.fbComponents;
@@ -48,17 +49,6 @@ namespace UTJ.FrameCapturer
                 EditorGUI.indentLevel++;
                 EditorGUILayout.PropertyField(so.FindProperty("m_targetFramerate"), true);
                 EditorGUI.indentLevel--;
-            }
-
-            EditorGUILayout.Space();
-
-            if (recorder.format == MovieEncoder.Type.Png)
-            {
-                EditorGUILayout.PropertyField(so.FindProperty("m_pngConfig"), true);
-            }
-            else if (recorder.format == MovieEncoder.Type.Exr)
-            {
-                EditorGUILayout.PropertyField(so.FindProperty("m_exrConfig"), true);
             }
 
             EditorGUILayout.Space();

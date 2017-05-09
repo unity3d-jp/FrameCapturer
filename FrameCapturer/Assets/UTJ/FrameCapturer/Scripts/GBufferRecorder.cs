@@ -69,21 +69,31 @@ namespace UTJ.FrameCapturer
                 m_name = name;
             }
 
-            public void Initialize()
+            public void Initialize(MovieEncoderConfigs c, DataPath p)
             {
-
+                string path = p.GetFullPath() + "/" + m_name;
+                c.SetResolution(m_rt.width, m_rt.height, m_channels);
+                m_encoder = MovieEncoder.Create(c, path);
             }
 
             public void Release()
             {
-                m_encoder.Release();
+                if(m_encoder)
+                {
+                    m_encoder.Release();
+                    m_encoder = null;
+                }
             }
 
             public void Update(double time)
             {
-                fcAPI.fcLock(m_rt, (data, fmt) => {
-                    m_encoder.AddVideoFrame(data, fmt, time);
-                });
+                if (m_encoder)
+                {
+                    fcAPI.fcLock(m_rt, (data, fmt) =>
+                    {
+                        m_encoder.AddVideoFrame(data, fmt, time);
+                    });
+                }
             }
         }
 
@@ -92,7 +102,6 @@ namespace UTJ.FrameCapturer
 
         #region fields
         [SerializeField] DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
-        [SerializeField] MovieEncoder.Type m_format = MovieEncoder.Type.Exr;
         [SerializeField] FrameBufferConponents m_fbComponents = FrameBufferConponents.default_value;
         [SerializeField] bool m_fixDeltaTime = true;
         [SerializeField] int m_targetFramerate = 30;
@@ -100,9 +109,7 @@ namespace UTJ.FrameCapturer
         [SerializeField] int m_startFrame = 0;
         [SerializeField] int m_endFrame = 100;
 
-        [SerializeField] fcAPI.fcPngConfig m_pngConfig = fcAPI.fcPngConfig.default_value;
-        [SerializeField] fcAPI.fcExrConfig m_exrConfig = fcAPI.fcExrConfig.default_value;
-
+        [SerializeField] MovieEncoderConfigs m_encoderConfigs = new MovieEncoderConfigs();
         [SerializeField] Shader m_shCopy;
         Material m_matCopy;
         Mesh m_quad;
@@ -125,11 +132,6 @@ namespace UTJ.FrameCapturer
         {
             get { return m_outputDir; }
             set { m_outputDir = value; }
-        }
-        public MovieEncoder.Type format
-        {
-            get { return m_format; }
-            set { m_format = value; }
         }
         public FrameBufferConponents fbComponents
         {
@@ -163,9 +165,7 @@ namespace UTJ.FrameCapturer
             set { m_endFrame = value; }
         }
 
-        public fcAPI.fcPngConfig pngConfig { get { return m_pngConfig; } }
-        public fcAPI.fcExrConfig exrConfig { get { return m_exrConfig; } }
-
+        public MovieEncoderConfigs encoderConfigs { get { return m_encoderConfigs; } }
         public bool isRecording { get { return m_recording; } }
         public int frame { get { return m_frame; } }
         #endregion
@@ -269,7 +269,7 @@ namespace UTJ.FrameCapturer
                 if (m_fbComponents.depth)       { m_recorders.Add(new BufferRecorder(m_rtGB[6], 1, "Depth")); }
                 if (m_fbComponents.velocity)    { m_recorders.Add(new BufferRecorder(m_rtGB[7], 2, "Velocity")); }
             }
-            foreach(var rec in m_recorders) { rec.Initialize(); }
+            foreach (var rec in m_recorders) { rec.Initialize(m_encoderConfigs, m_outputDir); }
 
             return true;
         }
@@ -286,7 +286,7 @@ namespace UTJ.FrameCapturer
             }
             if (m_cbClearGB != null)
             {
-                cam.RemoveCommandBuffer(CameraEvent.BeforeGBuffer, m_cbCopyGB);
+                cam.RemoveCommandBuffer(CameraEvent.BeforeGBuffer, m_cbClearGB);
             }
             if (m_cbCopyGB != null)
             {
@@ -343,6 +343,8 @@ namespace UTJ.FrameCapturer
 
         void OnDisable()
         {
+            EndRecording();
+
             if (m_cbCopyFB != null)
             {
                 m_cbCopyFB.Release();
