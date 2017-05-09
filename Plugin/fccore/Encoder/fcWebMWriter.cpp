@@ -108,7 +108,7 @@ void fcWebMWriter::addAudioFrame(const fcWebMAudioFrame& frame)
     if (m_audio_track_id == 0 || frame.data.empty()) { return; }
 
     std::unique_lock<std::mutex> lock(m_mutex);
-    frame.eachPackets([&](const char *data, fcVPXFrame::PacketInfo& pinfo) {
+    frame.eachPackets([&](const char *data, const fcVorbisFrame::PacketInfo& pinfo) {
         uint64_t timestamp_ns = to_nsec(pinfo.timestamp);
         m_segment.AddFrame((const uint8_t*)data, pinfo.size, m_audio_track_id, timestamp_ns, true);
     });

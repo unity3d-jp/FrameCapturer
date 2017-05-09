@@ -29,7 +29,7 @@ struct fcVorbisFrame
         packets.clear();
     }
 
-    // Body: [](const char *data, const PacketInfo& pinfo) {}
+    // Body: [](const char *data, const fcVorbisFrame::PacketInfo& pinfo) {}
     template<class Body>
     void eachPackets(const Body& body) const
     {
