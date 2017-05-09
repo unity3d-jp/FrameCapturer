@@ -4,7 +4,7 @@
 #include "GraphicsDevice/fcGraphicsDevice.h"
 #include "fcPngContext.h"
 
-#include <libpng/png.h>
+#include <png.h>
 #ifdef fcWindows
     #pragma comment(lib, "libpng16_static.lib")
     #pragma comment(lib, "zlibstatic.lib")
