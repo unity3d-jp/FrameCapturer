@@ -12,16 +12,13 @@ namespace UTJ.FrameCapturer
 
         public override Type type { get { return Type.Gif; } }
 
-        public override void Initialize(MovieRecorder recorder)
+        public override void Initialize(object config, string outPath)
         {
-            m_config = recorder.gifConfig;
-            m_config.width = recorder.scratchBuffer.width;
-            m_config.height = recorder.scratchBuffer.height;
+            m_config = (fcAPI.fcGifConfig)config;
             m_config.numColors = Mathf.Clamp(m_config.numColors, 1, 256);
-            m_config.maxTasks = 0;
             m_ctx = fcAPI.fcGifCreateContext(ref m_config);
 
-            var path = recorder.outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".gif";
+            var path = outPath + ".gif";
             m_ostream = fcAPI.fcCreateFileStream(path);
             fcAPI.fcGifAddOutputStream(m_ctx, m_ostream);
         }

@@ -123,7 +123,6 @@ namespace UTJ.FrameCapturer
             set { m_endFrame = value; }
         }
 
-        public MovieEncoder context { get { ValidateContext(); return m_encoder; } }
         public fcAPI.fcGifConfig gifConfig { get { return m_gifEncoderConfig; } }
         public fcAPI.fcWebMConfig webmConfig { get { return m_webmEncoderConfig; } }
         public fcAPI.fcMP4Config mp4Config { get { return m_mp4EncoderConfig; } }
@@ -148,8 +147,8 @@ namespace UTJ.FrameCapturer
                 return false;
             }
 
-            ValidateContext();
-            if (m_encoder == null) { return false; }
+            m_encoder = MovieEncoder.Create(m_format);
+            if (!m_encoder) { return false; }
 
             m_recording = true;
 
@@ -189,8 +188,8 @@ namespace UTJ.FrameCapturer
                     captureHeight = targetHeight / div;
                 }
 
-                if( m_encoder.type == MovieEncoder.Type.MP4 ||
-                    m_encoder.type == MovieEncoder.Type.WebM)
+                if( m_format == MovieEncoder.Type.MP4 ||
+                    m_format == MovieEncoder.Type.WebM)
                 {
                     captureWidth = (captureWidth + 1) & ~1;
                     captureHeight = (captureHeight + 1) & ~1;
@@ -199,6 +198,37 @@ namespace UTJ.FrameCapturer
                 m_scratchBuffer = new RenderTexture(captureWidth, captureHeight, 0, RenderTextureFormat.ARGB32);
                 m_scratchBuffer.wrapMode = TextureWrapMode.Repeat;
                 m_scratchBuffer.Create();
+            }
+
+            // initialize encoder
+            {
+                int targetFramerate = 60;
+                if(m_framerateMode == FrameRateMode.Constant)
+                {
+                    targetFramerate = m_targetFramerate;
+                }
+                string outPath = m_outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss");
+
+                switch (m_format)
+                {
+                    case MovieEncoder.Type.Gif:
+                        m_gifEncoderConfig.width = m_scratchBuffer.width;
+                        m_gifEncoderConfig.height = m_scratchBuffer.height;
+                        m_encoder.Initialize(m_gifEncoderConfig, outPath);
+                        break;
+                    case MovieEncoder.Type.WebM:
+                        m_webmEncoderConfig.videoWidth = m_scratchBuffer.width;
+                        m_webmEncoderConfig.videoHeight = m_scratchBuffer.height;
+                        m_webmEncoderConfig.videoTargetFramerate = targetFramerate;
+                        m_encoder.Initialize(m_webmEncoderConfig, outPath);
+                        break;
+                    case MovieEncoder.Type.MP4:
+                        m_mp4EncoderConfig.videoWidth = m_scratchBuffer.width;
+                        m_mp4EncoderConfig.videoHeight = m_scratchBuffer.height;
+                        m_mp4EncoderConfig.videoTargetFramerate = targetFramerate;
+                        m_encoder.Initialize(m_mp4EncoderConfig, outPath);
+                        break;
+                }
             }
 
             // create command buffer
@@ -222,8 +252,6 @@ namespace UTJ.FrameCapturer
                     m_cb.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 1);
                 }
             }
-
-            m_encoder.Initialize(this);
 
             cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
             Debug.Log("MovieMRecorder: BeginRecording()");

@@ -12,17 +12,15 @@ namespace UTJ.FrameCapturer
 
         public override Type type { get { return Type.WebM; } }
 
-        public override void Initialize(MovieRecorder recorder)
+        public override void Initialize(object config, string outPath)
         {
-            m_config = recorder.webmConfig;
-            m_config.videoWidth = recorder.scratchBuffer.width;
-            m_config.videoHeight = recorder.scratchBuffer.height;
+            m_config = (fcAPI.fcWebMConfig)config;
             m_config.videoTargetFramerate = 60;
             m_config.audioSampleRate = AudioSettings.outputSampleRate;
             m_config.audioNumChannels = fcAPI.fcGetNumAudioChannels();
             m_ctx = fcAPI.fcWebMCreateContext(ref m_config);
 
-            var path = recorder.outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".webm";
+            var path = outPath + ".webm";
             m_ostream = fcAPI.fcCreateFileStream(path);
             fcAPI.fcWebMAddOutputStream(m_ctx, m_ostream);
         }

@@ -52,19 +52,18 @@ namespace UTJ.FrameCapturer
         {
             var recorder = target as MovieRecorder;
             var so = serializedObject;
-            var ctx = recorder.context;
 
-            if (ctx.type == MovieEncoder.Type.Gif)
+            switch (recorder.format)
             {
-                EditorGUILayout.PropertyField(so.FindProperty("m_gifEncoderConfig"), true);
-            }
-            else if (ctx.type == MovieEncoder.Type.WebM)
-            {
-                EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig"), true);
-            }
-            else if (ctx.type == MovieEncoder.Type.MP4)
-            {
-                EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig"), true);
+                case MovieEncoder.Type.Gif:
+                    EditorGUILayout.PropertyField(so.FindProperty("m_gifEncoderConfig"), true);
+                    break;
+                case MovieEncoder.Type.WebM:
+                    EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig"), true);
+                    break;
+                case MovieEncoder.Type.MP4:
+                    EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig"), true);
+                    break;
             }
         }
 
@@ -112,65 +111,61 @@ namespace UTJ.FrameCapturer
 
             var recorder = target as MovieRecorder;
             var so = serializedObject;
-            var ctx = recorder.context;
 
             CommonConfig();
 
-            if(ctx != null)
+            EditorGUILayout.Space();
+
+            if (recorder.format == MovieEncoder.Type.Gif)
             {
-                EditorGUILayout.Space();
-
-                if(ctx.type == MovieEncoder.Type.Gif)
-                {
-                    VideoConfig();
-                }
-                else if (ctx.type == MovieEncoder.Type.WebM)
-                {
-                    var c = recorder.webmConfig;
-                    EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig.video"));
-                    if (c.video)
-                    {
-                        EditorGUI.indentLevel++;
-                        VideoConfig();
-                        EditorGUI.indentLevel--;
-                    }
-                    EditorGUILayout.Space();
-                    EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig.audio"));
-                    if (c.audio)
-                    {
-                        EditorGUI.indentLevel++;
-                        AudioConfig();
-                        EditorGUI.indentLevel--;
-                    }
-                }
-                else if (ctx.type == MovieEncoder.Type.MP4)
-                {
-                    var c = recorder.mp4Config;
-                    EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig.video"));
-                    if (c.video)
-                    {
-                        EditorGUI.indentLevel++;
-                        VideoConfig();
-                        EditorGUI.indentLevel--;
-                    }
-                    EditorGUILayout.Space();
-                    EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig.audio"));
-                    if (c.audio)
-                    {
-                        EditorGUI.indentLevel++;
-                        AudioConfig();
-                        EditorGUI.indentLevel--;
-                    }
-                }
-
-                EditorGUILayout.Space();
-
-                EncoderConfig();
-
-                RecordingControl();
-
-                so.ApplyModifiedProperties();
+                VideoConfig();
             }
+            else if (recorder.format == MovieEncoder.Type.WebM)
+            {
+                var c = recorder.webmConfig;
+                EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig.video"));
+                if (c.video)
+                {
+                    EditorGUI.indentLevel++;
+                    VideoConfig();
+                    EditorGUI.indentLevel--;
+                }
+                EditorGUILayout.Space();
+                EditorGUILayout.PropertyField(so.FindProperty("m_webmEncoderConfig.audio"));
+                if (c.audio)
+                {
+                    EditorGUI.indentLevel++;
+                    AudioConfig();
+                    EditorGUI.indentLevel--;
+                }
+            }
+            else if (recorder.format == MovieEncoder.Type.MP4)
+            {
+                var c = recorder.mp4Config;
+                EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig.video"));
+                if (c.video)
+                {
+                    EditorGUI.indentLevel++;
+                    VideoConfig();
+                    EditorGUI.indentLevel--;
+                }
+                EditorGUILayout.Space();
+                EditorGUILayout.PropertyField(so.FindProperty("m_mp4EncoderConfig.audio"));
+                if (c.audio)
+                {
+                    EditorGUI.indentLevel++;
+                    AudioConfig();
+                    EditorGUI.indentLevel--;
+                }
+            }
+
+            EditorGUILayout.Space();
+
+            EncoderConfig();
+
+            RecordingControl();
+
+            so.ApplyModifiedProperties();
         }
     }
 }

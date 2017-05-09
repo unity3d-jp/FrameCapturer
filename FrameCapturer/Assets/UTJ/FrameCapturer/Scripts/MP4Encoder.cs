@@ -11,16 +11,13 @@ namespace UTJ.FrameCapturer
 
         public override Type type { get { return Type.MP4; } }
 
-        public override void Initialize(MovieRecorder recorder)
+        public override void Initialize(object config, string outPath)
         {
-            m_config = recorder.mp4Config;
-            m_config.videoWidth = recorder.scratchBuffer.width;
-            m_config.videoHeight = recorder.scratchBuffer.height;
-            m_config.videoTargetFramerate = 60;
+            m_config = (fcAPI.fcMP4Config)config;
             m_config.audioSampleRate = AudioSettings.outputSampleRate;
             m_config.audioNumChannels = fcAPI.fcGetNumAudioChannels();
 
-            var path = recorder.outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4";
+            var path = outPath + ".mp4";
             m_ctx = fcAPI.fcMP4OSCreateContext(ref m_config, path);
         }
 

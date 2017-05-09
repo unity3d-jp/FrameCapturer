@@ -149,15 +149,15 @@ export void F32ToF16(uniform f16 dst[], uniform float src[], uniform size_t size
 #define Convert14(C)\
     for(uniform int i=0; i<size; ++i) {\
         dst[i*4 + 0] = C(src[i]);\
-        dst[i*4 + 1] = C(0.0);\
-        dst[i*4 + 2] = C(0.0);\
+        dst[i*4 + 1] = C(src[i]);\
+        dst[i*4 + 2] = C(src[i]);\
         dst[i*4 + 3] = C(1.0);\
     }
 #define Convert13(C)\
     for(uniform int i=0; i<size; ++i) {\
         dst[i*3 + 0] = C(src[i]);\
-        dst[i*3 + 1] = C(0.0);\
-        dst[i*3 + 2] = C(0.0);\
+        dst[i*3 + 1] = C(src[i]);\
+        dst[i*3 + 2] = C(src[i]);\
     }
 #define Convert12(C)\
     for(uniform int i=0; i<size; ++i) {\
