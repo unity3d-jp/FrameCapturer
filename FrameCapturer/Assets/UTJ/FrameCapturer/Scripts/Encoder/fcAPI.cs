@@ -394,6 +394,7 @@ namespace UTJ.FrameCapturer
         {
             VP8,
             VP9,
+            VP9LossLess,
         };
         public enum fcWebMAudioEncoder
         {

@@ -252,6 +252,7 @@ enum class fcWebMVideoEncoder
 {
     VP8,
     VP9,
+    VP9LossLess,
 };
 enum class fcWebMAudioEncoder
 {

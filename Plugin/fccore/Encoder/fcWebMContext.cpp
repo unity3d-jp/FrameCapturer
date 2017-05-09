@@ -85,6 +85,9 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
         case fcWebMVideoEncoder::VP9:
             m_video_encoder.reset(fcCreateVP9EncoderLibVPX(econf));
             break;
+        case fcWebMVideoEncoder::VP9LossLess:
+            m_video_encoder.reset(fcCreateVP9LossLessEncoderLibVPX(econf));
+            break;
         }
 
         for (int i = 0; i < 4; ++i) {
