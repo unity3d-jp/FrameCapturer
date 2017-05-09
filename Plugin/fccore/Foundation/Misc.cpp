@@ -146,7 +146,7 @@ int Execute(const char *command_)
     }
     return 1;
 #else
-    return std::system(command);
+    return std::system(command_);
 #endif
 }
 
