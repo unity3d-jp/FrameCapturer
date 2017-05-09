@@ -5,7 +5,7 @@
 #include "fcGifContext.h"
 
 #ifdef fcSupportGIF
-#include "external/jo_gif.cpp"
+#include "jo_gif.cpp"
 
 typedef jo_gif_frame_t fcGifFrame;
 
