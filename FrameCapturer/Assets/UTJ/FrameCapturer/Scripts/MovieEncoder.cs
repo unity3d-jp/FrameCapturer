@@ -20,8 +20,8 @@ namespace UTJ.FrameCapturer
     {
         public enum Type
         {
-            //Png,
-            //Exr,
+            Png,
+            Exr,
             Gif,
             WebM,
             MP4,
@@ -29,6 +29,7 @@ namespace UTJ.FrameCapturer
 
         public abstract Type type { get; }
 
+        // config: config struct (fcGifConfig, fcWebMConfig, etc)
         public abstract void Initialize(object config, string outPath);
         public abstract void Release();
         public abstract void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp = -1.0);

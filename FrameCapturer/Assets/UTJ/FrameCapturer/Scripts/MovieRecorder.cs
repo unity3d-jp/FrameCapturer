@@ -26,7 +26,7 @@ namespace UTJ.FrameCapturer
         public enum CaptureControl
         {
             Manual,
-            SelectedRange,
+            SpecifiedRange,
         }
         #endregion
 
@@ -46,7 +46,7 @@ namespace UTJ.FrameCapturer
         [SerializeField] int m_captureEveryNthFrame = 1;
 
         // capture control
-        [SerializeField] CaptureControl m_captureControl = CaptureControl.SelectedRange;
+        [SerializeField] CaptureControl m_captureControl = CaptureControl.SpecifiedRange;
         [SerializeField] int m_startFrame = 0;
         [SerializeField] int m_endFrame = 100;
 
@@ -348,7 +348,7 @@ namespace UTJ.FrameCapturer
         void Update()
         {
             int frame = Time.frameCount;
-            if (m_captureControl == CaptureControl.SelectedRange)
+            if (m_captureControl == CaptureControl.SpecifiedRange)
             {
                 if (frame >= m_startFrame && frame <= m_endFrame)
                 {

@@ -156,6 +156,10 @@ namespace UTJ.FrameCapturer
         {
             [Range(1, 64)] public int maxTasks;
             public fcPngPixelFormat pixelFormat;
+            // C# ext
+            public int width;
+            public int height;
+            public int channels;
 
             public static fcPngConfig default_value
             {
@@ -163,7 +167,7 @@ namespace UTJ.FrameCapturer
                 {
                     return new fcPngConfig
                     {
-                        maxTasks = 24,
+                        maxTasks = 4,
                         pixelFormat = fcPngPixelFormat.Adaptive,
                     };
                 }
@@ -209,6 +213,10 @@ namespace UTJ.FrameCapturer
             [Range(1, 64)] public int maxTasks;
             public fcExrPixelFormat pixelFormat;
             public fcExrCompression compression;
+            // C# ext
+            public int width;
+            public int height;
+            public int channels;
 
             public static fcExrConfig default_value
             {
@@ -216,7 +224,7 @@ namespace UTJ.FrameCapturer
                 {
                     return new fcExrConfig
                     {
-                        maxTasks = 24,
+                        maxTasks = 4,
                         pixelFormat = fcExrPixelFormat.Adaptive,
                         compression = fcExrCompression.Zip,
                     };
@@ -338,7 +346,7 @@ namespace UTJ.FrameCapturer
                         audioSampleRate = 48000,
                         audioNumChannels = 2,
                         audioBitrateMode = fcBitrateMode.VBR,
-                        audioTargetBitrate = 64000,
+                        audioTargetBitrate = 128 * 1000,
                         audioFlags = (int)fcMP4AudioFlags.AACMask,
                     };
                 }
@@ -432,7 +440,7 @@ namespace UTJ.FrameCapturer
                         audioSampleRate = 48000,
                         audioNumChannels = 2,
                         audioBitrateMode = fcBitrateMode.VBR,
-                        audioTargetBitrate = 64 * 1000,
+                        audioTargetBitrate = 128 * 1000,
                     };
                 }
             }

@@ -3,19 +3,22 @@ using UnityEngine;
 
 namespace UTJ.FrameCapturer
 {
-    public class PngEncoder : ImageSequenceEncoder
+    public class PngEncoder : MovieEncoder
     {
-        [SerializeField] ImageSequenceRecorder m_recorder;
         fcAPI.fcPngContext m_ctx;
+        fcAPI.fcPngConfig m_config;
+        string m_outPath;
+        int m_frame;
 
 
         public override Type type { get { return Type.Png; } }
 
-        public override void Initialize(ImageSequenceRecorder recorder)
+        public override void Initialize(object config, string outPath)
         {
-            m_recorder = recorder;
-            var pngconf = m_recorder.pngConfig;
-            m_ctx = fcAPI.fcPngCreateContext(ref pngconf);
+            m_config = (fcAPI.fcPngConfig)config;
+            m_ctx = fcAPI.fcPngCreateContext(ref m_config);
+            m_outPath = outPath;
+            m_frame = 0;
         }
 
         public override void Release()
@@ -23,15 +26,20 @@ namespace UTJ.FrameCapturer
             m_ctx.Release();
         }
 
-        public override void Export(RenderTexture frame, int channels, string name)
+        public override void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp = -1.0)
         {
-            if (!m_recorder || !m_ctx) { return; }
-            string path = m_recorder.outputDir.GetFullPath() + "/" + name + "_" + m_recorder.frame.ToString("0000") + ".png";
+            string path = m_outPath + "_" + m_frame.ToString("0000") + ".png";
+            int channels = System.Math.Min(m_config.channels, (int)format & 7);
 
-            fcAPI.fcLock(frame, (data, fmt) =>
-            {
-                fcAPI.fcPngExportPixels(m_ctx, path, data, frame.width, frame.height, fmt, channels);
-            });
+            fcAPI.fcPngExportPixels(m_ctx, path, frame, m_config.width, m_config.height, format, channels);
+
+            ++m_frame;
         }
+
+        public override void AddAudioFrame(float[] samples, double timestamp = -1.0)
+        {
+            // not supported
+        }
+
     }
 }

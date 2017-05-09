@@ -13,6 +13,7 @@ public class FrameCapturerPackaging
             {
                 "Assets/UTJ",
                 "Assets/StreamingAssets/UTJ",
+                "Assets/Unity",
             };
             AssetDatabase.ExportPackage(files, "FrameCapturer.unitypackage", ExportPackageOptions.Recurse);
         }

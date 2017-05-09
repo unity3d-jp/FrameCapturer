@@ -78,7 +78,7 @@ namespace UTJ.FrameCapturer
             // capture control
             EditorGUILayout.PropertyField(so.FindProperty("m_captureControl"), true);
             EditorGUI.indentLevel++;
-            if (recorder.captureControl == MovieRecorder.CaptureControl.SelectedRange)
+            if (recorder.captureControl == MovieRecorder.CaptureControl.SpecifiedRange)
             {
                 EditorGUILayout.PropertyField(so.FindProperty("m_startFrame"), true);
                 EditorGUILayout.PropertyField(so.FindProperty("m_endFrame"), true);

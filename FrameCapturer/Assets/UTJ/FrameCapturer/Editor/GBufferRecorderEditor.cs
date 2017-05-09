@@ -4,23 +4,21 @@ using UnityEngine;
 
 namespace UTJ.FrameCapturer
 {
-    [CustomEditor(typeof(ImageSequenceRecorder))]
+    [CustomEditor(typeof(GBufferRecorder))]
     public class ImageSequenceRecorderEditor : Editor
     {
         public override void OnInspectorGUI()
         {
             //DrawDefaultInspector();
 
-            var recorder = target as ImageSequenceRecorder;
+            var recorder = target as GBufferRecorder;
             var so = serializedObject;
 
             EditorGUILayout.PropertyField(so.FindProperty("m_outputDir"), true);
-            recorder.format = (ImageSequenceEncoder.Type)EditorGUILayout.EnumPopup("Format", recorder.format);
+            recorder.format = (MovieEncoder.Type)EditorGUILayout.EnumPopup("Format", recorder.format);
 
             EditorGUILayout.Space();
-            EditorGUILayout.PropertyField(so.FindProperty("m_captureTarget"), true);
             EditorGUI.indentLevel++;
-            if (recorder.captureTarget == ImageSequenceRecorder.CaptureTarget.FrameBuffer)
             {
                 var fbc = recorder.fbComponents;
                 fbc.frameBuffer = EditorGUILayout.Toggle("Frame Buffer", fbc.frameBuffer);
@@ -40,10 +38,6 @@ namespace UTJ.FrameCapturer
                 }
                 recorder.fbComponents = fbc;
             }
-            else if (recorder.captureTarget == ImageSequenceRecorder.CaptureTarget.RenderTexture)
-            {
-                EditorGUILayout.PropertyField(so.FindProperty("m_targetRT"), true);
-            }
             EditorGUI.indentLevel--;
 
             EditorGUILayout.Space();
@@ -58,11 +52,11 @@ namespace UTJ.FrameCapturer
 
             EditorGUILayout.Space();
 
-            if (recorder.format == ImageSequenceEncoder.Type.Png)
+            if (recorder.format == MovieEncoder.Type.Png)
             {
                 EditorGUILayout.PropertyField(so.FindProperty("m_pngConfig"), true);
             }
-            else if (recorder.format == ImageSequenceEncoder.Type.Exr)
+            else if (recorder.format == MovieEncoder.Type.Exr)
             {
                 EditorGUILayout.PropertyField(so.FindProperty("m_exrConfig"), true);
             }
@@ -72,12 +66,12 @@ namespace UTJ.FrameCapturer
             // capture control
             EditorGUILayout.PropertyField(so.FindProperty("m_captureControl"), true);
             EditorGUI.indentLevel++;
-            if (recorder.captureControl == ImageSequenceRecorder.CaptureControl.SelectedRange)
+            if (recorder.captureControl == GBufferRecorder.CaptureControl.SpecifiedRange)
             {
                 EditorGUILayout.PropertyField(so.FindProperty("m_startFrame"), true);
                 EditorGUILayout.PropertyField(so.FindProperty("m_endFrame"), true);
             }
-            else if (recorder.captureControl == ImageSequenceRecorder.CaptureControl.Manual)
+            else if (recorder.captureControl == GBufferRecorder.CaptureControl.Manual)
             {
                 EditorGUILayout.Space();
                 if (!recorder.isRecording)
