@@ -123,6 +123,7 @@ struct fcPngConfig
     fcPngPixelFormat pixel_format = fcPngPixelFormat::Adaptive;
 };
 
+fcAPI bool            fcPngIsSupported();
 fcAPI fcIPngContext*  fcPngCreateContext(const fcPngConfig *conf = nullptr);
 fcAPI void            fcPngDestroyContext(fcIPngContext *ctx);
 fcAPI bool            fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, int num_channels = 0);
@@ -157,6 +158,7 @@ struct fcExrConfig
     fcExrCompression compression = fcExrCompression::Zip;
 };
 
+fcAPI bool            fcExrIsSupported();
 fcAPI fcIExrContext*  fcExrCreateContext(const fcExrConfig *conf = nullptr);
 fcAPI void            fcExrDestroyContext(fcIExrContext *ctx);
 fcAPI bool            fcExrBeginImage(fcIExrContext *ctx, const char *path, int width, int height);
@@ -174,15 +176,20 @@ struct fcGifConfig
     int width = 0;
     int height = 0;
     int num_colors = 256;
+    int keyframe_interval = 30;
     int max_active_tasks = 8;
 };
+
+fcAPI bool            fcGifIsSupported();
 fcAPI fcIGifContext*  fcGifCreateContext(const fcGifConfig *conf);
 fcAPI void            fcGifDestroyContext(fcIGifContext *ctx);
 fcAPI void            fcGifAddOutputStream(fcIGifContext *ctx, fcStream *stream);
 // timestamp=-1 is treated as current time.
-fcAPI bool            fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
+fcAPI bool            fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
-fcAPI bool            fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, bool keyframe = false, fcTime timestamp = -1.0);
+fcAPI bool            fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1.0);
+// force next frame to update palette
+fcAPI void            fcGifForceKeyframe(fcIGifContext *ctx);
 
 
 // -------------------------------------------------------------
@@ -225,6 +232,7 @@ struct fcMP4Config
     int audio_flags = fcMP4_AACMask; // combination of fcMP4AudioFlags
 };
 
+fcAPI bool            fcMP4IsSupported();
 fcAPI fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
 // OS-provided mp4 encoder. in this case video_flags and audio_flags in conf are ignored
 fcAPI fcIMP4Context*  fcMP4OSCreateContext(fcMP4Config *conf, const char *out_path);
@@ -249,6 +257,7 @@ enum class fcWebMVideoEncoder
 {
     VP8,
     VP9,
+    VP9LossLess,
 };
 enum class fcWebMAudioEncoder
 {
@@ -275,6 +284,7 @@ struct fcWebMConfig
     int audio_target_bitrate = 64 * 1000;
 };
 
+fcAPI bool            fcWebMIsSupported();
 fcAPI fcIWebMContext* fcWebMCreateContext(fcWebMConfig *conf);
 fcAPI void            fcWebMDestroyContext(fcIWebMContext *ctx);
 fcAPI void            fcWebMAddOutputStream(fcIWebMContext *ctx, fcStream *stream);

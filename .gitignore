@@ -35,6 +35,7 @@ _Hidden/
 _Hidden.meta
 obj/
 libs/
+Plugin/_build_*
 
 openh264-*
 FrameCapturer/*.csproj

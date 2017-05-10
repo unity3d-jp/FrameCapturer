@@ -2,6 +2,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(fccore)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
+IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+ENDIF()
 FIND_PACKAGE(OpenEXR QUIET)
 FIND_PACKAGE(ZLIB QUIET)
 FIND_PACKAGE(PNG QUIET)
@@ -11,8 +15,6 @@ FIND_PACKAGE(VPX QUIET)
 FIND_PACKAGE(OGG QUIET)
 FIND_PACKAGE(VORBIS QUIET)
 FIND_PACKAGE(OPUS QUIET)
-FIND_PACKAGE(OPENH264 QUIET)
-FIND_PACKAGE(FAAC QUIET)
 
 SET(ISPC "/usr/local/bin/ispc" CACHE PATH "Path to Intel ISPC")
 MARK_AS_ADVANCED(FORCE ISPC)
@@ -25,12 +27,12 @@ OPTION(FC_ENABLE_WEBM "Enable WebM exporter." ON)
 IF(FC_ENABLE_WEBM)
     OPTION(FC_ENABLE_VPX "Enable VPX encoder." ON)
     OPTION(FC_ENABLE_VORBIS "Enable vorbis encoder." ON)
-    OPTION(FC_ENABLE_OPUS "Enable opus encoder." ON)
+    OPTION(FC_ENABLE_OPUS "Enable opus encoder." OFF)
 ENDIF()
-OPTION(FC_ENABLE_MP4 "Enable MP4 exporter." ON)
+OPTION(FC_ENABLE_MP4 "Enable MP4 exporter." OFF)
 IF(FC_ENABLE_MP4)
-    OPTION(FC_ENABLE_OPENH264 "Enable OpenH264 encoder." ON)
-    OPTION(FC_ENABLE_FAAC "Enable FAAC encoder." ON)
+    OPTION(FC_ENABLE_OPENH264 "Enable OpenH264 encoder." OFF)
+    OPTION(FC_ENABLE_FAAC "Enable FAAC encoder." OFF)
 ENDIF()
 
 OPTION(FC_ENABLE_DEBUG "Enable debug functionalities." ON)
@@ -56,13 +58,19 @@ SET(PLUGINS_DIR "${ASSETS_DIR}/UTJ/FrameCapturer/Plugins/x86_64")
 
 
 INCLUDE_DIRECTORIES(
-    .
-    ${INCLUDES}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/fccore
+    ${CMAKE_CURRENT_SOURCE_DIR}/external
     ${OPENEXR_INCLUDE_DIRS}
+    ${YUV_INCLUDE_DIR}
+    ${WEBM_INCLUDE_DIR}
+    ${OGG_INCLUDE_DIR}
+    ${VORBIS_INCLUDE_DIR}
+    ${OPUS_INCLUDE_DIR}
 )
 
 
-# MeshUtils
+# fccoreISPC
 IF(FC_ENABLE_ISPC)
     if(NOT EXISTS ${ISPC})
         # try to download ISPC
@@ -72,7 +80,7 @@ IF(FC_ENABLE_ISPC)
         ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
             SET(ISPC_DIR ispc-v${ISPC_VERSION}-osx)
         ENDIF()
-        SET(ISPC ${CMAKE_CURRENT_SOURCE_DIR}/External/${ISPC_DIR}/ispc CACHE PATH "" FORCE)
+        SET(ISPC ${CMAKE_CURRENT_SOURCE_DIR}/external/${ISPC_DIR}/ispc CACHE PATH "" FORCE)
 
         if(NOT EXISTS ${ISPC})
             SET(ISPC_ARCHIVE ${ISPC_DIR}.tar.gz)
@@ -86,12 +94,10 @@ IF(FC_ENABLE_ISPC)
 
     SET(FCISPC_DIR ${CMAKE_CURRENT_BINARY_DIR}/fccoreISPC)
     ADD_CUSTOM_TARGET(fccoreISPC ALL
-        # not use --opt=force-aligned-memory as I can't force USD to align memory to 0x20.
-        # (Windows port is using with patched USD)
-        COMMAND ${ISPC} ${CMAKE_CURRENT_SOURCE_DIR}/fccore/Foundation/ConvertKernel.ispc -o ${FCISPC_DIR}/ConvertKernel${CMAKE_CXX_OUTPUT_EXTENSION} -h ${FCISPC_DIR}/ConvertKernel.h --pic --target=sse2,sse4,avx --arch=x86-64 --opt=fast-masked-vload --opt=fast-math
+        COMMAND ${ISPC} ${CMAKE_CURRENT_SOURCE_DIR}/fccore/Foundation/ConvertKernel.ispc -o ${FCISPC_DIR}/ConvertKernel${CMAKE_CXX_OUTPUT_EXTENSION} -h ${FCISPC_DIR}/ConvertKernel_ispc.h --pic --target=sse2,sse4,avx --arch=x86-64 --opt=fast-masked-vload --opt=fast-math
     )
-    SET(FCISPCFCISPC_FILES
-        ${FCISPC_DIR}/ConvertKernel.h
+    SET(FCISPC_FILES
+        ${FCISPC_DIR}/ConvertKernel_ispc.h
         ${FCISPC_DIR}/ConvertKernel${CMAKE_CXX_OUTPUT_EXTENSION}
         ${FCISPC_DIR}/ConvertKernel_sse2${CMAKE_CXX_OUTPUT_EXTENSION}
         ${FCISPC_DIR}/ConvertKernel_sse4${CMAKE_CXX_OUTPUT_EXTENSION}
@@ -99,7 +105,7 @@ IF(FC_ENABLE_ISPC)
     )
 
     # create dummy files to make cmake can find it
-    FOREACH(F ${FCISPC})
+    FOREACH(F ${FCISPC_FILES})
         FILE(WRITE ${F} "")
     ENDFOREACH(F)
 ENDIF()
@@ -109,15 +115,23 @@ ENDIF()
 FILE(GLOB FC_CXX_FILES fccore/*.cpp fccore/Foundation/*.cpp fccore/Encoder/*.cpp fccore/GraphicsDevice/*.cpp)
 FILE(GLOB FC_H_FILES fccore/*.h fccore/Foundation/*.h fccore/Encoder/*.h fccore/GraphicsDevice/*.h)
 IF(FC_ENABLE_OSX_BUNDLE)
-    ADD_LIBRARY(fccore MODULE ${FC_CXX_FILES} ${FC_H_FILES})
+    ADD_LIBRARY(fccore MODULE ${FC_CXX_FILES} ${FC_H_FILES} ${FCISPC_FILES})
 ELSE()
-    ADD_LIBRARY(fccore SHARED ${FC_CXX_FILES} ${FC_H_FILES})
+    ADD_LIBRARY(fccore SHARED ${FC_CXX_FILES} ${FC_H_FILES} ${FCISPC_FILES})
 ENDIF()
-ADD_DEPENDENCIES(fccore fccoreISPC)
 TARGET_INCLUDE_DIRECTORIES(fccore PUBLIC .)
 TARGET_LINK_LIBRARIES(fccore
-    ${OPENEXR_LIBRARIES}
+    pthread z ${OPENEXR_Half_LIBRARY} ${YUV_LIBRARY}
 )
+IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    TARGET_LINK_LIBRARIES(fccore dl)
+ENDIF()
+
+IF(FC_ENABLE_ISPC)
+    ADD_DEFINITIONS(-DfcEnableISPC)
+    ADD_DEPENDENCIES(fccore fccoreISPC)
+    TARGET_INCLUDE_DIRECTORIES(fccore PUBLIC ${FCISPC_DIR})
+ENDIF()
 
 IF(FC_ENABLE_GIF)
     ADD_DEFINITIONS(-DfcSupportGIF)
@@ -128,22 +142,22 @@ IF(FC_ENABLE_PNG)
 ENDIF()
 IF(FC_ENABLE_EXR)
     ADD_DEFINITIONS(-DfcSupportEXR)
-    TARGET_LINK_LIBRARIES(fccore ${OPENEXR_All_LIBRARY})
+    TARGET_LINK_LIBRARIES(fccore ${OPENEXR_LIBRARIES})
 ENDIF()
 IF(FC_ENABLE_WEBM)
     ADD_DEFINITIONS(-DfcSupportWebM)
+    TARGET_LINK_LIBRARIES(fccore ${WEBM_LIBRARY})
     IF(FC_ENABLE_VPX)
         ADD_DEFINITIONS(-DfcSupportVPX)
         TARGET_LINK_LIBRARIES(fccore ${VPX_LIBRARY})
     ENDIF()
     IF(FC_ENABLE_VORBIS)
         ADD_DEFINITIONS(-DfcSupportVorbis)
-        TARGET_LINK_LIBRARIES(fccore ${OGG_LIBRARY})
-        TARGET_LINK_LIBRARIES(fccore ${VORBIS_LIBRARY})
+        TARGET_LINK_LIBRARIES(fccore ${OGG_LIBRARY} ${VORBIS_LIBRARIES})
     ENDIF()
     IF(FC_ENABLE_OPUS)
         ADD_DEFINITIONS(-DfcSupportOpus)
-        TARGET_LINK_LIBRARIES(fccore ${OPUS_ALL_LIBRARY})
+        TARGET_LINK_LIBRARIES(fccore ${OPUS_LIBRARY})
     ENDIF()
 ENDIF()
 IF(FC_ENABLE_MP4)
@@ -175,7 +189,7 @@ IF(NOT FC_ENABLE_OSX_BUNDLE)
 
         ADD_EXECUTABLE(fcTests ${Tests_CXX_FILES} ${Tests_H_FILES})
         ADD_DEPENDENCIES(fcTests fccore)
-        TARGET_LINK_LIBRARIES(fcTests fccore)
+        TARGET_LINK_LIBRARIES(fcTests fccore pthread)
     ENDIF()
 
     # deploy

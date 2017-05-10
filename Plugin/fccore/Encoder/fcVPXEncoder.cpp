@@ -5,8 +5,8 @@
 #include "fcVPXEncoder.h"
 
 #ifdef fcSupportVPX
-#include "libvpx/vpx/vpx_encoder.h"
-#include "libvpx/vpx/vp8cx.h"
+#include "vpx/vpx_encoder.h"
+#include "vpx/vp8cx.h"
 #ifdef _MSC_VER
     #pragma comment(lib, "vpxmt.lib")
 #endif // _MSC_VER
@@ -46,6 +46,7 @@ fcVPXEncoder::fcVPXEncoder(const fcVPXEncoderConfig& conf, fcWebMVideoEncoder en
         m_vpx_iface = vpx_codec_vp8_cx();
         break;
     case fcWebMVideoEncoder::VP9:
+    case fcWebMVideoEncoder::VP9LossLess:
         m_matroska_codec_id = "V_VP9";
         m_vpx_iface = vpx_codec_vp9_cx();
         break;
@@ -58,15 +59,22 @@ fcVPXEncoder::fcVPXEncoder(const fcVPXEncoderConfig& conf, fcWebMVideoEncoder en
     vpx_config.g_timebase.num = 1;
     vpx_config.g_timebase.den = 1000000000; // nsec
     vpx_config.rc_target_bitrate = m_conf.target_bitrate;
-    switch (conf.bitrate_mode) {
-    case fcCBR:
-        vpx_config.rc_end_usage = VPX_CBR;
-        break;
-    case fcVBR:
-        vpx_config.rc_end_usage = VPX_VBR;
-        break;
+
+    if (encoder != fcWebMVideoEncoder::VP9LossLess) {
+        switch (conf.bitrate_mode) {
+        case fcCBR:
+            vpx_config.rc_end_usage = VPX_CBR;
+            break;
+        case fcVBR:
+            vpx_config.rc_end_usage = VPX_VBR;
+            break;
+        }
     }
     vpx_codec_enc_init(&m_vpx_ctx, m_vpx_iface, &vpx_config, 0);
+    if (encoder == fcWebMVideoEncoder::VP9LossLess) {
+        vpx_codec_control_(&m_vpx_ctx, VP9E_SET_LOSSLESS, 1);
+    }
+
     vpx_img_wrap(&m_vpx_img, VPX_IMG_FMT_I420, m_conf.width, m_conf.height, 2, nullptr);
 }
 
@@ -140,6 +148,7 @@ void fcVPXEncoder::gatherFrameData(fcVPXFrame& dst)
 
 fcIVPXEncoder* fcCreateVP8EncoderLibVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP8); }
 fcIVPXEncoder* fcCreateVP9EncoderLibVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP9); }
+fcIVPXEncoder* fcCreateVP9LossLessEncoderLibVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP9LossLess); }
 
 #else // fcSupportVPX
 

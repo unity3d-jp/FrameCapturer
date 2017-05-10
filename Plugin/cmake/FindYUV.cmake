@@ -10,7 +10,7 @@ find_path(YUV_INCLUDE_DIR
 )
 
 find_library(YUV_LIBRARY
-    NAMES libyuv
+    NAMES yuv
     PATHS ${LIBRARY_PATHS}
 )
 

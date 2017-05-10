@@ -5,7 +5,7 @@
 #include "fcGifContext.h"
 
 #ifdef fcSupportGIF
-#include "external/jo_gif.cpp"
+#include "jo_gif.i"
 
 typedef jo_gif_frame_t fcGifFrame;
 
@@ -28,8 +28,9 @@ public:
     void release() override;
 
     void addOutputStream(fcStream *s) override;
-    bool addFrameTexture(void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp) override;
-    bool addFramePixels(const void *pixels, fcPixelFormat fmt, bool keyframe, fcTime timestamp) override;
+    bool addFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp) override;
+    bool addFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp) override;
+    void forceKeyframe() override;
 
 private:
     fcGifTaskData&  getTempraryVideoFrame();
@@ -50,6 +51,7 @@ private:
     fcTaskGroup m_tasks;
     std::mutex m_mutex;
     int m_frame = 0;
+    bool m_force_keyframe = false;
 };
 
 
@@ -141,6 +143,11 @@ void fcGifContext::kickTask(fcGifTaskData& data)
     data.gif_frame->timestamp = data.timestamp;
     data.frame = m_frame++;
 
+    if (data.frame == 0 || (m_conf.keyframe_interval > 0 && data.frame % m_conf.keyframe_interval == 0) || m_force_keyframe)
+    {
+        data.local_palette = true;
+        m_force_keyframe = false;
+    }
     if (data.local_palette) {
         // updating palette must be in sync
         m_tasks.wait();
@@ -154,7 +161,7 @@ void fcGifContext::kickTask(fcGifTaskData& data)
     }
 }
 
-bool fcGifContext::addFrameTexture(void *tex, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
+bool fcGifContext::addFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp)
 {
     if (m_dev == nullptr) {
         fcDebugLog("fcGifContext::addFrameTexture(): gfx device is null.");
@@ -162,8 +169,6 @@ bool fcGifContext::addFrameTexture(void *tex, fcPixelFormat fmt, bool keyframe, 
     }
     fcGifTaskData& data = getTempraryVideoFrame();
     data.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeInSeconds();
-    data.local_palette = data.frame == 0 || keyframe;
-
     data.raw_pixels.resize(m_conf.width * m_conf.height * fcGetPixelSize(fmt));
     data.raw_pixel_format = fmt;
     if (!m_dev->readTexture(&data.raw_pixels[0], data.raw_pixels.size(), tex, m_conf.width, m_conf.height, fmt))
@@ -175,16 +180,20 @@ bool fcGifContext::addFrameTexture(void *tex, fcPixelFormat fmt, bool keyframe, 
     return true;
 }
 
-bool fcGifContext::addFramePixels(const void *pixels, fcPixelFormat fmt, bool keyframe, fcTime timestamp)
+bool fcGifContext::addFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp)
 {
     fcGifTaskData& data = getTempraryVideoFrame();
     data.timestamp = timestamp >= 0.0 ? timestamp : GetCurrentTimeInSeconds();
-    data.local_palette = data.frame == 0 || keyframe;
     data.raw_pixel_format = fmt;
     data.raw_pixels.assign((char*)pixels, m_conf.width * m_conf.height * fcGetPixelSize(fmt));
 
     kickTask(data);
     return true;
+}
+
+void fcGifContext::forceKeyframe()
+{
+    m_force_keyframe = true;
 }
 
 bool fcGifContext::flush()

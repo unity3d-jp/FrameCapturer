@@ -3,7 +3,7 @@
 #include "YUV.h"
 #include "Misc.h"
 
-#include <libyuv/libyuv.h>
+#include <libyuv.h>
 #ifdef _WIN32
     #pragma comment(lib, "yuv.lib")
 #endif

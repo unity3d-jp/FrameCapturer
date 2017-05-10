@@ -66,7 +66,7 @@ private:
     fcIGraphicsDevice *m_dev = nullptr;
     fcExrTaskData *m_task = nullptr;
     fcTaskGroup m_tasks;
-    std::atomic_int m_active_task_count = 0;
+    std::atomic_int m_active_task_count = { 0 };
 
     const void *m_frame_prev = nullptr;
     Buffer *m_src_prev = nullptr;
@@ -315,7 +315,7 @@ void fcExrContext::endFrameTask(fcExrTaskData *exr)
 }
 
 
-fcAPI fcIExrContext* fcExrCreateContextImpl(const fcExrConfig *conf, fcIGraphicsDevice *dev)
+fcIExrContext* fcExrCreateContextImpl(const fcExrConfig *conf, fcIGraphicsDevice *dev)
 {
     fcExrConfig default_cont;
     if (conf == nullptr) { conf = &default_cont; }
@@ -324,7 +324,7 @@ fcAPI fcIExrContext* fcExrCreateContextImpl(const fcExrConfig *conf, fcIGraphics
 
 #else // fcSupportEXR
 
-fcAPI fcIExrContext* fcExrCreateContextImpl(const fcExrConfig *conf, fcIGraphicsDevice *dev)
+fcIExrContext* fcExrCreateContextImpl(const fcExrConfig *conf, fcIGraphicsDevice *dev)
 {
     return nullptr;
 }

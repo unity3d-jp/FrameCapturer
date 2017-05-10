@@ -17,14 +17,10 @@ namespace UTJ.FrameCapturer
             DataPath,
         }
 
-        [SerializeField]
-        Root m_root = Root.Absolute;
-        [SerializeField]
-        string m_leaf = string.Empty;
+        [SerializeField] Root m_root = Root.Current;
+        [SerializeField] string m_leaf = string.Empty;
 #if UNITY_EDITOR
-        // just for inspector
-        [SerializeField]
-        bool m_readOnly = false;
+        [SerializeField] bool m_readOnly = false; // just for inspector
 #endif
 
         public Root root

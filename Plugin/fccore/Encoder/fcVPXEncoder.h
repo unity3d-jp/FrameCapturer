@@ -29,7 +29,7 @@ struct fcVPXFrame
         packets.clear();
     }
 
-    // Body: [](const char *data, const PacketInfo& pinfo) {}
+    // Body: [](const char *data, const fcVPXFrame::PacketInfo& pinfo) {}
     template<class Body>
     void eachPackets(const Body& body) const
     {
@@ -55,6 +55,7 @@ public:
 
 fcIVPXEncoder* fcCreateVP8EncoderLibVPX(const fcVPXEncoderConfig& conf);
 fcIVPXEncoder* fcCreateVP9EncoderLibVPX(const fcVPXEncoderConfig& conf);
+fcIVPXEncoder* fcCreateVP9LossLessEncoderLibVPX(const fcVPXEncoderConfig& conf);
 
 using fcWebMVideoEncoderConfig = fcVPXEncoderConfig;
 using fcWebMVideoFrame = fcVPXFrame;

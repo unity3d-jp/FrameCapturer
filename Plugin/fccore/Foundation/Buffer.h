@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <cstring>
 
 fcAPI void* AlignedAlloc(size_t size, size_t align);
 fcAPI void  AlignedFree(void *p);

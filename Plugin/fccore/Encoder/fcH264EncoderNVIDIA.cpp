@@ -4,10 +4,9 @@
 #include "GraphicsDevice/fcGraphicsDevice.h"
 #include "fcMP4Internal.h"
 #include "fcH264Encoder.h"
-#include "NVENC/nvEncodeAPI.h"
 
 #ifdef fcSupportH264_NVIDIA
-
+#include "NVENC/nvEncodeAPI.h"
 #if defined(_WIN32)
     #if defined(_M_AMD64)
         #define NVEncoderDLL "nvEncodeAPI64.dll"

@@ -7,7 +7,7 @@
 #include "fcWebMWriter.h"
 
 #ifdef fcSupportWebM
-#include "webm/mkvmuxer.hpp"
+#include "mkvmuxer.hpp"
 #ifdef _MSC_VER
     #pragma comment(lib, "libwebm.lib")
 #endif // _MSC_VER
@@ -18,10 +18,10 @@ class fcMkvStream : public mkvmuxer::IMkvWriter
 public:
     fcMkvStream(BinaryStream &stream) : m_stream(stream) {}
     int32_t Write(const void* buf, uint32_t len) override { m_stream.write(buf, len); return 0; }
-    int64_t Position() const override { return m_stream.tellp(); }
-    int32_t Position(int64_t position) override { m_stream.seekp(position); return 0; }
+    mkvmuxer::int64 Position() const override { return m_stream.tellp(); }
+    mkvmuxer::int32 Position(mkvmuxer::int64 position) override { m_stream.seekp(position); return 0; }
     bool Seekable() const override { return true; }
-    void ElementStartNotify(uint64_t element_id, int64_t position) override {}
+    void ElementStartNotify(mkvmuxer::uint64 element_id, mkvmuxer::int64 position) override {}
 private:
     BinaryStream &m_stream;
 };
@@ -97,7 +97,7 @@ void fcWebMWriter::addVideoFrame(const fcWebMVideoFrame& frame)
     if (m_video_track_id == 0 || frame.data.empty()) { return; }
 
     std::unique_lock<std::mutex> lock(m_mutex);
-    frame.eachPackets([&](const char *data, const auto& pinfo) {
+    frame.eachPackets([&](const char *data, const fcVPXFrame::PacketInfo& pinfo) {
         uint64_t timestamp_ns = to_nsec(pinfo.timestamp);
         m_segment.AddFrame((const uint8_t*)data, pinfo.size, m_video_track_id, timestamp_ns, pinfo.keyframe);
     });
@@ -108,7 +108,7 @@ void fcWebMWriter::addAudioFrame(const fcWebMAudioFrame& frame)
     if (m_audio_track_id == 0 || frame.data.empty()) { return; }
 
     std::unique_lock<std::mutex> lock(m_mutex);
-    frame.eachPackets([&](const char *data, auto& pinfo) {
+    frame.eachPackets([&](const char *data, const fcVorbisFrame::PacketInfo& pinfo) {
         uint64_t timestamp_ns = to_nsec(pinfo.timestamp);
         m_segment.AddFrame((const uint8_t*)data, pinfo.size, m_audio_track_id, timestamp_ns, true);
     });

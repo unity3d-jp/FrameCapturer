@@ -1,6 +1,7 @@
 fileFormatVersion: 2
-guid: 8dfc932324fbf314586b61e5e846c01c
-timeCreated: 1494024139
+guid: 095a7aaa840de2c40b28e8f46c6527bd
+folderAsset: yes
+timeCreated: 1494431117
 licenseType: Pro
 PluginImporter:
   serializedVersion: 2
@@ -19,19 +20,11 @@ PluginImporter:
           Exclude Linux: 0
           Exclude Linux64: 0
           Exclude LinuxUniversal: 0
-          Exclude OSXIntel: 0
+          Exclude OSXIntel: 1
           Exclude OSXIntel64: 0
           Exclude OSXUniversal: 0
-          Exclude Win: 1
+          Exclude Win: 0
           Exclude Win64: 0
-    data:
-      first:
-        '': Editor
-      second:
-        enabled: 0
-        settings:
-          CPU: x86_64
-          OS: Windows
     data:
       first:
         Any: 
@@ -46,6 +39,7 @@ PluginImporter:
         settings:
           CPU: x86_64
           DefaultValueInitialized: true
+          OS: OSX
     data:
       first:
         Facebook: Win
@@ -85,7 +79,7 @@ PluginImporter:
       first:
         Standalone: OSXIntel
       second:
-        enabled: 1
+        enabled: 0
         settings:
           CPU: None
     data:
@@ -101,12 +95,12 @@ PluginImporter:
       second:
         enabled: 1
         settings:
-          CPU: AnyCPU
+          CPU: x86_64
     data:
       first:
         Standalone: Win
       second:
-        enabled: 0
+        enabled: 1
         settings:
           CPU: None
     data:

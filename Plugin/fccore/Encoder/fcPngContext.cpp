@@ -4,7 +4,7 @@
 #include "GraphicsDevice/fcGraphicsDevice.h"
 #include "fcPngContext.h"
 
-#include <libpng/png.h>
+#include <png.h>
 #ifdef fcWindows
     #pragma comment(lib, "libpng16_static.lib")
     #pragma comment(lib, "zlibstatic.lib")
@@ -39,7 +39,7 @@ private:
     fcPngConfig m_conf;
     fcIGraphicsDevice *m_dev = nullptr;
     fcTaskGroup m_tasks;
-    std::atomic_int m_active_task_count = 0;
+    std::atomic_int m_active_task_count = { 0 };
 };
 
 fcPngContext::fcPngContext(const fcPngConfig& conf, fcIGraphicsDevice *dev)

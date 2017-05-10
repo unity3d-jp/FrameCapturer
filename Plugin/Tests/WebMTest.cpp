@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "TestCommon.h"
-using namespace std::literals;
 
 
 // custom stream functions (just a wrapper of FILE)
@@ -106,6 +105,11 @@ void WebMTest(fcWebMVideoEncoder ve, fcWebMAudioEncoder ae)
 
 void WebMTest()
 {
+    if (!fcWebMIsSupported()) {
+        printf("WebMTest: webm is not supported\n");
+        return;
+    }
+
     printf("WebMTest (VP8 & Vorbis) begin\n");
     WebMTest(fcWebMVideoEncoder::VP8, fcWebMAudioEncoder::Vorbis);
     printf("WebMTest (VP8 & Vorbis) end\n");

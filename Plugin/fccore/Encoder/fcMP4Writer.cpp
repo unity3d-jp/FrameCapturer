@@ -122,7 +122,7 @@ void fcMP4Writer::addAudioFrame(const fcAACFrame& frame)
     std::unique_lock<std::mutex> lock(m_mutex);
 
     BinaryStream& os = m_stream;
-    frame.eachPackets([&](const char *data, auto& pinfo) {
+    frame.eachPackets([&](const char *data, const fcAACFrame::PacketInfo& pinfo) {
         fcMP4FrameInfo info;
         info.file_offset = os.tellp();
         info.timestamp = to_usec(pinfo.timestamp);

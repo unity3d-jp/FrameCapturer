@@ -14,6 +14,11 @@ void PngTestImpl(fcIPngContext *ctx, const char *filename, bool flipY=false)
 
 void PngTest()
 {
+    if (!fcPngIsSupported()) {
+        printf("PngTest: png is not supported\n");
+        return;
+    }
+
     printf("PngTest begin\n");
 
     fcPngConfig conf;

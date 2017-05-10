@@ -154,8 +154,12 @@ namespace UTJ.FrameCapturer
         [Serializable]
         public struct fcPngConfig
         {
-            public int maxTasks;
+            [Range(1, 32)] public int maxTasks;
             public fcPngPixelFormat pixelFormat;
+            // C# ext
+            [HideInInspector] public int width;
+            [HideInInspector] public int height;
+            [HideInInspector] public int channels;
 
             public static fcPngConfig default_value
             {
@@ -163,7 +167,7 @@ namespace UTJ.FrameCapturer
                 {
                     return new fcPngConfig
                     {
-                        maxTasks = 24,
+                        maxTasks = 4,
                         pixelFormat = fcPngPixelFormat.Adaptive,
                     };
                 }
@@ -177,6 +181,7 @@ namespace UTJ.FrameCapturer
             public static implicit operator bool(fcPngContext v) { return v.ptr != IntPtr.Zero; }
         }
 
+        [DllImport ("fccore")] public static extern Bool         fcPngIsSupported();
         [DllImport ("fccore")] public static extern fcPngContext fcPngCreateContext(ref fcPngConfig conf);
         [DllImport ("fccore")] private static extern void        fcPngDestroyContext(fcPngContext ctx);
         [DllImport ("fccore")] public static extern Bool         fcPngExportPixels(fcPngContext ctx, string path, byte[] pixels, int width, int height, fcPixelFormat fmt, int num_channels);
@@ -206,9 +211,13 @@ namespace UTJ.FrameCapturer
         [Serializable]
         public struct fcExrConfig
         {
-            public int maxTasks;
+            [Range(1, 32)] public int maxTasks;
             public fcExrPixelFormat pixelFormat;
             public fcExrCompression compression;
+            // C# ext
+            [HideInInspector] public int width;
+            [HideInInspector] public int height;
+            [HideInInspector] public int channels;
 
             public static fcExrConfig default_value
             {
@@ -216,7 +225,7 @@ namespace UTJ.FrameCapturer
                 {
                     return new fcExrConfig
                     {
-                        maxTasks = 24,
+                        maxTasks = 4,
                         pixelFormat = fcExrPixelFormat.Adaptive,
                         compression = fcExrCompression.Zip,
                     };
@@ -231,6 +240,7 @@ namespace UTJ.FrameCapturer
             public static implicit operator bool(fcExrContext v) { return v.ptr != IntPtr.Zero; }
         }
 
+        [DllImport ("fccore")] public static extern Bool         fcExrIsSupported();
         [DllImport ("fccore")] public static extern fcExrContext fcExrCreateContext(ref fcExrConfig conf);
         [DllImport ("fccore")] private static extern void        fcExrDestroyContext(fcExrContext ctx);
         [DllImport ("fccore")] public static extern Bool         fcExrBeginImage(fcExrContext ctx, string path, int width, int height);
@@ -245,10 +255,11 @@ namespace UTJ.FrameCapturer
         [Serializable]
         public struct fcGifConfig
         {
-            public int width;
-            public int height;
-            public int num_colors;
-            public int max_active_tasks;
+            [HideInInspector] public int width;
+            [HideInInspector] public int height;
+            [Range(1, 256)] public int numColors;
+            [Range(1, 120)] public int keyframeInterval;
+            [Range(1, 32)] public int maxTasks;
 
             public static fcGifConfig default_value
             {
@@ -258,8 +269,9 @@ namespace UTJ.FrameCapturer
                     {
                         width = 320,
                         height = 240,
-                        num_colors = 256,
-                        max_active_tasks = 0,
+                        numColors = 256,
+                        maxTasks = 8,
+                        keyframeInterval = 30,
                     };
                 }
             }
@@ -271,16 +283,11 @@ namespace UTJ.FrameCapturer
             public static implicit operator bool(fcGifContext v) { return v.ptr != IntPtr.Zero; }
         }
 
+        [DllImport ("fccore")] public static extern Bool         fcGifIsSupported();
         [DllImport ("fccore")] public static extern fcGifContext fcGifCreateContext(ref fcGifConfig conf);
         [DllImport ("fccore")] private static extern void        fcGifDestroyContext(fcGifContext ctx);
         [DllImport ("fccore")] public static extern void         fcGifAddOutputStream(fcGifContext ctx, fcStream stream);
-        [DllImport ("fccore")] public static extern Bool         fcGifAddFramePixels(fcGifContext ctx, byte[] pixels, fcPixelFormat fmt, bool keyframe = false, double timestamp = -1.0);
-
-        [DllImport ("fccore")] private static extern fcDeferredCall fcGifAddFrameTextureDeferred(fcGifContext ctx, IntPtr tex, fcPixelFormat fmt, Bool keyframe, double timestamp, fcDeferredCall id);
-        public static fcDeferredCall fcGifAddFrameTexture(fcGifContext ctx, RenderTexture tex, bool keyframe, double timestamp, fcDeferredCall id)
-        {
-            return fcGifAddFrameTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), keyframe, timestamp, id);
-        }
+        [DllImport ("fccore")] public static extern Bool         fcGifAddFramePixels(fcGifContext ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
 
 
         // -------------------------------------------------------------
@@ -307,21 +314,21 @@ namespace UTJ.FrameCapturer
         [Serializable]
         public struct fcMP4Config
         {
-            public Bool video;
-            public Bool audio;
+            [HideInInspector] public Bool video;
+            [HideInInspector] public Bool audio;
 
-            public int video_width;
-            public int video_height;
-            public int video_target_framerate;
-            public fcBitrateMode video_bitrate_mode;
-            public int video_target_bitrate;
-            public int video_flags;
+            [HideInInspector] public int videoWidth;
+            [HideInInspector] public int videoHeight;
+            [HideInInspector] public int videoTargetFramerate;
+            public fcBitrateMode videoBitrateMode;
+            public int videoTargetBitrate;
+            [HideInInspector] public int videoFlags;
 
-            public int audio_sample_rate;
-            public int audio_num_channels;
-            public fcBitrateMode audio_bitrate_mode;
-            public int audio_target_bitrate;
-            public int audio_flags;
+            [HideInInspector] public int audioSampleRate;
+            [HideInInspector] public int audioNumChannels;
+            public fcBitrateMode audioBitrateMode;
+            public int audioTargetBitrate;
+            [HideInInspector] public int audioFlags;
 
             public static fcMP4Config default_value
             {
@@ -332,18 +339,18 @@ namespace UTJ.FrameCapturer
                         video = true,
                         audio = true,
 
-                        video_width = 0,
-                        video_height = 0,
-                        video_bitrate_mode = fcBitrateMode.CBR,
-                        video_target_bitrate = 1024 * 1000,
-                        video_target_framerate = 30,
-                        video_flags = (int)fcMP4VideoFlags.H264Mask,
+                        videoWidth = 0,
+                        videoHeight = 0,
+                        videoBitrateMode = fcBitrateMode.VBR,
+                        videoTargetBitrate = 1024 * 1000,
+                        videoTargetFramerate = 30,
+                        videoFlags = (int)fcMP4VideoFlags.H264Mask,
 
-                        audio_sample_rate = 48000,
-                        audio_num_channels = 2,
-                        audio_bitrate_mode = fcBitrateMode.CBR,
-                        audio_target_bitrate = 64000,
-                        audio_flags = (int)fcMP4AudioFlags.AACMask,
+                        audioSampleRate = 48000,
+                        audioNumChannels = 2,
+                        audioBitrateMode = fcBitrateMode.VBR,
+                        audioTargetBitrate = 128 * 1000,
+                        audioFlags = (int)fcMP4AudioFlags.AACMask,
                     };
                 }
             }
@@ -355,6 +362,7 @@ namespace UTJ.FrameCapturer
             public static implicit operator bool(fcMP4Context v) { return v.ptr != IntPtr.Zero; }
         }
 
+        [DllImport ("fccore")] public static extern Bool             fcMP4IsSupported();
         [DllImport ("fccore")] public static extern fcMP4Context     fcMP4CreateContext(ref fcMP4Config conf);
         [DllImport ("fccore")] public static extern fcMP4Context     fcMP4OSCreateContext(ref fcMP4Config conf, string path);
         [DllImport ("fccore")] private static extern void            fcMP4DestroyContext(fcMP4Context ctx);
@@ -374,12 +382,6 @@ namespace UTJ.FrameCapturer
             return Marshal.PtrToStringAnsi(fcMP4GetVideoEncoderInfo(ctx));
         }
 
-        [DllImport ("fccore")] private static extern fcDeferredCall fcMP4AddVideoFrameTextureDeferred(fcMP4Context ctx, IntPtr tex, fcPixelFormat fmt, double time, fcDeferredCall id);
-        public static fcDeferredCall fcMP4AddVideoFrameTexture(fcMP4Context ctx, RenderTexture tex, double time, fcDeferredCall id)
-        {
-            return fcMP4AddVideoFrameTextureDeferred(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), time, id);
-        }
-
 
         // -------------------------------------------------------------
         // WebM Exporter
@@ -396,31 +398,32 @@ namespace UTJ.FrameCapturer
         {
             VP8,
             VP9,
+            VP9LossLess,
         };
         public enum fcWebMAudioEncoder
         {
             Vorbis,
-            Opus,
+            //Opus, // not implemented yet
         };
 
         [Serializable]
         public struct fcWebMConfig
         {
-            public fcWebMVideoEncoder video_encoder;
-            public fcWebMAudioEncoder audio_encoder;
-            public Bool video;
-            public Bool audio;
+            public fcWebMVideoEncoder videoEncoder;
+            public fcWebMAudioEncoder audioEncoder;
+            [HideInInspector] public Bool video;
+            [HideInInspector] public Bool audio;
 
-            public int video_width;
-            public int video_height;
-            public int video_target_framerate;
-            public fcBitrateMode video_bitrate_mode;
-            public int video_target_bitrate;
+            [HideInInspector] public int videoWidth;
+            [HideInInspector] public int videoHeight;
+            [HideInInspector] public int videoTargetFramerate;
+            public fcBitrateMode videoBitrateMode;
+            public int videoTargetBitrate;
 
-            public int audio_sample_rate;
-            public int audio_num_channels;
-            public fcBitrateMode audio_bitrate_mode;
-            public int audio_target_bitrate;
+            [HideInInspector] public int audioSampleRate;
+            [HideInInspector] public int audioNumChannels;
+            public fcBitrateMode audioBitrateMode;
+            public int audioTargetBitrate;
 
             public static fcWebMConfig default_value
             {
@@ -428,26 +431,27 @@ namespace UTJ.FrameCapturer
                 {
                     return new fcWebMConfig
                     {
-                        video_encoder = fcWebMVideoEncoder.VP8,
-                        audio_encoder = fcWebMAudioEncoder.Vorbis,
+                        videoEncoder = fcWebMVideoEncoder.VP8,
+                        audioEncoder = fcWebMAudioEncoder.Vorbis,
                         video = true,
                         audio = true,
 
-                        video_width = 0,
-                        video_height = 0,
-                        video_target_framerate = 60,
-                        video_bitrate_mode = fcBitrateMode.VBR,
-                        video_target_bitrate = 1024 * 1000,
+                        videoWidth = 0,
+                        videoHeight = 0,
+                        videoTargetFramerate = 60,
+                        videoBitrateMode = fcBitrateMode.VBR,
+                        videoTargetBitrate = 1024 * 1000,
 
-                        audio_sample_rate = 48000,
-                        audio_num_channels = 2,
-                        audio_bitrate_mode = fcBitrateMode.VBR,
-                        audio_target_bitrate = 64 * 1000,
+                        audioSampleRate = 48000,
+                        audioNumChannels = 2,
+                        audioBitrateMode = fcBitrateMode.VBR,
+                        audioTargetBitrate = 128 * 1000,
                     };
                 }
             }
         }
 
+        [DllImport ("fccore")] public static extern Bool fcWebMIsSupported();
         [DllImport ("fccore")] public static extern fcWebMContext fcWebMCreateContext(ref fcWebMConfig conf);
         [DllImport ("fccore")] private static extern void fcWebMDestroyContext(fcWebMContext ctx);
         [DllImport ("fccore")] public static extern void fcWebMAddOutputStream(fcWebMContext ctx, fcStream stream);
@@ -455,12 +459,6 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] public static extern Bool fcWebMAddVideoFramePixels(fcWebMContext ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
         // timestamp=-1 is treated as current time.
         [DllImport ("fccore")] public static extern Bool fcWebMAddAudioFrame(fcWebMContext ctx, float[] samples, int num_samples, double timestamp = -1.0);
-
-        [DllImport ("fccore")] private static extern fcDeferredCall fcWebMAddVideoFrameTexture(fcWebMContext ctx, IntPtr tex, fcPixelFormat fmt, double timestamp, fcDeferredCall id);
-        public static fcDeferredCall fcWebMAddVideoFrameTexture(fcWebMContext ctx, RenderTexture tex, double time, fcDeferredCall id)
-        {
-            return fcWebMAddVideoFrameTexture(ctx, tex.GetNativeTexturePtr(), fcGetPixelFormat(tex.format), time, id);
-        }
 
 
         public static void fcLock(RenderTexture src, TextureFormat dstfmt, Action<byte[], fcPixelFormat> body)
