@@ -91,6 +91,12 @@
     <ClCompile Include="fccore\Foundation\Buffer.cpp">
       <Filter>fccore\Foundation</Filter>
     </ClCompile>
+    <ClCompile Include="fccore\Encoder\fcFlacContext.cpp">
+      <Filter>fccore\Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\fcWaveContext.cpp">
+      <Filter>fccore\Encoder</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fccore\GraphicsDevice\fcGraphicsDevice.h">
@@ -164,6 +170,12 @@
     </ClInclude>
     <ClInclude Include="fccore\Foundation\TaskQueue.h">
       <Filter>fccore\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\fcWaveContext.h">
+      <Filter>fccore\Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\fcFlacContext.h">
+      <Filter>fccore\Encoder</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

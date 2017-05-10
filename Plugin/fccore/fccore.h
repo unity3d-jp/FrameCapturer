@@ -22,6 +22,8 @@ class fcIExrContext;
 class fcIGifContext;
 class fcIMP4Context;
 class fcIWebMContext;
+class fcIWaveContext;
+class fcIFlacContext;
 using fcTime = double;
 
 enum fcPixelFormat
@@ -294,3 +296,41 @@ fcAPI bool            fcWebMAddVideoFramePixels(fcIWebMContext *ctx, const void 
 fcAPI bool            fcWebMAddVideoFrameTexture(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
 fcAPI bool            fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
+
+
+
+// -------------------------------------------------------------
+// Wave Exporter
+// -------------------------------------------------------------
+
+struct fcWaveConfig
+{
+    int sample_rate = 48000;
+    int num_channels = 2;
+    int bit_size = 16;
+};
+fcAPI bool            fcWaveIsSupported();
+fcAPI fcIWaveContext* fcWaveCreateContext(fcWaveConfig *conf);
+fcAPI void            fcWaveDestroyContext(fcIWaveContext *ctx);
+fcAPI void            fcWaveAddOutputStream(fcIWaveContext *ctx, fcStream *stream);
+fcAPI bool            fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
+
+
+
+// -------------------------------------------------------------
+// Flac Exporter
+// -------------------------------------------------------------
+
+struct fcFlacConfig
+{
+    int sample_rate = 48000;
+    int num_channels = 2;
+    int bit_size = 16;
+};
+fcAPI bool            fcFlacIsSupported();
+fcAPI fcIFlacContext* fcFlacCreateContext(fcFlacConfig *conf);
+fcAPI void            fcFlacDestroyContext(fcIFlacContext *ctx);
+fcAPI void            fcFlacAddOutputStream(fcIFlacContext *ctx, fcStream *stream);
+fcAPI bool            fcFlacAddAudioFrame(fcIFlacContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
+
+

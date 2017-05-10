@@ -22,6 +22,7 @@
     <ClCompile Include="fccore\Encoder\fcAACEncoderFAAC.cpp" />
     <ClCompile Include="fccore\Encoder\fcAACEncoderIntel.cpp" />
     <ClCompile Include="fccore\Encoder\fcExrContext.cpp" />
+    <ClCompile Include="fccore\Encoder\fcFlacContext.cpp" />
     <ClCompile Include="fccore\Encoder\fcGifContext.cpp" />
     <ClCompile Include="fccore\Encoder\fcH264Encoder.cpp" />
     <ClCompile Include="fccore\Encoder\fcH264EncoderAMD.cpp" />
@@ -34,6 +35,7 @@
     <ClCompile Include="fccore\Encoder\fcPngContext.cpp" />
     <ClCompile Include="fccore\Encoder\fcVorbisEncoder.cpp" />
     <ClCompile Include="fccore\Encoder\fcVPXEncoder.cpp" />
+    <ClCompile Include="fccore\Encoder\fcWaveContext.cpp" />
     <ClCompile Include="fccore\Encoder\fcWebMContext.cpp" />
     <ClCompile Include="fccore\Encoder\fcWebMWriter.cpp" />
     <ClCompile Include="fccore\Encoder\Windows\fcMP4_WMF.cpp" />
@@ -58,6 +60,7 @@
   <ItemGroup>
     <ClInclude Include="fccore\Encoder\fcAACEncoder.h" />
     <ClInclude Include="fccore\Encoder\fcExrContext.h" />
+    <ClInclude Include="fccore\Encoder\fcFlacContext.h" />
     <ClInclude Include="fccore\Encoder\fcGifContext.h" />
     <ClInclude Include="fccore\Encoder\fcH264Encoder.h" />
     <ClInclude Include="fccore\Encoder\fcMP4Context.h" />
@@ -66,6 +69,7 @@
     <ClInclude Include="fccore\Encoder\fcPngContext.h" />
     <ClInclude Include="fccore\Encoder\fcVorbisEncoder.h" />
     <ClInclude Include="fccore\Encoder\fcVPXEncoder.h" />
+    <ClInclude Include="fccore\Encoder\fcWaveContext.h" />
     <ClInclude Include="fccore\Encoder\fcWebMContext.h" />
     <ClInclude Include="fccore\Encoder\fcWebMWriter.h" />
     <ClInclude Include="fccore\fccore.h" />
