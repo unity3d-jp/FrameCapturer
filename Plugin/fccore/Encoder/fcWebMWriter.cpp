@@ -7,7 +7,7 @@
 #include "fcWebMWriter.h"
 
 #ifdef fcSupportWebM
-#include "libwebm/mkvmuxer.hpp"
+#include "mkvmuxer.hpp"
 #ifdef _MSC_VER
     #pragma comment(lib, "libwebm.lib")
 #endif // _MSC_VER
