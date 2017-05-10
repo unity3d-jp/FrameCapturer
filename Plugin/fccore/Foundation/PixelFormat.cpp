@@ -300,4 +300,18 @@ fcAPI const void* fcConvertPixelFormat(void *dst, fcPixelFormat dstfmt, const vo
 {
     return fcConvertPixelFormat_ISPC(dst, dstfmt, src, srcfmt, size);
 }
+
+void fcF32ToI8Samples(int8_t *dst, const float *src, size_t size)
+{
+    ispc::F32ToI8Samples(dst, src, size);
+}
+void fcF32ToI16Samples(int16_t *dst, const float *src, size_t size)
+{
+    ispc::F32ToI16Samples(dst, src, size);
+}
+void fcF32ToI24Samples(uint8_t *dst, const float *src, size_t size)
+{
+    ispc::F32ToI24Samples(dst, src, size);
+}
+
 #endif // fcEnableISPCKernel

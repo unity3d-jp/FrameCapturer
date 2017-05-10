@@ -307,7 +307,7 @@ struct fcWaveConfig
 {
     int sample_rate = 48000;
     int num_channels = 2;
-    int bit_size = 16;
+    int bits_per_sample = 16;
 };
 fcAPI bool            fcWaveIsSupported();
 fcAPI fcIWaveContext* fcWaveCreateContext(fcWaveConfig *conf);
@@ -325,7 +325,7 @@ struct fcFlacConfig
 {
     int sample_rate = 48000;
     int num_channels = 2;
-    int bit_size = 16;
+    int bits_per_sample = 16;
 };
 fcAPI bool            fcFlacIsSupported();
 fcAPI fcIFlacContext* fcFlacCreateContext(fcFlacConfig *conf);

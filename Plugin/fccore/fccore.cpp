@@ -600,7 +600,7 @@ fcAPI bool            fcWaveIsSupported() { return false; }
 fcAPI fcIWaveContext* fcWaveCreateContext(fcWaveConfig *conf) { return nullptr; }
 fcAPI void            fcWaveDestroyContext(fcIWaveContext *ctx) {}
 fcAPI void            fcWaveAddOutputStream(fcIWaveContext *ctx, fcStream *stream) {}
-fcAPI bool            fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0) { return false; }
+fcAPI bool            fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int num_samples, fcTime timestamp) { return false; }
 
 #endif // fcSupportWave
 
@@ -648,7 +648,7 @@ fcAPI bool            fcFlacIsSupported() { return false; }
 fcAPI fcIFlacContext* fcFlacCreateContext(fcFlacConfig *conf) { return nullptr; }
 fcAPI void            fcFlacDestroyContext(fcIFlacContext *ctx) { return; }
 fcAPI void            fcFlacAddOutputStream(fcIFlacContext *ctx, fcStream *stream) { return; }
-fcAPI bool            fcFlacAddAudioFrame(fcIFlacContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0) { return false; }
+fcAPI bool            fcFlacAddAudioFrame(fcIFlacContext *ctx, const float *samples, int num_samples, fcTime timestamp) { return false; }
 
 #endif // fcSupportFlac
 
