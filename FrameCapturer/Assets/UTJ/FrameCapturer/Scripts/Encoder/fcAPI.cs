@@ -181,6 +181,7 @@ namespace UTJ.FrameCapturer
             public static implicit operator bool(fcPngContext v) { return v.ptr != IntPtr.Zero; }
         }
 
+        [DllImport ("fccore")] public static extern Bool         fcPngIsSupported();
         [DllImport ("fccore")] public static extern fcPngContext fcPngCreateContext(ref fcPngConfig conf);
         [DllImport ("fccore")] private static extern void        fcPngDestroyContext(fcPngContext ctx);
         [DllImport ("fccore")] public static extern Bool         fcPngExportPixels(fcPngContext ctx, string path, byte[] pixels, int width, int height, fcPixelFormat fmt, int num_channels);
@@ -239,6 +240,7 @@ namespace UTJ.FrameCapturer
             public static implicit operator bool(fcExrContext v) { return v.ptr != IntPtr.Zero; }
         }
 
+        [DllImport ("fccore")] public static extern Bool         fcExrIsSupported();
         [DllImport ("fccore")] public static extern fcExrContext fcExrCreateContext(ref fcExrConfig conf);
         [DllImport ("fccore")] private static extern void        fcExrDestroyContext(fcExrContext ctx);
         [DllImport ("fccore")] public static extern Bool         fcExrBeginImage(fcExrContext ctx, string path, int width, int height);
@@ -281,6 +283,7 @@ namespace UTJ.FrameCapturer
             public static implicit operator bool(fcGifContext v) { return v.ptr != IntPtr.Zero; }
         }
 
+        [DllImport ("fccore")] public static extern Bool         fcGifIsSupported();
         [DllImport ("fccore")] public static extern fcGifContext fcGifCreateContext(ref fcGifConfig conf);
         [DllImport ("fccore")] private static extern void        fcGifDestroyContext(fcGifContext ctx);
         [DllImport ("fccore")] public static extern void         fcGifAddOutputStream(fcGifContext ctx, fcStream stream);
@@ -359,6 +362,7 @@ namespace UTJ.FrameCapturer
             public static implicit operator bool(fcMP4Context v) { return v.ptr != IntPtr.Zero; }
         }
 
+        [DllImport ("fccore")] public static extern Bool             fcMP4IsSupported();
         [DllImport ("fccore")] public static extern fcMP4Context     fcMP4CreateContext(ref fcMP4Config conf);
         [DllImport ("fccore")] public static extern fcMP4Context     fcMP4OSCreateContext(ref fcMP4Config conf, string path);
         [DllImport ("fccore")] private static extern void            fcMP4DestroyContext(fcMP4Context ctx);
@@ -447,6 +451,7 @@ namespace UTJ.FrameCapturer
             }
         }
 
+        [DllImport ("fccore")] public static extern Bool fcWebMIsSupported();
         [DllImport ("fccore")] public static extern fcWebMContext fcWebMCreateContext(ref fcWebMConfig conf);
         [DllImport ("fccore")] private static extern void fcWebMDestroyContext(fcWebMContext ctx);
         [DllImport ("fccore")] public static extern void fcWebMAddOutputStream(fcWebMContext ctx, fcStream stream);

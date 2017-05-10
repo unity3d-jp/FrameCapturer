@@ -20,6 +20,11 @@ void ExrTestImpl(fcIExrContext *ctx, const char *filename)
 
 void ExrTest()
 {
+    if (!fcExrIsSupported()) {
+        printf("ExrTest: exr is not supported\n");
+        return;
+    }
+
     printf("ExrTest begin\n");
 
     fcIExrContext *ctx = fcExrCreateContext();

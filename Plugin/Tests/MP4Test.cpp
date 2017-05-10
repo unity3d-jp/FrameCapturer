@@ -76,7 +76,7 @@ void MP4Test(int video_encoder, int audio_encoder, const char *filename)
     printf("MP4Test (%s) end\n", filename);
 }
 
-void MP4TestWMF(const char *filename)
+void MP4TestOSProvidedEncoder(const char *filename)
 {
     fcMP4Config conf;
     conf.video_width = Width;
@@ -99,11 +99,16 @@ void MP4TestWMF(const char *filename)
 
 void MP4Test()
 {
+    if (!fcMP4IsSupported()) {
+        printf("MP4Test: mp4 is not supported\n");
+        return;
+    }
+
     MP4Test(fcMP4_H264NVIDIA, 0, "NVIDIA.mp4");
     MP4Test(fcMP4_H264AMD, 0, "AMD.mp4");
     MP4Test(fcMP4_H264IntelHW, 0, "IntelHW.mp4");
     MP4Test(fcMP4_H264IntelSW, 0, "IntelSW.mp4");
     MP4Test(fcMP4_H264OpenH264, fcMP4_AACFAAC, "OpenH264.mp4");
-    MP4TestWMF("WMF.mp4");
+    MP4TestOSProvidedEncoder("WMF.mp4");
 }
 

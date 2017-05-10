@@ -178,6 +178,8 @@ fcAPI void fcCallDeferredCall(int id)
 #ifdef fcSupportPNG
 #include "Encoder/fcPngContext.h"
 
+fcAPI bool fcPngIsSupported() { return true; }
+
 fcAPI fcIPngContext* fcPngCreateContext(const fcPngConfig *conf)
 {
     fcTraceFunc();
@@ -218,6 +220,7 @@ fcAPI int fcPngExportTextureDeferred(fcIPngContext *ctx, const char *path_, void
 
 #else // fcSupportPNG
 
+fcAPI bool fcPngIsSupported() { return false; }
 fcAPI fcIPngContext* fcPngCreateContext(const fcPngConfig *conf) { return nullptr; }
 fcAPI void fcPngDestroyContext(fcIPngContext *ctx) { return; }
 fcAPI bool fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, int num_channels) { return false; }
@@ -233,6 +236,8 @@ fcAPI int fcPngExportTextureDeferred(fcIPngContext *ctx, const char *path_, void
 
 #ifdef fcSupportEXR
 #include "Encoder/fcExrContext.h"
+
+fcAPI bool fcExrIsSupported() { return true; }
 
 fcAPI fcIExrContext* fcExrCreateContext(const fcExrConfig *conf)
 {
@@ -306,6 +311,7 @@ fcAPI int fcExrEndImageDeferred(fcIExrContext *ctx, int id)
 
 #else // fcSupportEXR
 
+fcAPI bool fcExrIsSupported() { return false; }
 fcAPI fcIExrContext* fcExrCreateContext(const fcExrConfig *conf) {}
 fcAPI void fcExrDestroyContext(fcIExrContext *ctx) {}
 fcAPI bool fcExrBeginImage(fcIExrContext *ctx, const char *path, int width, int height) { return false; }
@@ -325,6 +331,8 @@ fcAPI int fcExrEndImageDeferred(fcIExrContext *ctx, int id) { return 0; }
 
 #ifdef fcSupportGIF
 #include "Encoder/fcGifContext.h"
+
+fcAPI bool fcGifIsSupported() { return true; }
 
 fcAPI fcIGifContext* fcGifCreateContext(const fcGifConfig *conf)
 {
@@ -375,6 +383,7 @@ fcAPI void fcGifForceKeyframe(fcIGifContext *ctx)
 
 #else // fcSupportGIF
 
+fcAPI bool fcGifIsSupported() { return false; }
 fcAPI fcIGifContext* fcGifCreateContext(const fcGifConfig *conf) { return nullptr; }
 fcAPI void fcGifDestroyContext(fcIGifContext *ctx) {}
 fcAPI void fcGifAddOutputStream(fcIGifContext *ctx, fcStream *stream) {}
@@ -393,6 +402,8 @@ fcAPI void fcGifForceKeyframe(fcIGifContext *ctx) {}
 
 #ifdef fcSupportMP4
 #include "Encoder/fcMP4Context.h"
+
+fcAPI bool fcMP4IsSupported() { return true; }
 
 fcAPI fcIMP4Context* fcMP4CreateContext(fcMP4Config *conf)
 {
@@ -462,6 +473,7 @@ fcAPI bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_
 }
 #else // fcSupportMP4
 
+fcAPI bool fcMP4IsSupported() { return false; }
 fcAPI fcIMP4Context* fcMP4CreateContext(fcMP4Config *conf) { return nullptr; }
 fcAPI fcIMP4Context* fcMP4OSCreateContext(fcMP4Config *conf, const char *out_path) { return nullptr; }
 fcAPI void fcMP4DestroyContext(fcIMP4Context *ctx) {}
@@ -483,6 +495,8 @@ fcAPI bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_
 
 #ifdef fcSupportWebM
 #include "Encoder/fcWebMContext.h"
+
+fcAPI bool fcWebMIsSupported() { return true; }
 
 fcAPI fcIWebMContext* fcWebMCreateContext(fcWebMConfig *conf)
 {
@@ -535,6 +549,7 @@ fcAPI bool fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int nu
 
 #else // fcSupportWebM
 
+fcAPI bool fcWebMIsSupported() { return false; }
 fcAPI fcIWebMContext* fcWebMCreateContext(fcWebMConfig *conf) { return nullptr; }
 fcAPI void fcWebMDestroyContext(fcIWebMContext *ctx) {}
 fcAPI void fcWebMAddOutputStream(fcIWebMContext *ctx, fcStream *stream) {}

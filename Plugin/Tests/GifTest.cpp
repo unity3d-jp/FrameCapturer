@@ -29,6 +29,11 @@ void GifTestImpl(const char *filename)
 
 void GifTest()
 {
+    if (!fcGifIsSupported()) {
+        printf("GifTest: gif is not supported\n");
+        return;
+    }
+
     printf("GifTest begin\n");
 
     std::vector<std::future<void>> tasks;
