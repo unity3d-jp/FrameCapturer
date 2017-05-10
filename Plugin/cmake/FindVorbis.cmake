@@ -8,20 +8,6 @@ find_path(VORBIS_INCLUDE_DIR
     vorbis/codec.h
     PATHS ${VORBIS_DIR}/include
 )
-
-find_library(VORBIS_LIBRARY
-    NAMES vorbis
-    PATHS ${LIBRARY_PATHS}
-)
-find_library(VORBISENC_LIBRARY
-    NAMES vorbisenc
-    PATHS ${LIBRARY_PATHS}
-)
-find_library(VORBISFILE_LIBRARY
-    NAMES vorbisfile
-    PATHS ${LIBRARY_PATHS}
-)
-
 foreach(VORBIS_LIB
     vorbis
     vorbisenc
