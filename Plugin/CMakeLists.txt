@@ -76,7 +76,7 @@ IF(FC_ENABLE_ISPC)
         ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
             SET(ISPC_DIR ispc-v${ISPC_VERSION}-osx)
         ENDIF()
-        SET(ISPC ${CMAKE_CURRENT_SOURCE_DIR}/External/${ISPC_DIR}/ispc CACHE PATH "" FORCE)
+        SET(ISPC ${CMAKE_CURRENT_SOURCE_DIR}/external/${ISPC_DIR}/ispc CACHE PATH "" FORCE)
 
         if(NOT EXISTS ${ISPC})
             SET(ISPC_ARCHIVE ${ISPC_DIR}.tar.gz)
@@ -90,8 +90,6 @@ IF(FC_ENABLE_ISPC)
 
     SET(FCISPC_DIR ${CMAKE_CURRENT_BINARY_DIR}/fccoreISPC)
     ADD_CUSTOM_TARGET(fccoreISPC ALL
-        # not use --opt=force-aligned-memory as I can't force USD to align memory to 0x20.
-        # (Windows port is using with patched USD)
         COMMAND ${ISPC} ${CMAKE_CURRENT_SOURCE_DIR}/fccore/Foundation/ConvertKernel.ispc -o ${FCISPC_DIR}/ConvertKernel${CMAKE_CXX_OUTPUT_EXTENSION} -h ${FCISPC_DIR}/ConvertKernel_ispc.h --pic --target=sse2,sse4,avx --arch=x86-64 --opt=fast-masked-vload --opt=fast-math
     )
     SET(FCISPC_FILES
@@ -113,14 +111,17 @@ ENDIF()
 FILE(GLOB FC_CXX_FILES fccore/*.cpp fccore/Foundation/*.cpp fccore/Encoder/*.cpp fccore/GraphicsDevice/*.cpp)
 FILE(GLOB FC_H_FILES fccore/*.h fccore/Foundation/*.h fccore/Encoder/*.h fccore/GraphicsDevice/*.h)
 IF(FC_ENABLE_OSX_BUNDLE)
-    ADD_LIBRARY(fccore MODULE ${FC_CXX_FILES} ${FC_H_FILES})
+    ADD_LIBRARY(fccore MODULE ${FC_CXX_FILES} ${FC_H_FILES} ${FCISPC_FILES})
 ELSE()
-    ADD_LIBRARY(fccore SHARED ${FC_CXX_FILES} ${FC_H_FILES})
+    ADD_LIBRARY(fccore SHARED ${FC_CXX_FILES} ${FC_H_FILES} ${FCISPC_FILES})
 ENDIF()
 TARGET_INCLUDE_DIRECTORIES(fccore PUBLIC .)
 TARGET_LINK_LIBRARIES(fccore
-    ${OPENEXR_LIBRARIES} ${YUV_LIBRARY}
+    pthread ${OPENEXR_Half_LIBRARY} ${YUV_LIBRARY}
 )
+IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    TARGET_LINK_LIBRARIES(fccore dl)
+ENDIF()
 
 IF(FC_ENABLE_ISPC)
     ADD_DEFINITIONS(-DfcEnableISPC)
@@ -148,7 +149,7 @@ IF(FC_ENABLE_WEBM)
     ENDIF()
     IF(FC_ENABLE_VORBIS)
         ADD_DEFINITIONS(-DfcSupportVorbis)
-        TARGET_LINK_LIBRARIES(fccore ${OGG_LIBRARY} ${VORBIS_LIBRARY})
+        TARGET_LINK_LIBRARIES(fccore ${OGG_LIBRARY} ${VORBIS_LIBRARIES})
     ENDIF()
     IF(FC_ENABLE_OPUS)
         ADD_DEFINITIONS(-DfcSupportOpus)
@@ -184,7 +185,7 @@ IF(NOT FC_ENABLE_OSX_BUNDLE)
 
         ADD_EXECUTABLE(fcTests ${Tests_CXX_FILES} ${Tests_H_FILES})
         ADD_DEPENDENCIES(fcTests fccore)
-        TARGET_LINK_LIBRARIES(fcTests fccore)
+        TARGET_LINK_LIBRARIES(fcTests fccore pthread)
     ENDIF()
 
     # deploy
