@@ -461,6 +461,84 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] public static extern Bool fcWebMAddAudioFrame(fcWebMContext ctx, float[] samples, int num_samples, double timestamp = -1.0);
 
 
+        // -------------------------------------------------------------
+        // Wave Exporter
+        // -------------------------------------------------------------
+        public struct fcWaveContext
+        {
+            public IntPtr ptr;
+            public void Release() { fcWaveDestroyContext(this); ptr = IntPtr.Zero; }
+            public static implicit operator bool(fcWaveContext v) { return v.ptr != IntPtr.Zero; }
+        }
+
+        [Serializable]
+        public struct fcWaveConfig
+        {
+            [HideInInspector] public int sampleRate;
+            [HideInInspector] public int numChannels;
+            public int bitsPerSample;
+
+            public static fcWaveConfig default_value
+            {
+                get
+                {
+                    return new fcWaveConfig
+                    {
+                        sampleRate = 48000,
+                        numChannels = 2,
+                        bitsPerSample = 16,
+                    };
+                }
+            }
+        }
+
+        [DllImport ("fccore")] public static extern Bool fcWaveIsSupported();
+        [DllImport ("fccore")] public static extern fcWaveContext fcWaveCreateContext(ref fcWaveConfig conf);
+        [DllImport ("fccore")] private static extern void fcWaveDestroyContext(fcWaveContext ctx);
+        [DllImport ("fccore")] public static extern void fcWaveAddOutputStream(fcWaveContext ctx, fcStream stream);
+        [DllImport ("fccore")] public static extern Bool fcWaveAddAudioFrame(fcWaveContext ctx, float[] samples, int num_samples, double timestamp = -1.0);
+
+
+        // -------------------------------------------------------------
+        // Flac Exporter
+        // -------------------------------------------------------------
+        public struct fcFlacContext
+        {
+            public IntPtr ptr;
+            public void Release() { fcFlacDestroyContext(this); ptr = IntPtr.Zero; }
+            public static implicit operator bool(fcFlacContext v) { return v.ptr != IntPtr.Zero; }
+        }
+
+        [Serializable]
+        public struct fcFlacConfig
+        {
+            [HideInInspector] public int sampleRate;
+            [HideInInspector] public int numChannels;
+            public int bitsPerSample;
+
+            public static fcFlacConfig default_value
+            {
+                get
+                {
+                    return new fcFlacConfig
+                    {
+                        sampleRate = 48000,
+                        numChannels = 2,
+                        bitsPerSample = 16,
+                    };
+                }
+            }
+        }
+
+        [DllImport ("fccore")] public static extern Bool fcFlacIsSupported();
+        [DllImport ("fccore")] public static extern fcFlacContext fcFlacCreateContext(ref fcFlacConfig conf);
+        [DllImport ("fccore")] private static extern void fcFlacDestroyContext(fcFlacContext ctx);
+        [DllImport ("fccore")] public static extern void fcFlacAddOutputStream(fcFlacContext ctx, fcStream stream);
+        [DllImport ("fccore")] public static extern Bool fcFlacAddAudioFrame(fcFlacContext ctx, float[] samples, int num_samples, double timestamp = -1.0);
+
+
+
+
         public static void fcLock(RenderTexture src, TextureFormat dstfmt, Action<byte[], fcPixelFormat> body)
         {
             var tex = new Texture2D(src.width, src.height, dstfmt, false);
