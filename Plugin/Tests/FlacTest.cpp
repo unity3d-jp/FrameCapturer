@@ -4,6 +4,11 @@
 
 void FlacTest(int bits)
 {
+    if (!fcFlacIsSupported()) {
+        printf("FlacTest: flac is not supported\n");
+        return;
+    }
+
     const int SamplingRate = 48000;
     const int DurationInSeconds = 10;
 

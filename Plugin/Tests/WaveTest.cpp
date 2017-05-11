@@ -35,6 +35,10 @@ void WaveTest(int bits)
 
 void WaveTest()
 {
+    if (!fcWaveIsSupported()) {
+        printf("WaveTest: wave is not supported\n");
+        return;
+    }
     WaveTest(8);
     WaveTest(16);
     WaveTest(24);
