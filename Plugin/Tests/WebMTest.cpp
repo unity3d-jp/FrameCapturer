@@ -20,7 +20,7 @@ void WebMTest(fcWebMVideoEncoder ve, fcWebMAudioEncoder ae)
     conf.video_encoder = ve;
     conf.video_width = Width;
     conf.video_height = Height;
-    //conf.video_bitrate_mode = fcVBR;
+    //conf.video_bitrate_mode = fcBitrateMode.VBR;
     conf.video_target_bitrate = 256 * 1000;
     conf.audio_encoder = ae;
     conf.audio_sample_rate = SamplingRate;

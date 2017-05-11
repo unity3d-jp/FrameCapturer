@@ -237,11 +237,11 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
                 SetAttributeU32(encoder, CODECAPI_AVEncAdaptiveMode, eAVEncAdaptiveMode_FrameRate);
 
                 switch (m_conf.video_bitrate_mode) {
-                case fcCBR:
+                case fcBitrateMode::CBR:
                     SetAttributeU32(encoder, CODECAPI_AVEncCommonRateControlMode, eAVEncCommonRateControlMode_CBR);
                     SetAttributeU32(encoder, CODECAPI_AVEncCommonMeanBitRate, m_conf.video_target_bitrate);
                     break;
-                case fcVBR:
+                case fcBitrateMode::VBR:
                     SetAttributeU32(encoder, CODECAPI_AVEncCommonRateControlMode, eAVEncCommonRateControlMode_PeakConstrainedVBR);
                     SetAttributeU32(encoder, CODECAPI_AVEncCommonMaxBitRate, m_conf.video_target_bitrate);
                     break;

@@ -474,6 +474,7 @@ fcAPI bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_
 #else // fcSupportMP4
 
 fcAPI bool fcMP4IsSupported() { return false; }
+fcAPI bool fcMP4OSIsSupported() { return false; }
 fcAPI fcIMP4Context* fcMP4CreateContext(fcMP4Config *conf) { return nullptr; }
 fcAPI fcIMP4Context* fcMP4OSCreateContext(fcMP4Config *conf, const char *out_path) { return nullptr; }
 fcAPI void fcMP4DestroyContext(fcIMP4Context *ctx) {}

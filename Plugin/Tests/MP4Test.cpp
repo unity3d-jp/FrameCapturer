@@ -52,7 +52,7 @@ void MP4Test(int video_encoder, int audio_encoder, const char *filename)
     fcMP4Config conf;
     conf.video_width = Width;
     conf.video_height = Height;
-    conf.video_bitrate_mode = fcVBR;
+    conf.video_bitrate_mode = fcBitrateMode::VBR;
     conf.video_target_bitrate = 256000;
     conf.video_flags = video_encoder;
     conf.audio_sample_rate = SampleRate;
@@ -81,7 +81,7 @@ void MP4TestOSProvidedEncoder(const char *filename)
     fcMP4Config conf;
     conf.video_width = Width;
     conf.video_height = Height;
-    conf.video_bitrate_mode = fcVBR;
+    conf.video_bitrate_mode = fcBitrateMode::VBR;
     conf.video_target_bitrate = 256000;
     conf.audio_sample_rate = SampleRate;
     conf.audio_num_channels = NumChannels;

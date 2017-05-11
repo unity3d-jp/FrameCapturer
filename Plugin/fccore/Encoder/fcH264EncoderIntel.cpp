@@ -128,10 +128,10 @@ fcH264EncoderIntel::fcH264EncoderIntel(const fcH264EncoderConfig& conf, int impl
     params.mfx.TargetUsage = MFX_TARGETUSAGE_BEST_SPEED;
 
     switch (m_conf.bitrate_mode) {
-    case fcCBR:
+    case fcBitrateMode::CBR:
         params.mfx.RateControlMethod = MFX_RATECONTROL_CBR;
         break;
-    case fcVBR:
+    case fcBitrateMode.VBR:
         params.mfx.RateControlMethod = MFX_RATECONTROL_VBR;
         break;
     }

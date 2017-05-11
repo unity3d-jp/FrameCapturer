@@ -171,7 +171,7 @@ bool fcFlacContext::write(const float *samples, int num_samples, fcTime timestam
         m_conversion_buffer.resize(buf->size());
         fcF32ToI32Samples(m_conversion_buffer.data(), buf->data(), buf->size(), scale);
         for (auto& w : m_writers) {
-            w->write(m_conversion_buffer.data(), (int)m_conversion_buffer.size());
+            w->write(m_conversion_buffer.data(), (int)m_conversion_buffer.size() / m_conf.num_channels);
         }
         m_buffers.push(buf);
     });

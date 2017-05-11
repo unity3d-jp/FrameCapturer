@@ -44,10 +44,10 @@ fcVorbisEncoder::fcVorbisEncoder(const fcVorbisEncoderConfig& conf)
 {
     vorbis_info_init(&m_vo_info);
     switch (conf.bitrate_mode) {
-    case fcCBR:
+    case fcBitrateMode::CBR:
         vorbis_encode_init(&m_vo_info, conf.num_channels, conf.sample_rate, conf.target_bitrate, conf.target_bitrate, conf.target_bitrate);
         break;
-    case fcVBR:
+    case fcBitrateMode::VBR:
         vorbis_encode_init(&m_vo_info, conf.num_channels, conf.sample_rate, -1, conf.target_bitrate, -1);
         break;
     }

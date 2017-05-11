@@ -174,7 +174,8 @@ namespace UTJ.FrameCapturer
                     captureHeight = targetHeight / div;
                 }
 
-                if (m_encoderConfigs.format == MovieEncoder.Type.MP4)
+                if (m_encoderConfigs.format == MovieEncoder.Type.MP4 ||
+                    m_encoderConfigs.format == MovieEncoder.Type.WebM)
                 {
                     captureWidth = (captureWidth + 1) & ~1;
                     captureHeight = (captureHeight + 1) & ~1;

@@ -63,10 +63,10 @@ enum fcPixelFormat
     fcPixelFormat_NV12      = 0x11 << 4,
 };
 
-enum fcBitrateMode
+enum class fcBitrateMode
 {
-    fcCBR,
-    fcVBR,
+    CBR,
+    VBR,
 };
 
 
@@ -224,18 +224,19 @@ struct fcMP4Config
     int video_width = 0;
     int video_height = 0;
     int video_target_framerate = 60;
-    fcBitrateMode video_bitrate_mode = fcVBR;
+    fcBitrateMode video_bitrate_mode = fcBitrateMode::VBR;
     int video_target_bitrate = 1024 * 1000;
     int video_flags = fcMP4_H264Mask; // combination of fcMP4VideoFlags
 
     int audio_sample_rate = 48000;
     int audio_num_channels = 2;
-    fcBitrateMode audio_bitrate_mode = fcVBR;
+    fcBitrateMode audio_bitrate_mode = fcBitrateMode::VBR;
     int audio_target_bitrate = 128 * 1000;
     int audio_flags = fcMP4_AACMask; // combination of fcMP4AudioFlags
 };
 
 fcAPI bool            fcMP4IsSupported();
+fcAPI bool            fcMP4OSIsSupported();
 fcAPI fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
 // OS-provided mp4 encoder. in this case video_flags and audio_flags in conf are ignored
 fcAPI fcIMP4Context*  fcMP4OSCreateContext(fcMP4Config *conf, const char *out_path);
@@ -278,12 +279,12 @@ struct fcWebMConfig
     int video_width = 0;
     int video_height = 0;
     int video_target_framerate = 60;
-    fcBitrateMode video_bitrate_mode = fcVBR;
+    fcBitrateMode video_bitrate_mode = fcBitrateMode::VBR;
     int video_target_bitrate = 1024 * 1000;
 
     int audio_sample_rate = 48000;
     int audio_num_channels = 2;
-    fcBitrateMode audio_bitrate_mode = fcVBR;
+    fcBitrateMode audio_bitrate_mode = fcBitrateMode::VBR;
     int audio_target_bitrate = 128 * 1000;
 };
 
@@ -325,7 +326,7 @@ struct fcOggConfig
 {
     int sample_rate = 48000;
     int num_channels = 2;
-    fcBitrateMode bitrate_mode = fcBitrateMode::fcVBR;
+    fcBitrateMode bitrate_mode = fcBitrateMode::VBR;
     int target_bitrate = 128 * 1000;
 };
 fcAPI bool            fcOggIsSupported();

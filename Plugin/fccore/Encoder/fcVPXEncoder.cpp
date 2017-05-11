@@ -62,10 +62,10 @@ fcVPXEncoder::fcVPXEncoder(const fcVPXEncoderConfig& conf, fcWebMVideoEncoder en
 
     if (encoder != fcWebMVideoEncoder::VP9LossLess) {
         switch (conf.bitrate_mode) {
-        case fcCBR:
+        case fcBitrateMode::CBR:
             vpx_config.rc_end_usage = VPX_CBR;
             break;
-        case fcVBR:
+        case fcBitrateMode::VBR:
             vpx_config.rc_end_usage = VPX_VBR;
             break;
         }

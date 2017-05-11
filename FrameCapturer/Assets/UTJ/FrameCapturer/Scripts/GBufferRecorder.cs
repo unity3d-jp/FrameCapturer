@@ -189,11 +189,20 @@ namespace UTJ.FrameCapturer
             if (m_matCopy == null) m_matCopy = new Material(m_shCopy);
 
             var cam = GetComponent<Camera>();
+            int captureWidth = cam.pixelWidth;
+            int captureHeight = cam.pixelHeight;
+            if (m_encoderConfigs.format == MovieEncoder.Type.MP4 ||
+                m_encoderConfigs.format == MovieEncoder.Type.WebM)
+            {
+                captureWidth = (captureWidth + 1) & ~1;
+                captureHeight = (captureHeight + 1) & ~1;
+            }
+
             if (m_fbComponents.frameBuffer)
             {
                 if (m_cbCopyFB == null)
                 {
-                    m_rtFB = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0, RenderTextureFormat.ARGBHalf);
+                    m_rtFB = new RenderTexture(captureWidth, captureHeight, 0, RenderTextureFormat.ARGBHalf);
                     m_rtFB.wrapMode = TextureWrapMode.Repeat;
                     m_rtFB.Create();
 
@@ -215,7 +224,7 @@ namespace UTJ.FrameCapturer
                     m_rtGB = new RenderTexture[8];
                     for (int i = 0; i < m_rtGB.Length; ++i)
                     {
-                        m_rtGB[i] = new RenderTexture(cam.pixelWidth, cam.pixelHeight, 0, RenderTextureFormat.ARGBHalf);
+                        m_rtGB[i] = new RenderTexture(captureWidth, captureHeight, 0, RenderTextureFormat.ARGBHalf);
                         m_rtGB[i].filterMode = FilterMode.Point;
                         m_rtGB[i].Create();
                     }
