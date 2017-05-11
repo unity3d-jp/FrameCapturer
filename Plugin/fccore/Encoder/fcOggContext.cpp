@@ -29,24 +29,32 @@ using fcOggWriterPtr = std::unique_ptr<fcOggWriter>;
 class fcOggContext : public fcIOggContext
 {
 public:
+    using AudioBuffer = RawVector<float>;
+    using AudioBufferPtr = std::shared_ptr<AudioBuffer>;
+    using AudioBufferQueue = ResourceQueue<AudioBufferPtr>;
+
     fcOggContext(const fcOggConfig& conf);
     virtual ~fcOggContext() override;
     virtual void release()  override;
     virtual void addOutputStream(fcStream *s) override;
     virtual bool write(const float *samples, int num_samples, fcTime timestamp) override;
 
+    void pageOut();
+
 private:
     fcOggConfig m_conf;
     std::vector<fcOggWriterPtr> m_writers;
 
-    vorbis_info             m_vo_info;
-    vorbis_comment          m_vo_comment;
-    vorbis_dsp_state        m_vo_dsp;
-    vorbis_block            m_vo_block;
+    TaskQueue           m_tasks;
+    AudioBufferQueue    m_buffers;
 
-    ogg_packet m_og_header;
-    ogg_packet m_og_header_comm;
-    ogg_packet m_og_header_code;
+    vorbis_info         m_vo_info;
+    vorbis_comment      m_vo_comment;
+    vorbis_dsp_state    m_vo_dsp;
+    vorbis_block        m_vo_block;
+    ogg_packet          m_og_header;
+    ogg_packet          m_og_header_comm;
+    ogg_packet          m_og_header_code;
 };
 
 
@@ -109,11 +117,23 @@ fcOggContext::fcOggContext(const fcOggConfig& conf)
     vorbis_analysis_init(&m_vo_dsp, &m_vo_info);
     vorbis_block_init(&m_vo_dsp, &m_vo_block);
     vorbis_analysis_headerout(&m_vo_dsp, &m_vo_comment, &m_og_header, &m_og_header_comm, &m_og_header_code);
+
+    for (int i = 0; i < 8; ++i) {
+        m_buffers.push(AudioBufferPtr(new AudioBuffer()));
+    }
 }
 
 
 fcOggContext::~fcOggContext()
 {
+    m_tasks.run([this]() {
+        if (vorbis_analysis_wrote(&m_vo_dsp, 0) == 0) {
+            pageOut();
+        }
+    });
+    m_tasks.wait();
+    m_writers.clear();
+
     vorbis_block_clear(&m_vo_block);
     vorbis_dsp_clear(&m_vo_dsp);
     vorbis_comment_clear(&m_vo_comment);
@@ -139,19 +159,33 @@ bool fcOggContext::write(const float *samples, int num_samples, fcTime timestamp
 {
     if (!samples || num_samples == 0) { return false; }
 
-    int num_channels = m_conf.num_channels;
-    int block_size = (int)num_samples / num_channels;
-    float **buffer = vorbis_analysis_buffer(&m_vo_dsp, block_size);
-    for (int bi = 0; bi < block_size; bi += num_channels) {
-        for (int ci = 0; ci < num_channels; ++ci) {
-            buffer[ci][bi] = samples[bi*num_channels + ci];
+    auto buf = m_buffers.pop();
+    buf->assign(samples, num_samples);
+
+    m_tasks.run([this, buf]() {
+        int num_channels = m_conf.num_channels;
+        int num_samples = (int)buf->size();
+        const float *samples = buf->data();
+
+        int block_size = (int)num_samples / num_channels;
+        float **buffer = vorbis_analysis_buffer(&m_vo_dsp, block_size);
+        for (int bi = 0; bi < block_size; bi += num_channels) {
+            for (int ci = 0; ci < num_channels; ++ci) {
+                buffer[ci][bi] = samples[bi*num_channels + ci];
+            }
         }
-    }
+        if (vorbis_analysis_wrote(&m_vo_dsp, block_size) == 0) {
+            pageOut();
+        }
 
-    if (vorbis_analysis_wrote(&m_vo_dsp, block_size) != 0) {
-        return false;
-    }
+        m_buffers.push(buf);
+    });
 
+    return true;
+}
+
+void fcOggContext::pageOut()
+{
     while (vorbis_analysis_blockout(&m_vo_dsp, &m_vo_block) == 1) {
         vorbis_analysis(&m_vo_block, nullptr);
         vorbis_bitrate_addblock(&m_vo_block);
@@ -164,9 +198,8 @@ bool fcOggContext::write(const float *samples, int num_samples, fcTime timestamp
             }
         }
     }
-
-    return true;
 }
+
 
 fcIOggContext* fcOggCreateContextImpl(const fcOggConfig *conf)
 {
