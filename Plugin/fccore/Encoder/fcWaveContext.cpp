@@ -88,6 +88,8 @@ void fcWaveContext::waveEnd(fcStream *s)
 
 bool fcWaveContext::write(const float *samples, int num_samples, fcTime timestamp)
 {
+    if (!samples || num_samples == 0) { return false; }
+
     if (m_conf.bits_per_sample == 8) {
         m_sample_buffer.resize(num_samples * 1);
         fcF32ToU8Samples((uint8_t*)m_sample_buffer.data(), samples, num_samples);

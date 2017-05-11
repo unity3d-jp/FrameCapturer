@@ -605,6 +605,50 @@ fcAPI bool            fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samp
 #endif // fcSupportWave
 
 
+#ifdef fcSupportVorbis
+#include "Encoder/fcOggContext.h"
+
+fcAPI bool fcOggIsSupported() { return true; }
+
+fcAPI fcIOggContext*  fcOggCreateContext(fcOggConfig *conf)
+{
+    fcTraceFunc();
+    if (!conf) { return nullptr; }
+    return fcOggCreateContextImpl(conf);
+}
+
+fcAPI void fcOggDestroyContext(fcIOggContext *ctx)
+{
+    fcTraceFunc();
+    if (!ctx) { return; }
+    ctx->release();
+}
+
+fcAPI void fcOggAddOutputStream(fcIOggContext *ctx, fcStream *stream)
+{
+    fcTraceFunc();
+    if (!ctx || !stream) { return; }
+    ctx->addOutputStream(stream);
+}
+
+fcAPI bool fcOggAddAudioFrame(fcIOggContext *ctx, const float *samples, int num_samples, fcTime timestamp)
+{
+    fcTraceFunc();
+    if (!ctx) { return false; }
+    return ctx->write(samples, num_samples, timestamp);
+}
+
+#else // fcSupportVorbis
+
+fcAPI bool            fcOggIsSupported() { return false; }
+fcAPI fcIOggContext*  fcOggCreateContext(fcOggConfig *conf) { return nullptr; }
+fcAPI void            fcOggDestroyContext(fcIOggContext *ctx) {}
+fcAPI void            fcOggAddOutputStream(fcIOggContext *ctx, fcStream *stream) {}
+fcAPI bool            fcOggAddAudioFrame(fcIOggContext *ctx, const float *samples, int num_samples, fcTime timestamp) { return false; }
+
+#endif // fcSupportVorbis
+
+
 // -------------------------------------------------------------
 // Flac Exporter
 // -------------------------------------------------------------

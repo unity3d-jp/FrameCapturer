@@ -18,7 +18,7 @@ public:
     template<class Body>
     void run(const Body &body)
     {
-        while (m_futures.size() >= m_max_tasks) {
+        while (m_futures.size() >= (size_t)m_max_tasks) {
             m_futures.front().get();
             m_futures.pop_front();
         }

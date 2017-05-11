@@ -23,6 +23,7 @@ class fcIGifContext;
 class fcIMP4Context;
 class fcIWebMContext;
 class fcIWaveContext;
+class fcIOggContext;
 class fcIFlacContext;
 using fcTime = double;
 
@@ -283,7 +284,7 @@ struct fcWebMConfig
     int audio_sample_rate = 48000;
     int audio_num_channels = 2;
     fcBitrateMode audio_bitrate_mode = fcVBR;
-    int audio_target_bitrate = 64 * 1000;
+    int audio_target_bitrate = 128 * 1000;
 };
 
 fcAPI bool            fcWebMIsSupported();
@@ -315,6 +316,23 @@ fcAPI void            fcWaveDestroyContext(fcIWaveContext *ctx);
 fcAPI void            fcWaveAddOutputStream(fcIWaveContext *ctx, fcStream *stream);
 fcAPI bool            fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
 
+
+// -------------------------------------------------------------
+// Ogg Exporter
+// -------------------------------------------------------------
+
+struct fcOggConfig
+{
+    int sample_rate = 48000;
+    int num_channels = 2;
+    fcBitrateMode bitrate_mode = fcBitrateMode::fcVBR;
+    int target_bitrate = 128 * 1000;
+};
+fcAPI bool            fcOggIsSupported();
+fcAPI fcIOggContext*  fcOggCreateContext(fcOggConfig *conf);
+fcAPI void            fcOggDestroyContext(fcIOggContext *ctx);
+fcAPI void            fcOggAddOutputStream(fcIOggContext *ctx, fcStream *stream);
+fcAPI bool            fcOggAddAudioFrame(fcIOggContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
 
 
 // -------------------------------------------------------------

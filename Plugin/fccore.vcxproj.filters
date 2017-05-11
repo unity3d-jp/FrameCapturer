@@ -97,6 +97,9 @@
     <ClCompile Include="fccore\Foundation\TaskGroup.cpp">
       <Filter>fccore\Foundation</Filter>
     </ClCompile>
+    <ClCompile Include="fccore\Encoder\fcOggContext.cpp">
+      <Filter>fccore\Encoder</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fccore\GraphicsDevice\fcGraphicsDevice.h">
@@ -176,6 +179,9 @@
     </ClInclude>
     <ClInclude Include="fccore\Foundation\TaskGroup.h">
       <Filter>fccore\Foundation</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\fcOggContext.h">
+      <Filter>fccore\Encoder</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

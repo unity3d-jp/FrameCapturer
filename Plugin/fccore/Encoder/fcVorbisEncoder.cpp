@@ -51,7 +51,6 @@ fcVorbisEncoder::fcVorbisEncoder(const fcVorbisEncoderConfig& conf)
         vorbis_encode_init(&m_vo_info, conf.num_channels, conf.sample_rate, -1, conf.target_bitrate, -1);
         break;
     }
-
     vorbis_comment_init(&m_vo_comment);
     vorbis_analysis_init(&m_vo_dsp, &m_vo_info);
     vorbis_block_init(&m_vo_dsp, &m_vo_block);

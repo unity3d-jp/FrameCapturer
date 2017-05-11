@@ -19,7 +19,7 @@ public:
     fcMkvStream(BinaryStream &stream) : m_stream(stream) {}
     int32_t Write(const void* buf, uint32_t len) override { m_stream.write(buf, len); return 0; }
     mkvmuxer::int64 Position() const override { return m_stream.tellp(); }
-    mkvmuxer::int32 Position(mkvmuxer::int64 position) override { m_stream.seekp(position); return 0; }
+    mkvmuxer::int32 Position(mkvmuxer::int64 position) override { m_stream.seekp((size_t)position); return 0; }
     bool Seekable() const override { return true; }
     void ElementStartNotify(mkvmuxer::uint64 element_id, mkvmuxer::int64 position) override {}
 private:

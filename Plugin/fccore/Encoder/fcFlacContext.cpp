@@ -4,7 +4,7 @@
 #include "fcFlacContext.h"
 
 #ifdef fcSupportFlac
-#ifdef fcWindows
+#ifdef _MSC_VER
     #pragma comment(lib, "libFLAC_static.lib")
     #define FLAC__NO_DLL
 #endif
@@ -75,7 +75,7 @@ static FLAC__StreamEncoderWriteStatus stream_encoder_write_callback_(const FLAC_
 static FLAC__StreamEncoderSeekStatus stream_encoder_seekp_callback_(const FLAC__StreamEncoder *encoder, FLAC__uint64 absolute_byte_offset, void *client_data)
 {
     auto *f = (fcStream*)client_data;
-    f->seekp(absolute_byte_offset);
+    f->seekp((size_t)absolute_byte_offset);
     return FLAC__STREAM_ENCODER_SEEK_STATUS_OK;
 }
 
@@ -161,6 +161,8 @@ void fcFlacContext::addOutputStream(fcStream *s)
 
 bool fcFlacContext::write(const float *samples, int num_samples, fcTime timestamp)
 {
+    if (!samples || num_samples == 0) { return false; }
+
     auto buf = m_buffers.pop();
     buf->assign(samples, num_samples);
 

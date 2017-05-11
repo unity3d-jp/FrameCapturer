@@ -31,6 +31,7 @@
     <ClCompile Include="fccore\Encoder\fcH264EncoderOpenH264.cpp" />
     <ClCompile Include="fccore\Encoder\fcMP4Context.cpp" />
     <ClCompile Include="fccore\Encoder\fcMP4Writer.cpp" />
+    <ClCompile Include="fccore\Encoder\fcOggContext.cpp" />
     <ClCompile Include="fccore\Encoder\fcOpusEncoder.cpp" />
     <ClCompile Include="fccore\Encoder\fcPngContext.cpp" />
     <ClCompile Include="fccore\Encoder\fcVorbisEncoder.cpp" />
@@ -66,6 +67,7 @@
     <ClInclude Include="fccore\Encoder\fcMP4Context.h" />
     <ClInclude Include="fccore\Encoder\fcMP4Internal.h" />
     <ClInclude Include="fccore\Encoder\fcMP4Writer.h" />
+    <ClInclude Include="fccore\Encoder\fcOggContext.h" />
     <ClInclude Include="fccore\Encoder\fcPngContext.h" />
     <ClInclude Include="fccore\Encoder\fcVorbisEncoder.h" />
     <ClInclude Include="fccore\Encoder\fcVPXEncoder.h" />

@@ -7,6 +7,7 @@ void GifTest();
 void MP4Test();
 void WebMTest();
 void WaveTest();
+void OggTest();
 void FlacTest();
 void ConvertTest();
 
@@ -18,6 +19,7 @@ int main(int argc, char *argv[])
     bool mp4 = false;
     bool webm = false;
     bool wave = false;
+    bool ogg = false;
     bool flac = false;
     bool convert = false;
 
@@ -33,6 +35,7 @@ int main(int argc, char *argv[])
             else if (strstr(argv[i], "mp4")) { mp4 = true; }
             else if (strstr(argv[i], "webm")) { webm = true; }
             else if (strstr(argv[i], "wave")) { wave = true; }
+            else if (strstr(argv[i], "ogg")) { ogg = true; }
             else if (strstr(argv[i], "flac")) { flac = true; }
             else if (strstr(argv[i], "convert")) { convert = true; }
         }
@@ -45,6 +48,7 @@ int main(int argc, char *argv[])
     if (mp4) MP4Test();
     if (webm) WebMTest();
     if (wave) WaveTest();
+    if (ogg) OggTest();
     if (flac) FlacTest();
     if (convert) ConvertTest();
 }
