@@ -38,6 +38,9 @@
     #define fcSupportVPX
     #define fcSupportVorbis
     //#define fcSupportOpus
+
+    #define fcSupportWave
+    #define fcSupportFlac
 #endif
 
 #define fcEnableLogging

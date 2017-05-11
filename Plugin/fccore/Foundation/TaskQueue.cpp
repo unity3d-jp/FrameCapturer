@@ -1,32 +1,29 @@
 #include "pch.h"
 #include "TaskQueue.h"
 
-//#define dbgForceSingleThreaded
-
-void TaskQueue::start()
+TaskQueue::TaskQueue()
 {
-    stop();
-    m_stop = false;
+}
 
-#ifndef dbgForceSingleThreaded
-    m_thread = std::thread([this]() { process(); });
-#endif
+TaskQueue::~TaskQueue()
+{
+    wait();
 }
 
 void TaskQueue::run(const Task& v)
 {
-#ifdef dbgForceSingleThreaded
-    v();
-#else
+    if (!m_thread.joinable()) {
+        m_thread = std::thread([this]() { process(); });
+    }
+
     {
         Lock l(m_mutex);
         m_tasks.push_back(v);
     }
     m_condition.notify_one();
-#endif
 }
 
-void TaskQueue::stop()
+void TaskQueue::wait()
 {
     if (m_thread.joinable()) {
         m_stop = true;
@@ -37,7 +34,7 @@ void TaskQueue::stop()
 
 void TaskQueue::process()
 {
-    while (!m_stop)
+    while (!m_stop || !m_tasks.empty())
     {
         Task task;
         {

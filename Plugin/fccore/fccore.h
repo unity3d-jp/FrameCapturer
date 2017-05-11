@@ -22,6 +22,9 @@ class fcIExrContext;
 class fcIGifContext;
 class fcIMP4Context;
 class fcIWebMContext;
+class fcIWaveContext;
+class fcIOggContext;
+class fcIFlacContext;
 using fcTime = double;
 
 enum fcPixelFormat
@@ -281,7 +284,7 @@ struct fcWebMConfig
     int audio_sample_rate = 48000;
     int audio_num_channels = 2;
     fcBitrateMode audio_bitrate_mode = fcVBR;
-    int audio_target_bitrate = 64 * 1000;
+    int audio_target_bitrate = 128 * 1000;
 };
 
 fcAPI bool            fcWebMIsSupported();
@@ -294,3 +297,61 @@ fcAPI bool            fcWebMAddVideoFramePixels(fcIWebMContext *ctx, const void 
 fcAPI bool            fcWebMAddVideoFrameTexture(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
 fcAPI bool            fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
+
+
+
+// -------------------------------------------------------------
+// Wave Exporter
+// -------------------------------------------------------------
+
+struct fcWaveConfig
+{
+    int sample_rate = 48000;
+    int num_channels = 2;
+    int bits_per_sample = 16;
+};
+fcAPI bool            fcWaveIsSupported();
+fcAPI fcIWaveContext* fcWaveCreateContext(fcWaveConfig *conf);
+fcAPI void            fcWaveDestroyContext(fcIWaveContext *ctx);
+fcAPI void            fcWaveAddOutputStream(fcIWaveContext *ctx, fcStream *stream);
+fcAPI bool            fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
+
+
+// -------------------------------------------------------------
+// Ogg Exporter
+// -------------------------------------------------------------
+
+struct fcOggConfig
+{
+    int sample_rate = 48000;
+    int num_channels = 2;
+    fcBitrateMode bitrate_mode = fcBitrateMode::fcVBR;
+    int target_bitrate = 128 * 1000;
+};
+fcAPI bool            fcOggIsSupported();
+fcAPI fcIOggContext*  fcOggCreateContext(fcOggConfig *conf);
+fcAPI void            fcOggDestroyContext(fcIOggContext *ctx);
+fcAPI void            fcOggAddOutputStream(fcIOggContext *ctx, fcStream *stream);
+fcAPI bool            fcOggAddAudioFrame(fcIOggContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
+
+
+// -------------------------------------------------------------
+// Flac Exporter
+// -------------------------------------------------------------
+
+struct fcFlacConfig
+{
+    int sample_rate = 48000;
+    int num_channels = 2;
+    int bits_per_sample = 16;
+    int compression_level = 5;
+    int block_size = 0;
+    bool verify = false;
+};
+fcAPI bool            fcFlacIsSupported();
+fcAPI fcIFlacContext* fcFlacCreateContext(fcFlacConfig *conf);
+fcAPI void            fcFlacDestroyContext(fcIFlacContext *ctx);
+fcAPI void            fcFlacAddOutputStream(fcIFlacContext *ctx, fcStream *stream);
+fcAPI bool            fcFlacAddAudioFrame(fcIFlacContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
+
+

@@ -138,9 +138,8 @@ fcMP4ContextWMF::fcMP4ContextWMF(const fcMP4Config &conf, fcIGraphicsDevice *dev
 
 fcMP4ContextWMF::~fcMP4ContextWMF()
 {
-    if (m_conf.video) { m_video_tasks.stop(); }
-    if (m_conf.audio) { m_audio_tasks.stop(); }
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    m_video_tasks.wait();
+    m_audio_tasks.wait();
 
     if (m_mf_writer) {
         m_mf_writer->Finalize();
@@ -252,7 +251,6 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
             for (int i = 0; i < 4; ++i) {
                 m_video_buffers.push(VideoBufferPtr(new VideoBuffer()));
             }
-            m_video_tasks.start();
         }
     }
 
@@ -289,7 +287,6 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
             for (int i = 0; i < 4; ++i) {
                 m_audio_buffers.push(AudioBufferPtr(new AudioBuffer()));
             }
-            m_audio_tasks.start();
         }
     }
 

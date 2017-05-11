@@ -561,6 +561,144 @@ fcAPI bool fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int nu
 #endif // fcSupportWebM
 
 
+#ifdef fcSupportWave
+#include "Encoder/fcWaveContext.h"
+
+fcAPI bool fcWaveIsSupported() { return true; }
+
+fcAPI fcIWaveContext* fcWaveCreateContext(fcWaveConfig *conf)
+{
+    fcTraceFunc();
+    if (!conf) { return nullptr; }
+    return fcWaveCreateContextImpl(conf);
+}
+
+fcAPI void fcWaveDestroyContext(fcIWaveContext *ctx)
+{
+    fcTraceFunc();
+    if (!ctx) { return; }
+    ctx->release();
+}
+
+fcAPI void fcWaveAddOutputStream(fcIWaveContext *ctx, fcStream *stream)
+{
+    fcTraceFunc();
+    if (!ctx || !stream) { return; }
+    ctx->addOutputStream(stream);
+}
+
+fcAPI bool fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int num_samples, fcTime timestamp)
+{
+    fcTraceFunc();
+    if (!ctx) { return false; }
+    return ctx->write(samples, num_samples, timestamp);
+}
+
+#else // fcSupportWave
+
+fcAPI bool            fcWaveIsSupported() { return false; }
+fcAPI fcIWaveContext* fcWaveCreateContext(fcWaveConfig *conf) { return nullptr; }
+fcAPI void            fcWaveDestroyContext(fcIWaveContext *ctx) {}
+fcAPI void            fcWaveAddOutputStream(fcIWaveContext *ctx, fcStream *stream) {}
+fcAPI bool            fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int num_samples, fcTime timestamp) { return false; }
+
+#endif // fcSupportWave
+
+
+#ifdef fcSupportVorbis
+#include "Encoder/fcOggContext.h"
+
+fcAPI bool fcOggIsSupported() { return true; }
+
+fcAPI fcIOggContext*  fcOggCreateContext(fcOggConfig *conf)
+{
+    fcTraceFunc();
+    if (!conf) { return nullptr; }
+    return fcOggCreateContextImpl(conf);
+}
+
+fcAPI void fcOggDestroyContext(fcIOggContext *ctx)
+{
+    fcTraceFunc();
+    if (!ctx) { return; }
+    ctx->release();
+}
+
+fcAPI void fcOggAddOutputStream(fcIOggContext *ctx, fcStream *stream)
+{
+    fcTraceFunc();
+    if (!ctx || !stream) { return; }
+    ctx->addOutputStream(stream);
+}
+
+fcAPI bool fcOggAddAudioFrame(fcIOggContext *ctx, const float *samples, int num_samples, fcTime timestamp)
+{
+    fcTraceFunc();
+    if (!ctx) { return false; }
+    return ctx->write(samples, num_samples, timestamp);
+}
+
+#else // fcSupportVorbis
+
+fcAPI bool            fcOggIsSupported() { return false; }
+fcAPI fcIOggContext*  fcOggCreateContext(fcOggConfig *conf) { return nullptr; }
+fcAPI void            fcOggDestroyContext(fcIOggContext *ctx) {}
+fcAPI void            fcOggAddOutputStream(fcIOggContext *ctx, fcStream *stream) {}
+fcAPI bool            fcOggAddAudioFrame(fcIOggContext *ctx, const float *samples, int num_samples, fcTime timestamp) { return false; }
+
+#endif // fcSupportVorbis
+
+
+// -------------------------------------------------------------
+// Flac Exporter
+// -------------------------------------------------------------
+
+#ifdef fcSupportFlac
+#include "Encoder/fcFlacContext.h"
+
+fcAPI bool fcFlacIsSupported() { return true; }
+
+fcAPI fcIFlacContext* fcFlacCreateContext(fcFlacConfig *conf)
+{
+    fcTraceFunc();
+    if (!conf) { return nullptr; }
+    return fcFlacCreateContextImpl(conf);
+}
+
+fcAPI void fcFlacDestroyContext(fcIFlacContext *ctx)
+{
+    fcTraceFunc();
+    if (!ctx) { return; }
+    ctx->release();
+}
+
+fcAPI void fcFlacAddOutputStream(fcIFlacContext *ctx, fcStream *stream)
+{
+    fcTraceFunc();
+    if (!ctx || !stream) { return; }
+    ctx->addOutputStream(stream);
+}
+
+fcAPI bool fcFlacAddAudioFrame(fcIFlacContext *ctx, const float *samples, int num_samples, fcTime timestamp)
+{
+    fcTraceFunc();
+    if (!ctx) { return false; }
+    return ctx->write(samples, num_samples, timestamp);
+}
+
+#else // fcSupportFlac
+
+fcAPI bool            fcFlacIsSupported() { return false; }
+fcAPI fcIFlacContext* fcFlacCreateContext(fcFlacConfig *conf) { return nullptr; }
+fcAPI void            fcFlacDestroyContext(fcIFlacContext *ctx) { return; }
+fcAPI void            fcFlacAddOutputStream(fcIFlacContext *ctx, fcStream *stream) { return; }
+fcAPI bool            fcFlacAddAudioFrame(fcIFlacContext *ctx, const float *samples, int num_samples, fcTime timestamp) { return false; }
+
+#endif // fcSupportFlac
+
+
+
+
 
 #if defined(fcWindows) && !defined(fcStaticLink)
 #include <windows.h>

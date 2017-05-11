@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="ConvertTest.cpp" />
     <ClCompile Include="ExrTest.cpp" />
+    <ClCompile Include="FlacTest.cpp" />
     <ClCompile Include="GifTest.cpp" />
     <ClCompile Include="GraphicsDevice.cpp" />
     <ClCompile Include="MemoryLeakBuster.cpp">
@@ -30,6 +31,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Master|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="MP4Test.cpp" />
+    <ClCompile Include="OggTest.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">Create</PrecompiledHeader>
@@ -39,6 +41,7 @@
     <ClCompile Include="PngTest.cpp" />
     <ClCompile Include="Test.cpp" />
     <ClCompile Include="TestCommon.cpp" />
+    <ClCompile Include="WaveTest.cpp" />
     <ClCompile Include="WebMTest.cpp" />
   </ItemGroup>
   <ItemGroup>

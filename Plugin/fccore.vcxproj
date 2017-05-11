@@ -22,6 +22,7 @@
     <ClCompile Include="fccore\Encoder\fcAACEncoderFAAC.cpp" />
     <ClCompile Include="fccore\Encoder\fcAACEncoderIntel.cpp" />
     <ClCompile Include="fccore\Encoder\fcExrContext.cpp" />
+    <ClCompile Include="fccore\Encoder\fcFlacContext.cpp" />
     <ClCompile Include="fccore\Encoder\fcGifContext.cpp" />
     <ClCompile Include="fccore\Encoder\fcH264Encoder.cpp" />
     <ClCompile Include="fccore\Encoder\fcH264EncoderAMD.cpp" />
@@ -30,15 +31,18 @@
     <ClCompile Include="fccore\Encoder\fcH264EncoderOpenH264.cpp" />
     <ClCompile Include="fccore\Encoder\fcMP4Context.cpp" />
     <ClCompile Include="fccore\Encoder\fcMP4Writer.cpp" />
+    <ClCompile Include="fccore\Encoder\fcOggContext.cpp" />
     <ClCompile Include="fccore\Encoder\fcOpusEncoder.cpp" />
     <ClCompile Include="fccore\Encoder\fcPngContext.cpp" />
     <ClCompile Include="fccore\Encoder\fcVorbisEncoder.cpp" />
     <ClCompile Include="fccore\Encoder\fcVPXEncoder.cpp" />
+    <ClCompile Include="fccore\Encoder\fcWaveContext.cpp" />
     <ClCompile Include="fccore\Encoder\fcWebMContext.cpp" />
     <ClCompile Include="fccore\Encoder\fcWebMWriter.cpp" />
     <ClCompile Include="fccore\Encoder\Windows\fcMP4_WMF.cpp" />
     <ClCompile Include="fccore\fccore.cpp" />
     <ClCompile Include="fccore\Foundation\Buffer.cpp" />
+    <ClCompile Include="fccore\Foundation\TaskGroup.cpp" />
     <ClCompile Include="fccore\GraphicsDevice\fcGraphicsDevice.cpp" />
     <ClCompile Include="fccore\GraphicsDevice\fcGraphicsDeviceD3D11.cpp" />
     <ClCompile Include="fccore\GraphicsDevice\fcGraphicsDeviceD3D9.cpp" />
@@ -49,7 +53,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Master|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="fccore\Foundation\fcThreadPool.cpp" />
     <ClCompile Include="fccore\Foundation\Misc.cpp" />
     <ClCompile Include="fccore\Foundation\PixelFormat.cpp" />
     <ClCompile Include="fccore\Foundation\TaskQueue.cpp" />
@@ -58,23 +61,26 @@
   <ItemGroup>
     <ClInclude Include="fccore\Encoder\fcAACEncoder.h" />
     <ClInclude Include="fccore\Encoder\fcExrContext.h" />
+    <ClInclude Include="fccore\Encoder\fcFlacContext.h" />
     <ClInclude Include="fccore\Encoder\fcGifContext.h" />
     <ClInclude Include="fccore\Encoder\fcH264Encoder.h" />
     <ClInclude Include="fccore\Encoder\fcMP4Context.h" />
     <ClInclude Include="fccore\Encoder\fcMP4Internal.h" />
     <ClInclude Include="fccore\Encoder\fcMP4Writer.h" />
+    <ClInclude Include="fccore\Encoder\fcOggContext.h" />
     <ClInclude Include="fccore\Encoder\fcPngContext.h" />
     <ClInclude Include="fccore\Encoder\fcVorbisEncoder.h" />
     <ClInclude Include="fccore\Encoder\fcVPXEncoder.h" />
+    <ClInclude Include="fccore\Encoder\fcWaveContext.h" />
     <ClInclude Include="fccore\Encoder\fcWebMContext.h" />
     <ClInclude Include="fccore\Encoder\fcWebMWriter.h" />
     <ClInclude Include="fccore\fccore.h" />
     <ClInclude Include="fccore\fcInternal.h" />
+    <ClInclude Include="fccore\Foundation\TaskGroup.h" />
     <ClInclude Include="fccore\GraphicsDevice\fcGraphicsDevice.h" />
     <ClInclude Include="fccore\pch.h" />
     <ClInclude Include="fccore\Foundation\Buffer.h" />
     <ClInclude Include="fccore\Foundation\fcFoundation.h" />
-    <ClInclude Include="fccore\Foundation\fcThreadPool.h" />
     <ClInclude Include="fccore\Foundation\LazyInstance.h" />
     <ClInclude Include="fccore\Foundation\Misc.h" />
     <ClInclude Include="fccore\Foundation\PixelFormat.h" />

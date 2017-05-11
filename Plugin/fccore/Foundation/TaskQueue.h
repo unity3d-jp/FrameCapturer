@@ -47,9 +47,10 @@ public:
     using Tasks = std::deque<Task>;
     using Lock = std::unique_lock<std::mutex>;
 
-    void start();
+    TaskQueue();
+    ~TaskQueue();
+    void wait();
     void run(const Task& v);
-    void stop();
 
 private:
     void process();

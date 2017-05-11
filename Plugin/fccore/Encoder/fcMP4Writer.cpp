@@ -17,8 +17,8 @@ class Box
 public:
     Box(BinaryStream& stream) : m_stream(stream) {}
 
-    template<class F>
-    void operator()(u32 name, const F &f)
+    template<class Body>
+    void operator()(u32 name, const Body &f)
     {
         size_t offset = m_stream.tellp();
         m_stream << u32(0) << name; // reserve

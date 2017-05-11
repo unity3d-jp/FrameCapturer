@@ -345,3 +345,27 @@ export void Rf32ToRf16(uniform f16 dst[], uniform float src[], uniform size_t si
 export void Rf32ToRGBAf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert14(to_f32) }
 export void Rf32ToRGBf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert13(to_f32) }
 export void Rf32ToRGf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert12(to_f32) }
+
+
+
+export void F32ToU8Samples(uniform unsigned int8 dst[], uniform const float src[], uniform size_t size)
+{
+    foreach(i=0 ... size) { dst[i] = (unsigned int8)((src[i] * 0.5 + 0.5) * 255.0f); }
+}
+export void F32ToI16Samples(uniform int16 dst[], uniform const float src[], uniform size_t size)
+{
+    foreach(i=0 ... size) { dst[i] = (int16)(src[i] * 32767.0f); }
+}
+export void F32ToI24Samples(uniform unsigned int8 dst[], uniform const float src[], uniform size_t size)
+{
+    foreach(i=0 ... size) {
+        int32 v = src[i] * 8388608.0f;
+        dst[i*3 + 0] = (v & 0x0000FF) >> 0;
+        dst[i*3 + 1] = (v & 0x00FF00) >> 8;
+        dst[i*3 + 2] = (v & 0xFF0000) >> 16;
+    }
+}
+export void F32ToI32Samples(uniform int32 dst[], uniform const float src[], uniform size_t size, uniform float scale)
+{
+    foreach(i=0 ... size) { dst[i] = (int32)(src[i] * scale); }
+}

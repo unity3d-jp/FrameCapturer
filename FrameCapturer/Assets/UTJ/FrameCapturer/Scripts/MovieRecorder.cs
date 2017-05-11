@@ -196,7 +196,7 @@ namespace UTJ.FrameCapturer
 
                 m_encoderConfigs.Setup(m_scratchBuffer.width, m_scratchBuffer.height, 3, targetFramerate);
                 m_encoder = MovieEncoder.Create(m_encoderConfigs, outPath);
-                if (!m_encoder)
+                if (m_encoder == null)
                 {
                     EndRecording();
                     return false;

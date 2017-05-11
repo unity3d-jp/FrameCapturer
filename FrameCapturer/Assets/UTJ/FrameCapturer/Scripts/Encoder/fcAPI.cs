@@ -53,6 +53,14 @@ namespace UTJ.FrameCapturer
             VBR,
         }
 
+        public enum fcAudioBitsPerSample
+        {
+            _8Bits = 8,
+            _16Bits = 16,
+            _24Bits = 24,
+        }
+
+
 
         [DllImport ("fccore")] public static extern void         fcSetModulePath(string path);
         [DllImport ("fccore")] public static extern double       fcGetTime();
@@ -459,6 +467,131 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] public static extern Bool fcWebMAddVideoFramePixels(fcWebMContext ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
         // timestamp=-1 is treated as current time.
         [DllImport ("fccore")] public static extern Bool fcWebMAddAudioFrame(fcWebMContext ctx, float[] samples, int num_samples, double timestamp = -1.0);
+
+
+        // -------------------------------------------------------------
+        // Wave Exporter
+        // -------------------------------------------------------------
+        public struct fcWaveContext
+        {
+            public IntPtr ptr;
+            public void Release() { fcWaveDestroyContext(this); ptr = IntPtr.Zero; }
+            public static implicit operator bool(fcWaveContext v) { return v.ptr != IntPtr.Zero; }
+        }
+
+        [Serializable]
+        public struct fcWaveConfig
+        {
+            [HideInInspector] public int sampleRate;
+            [HideInInspector] public int numChannels;
+            public fcAudioBitsPerSample bitsPerSample;
+
+            public static fcWaveConfig default_value
+            {
+                get
+                {
+                    return new fcWaveConfig
+                    {
+                        sampleRate = 48000,
+                        numChannels = 2,
+                        bitsPerSample = fcAudioBitsPerSample._16Bits,
+                    };
+                }
+            }
+        }
+
+        [DllImport ("fccore")] public static extern Bool fcWaveIsSupported();
+        [DllImport ("fccore")] public static extern fcWaveContext fcWaveCreateContext(ref fcWaveConfig conf);
+        [DllImport ("fccore")] private static extern void fcWaveDestroyContext(fcWaveContext ctx);
+        [DllImport ("fccore")] public static extern void fcWaveAddOutputStream(fcWaveContext ctx, fcStream stream);
+        [DllImport ("fccore")] public static extern Bool fcWaveAddAudioFrame(fcWaveContext ctx, float[] samples, int num_samples, double timestamp = -1.0);
+
+        
+
+        // -------------------------------------------------------------
+        // Ogg Exporter
+        // -------------------------------------------------------------
+        public struct fcOggContext
+        {
+            public IntPtr ptr;
+            public void Release() { fcOggDestroyContext(this); ptr = IntPtr.Zero; }
+            public static implicit operator bool(fcOggContext v) { return v.ptr != IntPtr.Zero; }
+        }
+
+        [Serializable]
+        public struct fcOggConfig
+        {
+            [HideInInspector] public int sampleRate;
+            [HideInInspector] public int numChannels;
+            public fcBitrateMode bitrateMode;
+            public int targetBitrate;
+
+            public static fcOggConfig default_value
+            {
+                get
+                {
+                    return new fcOggConfig
+                    {
+                        sampleRate = 48000,
+                        numChannels = 2,
+                        bitrateMode = fcBitrateMode.VBR,
+                        targetBitrate = 128 * 1000,
+                    };
+                }
+            }
+        }
+
+        [DllImport ("fccore")] public static extern Bool fcOggIsSupported();
+        [DllImport ("fccore")] public static extern fcOggContext fcOggCreateContext(ref fcOggConfig conf);
+        [DllImport ("fccore")] private static extern void fcOggDestroyContext(fcOggContext ctx);
+        [DllImport ("fccore")] public static extern void fcOggAddOutputStream(fcOggContext ctx, fcStream stream);
+        [DllImport ("fccore")] public static extern Bool fcOggAddAudioFrame(fcOggContext ctx, float[] samples, int num_samples, double timestamp = -1.0);
+
+
+        // -------------------------------------------------------------
+        // Flac Exporter
+        // -------------------------------------------------------------
+        public struct fcFlacContext
+        {
+            public IntPtr ptr;
+            public void Release() { fcFlacDestroyContext(this); ptr = IntPtr.Zero; }
+            public static implicit operator bool(fcFlacContext v) { return v.ptr != IntPtr.Zero; }
+        }
+
+        [Serializable]
+        public struct fcFlacConfig
+        {
+            [HideInInspector] public int sampleRate;
+            [HideInInspector] public int numChannels;
+            public fcAudioBitsPerSample bitsPerSample;
+            [Range(0,9)] public int compressionLevel;
+            public int blockSize;
+            public Bool verify;
+
+            public static fcFlacConfig default_value
+            {
+                get
+                {
+                    return new fcFlacConfig
+                    {
+                        sampleRate = 48000,
+                        numChannels = 2,
+                        bitsPerSample = fcAudioBitsPerSample._16Bits,
+                        compressionLevel = 5,
+                        blockSize = 0,
+                        verify = false,
+                    };
+                }
+            }
+        }
+
+        [DllImport ("fccore")] public static extern Bool fcFlacIsSupported();
+        [DllImport ("fccore")] public static extern fcFlacContext fcFlacCreateContext(ref fcFlacConfig conf);
+        [DllImport ("fccore")] private static extern void fcFlacDestroyContext(fcFlacContext ctx);
+        [DllImport ("fccore")] public static extern void fcFlacAddOutputStream(fcFlacContext ctx, fcStream stream);
+        [DllImport ("fccore")] public static extern Bool fcFlacAddAudioFrame(fcFlacContext ctx, float[] samples, int num_samples, double timestamp = -1.0);
+
+
 
 
         public static void fcLock(RenderTexture src, TextureFormat dstfmt, Action<byte[], fcPixelFormat> body)

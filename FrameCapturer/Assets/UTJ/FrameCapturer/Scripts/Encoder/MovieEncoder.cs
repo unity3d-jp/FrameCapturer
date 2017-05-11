@@ -100,7 +100,7 @@ namespace UTJ.FrameCapturer
         }
     }
 
-    public abstract class MovieEncoder : ScriptableObject
+    public abstract class MovieEncoder
     {
         public enum Type
         {
@@ -124,11 +124,11 @@ namespace UTJ.FrameCapturer
         {
             switch (t)
             {
-                case Type.Png: return CreateInstance<PngEncoder>();
-                case Type.Exr: return CreateInstance<ExrEncoder>();
-                case Type.Gif: return CreateInstance<GifEncoder>();
-                case Type.WebM:return CreateInstance<WebMEncoder>();
-                case Type.MP4: return CreateInstance<MP4Encoder>();
+                case Type.Png: return new PngEncoder();
+                case Type.Exr: return new ExrEncoder();
+                case Type.Gif: return new GifEncoder();
+                case Type.WebM:return new WebMEncoder();
+                case Type.MP4: return new MP4Encoder();
             }
             return null;
         }
