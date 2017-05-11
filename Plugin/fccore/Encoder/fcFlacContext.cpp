@@ -27,6 +27,10 @@ using fcFlacWriterPtr = std::unique_ptr<fcFlacWriter>;
 class fcFlacContext : public fcIFlacContext
 {
 public:
+    using AudioBuffer = RawVector<float>;
+    using AudioBufferPtr = std::shared_ptr<AudioBuffer>;
+    using AudioBufferQueue = ResourceQueue<AudioBufferPtr>;
+
     fcFlacContext(const fcFlacConfig& c);
     ~fcFlacContext() override;
     void release() override;
@@ -36,7 +40,10 @@ public:
 private:
     fcFlacConfig m_conf;
     std::vector<fcFlacWriterPtr> m_writers;
-    RawVector<int> m_sample_buffer;
+
+    TaskQueue           m_tasks;
+    AudioBufferQueue    m_buffers;
+    RawVector<int>      m_conversion_buffer;
 };
 
 
@@ -124,13 +131,19 @@ bool fcFlacWriter::write(const int *samples, int num_samples)
     return FLAC__stream_encoder_process_interleaved(m_encoder, samples, num_samples) != 0;
 }
 
+
+
 fcFlacContext::fcFlacContext(const fcFlacConfig& c)
     : m_conf(c)
 {
+    for (int i = 0; i < 8; ++i) {
+        m_buffers.push(AudioBufferPtr(new AudioBuffer()));
+    }
 }
 
 fcFlacContext::~fcFlacContext()
 {
+    m_tasks.wait();
     m_writers.clear();
 }
 
@@ -148,13 +161,18 @@ void fcFlacContext::addOutputStream(fcStream *s)
 
 bool fcFlacContext::write(const float *samples, int num_samples, fcTime timestamp)
 {
-    float scale = float((1 << (m_conf.bits_per_sample - 1)) - 1);
-    m_sample_buffer.resize(num_samples);
-    fcF32ToI32Samples(m_sample_buffer.data(), samples, num_samples, scale);
+    auto buf = m_buffers.pop();
+    buf->assign(samples, num_samples);
 
-    for (auto& w : m_writers) {
-        w->write(m_sample_buffer.data(), num_samples);
-    }
+    m_tasks.run([this, buf]() {
+        float scale = float((1 << (m_conf.bits_per_sample - 1)) - 1);
+        m_conversion_buffer.resize(buf->size());
+        fcF32ToI32Samples(m_conversion_buffer.data(), buf->data(), buf->size(), scale);
+        for (auto& w : m_writers) {
+            w->write(m_conversion_buffer.data(), (int)m_conversion_buffer.size());
+        }
+        m_buffers.push(buf);
+    });
     return true;
 }
 
