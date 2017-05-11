@@ -41,6 +41,7 @@
     <ClCompile Include="fccore\Encoder\Windows\fcMP4_WMF.cpp" />
     <ClCompile Include="fccore\fccore.cpp" />
     <ClCompile Include="fccore\Foundation\Buffer.cpp" />
+    <ClCompile Include="fccore\Foundation\TaskGroup.cpp" />
     <ClCompile Include="fccore\GraphicsDevice\fcGraphicsDevice.cpp" />
     <ClCompile Include="fccore\GraphicsDevice\fcGraphicsDeviceD3D11.cpp" />
     <ClCompile Include="fccore\GraphicsDevice\fcGraphicsDeviceD3D9.cpp" />
@@ -51,7 +52,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Master|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="fccore\Foundation\fcThreadPool.cpp" />
     <ClCompile Include="fccore\Foundation\Misc.cpp" />
     <ClCompile Include="fccore\Foundation\PixelFormat.cpp" />
     <ClCompile Include="fccore\Foundation\TaskQueue.cpp" />
@@ -74,11 +74,11 @@
     <ClInclude Include="fccore\Encoder\fcWebMWriter.h" />
     <ClInclude Include="fccore\fccore.h" />
     <ClInclude Include="fccore\fcInternal.h" />
+    <ClInclude Include="fccore\Foundation\TaskGroup.h" />
     <ClInclude Include="fccore\GraphicsDevice\fcGraphicsDevice.h" />
     <ClInclude Include="fccore\pch.h" />
     <ClInclude Include="fccore\Foundation\Buffer.h" />
     <ClInclude Include="fccore\Foundation\fcFoundation.h" />
-    <ClInclude Include="fccore\Foundation\fcThreadPool.h" />
     <ClInclude Include="fccore\Foundation\LazyInstance.h" />
     <ClInclude Include="fccore\Foundation\Misc.h" />
     <ClInclude Include="fccore\Foundation\PixelFormat.h" />

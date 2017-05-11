@@ -73,9 +73,6 @@
     <ClCompile Include="fccore\pch.cpp">
       <Filter>fccore</Filter>
     </ClCompile>
-    <ClCompile Include="fccore\Foundation\fcThreadPool.cpp">
-      <Filter>fccore\Foundation</Filter>
-    </ClCompile>
     <ClCompile Include="fccore\Foundation\Misc.cpp">
       <Filter>fccore\Foundation</Filter>
     </ClCompile>
@@ -96,6 +93,9 @@
     </ClCompile>
     <ClCompile Include="fccore\Encoder\fcWaveContext.cpp">
       <Filter>fccore\Encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Foundation\TaskGroup.cpp">
+      <Filter>fccore\Foundation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -156,9 +156,6 @@
     <ClInclude Include="fccore\Foundation\fcFoundation.h">
       <Filter>fccore\Foundation</Filter>
     </ClInclude>
-    <ClInclude Include="fccore\Foundation\fcThreadPool.h">
-      <Filter>fccore\Foundation</Filter>
-    </ClInclude>
     <ClInclude Include="fccore\Foundation\LazyInstance.h">
       <Filter>fccore\Foundation</Filter>
     </ClInclude>
@@ -176,6 +173,9 @@
     </ClInclude>
     <ClInclude Include="fccore\Encoder\fcFlacContext.h">
       <Filter>fccore\Encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Foundation\TaskGroup.h">
+      <Filter>fccore\Foundation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

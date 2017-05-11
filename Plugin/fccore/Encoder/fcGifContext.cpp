@@ -48,7 +48,7 @@ private:
     std::vector<fcGifTaskData*> m_buffers_unused;
     std::list<fcGifFrame> m_gif_frames;
     jo_gif_t m_gif;
-    fcTaskGroup m_tasks;
+    TaskGroup m_tasks;
     std::mutex m_mutex;
     int m_frame = 0;
     bool m_force_keyframe = false;

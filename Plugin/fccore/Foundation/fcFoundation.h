@@ -6,5 +6,5 @@
 #include "PixelFormat.h"
 #include "YUV.h"
 #include "LazyInstance.h"
-#include "fcThreadPool.h"
+#include "TaskGroup.h"
 #include "TaskQueue.h"
