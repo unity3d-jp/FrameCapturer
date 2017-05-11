@@ -10,6 +10,7 @@ namespace UTJ.FrameCapturer
     {
         public AudioEncoder.Type format = AudioEncoder.Type.Wave;
         public fcAPI.fcWaveConfig waveEncoderSettings = fcAPI.fcWaveConfig.default_value;
+        public fcAPI.fcOggConfig oggEncoderSettings = fcAPI.fcOggConfig.default_value;
         public fcAPI.fcFlacConfig flacEncoderSettings = fcAPI.fcFlacConfig.default_value;
 
         public void Setup()
@@ -22,8 +23,8 @@ namespace UTJ.FrameCapturer
         public enum Type
         {
             Wave,
+            Ogg,
             Flac,
-            //Ogg,
         }
 
         public abstract Type type { get; }
@@ -39,6 +40,7 @@ namespace UTJ.FrameCapturer
             switch (t)
             {
                 case Type.Wave: return new WaveEncoder();
+                case Type.Ogg: return new OggEncoder();
                 case Type.Flac: return new FlacEncoder();
             }
             return null;
@@ -50,6 +52,7 @@ namespace UTJ.FrameCapturer
             switch (c.format)
             {
                 case Type.Wave: ret.Initialize(c.waveEncoderSettings, path); break;
+                case Type.Ogg: ret.Initialize(c.oggEncoderSettings, path); break;
                 case Type.Flac: ret.Initialize(c.flacEncoderSettings, path); break;
             }
             return ret;
