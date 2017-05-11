@@ -90,7 +90,7 @@ bool fcWaveContext::write(const float *samples, int num_samples, fcTime timestam
 {
     if (m_conf.bits_per_sample == 8) {
         m_sample_buffer.resize(num_samples * 1);
-        fcF32ToI8Samples((int8_t*)m_sample_buffer.data(), samples, num_samples);
+        fcF32ToU8Samples((uint8_t*)m_sample_buffer.data(), samples, num_samples);
     }
     else if (m_conf.bits_per_sample == 16) {
         m_sample_buffer.resize(num_samples * 2);

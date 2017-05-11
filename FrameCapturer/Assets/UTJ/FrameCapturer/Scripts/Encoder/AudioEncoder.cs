@@ -17,7 +17,7 @@ namespace UTJ.FrameCapturer
         }
     }
 
-    public abstract class AudioEncoder : ScriptableObject
+    public abstract class AudioEncoder
     {
         public enum Type
         {
@@ -38,8 +38,8 @@ namespace UTJ.FrameCapturer
         {
             switch (t)
             {
-                case Type.Wave: return CreateInstance<WaveEncoder>();
-                case Type.Flac: return CreateInstance<FlacEncoder>();
+                case Type.Wave: return new WaveEncoder();
+                case Type.Flac: return new FlacEncoder();
             }
             return null;
         }

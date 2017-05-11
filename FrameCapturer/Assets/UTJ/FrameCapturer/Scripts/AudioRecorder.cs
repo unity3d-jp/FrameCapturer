@@ -73,7 +73,7 @@ namespace UTJ.FrameCapturer
 
                 m_encoderConfigs.Setup();
                 m_encoder = AudioEncoder.Create(m_encoderConfigs, outPath);
-                if (!m_encoder)
+                if (m_encoder == null)
                 {
                     EndRecording();
                     return false;

@@ -515,6 +515,9 @@ namespace UTJ.FrameCapturer
             [HideInInspector] public int sampleRate;
             [HideInInspector] public int numChannels;
             public int bitsPerSample;
+            [Range(0,9)] public int compressionLevel;
+            public int blockSize;
+            public Bool verify;
 
             public static fcFlacConfig default_value
             {
@@ -525,6 +528,9 @@ namespace UTJ.FrameCapturer
                         sampleRate = 48000,
                         numChannels = 2,
                         bitsPerSample = 16,
+                        compressionLevel = 5,
+                        blockSize = 0,
+                        verify = false,
                     };
                 }
             }

@@ -326,6 +326,9 @@ struct fcFlacConfig
     int sample_rate = 48000;
     int num_channels = 2;
     int bits_per_sample = 16;
+    int compression_level = 5;
+    int block_size = 0;
+    bool verify = false;
 };
 fcAPI bool            fcFlacIsSupported();
 fcAPI fcIFlacContext* fcFlacCreateContext(fcFlacConfig *conf);

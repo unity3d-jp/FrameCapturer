@@ -301,17 +301,21 @@ fcAPI const void* fcConvertPixelFormat(void *dst, fcPixelFormat dstfmt, const vo
     return fcConvertPixelFormat_ISPC(dst, dstfmt, src, srcfmt, size);
 }
 
-void fcF32ToI8Samples(int8_t *dst, const float *src, size_t size)
+void fcF32ToU8Samples(uint8_t *dst, const float *src, size_t size)
 {
-    ispc::F32ToI8Samples(dst, src, size);
+    ispc::F32ToU8Samples(dst, src, (uint32_t)size);
 }
 void fcF32ToI16Samples(int16_t *dst, const float *src, size_t size)
 {
-    ispc::F32ToI16Samples(dst, src, size);
+    ispc::F32ToI16Samples(dst, src, (uint32_t)size);
 }
 void fcF32ToI24Samples(uint8_t *dst, const float *src, size_t size)
 {
-    ispc::F32ToI24Samples(dst, src, size);
+    ispc::F32ToI24Samples(dst, src, (uint32_t)size);
+}
+void fcF32ToI32Samples(int32_t *dst, const float *src, size_t size, float scale)
+{
+    ispc::F32ToI32Samples(dst, src, (uint32_t)size, scale);
 }
 
 #endif // fcEnableISPCKernel

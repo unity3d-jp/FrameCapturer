@@ -79,7 +79,7 @@ namespace UTJ.FrameCapturer
 
             public void Release()
             {
-                if(m_encoder)
+                if(m_encoder != null)
                 {
                     m_encoder.Release();
                     m_encoder = null;
@@ -88,7 +88,7 @@ namespace UTJ.FrameCapturer
 
             public void Update(double time)
             {
-                if (m_encoder)
+                if (m_encoder != null)
                 {
                     fcAPI.fcLock(m_rt, (data, fmt) =>
                     {
