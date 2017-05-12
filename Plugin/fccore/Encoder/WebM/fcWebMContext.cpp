@@ -28,7 +28,6 @@ public:
 
     fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd);
     ~fcWebMContext() override;
-    void release(bool async) override;
 
     void addOutputStream(fcStream *s) override;
 
@@ -125,12 +124,6 @@ fcWebMContext::~fcWebMContext()
     m_video_encoder.reset();
     m_audio_encoder.reset();
     m_writers.clear();
-}
-
-void fcWebMContext::release(bool async)
-{
-    if (async) { fcAsyncDelete(this); }
-    else { delete this; }
 }
 
 void fcWebMContext::addOutputStream(fcStream *s)

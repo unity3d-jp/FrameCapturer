@@ -43,6 +43,7 @@
     <ClCompile Include="fccore\Encoder\WebM\fcWebMContext.cpp" />
     <ClCompile Include="fccore\Encoder\WebM\fcWebMWriter.cpp" />
     <ClCompile Include="fccore\fccore.cpp" />
+    <ClCompile Include="fccore\fcInternal.cpp" />
     <ClCompile Include="fccore\Foundation\Buffer.cpp" />
     <ClCompile Include="fccore\Foundation\TaskGroup.cpp" />
     <ClCompile Include="fccore\GraphicsDevice\fcGraphicsDevice.cpp" />

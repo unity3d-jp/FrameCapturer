@@ -106,6 +106,9 @@
     <ClCompile Include="fccore\Encoder\MP4\fcMP4_Linux.cpp">
       <Filter>fccore\Encoder\MP4</Filter>
     </ClCompile>
+    <ClCompile Include="fccore\fcInternal.cpp">
+      <Filter>fccore</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fccore\GraphicsDevice\fcGraphicsDevice.h">

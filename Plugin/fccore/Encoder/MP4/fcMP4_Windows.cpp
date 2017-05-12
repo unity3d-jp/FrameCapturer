@@ -40,8 +40,6 @@ public:
 
     fcMP4ContextWMF(const fcMP4Config &conf, fcIGraphicsDevice *dev, const char *path);
     ~fcMP4ContextWMF();
-
-    void release(bool async) override;
     bool isValid() const override;
 
     const char* getAudioEncoderInfo() override;
@@ -148,12 +146,6 @@ fcMP4ContextWMF::~fcMP4ContextWMF()
         m_mf_writer->Finalize();
         m_mf_writer.Reset();
     }
-}
-
-void fcMP4ContextWMF::release(bool async)
-{
-    if (async) { fcAsyncDelete(this); }
-    else { delete this; }
 }
 
 bool fcMP4ContextWMF::isValid() const

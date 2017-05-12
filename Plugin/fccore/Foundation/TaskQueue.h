@@ -50,6 +50,7 @@ public:
     TaskQueue();
     ~TaskQueue();
     void wait();
+    bool feed();
     void run(const Task& v);
 
 private:

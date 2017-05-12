@@ -33,6 +33,6 @@ void OggTest()
         }
     }
 
-    fcOggDestroyContext(ctx);
-    fcDestroyStream(fstream);
+    fcReleaseContext(ctx);
+    fcReleaseStream(fstream);
 }

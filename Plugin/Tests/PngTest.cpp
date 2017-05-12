@@ -32,7 +32,7 @@ void PngTest()
     PngTestImpl<RGBAf32>(ctx, "RGBAf32.png");
     PngTestImpl<RGBAf32>(ctx, "RGBAf32_Flip.png", true);
 
-    fcPngDestroyContext(ctx);
+    fcReleaseContext(ctx);
 
     printf("PngTest end\n");
 }

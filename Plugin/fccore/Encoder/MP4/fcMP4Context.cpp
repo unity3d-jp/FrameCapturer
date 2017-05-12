@@ -30,7 +30,6 @@ public:
 
     fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev);
     ~fcMP4Context();
-    void release(bool async) override;
     bool isValid() const override;
 
     const char* getVideoEncoderInfo() override;
@@ -194,12 +193,6 @@ fcMP4Context::~fcMP4Context()
 #endif // fcMaster
 }
 
-
-void fcMP4Context::release(bool async)
-{
-    if (async) { fcAsyncDelete(this); }
-    else { delete this; }
-}
 
 bool fcMP4Context::isValid() const
 {

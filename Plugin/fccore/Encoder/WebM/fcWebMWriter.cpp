@@ -107,7 +107,6 @@ void fcWebMWriter::addVideoFrame(const fcWebMFrameData& frame)
     if (m_video_track_id == 0 || frame.data.empty()) { return; }
 
     std::unique_lock<std::mutex> lock(m_mutex);
-    auto timestamp_prev = m_timestamp_video_last;
     frame.eachPackets([this](const char *data, const fcWebMPacketInfo& pinfo) {
         m_timestamp_video_last = pinfo.timestamp;
         auto mkvf = new mkvmuxer::Frame();
@@ -117,7 +116,7 @@ void fcWebMWriter::addVideoFrame(const fcWebMFrameData& frame)
         mkvf->set_is_key(pinfo.keyframe);
         m_mkvframes.emplace_back(mkvf);
     });
-    writeOut(timestamp_prev);
+    writeOut(m_timestamp_video_last - 1.0);
 }
 
 void fcWebMWriter::addAudioFrame(const fcWebMFrameData& frame)
@@ -147,7 +146,7 @@ void fcWebMWriter::writeOut(double timestamp_)
     }
 
     size_t num_added = 0;
-    auto timestamp = to_nsec(timestamp_);
+    auto timestamp = to_nsec(std::max<double>(timestamp_, 0.0));
     for (auto& mkvf : m_mkvframes) {
         if (mkvf->timestamp() <= timestamp) {
             m_segment.AddGenericFrame(mkvf.get());

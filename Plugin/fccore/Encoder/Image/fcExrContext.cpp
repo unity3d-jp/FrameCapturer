@@ -50,7 +50,7 @@ class fcExrContext : public fcIExrContext
 public:
     fcExrContext(const fcExrConfig& conf, fcIGraphicsDevice *dev);
     ~fcExrContext();
-    void release(bool async) override;
+
     bool beginFrame(const char *path, int width, int height) override;
     bool addLayerTexture(void *tex, fcPixelFormat fmt, int channel, const char *name) override;
     bool addLayerPixels(const void *pixels, fcPixelFormat fmt, int channel, const char *name) override;
@@ -88,12 +88,6 @@ fcExrContext::~fcExrContext()
     m_tasks.wait();
 }
 
-
-void fcExrContext::release(bool async)
-{
-    if (async) { fcAsyncDelete(this); }
-    else { delete this; }
-}
 
 bool fcExrContext::beginFrame(const char *path, int width, int height)
 {

@@ -1,9 +1,8 @@
 ﻿#pragma once
 
-class fcIMP4Context
+class fcIMP4Context : public fcContextBase
 {
 public:
-    virtual void release(bool async = true) = 0;
     virtual bool isValid() const = 0;
 
     virtual const char* getVideoEncoderInfo() = 0;
@@ -21,9 +20,6 @@ public:
 
     // timestamp=-1 is treated as current time.
     virtual bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp = -1) = 0;
-
-protected:
-    virtual ~fcIMP4Context() {}
 };
 
 #define fcMP4EachFunctions(Body)\

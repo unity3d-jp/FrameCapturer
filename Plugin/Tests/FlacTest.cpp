@@ -35,8 +35,8 @@ void FlacTest(int bits)
         }
     }
 
-    fcFlacDestroyContext(ctx);
-    fcDestroyStream(fstream);
+    fcReleaseContext(ctx);
+    fcReleaseStream(fstream);
 }
 
 void FlacTest()

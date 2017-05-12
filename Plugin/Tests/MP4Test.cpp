@@ -70,8 +70,8 @@ void MP4Test(int video_encoder, int audio_encoder, const char *filename)
     }
     fcMP4AddOutputStream(ctx, fstream);
     WriteMovieData(ctx);
-    fcMP4DestroyContext(ctx);
-    fcDestroyStream(fstream);
+    fcReleaseContext(ctx);
+    fcReleaseStream(fstream);
 
     printf("MP4Test (%s) end\n", filename);
 }
@@ -91,7 +91,7 @@ void MP4TestOSProvidedEncoder(const char *filename)
 
     fcIMP4Context *ctx = fcMP4OSCreateContext(&conf, "WMF.mp4");
     WriteMovieData(ctx);
-    fcMP4DestroyContext(ctx);
+    fcReleaseContext(ctx);
 
     printf("MP4Test (%s) end\n", filename);
 }

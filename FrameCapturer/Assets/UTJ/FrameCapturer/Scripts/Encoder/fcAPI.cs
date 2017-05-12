@@ -64,7 +64,6 @@ namespace UTJ.FrameCapturer
 
         [DllImport ("fccore")] public static extern void         fcSetModulePath(string path);
         [DllImport ("fccore")] public static extern double       fcGetTime();
-        [DllImport ("fccore")] public static extern void         fcWaitAsyncDelete();
 
 
         public struct fcDeferredCall
@@ -77,12 +76,12 @@ namespace UTJ.FrameCapturer
         public struct fcStream
         {
             public IntPtr ptr;
-            public void Release() { fcDestroyStream(this); ptr = IntPtr.Zero; }
+            public void Release() { fcReleaseStream(this); ptr = IntPtr.Zero; }
             public static implicit operator bool(fcStream v) { return v.ptr != IntPtr.Zero; }
         }
         [DllImport ("fccore")] public static extern fcStream     fcCreateFileStream(string path);
         [DllImport ("fccore")] public static extern fcStream     fcCreateMemoryStream();
-        [DllImport ("fccore")] private static extern void        fcDestroyStream(fcStream s);
+        [DllImport ("fccore")] private static extern void        fcReleaseStream(fcStream s);
         [DllImport ("fccore")] public static extern ulong        fcStreamGetWrittenSize(fcStream s);
 
         [DllImport ("fccore")] public static extern void         fcGuardBegin();
@@ -150,6 +149,10 @@ namespace UTJ.FrameCapturer
         }
 
 
+        [DllImport ("fccore")] public static extern void fcWaitAsyncDelete();
+        [DllImport ("fccore")] public static extern void fcReleaseContext(IntPtr ctx);
+
+
         // -------------------------------------------------------------
         // PNG Exporter
         // -------------------------------------------------------------
@@ -187,13 +190,12 @@ namespace UTJ.FrameCapturer
         public struct fcPngContext
         {
             public IntPtr ptr;
-            public void Release() { fcPngDestroyContext(this); ptr = IntPtr.Zero; }
+            public void Release() { fcReleaseContext(ptr); ptr = IntPtr.Zero; }
             public static implicit operator bool(fcPngContext v) { return v.ptr != IntPtr.Zero; }
         }
 
         [DllImport ("fccore")] public static extern Bool         fcPngIsSupported();
         [DllImport ("fccore")] public static extern fcPngContext fcPngCreateContext(ref fcPngConfig conf);
-        [DllImport ("fccore")] private static extern void        fcPngDestroyContext(fcPngContext ctx);
         [DllImport ("fccore")] public static extern Bool         fcPngExportPixels(fcPngContext ctx, string path, byte[] pixels, int width, int height, fcPixelFormat fmt, int num_channels);
 
 
@@ -246,13 +248,12 @@ namespace UTJ.FrameCapturer
         public struct fcExrContext
         {
             public IntPtr ptr;
-            public void Release() { fcExrDestroyContext(this); ptr = IntPtr.Zero; }
+            public void Release() { fcReleaseContext(ptr); ptr = IntPtr.Zero; }
             public static implicit operator bool(fcExrContext v) { return v.ptr != IntPtr.Zero; }
         }
 
         [DllImport ("fccore")] public static extern Bool         fcExrIsSupported();
         [DllImport ("fccore")] public static extern fcExrContext fcExrCreateContext(ref fcExrConfig conf);
-        [DllImport ("fccore")] private static extern void        fcExrDestroyContext(fcExrContext ctx);
         [DllImport ("fccore")] public static extern Bool         fcExrBeginImage(fcExrContext ctx, string path, int width, int height);
         [DllImport ("fccore")] public static extern Bool         fcExrAddLayerPixels(fcExrContext ctx, byte[] pixels, fcPixelFormat fmt, int ch, string name);
         [DllImport ("fccore")] public static extern Bool         fcExrEndImage(fcExrContext ctx);
@@ -289,13 +290,12 @@ namespace UTJ.FrameCapturer
         public struct fcGifContext
         {
             public IntPtr ptr;
-            public void Release() { fcGifDestroyContext(this); ptr = IntPtr.Zero; }
+            public void Release() { fcReleaseContext(ptr); ptr = IntPtr.Zero; }
             public static implicit operator bool(fcGifContext v) { return v.ptr != IntPtr.Zero; }
         }
 
         [DllImport ("fccore")] public static extern Bool         fcGifIsSupported();
         [DllImport ("fccore")] public static extern fcGifContext fcGifCreateContext(ref fcGifConfig conf);
-        [DllImport ("fccore")] private static extern void        fcGifDestroyContext(fcGifContext ctx);
         [DllImport ("fccore")] public static extern void         fcGifAddOutputStream(fcGifContext ctx, fcStream stream);
         [DllImport ("fccore")] public static extern Bool         fcGifAddFramePixels(fcGifContext ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
 
@@ -368,14 +368,13 @@ namespace UTJ.FrameCapturer
         public struct fcMP4Context
         {
             public IntPtr ptr;
-            public void Release() { fcMP4DestroyContext(this); ptr = IntPtr.Zero; }
+            public void Release() { fcReleaseContext(ptr); ptr = IntPtr.Zero; }
             public static implicit operator bool(fcMP4Context v) { return v.ptr != IntPtr.Zero; }
         }
 
         [DllImport ("fccore")] public static extern Bool             fcMP4IsSupported();
         [DllImport ("fccore")] public static extern fcMP4Context     fcMP4CreateContext(ref fcMP4Config conf);
         [DllImport ("fccore")] public static extern fcMP4Context     fcMP4OSCreateContext(ref fcMP4Config conf, string path);
-        [DllImport ("fccore")] private static extern void            fcMP4DestroyContext(fcMP4Context ctx);
         [DllImport ("fccore")] public static extern void             fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);
         [DllImport ("fccore")] private static extern IntPtr          fcMP4GetAudioEncoderInfo(fcMP4Context ctx);
         [DllImport ("fccore")] private static extern IntPtr          fcMP4GetVideoEncoderInfo(fcMP4Context ctx);
@@ -400,7 +399,7 @@ namespace UTJ.FrameCapturer
         public struct fcWebMContext
         {
             public IntPtr ptr;
-            public void Release() { fcWebMDestroyContext(this); ptr = IntPtr.Zero; }
+            public void Release() { fcReleaseContext(ptr); ptr = IntPtr.Zero; }
             public static implicit operator bool(fcWebMContext v) { return v.ptr != IntPtr.Zero; }
         }
 
@@ -463,7 +462,6 @@ namespace UTJ.FrameCapturer
 
         [DllImport ("fccore")] public static extern Bool fcWebMIsSupported();
         [DllImport ("fccore")] public static extern fcWebMContext fcWebMCreateContext(ref fcWebMConfig conf);
-        [DllImport ("fccore")] private static extern void fcWebMDestroyContext(fcWebMContext ctx);
         [DllImport ("fccore")] public static extern void fcWebMAddOutputStream(fcWebMContext ctx, fcStream stream);
         // timestamp=-1 is treated as current time.
         [DllImport ("fccore")] public static extern Bool fcWebMAddVideoFramePixels(fcWebMContext ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
@@ -477,7 +475,7 @@ namespace UTJ.FrameCapturer
         public struct fcWaveContext
         {
             public IntPtr ptr;
-            public void Release() { fcWaveDestroyContext(this); ptr = IntPtr.Zero; }
+            public void Release() { fcReleaseContext(ptr); ptr = IntPtr.Zero; }
             public static implicit operator bool(fcWaveContext v) { return v.ptr != IntPtr.Zero; }
         }
 
@@ -504,7 +502,6 @@ namespace UTJ.FrameCapturer
 
         [DllImport ("fccore")] public static extern Bool fcWaveIsSupported();
         [DllImport ("fccore")] public static extern fcWaveContext fcWaveCreateContext(ref fcWaveConfig conf);
-        [DllImport ("fccore")] private static extern void fcWaveDestroyContext(fcWaveContext ctx);
         [DllImport ("fccore")] public static extern void fcWaveAddOutputStream(fcWaveContext ctx, fcStream stream);
         [DllImport ("fccore")] public static extern Bool fcWaveAddAudioFrame(fcWaveContext ctx, float[] samples, int num_samples);
 
@@ -516,7 +513,7 @@ namespace UTJ.FrameCapturer
         public struct fcOggContext
         {
             public IntPtr ptr;
-            public void Release() { fcOggDestroyContext(this); ptr = IntPtr.Zero; }
+            public void Release() { fcReleaseContext(ptr); ptr = IntPtr.Zero; }
             public static implicit operator bool(fcOggContext v) { return v.ptr != IntPtr.Zero; }
         }
 
@@ -545,7 +542,6 @@ namespace UTJ.FrameCapturer
 
         [DllImport ("fccore")] public static extern Bool fcOggIsSupported();
         [DllImport ("fccore")] public static extern fcOggContext fcOggCreateContext(ref fcOggConfig conf);
-        [DllImport ("fccore")] private static extern void fcOggDestroyContext(fcOggContext ctx);
         [DllImport ("fccore")] public static extern void fcOggAddOutputStream(fcOggContext ctx, fcStream stream);
         [DllImport ("fccore")] public static extern Bool fcOggAddAudioFrame(fcOggContext ctx, float[] samples, int num_samples);
 
@@ -556,7 +552,7 @@ namespace UTJ.FrameCapturer
         public struct fcFlacContext
         {
             public IntPtr ptr;
-            public void Release() { fcFlacDestroyContext(this); ptr = IntPtr.Zero; }
+            public void Release() { fcReleaseContext(ptr); ptr = IntPtr.Zero; }
             public static implicit operator bool(fcFlacContext v) { return v.ptr != IntPtr.Zero; }
         }
 
@@ -589,7 +585,6 @@ namespace UTJ.FrameCapturer
 
         [DllImport ("fccore")] public static extern Bool fcFlacIsSupported();
         [DllImport ("fccore")] public static extern fcFlacContext fcFlacCreateContext(ref fcFlacConfig conf);
-        [DllImport ("fccore")] private static extern void fcFlacDestroyContext(fcFlacContext ctx);
         [DllImport ("fccore")] public static extern void fcFlacAddOutputStream(fcFlacContext ctx, fcStream stream);
         [DllImport ("fccore")] public static extern Bool fcFlacAddAudioFrame(fcFlacContext ctx, float[] samples, int num_samples);
 

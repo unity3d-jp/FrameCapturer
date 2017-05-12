@@ -35,7 +35,7 @@ public:
 
     fcFlacContext(const fcFlacConfig& c);
     ~fcFlacContext() override;
-    void release(bool async) override;
+
     void addOutputStream(fcStream *s) override;
     bool write(const float *samples, int num_samples) override;
 
@@ -151,12 +151,6 @@ fcFlacContext::~fcFlacContext()
 {
     m_tasks.wait();
     m_writers.clear();
-}
-
-void fcFlacContext::release(bool async)
-{
-    if (async) { fcAsyncDelete(this); }
-    else { delete this; }
 }
 
 void fcFlacContext::addOutputStream(fcStream *s)

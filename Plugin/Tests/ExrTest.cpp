@@ -31,7 +31,7 @@ void ExrTest()
     ExrTestImpl<RGBAu8 >(ctx, "RGBAu8.exr");
     ExrTestImpl<RGBAf16>(ctx, "RGBAf16.exr");
     ExrTestImpl<RGBAf32>(ctx, "RGBAf32.exr");
-    fcExrDestroyContext(ctx);
+    fcReleaseContext(ctx);
 
     printf("ExrTest end\n");
 }

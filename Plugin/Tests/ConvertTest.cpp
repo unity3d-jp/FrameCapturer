@@ -55,7 +55,7 @@ void ConvertTest()
     TestCases(RGf32);
     TestCases(Rf32);
 
-    fcPngDestroyContext(ctx);
+    fcReleaseContext(ctx);
 
     printf("ConvertTest end\n");
 

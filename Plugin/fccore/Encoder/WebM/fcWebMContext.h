@@ -1,10 +1,8 @@
 #pragma once
 
-class fcIWebMContext
+class fcIWebMContext : public fcContextBase
 {
 public:
-    virtual void release(bool async = true) = 0;
-
     virtual void addOutputStream(fcStream *s) = 0;
 
     // timestamp=-1 is treated as current time.
@@ -15,9 +13,6 @@ public:
 
     // timestamp=-1 is treated as current time.
     virtual bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp = -1.0) = 0;
-
-protected:
-    virtual ~fcIWebMContext() {}
 };
 
 fcIWebMContext* fcWebMCreateContextImpl(fcWebMConfig &conf, fcIGraphicsDevice*);

@@ -76,9 +76,11 @@ fcAPI void            fcWaitAsyncDelete();
 
 #ifndef fcImpl
 struct fcStream;
+using fcContextBase = void;
 #else
 class BinaryStream;
 using fcStream = BinaryStream;
+class fcContextBase;
 #endif
 // function types for custom stream
 using fcTellp_t = size_t(*)(void *obj);
@@ -93,9 +95,12 @@ struct fcBufferData
 fcAPI fcStream*       fcCreateFileStream(const char *path);
 fcAPI fcStream*       fcCreateMemoryStream();
 fcAPI fcStream*       fcCreateCustomStream(void *obj, fcTellp_t tellp, fcSeekp_t seekp, fcWrite_t write);
-fcAPI void            fcDestroyStream(fcStream *s);
+fcAPI void            fcReleaseStream(fcStream *s);
 fcAPI fcBufferData    fcStreamGetBufferData(fcStream *s); // s must be created by fcCreateMemoryStream(), otherwise return {nullptr, 0}.
 fcAPI uint64_t        fcStreamGetWrittenSize(fcStream *s);
+
+fcAPI void            fcReleaseContext(fcContextBase *ctx);
+fcAPI void            fcSetOnDeleteCallback(fcContextBase *ctx, void(*cb)(void*), void *param);
 
 
 // -------------------------------------------------------------
@@ -119,7 +124,6 @@ struct fcPngConfig
 
 fcAPI bool            fcPngIsSupported();
 fcAPI fcIPngContext*  fcPngCreateContext(const fcPngConfig *conf = nullptr);
-fcAPI void            fcPngDestroyContext(fcIPngContext *ctx);
 fcAPI bool            fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, int num_channels = 0);
 fcAPI bool            fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, int num_channels = 0);
 
@@ -156,7 +160,6 @@ struct fcExrConfig
 
 fcAPI bool            fcExrIsSupported();
 fcAPI fcIExrContext*  fcExrCreateContext(const fcExrConfig *conf = nullptr);
-fcAPI void            fcExrDestroyContext(fcIExrContext *ctx);
 fcAPI bool            fcExrBeginImage(fcIExrContext *ctx, const char *path, int width, int height);
 fcAPI bool            fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name);
 fcAPI bool            fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name);
@@ -180,7 +183,6 @@ struct fcGifConfig
 
 fcAPI bool            fcGifIsSupported();
 fcAPI fcIGifContext*  fcGifCreateContext(const fcGifConfig *conf);
-fcAPI void            fcGifDestroyContext(fcIGifContext *ctx);
 fcAPI void            fcGifAddOutputStream(fcIGifContext *ctx, fcStream *stream);
 // timestamp=-1 is treated as current time.
 fcAPI bool            fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0);
@@ -237,7 +239,6 @@ fcAPI bool            fcMP4OSIsSupported();
 fcAPI fcIMP4Context*  fcMP4CreateContext(fcMP4Config *conf);
 // OS-provided mp4 encoder. in this case video_flags and audio_flags in conf are ignored
 fcAPI fcIMP4Context*  fcMP4OSCreateContext(fcMP4Config *conf, const char *out_path);
-fcAPI void            fcMP4DestroyContext(fcIMP4Context *ctx);
 fcAPI const char*     fcMP4GetVideoEncoderInfo(fcIMP4Context *ctx);
 fcAPI const char*     fcMP4GetAudioEncoderInfo(fcIMP4Context *ctx);
 fcAPI void            fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream);
@@ -289,7 +290,6 @@ struct fcWebMConfig
 
 fcAPI bool            fcWebMIsSupported();
 fcAPI fcIWebMContext* fcWebMCreateContext(fcWebMConfig *conf);
-fcAPI void            fcWebMDestroyContext(fcIWebMContext *ctx);
 fcAPI void            fcWebMAddOutputStream(fcIWebMContext *ctx, fcStream *stream);
 // timestamp=-1 is treated as current time.
 fcAPI bool            fcWebMAddVideoFramePixels(fcIWebMContext *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0);
@@ -314,7 +314,6 @@ struct fcWaveConfig
 };
 fcAPI bool            fcWaveIsSupported();
 fcAPI fcIWaveContext* fcWaveCreateContext(fcWaveConfig *conf);
-fcAPI void            fcWaveDestroyContext(fcIWaveContext *ctx);
 fcAPI void            fcWaveAddOutputStream(fcIWaveContext *ctx, fcStream *stream);
 fcAPI bool            fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int num_samples);
 
@@ -334,7 +333,6 @@ struct fcOggConfig
 };
 fcAPI bool            fcOggIsSupported();
 fcAPI fcIOggContext*  fcOggCreateContext(fcOggConfig *conf);
-fcAPI void            fcOggDestroyContext(fcIOggContext *ctx);
 fcAPI void            fcOggAddOutputStream(fcIOggContext *ctx, fcStream *stream);
 fcAPI bool            fcOggAddAudioFrame(fcIOggContext *ctx, const float *samples, int num_samples);
 
@@ -356,7 +354,6 @@ struct fcFlacConfig
 };
 fcAPI bool            fcFlacIsSupported();
 fcAPI fcIFlacContext* fcFlacCreateContext(fcFlacConfig *conf);
-fcAPI void            fcFlacDestroyContext(fcIFlacContext *ctx);
 fcAPI void            fcFlacAddOutputStream(fcIFlacContext *ctx, fcStream *stream);
 fcAPI bool            fcFlacAddAudioFrame(fcIFlacContext *ctx, const float *samples, int num_samples);
 

@@ -29,8 +29,8 @@ void WaveTest(int bits)
         }
     }
 
-    fcWaveDestroyContext(ctx);
-    fcDestroyStream(fstream);
+    fcReleaseContext(ctx);
+    fcReleaseStream(fstream);
 }
 
 void WaveTest()

@@ -38,7 +38,7 @@ public:
 
     fcOggContext(const fcOggConfig& conf);
     virtual ~fcOggContext() override;
-    virtual void release(bool async)  override;
+
     virtual void addOutputStream(fcStream *s) override;
     virtual bool write(const float *samples, int num_samples) override;
 
@@ -143,12 +143,6 @@ fcOggContext::~fcOggContext()
     vorbis_dsp_clear(&m_vo_dsp);
     vorbis_comment_clear(&m_vo_comment);
     vorbis_info_clear(&m_vo_info);
-}
-
-void fcOggContext::release(bool async)
-{
-    if (async) { fcAsyncDelete(this); }
-    else { delete this; }
 }
 
 void fcOggContext::addOutputStream(fcStream *s)

@@ -32,6 +32,27 @@ void TaskQueue::wait()
     }
 }
 
+bool TaskQueue::feed()
+{
+    Task task;
+    {
+        Lock lock(m_mutex);
+        if (!m_tasks.empty()) {
+            task = m_tasks.front();
+            m_tasks.pop_front();
+        }
+    }
+
+    if (task) {
+        task();
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+
 void TaskQueue::process()
 {
     while (!m_stop || !m_tasks.empty())

@@ -23,8 +23,8 @@ void GifTestImpl(const char *filename)
         t += 1.0 / 30.0;
     }
 
-    fcGifDestroyContext(ctx);
-    fcDestroyStream(fstream);
+    fcReleaseContext(ctx);
+    fcReleaseStream(fstream);
 }
 
 void GifTest()

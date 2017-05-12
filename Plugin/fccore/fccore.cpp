@@ -12,35 +12,6 @@
 // Foundation
 // -------------------------------------------------------------
 
-class fcAsyncDeleteManager
-{
-public:
-    void wait()
-    {
-        for (auto& f : m_futures) { f.get(); }
-        m_futures.clear();
-    }
-
-    void add(std::future<void>&& v)
-    {
-        m_futures.push_back(std::move(v));
-    }
-
-private:
-    std::deque<std::future<void>> m_futures;
-} g_asyncReleaseManager;
-
-void fcAsyncDeleteImpl(std::future<void>&& f)
-{
-    g_asyncReleaseManager.add(std::move(f));
-}
-
-fcAPI void fcWaitAsyncDelete()
-{
-    g_asyncReleaseManager.wait();
-}
-
-
 namespace {
     std::string g_fcModulePath;
 }
@@ -84,7 +55,7 @@ fcAPI fcStream* fcCreateCustomStream(void *obj, fcTellp_t tellp, fcSeekp_t seekp
     return new CustomStream(csd);
 }
 
-fcAPI void fcDestroyStream(fcStream *s)
+fcAPI void fcReleaseStream(fcStream *s)
 {
     fcTraceFunc();
     s->release();
@@ -199,6 +170,20 @@ fcAPI void fcCallDeferredCall(int id)
 }
 
 
+fcAPI void fcReleaseContext(fcContextBase *ctx)
+{
+    fcTraceFunc();
+    if (!ctx) { return; }
+    ctx->release();
+}
+
+fcAPI void fcSetOnDeleteCallback(fcContextBase *ctx, void(*cb)(void*), void *param)
+{
+    fcTraceFunc();
+    if (!ctx) { return; }
+    ctx->setOnDeleteCallback(cb, param);
+}
+
 
 // -------------------------------------------------------------
 // PNG Exporter
@@ -213,13 +198,6 @@ fcAPI fcIPngContext* fcPngCreateContext(const fcPngConfig *conf)
 {
     fcTraceFunc();
     return fcPngCreateContextImpl(conf, fcGetGraphicsDevice());
-}
-
-fcAPI void fcPngDestroyContext(fcIPngContext *ctx)
-{
-    fcTraceFunc();
-    if (!ctx) { return; }
-    ctx->release();
 }
 
 fcAPI bool fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, int num_channels)
@@ -251,7 +229,6 @@ fcAPI int fcPngExportTextureDeferred(fcIPngContext *ctx, const char *path_, void
 
 fcAPI bool fcPngIsSupported() { return false; }
 fcAPI fcIPngContext* fcPngCreateContext(const fcPngConfig *conf) { return nullptr; }
-fcAPI void fcPngDestroyContext(fcIPngContext *ctx) { return; }
 fcAPI bool fcPngExportPixels(fcIPngContext *ctx, const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, int num_channels) { return false; }
 fcAPI bool fcPngExportTexture(fcIPngContext *ctx, const char *path, void *tex, int width, int height, fcPixelFormat fmt, int num_channels) { return false; }
 fcAPI int fcPngExportTextureDeferred(fcIPngContext *ctx, const char *path_, void *tex, int width, int height, fcPixelFormat fmt, int num_channels, int id) { return 0; }
@@ -272,13 +249,6 @@ fcAPI fcIExrContext* fcExrCreateContext(const fcExrConfig *conf)
 {
     fcTraceFunc();
     return fcExrCreateContextImpl(conf, fcGetGraphicsDevice());
-}
-
-fcAPI void fcExrDestroyContext(fcIExrContext *ctx)
-{
-    fcTraceFunc();
-    if (!ctx) { return; }
-    ctx->release();
 }
 
 fcAPI bool fcExrBeginImage(fcIExrContext *ctx, const char *path, int width, int height)
@@ -342,7 +312,6 @@ fcAPI int fcExrEndImageDeferred(fcIExrContext *ctx, int id)
 
 fcAPI bool fcExrIsSupported() { return false; }
 fcAPI fcIExrContext* fcExrCreateContext(const fcExrConfig *conf) {}
-fcAPI void fcExrDestroyContext(fcIExrContext *ctx) {}
 fcAPI bool fcExrBeginImage(fcIExrContext *ctx, const char *path, int width, int height) { return false; }
 fcAPI bool fcExrAddLayerPixels(fcIExrContext *ctx, const void *pixels, fcPixelFormat fmt, int ch, const char *name) { return false; }
 fcAPI bool fcExrAddLayerTexture(fcIExrContext *ctx, void *tex, fcPixelFormat fmt, int ch, const char *name) { return false; }
@@ -367,13 +336,6 @@ fcAPI fcIGifContext* fcGifCreateContext(const fcGifConfig *conf)
 {
     fcTraceFunc();
     return fcGifCreateContextImpl(*conf, fcGetGraphicsDevice());
-}
-
-fcAPI void fcGifDestroyContext(fcIGifContext *ctx)
-{
-    fcTraceFunc();
-    if (!ctx) { return; }
-    ctx->release();
 }
 
 fcAPI void fcGifAddOutputStream(fcIGifContext *ctx, fcStream *stream)
@@ -414,7 +376,6 @@ fcAPI void fcGifForceKeyframe(fcIGifContext *ctx)
 
 fcAPI bool fcGifIsSupported() { return false; }
 fcAPI fcIGifContext* fcGifCreateContext(const fcGifConfig *conf) { return nullptr; }
-fcAPI void fcGifDestroyContext(fcIGifContext *ctx) {}
 fcAPI void fcGifAddOutputStream(fcIGifContext *ctx, fcStream *stream) {}
 fcAPI bool fcGifAddFramePixels(fcIGifContext *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp) { return false; }
 fcAPI bool fcGifAddFrameTexture(fcIGifContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp) { return false; }
@@ -445,13 +406,6 @@ fcAPI fcIMP4Context* fcMP4OSCreateContext(fcMP4Config *conf, const char *out_pat
 {
     fcTraceFunc();
     return fcMP4OSCreateContextImpl(*conf, fcGetGraphicsDevice(), out_path);
-}
-
-fcAPI void fcMP4DestroyContext(fcIMP4Context *ctx)
-{
-    fcTraceFunc();
-    if (!ctx) { return; }
-    ctx->release();
 }
 
 fcAPI const char* fcMP4GetVideoEncoderInfo(fcIMP4Context *ctx)
@@ -507,7 +461,6 @@ fcAPI bool fcMP4IsSupported() { return false; }
 fcAPI bool fcMP4OSIsSupported() { return false; }
 fcAPI fcIMP4Context* fcMP4CreateContext(fcMP4Config *conf) { return nullptr; }
 fcAPI fcIMP4Context* fcMP4OSCreateContext(fcMP4Config *conf, const char *out_path) { return nullptr; }
-fcAPI void fcMP4DestroyContext(fcIMP4Context *ctx) {}
 fcAPI const char* fcMP4GetVideoEncoderInfo(fcIMP4Context *ctx) { return ""; }
 fcAPI const char* fcMP4GetAudioEncoderInfo(fcIMP4Context *ctx) { return ""; }
 fcAPI void fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream) {}
@@ -533,13 +486,6 @@ fcAPI fcIWebMContext* fcWebMCreateContext(fcWebMConfig *conf)
 {
     fcTraceFunc();
     return fcWebMCreateContextImpl(*conf, fcGetGraphicsDevice());
-}
-
-fcAPI void fcWebMDestroyContext(fcIWebMContext *ctx)
-{
-    fcTraceFunc();
-    if (!ctx) { return; }
-    ctx->release();
 }
 
 fcAPI void fcWebMAddOutputStream(fcIWebMContext *ctx, fcStream *stream)
@@ -582,7 +528,6 @@ fcAPI bool fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int nu
 
 fcAPI bool fcWebMIsSupported() { return false; }
 fcAPI fcIWebMContext* fcWebMCreateContext(fcWebMConfig *conf) { return nullptr; }
-fcAPI void fcWebMDestroyContext(fcIWebMContext *ctx) {}
 fcAPI void fcWebMAddOutputStream(fcIWebMContext *ctx, fcStream *stream) {}
 fcAPI bool fcWebMAddVideoFramePixels(fcIWebMContext *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp) { return false; }
 fcAPI bool fcWebMAddVideoFrameTexture(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp) { return false; }
@@ -604,13 +549,6 @@ fcAPI fcIWaveContext* fcWaveCreateContext(fcWaveConfig *conf)
     return fcWaveCreateContextImpl(conf);
 }
 
-fcAPI void fcWaveDestroyContext(fcIWaveContext *ctx)
-{
-    fcTraceFunc();
-    if (!ctx) { return; }
-    ctx->release();
-}
-
 fcAPI void fcWaveAddOutputStream(fcIWaveContext *ctx, fcStream *stream)
 {
     fcTraceFunc();
@@ -629,7 +567,6 @@ fcAPI bool fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int nu
 
 fcAPI bool            fcWaveIsSupported() { return false; }
 fcAPI fcIWaveContext* fcWaveCreateContext(fcWaveConfig *conf) { return nullptr; }
-fcAPI void            fcWaveDestroyContext(fcIWaveContext *ctx) {}
 fcAPI void            fcWaveAddOutputStream(fcIWaveContext *ctx, fcStream *stream) {}
 fcAPI bool            fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int num_samples) { return false; }
 
@@ -646,13 +583,6 @@ fcAPI fcIOggContext*  fcOggCreateContext(fcOggConfig *conf)
     fcTraceFunc();
     if (!conf) { return nullptr; }
     return fcOggCreateContextImpl(conf);
-}
-
-fcAPI void fcOggDestroyContext(fcIOggContext *ctx)
-{
-    fcTraceFunc();
-    if (!ctx) { return; }
-    ctx->release();
 }
 
 fcAPI void fcOggAddOutputStream(fcIOggContext *ctx, fcStream *stream)
@@ -673,7 +603,6 @@ fcAPI bool fcOggAddAudioFrame(fcIOggContext *ctx, const float *samples, int num_
 
 fcAPI bool            fcOggIsSupported() { return false; }
 fcAPI fcIOggContext*  fcOggCreateContext(fcOggConfig *conf) { return nullptr; }
-fcAPI void            fcOggDestroyContext(fcIOggContext *ctx) {}
 fcAPI void            fcOggAddOutputStream(fcIOggContext *ctx, fcStream *stream) {}
 fcAPI bool            fcOggAddAudioFrame(fcIOggContext *ctx, const float *samples, int num_samples) { return false; }
 
@@ -696,13 +625,6 @@ fcAPI fcIFlacContext* fcFlacCreateContext(fcFlacConfig *conf)
     return fcFlacCreateContextImpl(conf);
 }
 
-fcAPI void fcFlacDestroyContext(fcIFlacContext *ctx)
-{
-    fcTraceFunc();
-    if (!ctx) { return; }
-    ctx->release();
-}
-
 fcAPI void fcFlacAddOutputStream(fcIFlacContext *ctx, fcStream *stream)
 {
     fcTraceFunc();
@@ -721,7 +643,6 @@ fcAPI bool fcFlacAddAudioFrame(fcIFlacContext *ctx, const float *samples, int nu
 
 fcAPI bool            fcFlacIsSupported() { return false; }
 fcAPI fcIFlacContext* fcFlacCreateContext(fcFlacConfig *conf) { return nullptr; }
-fcAPI void            fcFlacDestroyContext(fcIFlacContext *ctx) { return; }
 fcAPI void            fcFlacAddOutputStream(fcIFlacContext *ctx, fcStream *stream) { return; }
 fcAPI bool            fcFlacAddAudioFrame(fcIFlacContext *ctx, const float *samples, int num_samples) { return false; }
 

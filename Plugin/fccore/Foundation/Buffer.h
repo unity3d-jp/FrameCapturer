@@ -163,9 +163,20 @@ typedef RawVector<char> Buffer;
 
 class BinaryStream
 {
+protected:
+    virtual ~BinaryStream() {}
 public:
-    virtual void addRef() { m_ref_count++; }
-    virtual void release() { if (--m_ref_count == 0) { delete this; } }
+
+    virtual void addRef()
+    {
+        m_ref_count++;
+    }
+    virtual void release()
+    {
+        if (--m_ref_count == 0) {
+            delete this;
+        }
+    }
 
     virtual size_t  tellg() = 0;
     virtual void    seekg(size_t pos) = 0;
@@ -174,9 +185,6 @@ public:
     virtual size_t  tellp() = 0;
     virtual void    seekp(size_t pos) = 0;
     virtual size_t  write(const void *data, size_t len) = 0;
-
-protected:
-    virtual ~BinaryStream() {}
 
 private:
     std::atomic_int m_ref_count = { 1 };

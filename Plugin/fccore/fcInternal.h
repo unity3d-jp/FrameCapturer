@@ -52,10 +52,18 @@
     #define fcDebugLog(...)
 #endif
 
-void fcAsyncDeleteImpl(std::future<void>&& f);
-template<class T> inline void fcAsyncDelete(T *v)
+
+class fcContextBase
 {
-    fcAsyncDeleteImpl(std::async(std::launch::async, [v]() { delete v; }));
-}
+protected:
+    virtual ~fcContextBase();
+public:
+    virtual void release(bool async = true);
+    virtual void setOnDeleteCallback(void(*cb)(void*), void *param);
+
+private:
+    void(*m_on_delete)(void*) = nullptr;
+    void *m_on_delete_param = nullptr;
+};
 
 #include "fccore.h"
