@@ -116,8 +116,24 @@ ENDIF()
 
 
 # fccore
-FILE(GLOB FC_CXX_FILES fccore/*.cpp fccore/Foundation/*.cpp fccore/Encoder/*.cpp fccore/GraphicsDevice/*.cpp)
-FILE(GLOB FC_H_FILES fccore/*.h fccore/Foundation/*.h fccore/Encoder/*.h fccore/GraphicsDevice/*.h)
+FILE(GLOB FC_CXX_FILES
+    fccore/*.cpp
+    fccore/Foundation/*.cpp
+    fccore/Encoder/Audio/*.cpp
+    fccore/Encoder/Image/*.cpp
+    fccore/Encoder/MP4/*.cpp
+    fccore/Encoder/WebM/*.cpp
+    fccore/GraphicsDevice/*.cpp
+)
+FILE(GLOB FC_H_FILES
+    fccore/*.h
+    fccore/Foundation/*.h
+    fccore/Encoder/Audio/*.h
+    fccore/Encoder/Image/*.h
+    fccore/Encoder/MP4/*.h
+    fccore/Encoder/WebM/*.h
+    fccore/GraphicsDevice/*.h
+)
 IF(FC_ENABLE_OSX_BUNDLE)
     ADD_LIBRARY(fccore MODULE ${FC_CXX_FILES} ${FC_H_FILES} ${FCISPC_FILES})
 ELSE()

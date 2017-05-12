@@ -1,12 +1,10 @@
 #include "pch.h"
 #include "fcInternal.h"
-#include "Foundation/fcFoundation.h"
-#include "GraphicsDevice/fcGraphicsDevice.h"
-#include "fcVorbisEncoder.h"
-#include "fcVPXEncoder.h"
-#include "fcWebMWriter.h"
 
 #ifdef fcSupportWebM
+#include "fcWebMInternal.h"
+#include "fcWebMWriter.h"
+
 #include "mkvmuxer.hpp"
 #ifdef _MSC_VER
     #pragma comment(lib, "libwebm.lib")
@@ -32,11 +30,11 @@ class fcWebMWriter : public fcIWebMWriter
 public:
     fcWebMWriter(BinaryStream &stream, const fcWebMConfig &conf);
     ~fcWebMWriter() override;
-    void setVideoEncoderInfo(const fcIWebMVideoEncoder& encoder) override;
-    void setAudioEncoderInfo(const fcIWebMAudioEncoder& encoder) override;
+    void setVideoEncoderInfo(const fcIWebMEncoderInfo& info) override;
+    void setAudioEncoderInfo(const fcIWebMEncoderInfo& info) override;
 
-    void addVideoFrame(const fcWebMVideoFrame& buf) override;
-    void addAudioFrame(const fcWebMAudioFrame& buf) override;
+    void addVideoFrame(const fcWebMFrameData& buf) override;
+    void addAudioFrame(const fcWebMFrameData& buf) override;
 
 private:
     using StreamPtr = std::unique_ptr<fcMkvStream>;
@@ -73,42 +71,42 @@ fcWebMWriter::~fcWebMWriter()
     m_segment.Finalize();
 }
 
-void fcWebMWriter::setVideoEncoderInfo(const fcIWebMVideoEncoder& encoder)
+void fcWebMWriter::setVideoEncoderInfo(const fcIWebMEncoderInfo& info)
 {
     auto track = dynamic_cast<mkvmuxer::VideoTrack*>(m_segment.GetTrackByNumber(m_video_track_id));
     if (track) {
-        track->set_codec_id(encoder.getMatroskaCodecID());
+        track->set_codec_id(info.getMatroskaCodecID());
     }
 }
 
-void fcWebMWriter::setAudioEncoderInfo(const fcIWebMAudioEncoder& encoder)
+void fcWebMWriter::setAudioEncoderInfo(const fcIWebMEncoderInfo& info)
 {
     auto track = dynamic_cast<mkvmuxer::AudioTrack*>(m_segment.GetTrackByNumber(m_audio_track_id));
     if (track) {
-        track->set_codec_id(encoder.getMatroskaCodecID());
+        track->set_codec_id(info.getMatroskaCodecID());
 
-        const auto& cp = encoder.getCodecPrivate();
+        const auto& cp = info.getCodecPrivate();
         track->SetCodecPrivate((const uint8_t*)cp.data(), cp.size());
     }
 }
 
-void fcWebMWriter::addVideoFrame(const fcWebMVideoFrame& frame)
+void fcWebMWriter::addVideoFrame(const fcWebMFrameData& frame)
 {
     if (m_video_track_id == 0 || frame.data.empty()) { return; }
 
     std::unique_lock<std::mutex> lock(m_mutex);
-    frame.eachPackets([&](const char *data, const fcVPXFrame::PacketInfo& pinfo) {
+    frame.eachPackets([&](const char *data, const fcWebMPacketInfo& pinfo) {
         uint64_t timestamp_ns = to_nsec(pinfo.timestamp);
         m_segment.AddFrame((const uint8_t*)data, pinfo.size, m_video_track_id, timestamp_ns, pinfo.keyframe);
     });
 }
 
-void fcWebMWriter::addAudioFrame(const fcWebMAudioFrame& frame)
+void fcWebMWriter::addAudioFrame(const fcWebMFrameData& frame)
 {
     if (m_audio_track_id == 0 || frame.data.empty()) { return; }
 
     std::unique_lock<std::mutex> lock(m_mutex);
-    frame.eachPackets([&](const char *data, const fcVorbisFrame::PacketInfo& pinfo) {
+    frame.eachPackets([&](const char *data, const fcWebMPacketInfo& pinfo) {
         uint64_t timestamp_ns = to_nsec(pinfo.timestamp);
         m_segment.AddFrame((const uint8_t*)data, pinfo.size, m_audio_track_id, timestamp_ns, true);
     });

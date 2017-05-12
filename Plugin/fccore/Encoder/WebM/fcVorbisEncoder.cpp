@@ -1,11 +1,11 @@
 #include "pch.h"
 #include "fcInternal.h"
-#include "Foundation/fcFoundation.h"
-#include "GraphicsDevice/fcGraphicsDevice.h"
+
+#ifdef fcSupportWebM
+#include "fcWebMInternal.h"
 #include "fcVorbisEncoder.h"
 
 #ifdef fcSupportVorbis
-
 #include "vorbis/vorbisenc.h"
 #ifdef _MSC_VER
     #pragma comment(lib, "libvorbis_static.lib")
@@ -13,7 +13,7 @@
 #endif // _MSC_VER
 
 
-class fcVorbisEncoder : public fcIVorbisEncoder
+class fcVorbisEncoder : public fcIWebMAudioEncoder
 {
 public:
     fcVorbisEncoder(const fcVorbisEncoderConfig& conf);
@@ -22,11 +22,11 @@ public:
     const char* getMatroskaCodecID() const override;
     const Buffer& getCodecPrivate() const override;
 
-    bool encode(fcVorbisFrame& dst, const float *samples, size_t num_samples, fcTime timestamp) override;
-    bool flush(fcVorbisFrame& dst) override;
+    bool encode(fcWebMFrameData& dst, const float *samples, size_t num_samples, fcTime timestamp) override;
+    bool flush(fcWebMFrameData& dst) override;
 
 private:
-    void gatherPackets(fcVorbisFrame& dst);
+    void gatherPackets(fcWebMFrameData& dst);
 
     fcVorbisEncoderConfig   m_conf;
     Buffer                  m_codec_private;
@@ -97,7 +97,7 @@ const Buffer& fcVorbisEncoder::getCodecPrivate() const
     return m_codec_private;
 }
 
-void fcVorbisEncoder::gatherPackets(fcVorbisFrame& dst)
+void fcVorbisEncoder::gatherPackets(fcWebMFrameData& dst)
 {
     while (vorbis_analysis_blockout(&m_vo_dsp, &m_vo_block) == 1) {
         vorbis_analysis(&m_vo_block, nullptr);
@@ -108,12 +108,12 @@ void fcVorbisEncoder::gatherPackets(fcVorbisFrame& dst)
             dst.data.append((const char*)packet.packet, packet.bytes);
 
             double timestamp = (double)packet.granulepos / (double)m_conf.sample_rate;
-            dst.packets.push_back({ (uint32_t)packet.bytes, 0.0, timestamp });
+            dst.packets.push_back({ (uint32_t)packet.bytes, timestamp, 1 });
         }
     }
 }
 
-bool fcVorbisEncoder::encode(fcVorbisFrame& dst, const float *samples, size_t num_samples, fcTime timestamp)
+bool fcVorbisEncoder::encode(fcWebMFrameData& dst, const float *samples, size_t num_samples, fcTime timestamp)
 {
     if (!samples || num_samples == 0) { return false; }
 
@@ -133,7 +133,7 @@ bool fcVorbisEncoder::encode(fcVorbisFrame& dst, const float *samples, size_t nu
     return true;
 }
 
-bool fcVorbisEncoder::flush(fcVorbisFrame& dst)
+bool fcVorbisEncoder::flush(fcWebMFrameData& dst)
 {
     if (vorbis_analysis_wrote(&m_vo_dsp, 0) != 0) {
         return false;
@@ -143,10 +143,11 @@ bool fcVorbisEncoder::flush(fcVorbisFrame& dst)
 }
 
 
-fcIVorbisEncoder* fcCreateVorbisEncoder(const fcVorbisEncoderConfig& conf) { return new fcVorbisEncoder(conf); }
+fcIWebMAudioEncoder* fcCreateVorbisEncoder(const fcVorbisEncoderConfig& conf) { return new fcVorbisEncoder(conf); }
 
 #else // fcSupportVorbis
 
-fcIVorbisEncoder* fcCreateVorbisEncoder(const fcVorbisEncoderConfig& conf) { return nullptr; }
+fcIWebMAudioEncoder* fcCreateVorbisEncoder(const fcVorbisEncoderConfig& conf) { return nullptr; }
 
 #endif // fcSupportVorbis
+#endif // fcSupportWebM

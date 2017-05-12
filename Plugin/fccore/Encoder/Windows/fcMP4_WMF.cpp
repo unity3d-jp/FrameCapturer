@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Foundation/fcFoundation.h"
 #include "GraphicsDevice/fcGraphicsDevice.h"
-#include "../fcMP4Context.h"
+#include "Encoder/MP4/fcMP4Context.h"
 
 #include <Windows.h>
 #include <codecapi.h>

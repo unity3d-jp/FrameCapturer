@@ -5,7 +5,6 @@
 
 #ifdef fcSupportVorbis
 #include "vorbis/vorbisenc.h"
-#include "fcVorbisEncoder.h"
 
 class fcOggWriter
 {

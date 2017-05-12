@@ -16,57 +16,6 @@
     <ClCompile Include="fccore\Encoder\Windows\fcMP4_WMF.cpp">
       <Filter>fccore\Encoder\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcMP4Writer.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcOpusEncoder.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcVorbisEncoder.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcVPXEncoder.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcWebMWriter.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcExrContext.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcGifContext.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcMP4Context.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcPngContext.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcWebMContext.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcAACEncoderFAAC.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcH264EncoderAMD.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcH264EncoderIntel.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcH264EncoderNVIDIA.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcH264EncoderOpenH264.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcAACEncoderIntel.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcH264Encoder.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
     <ClCompile Include="fccore\fccore.cpp">
       <Filter>fccore</Filter>
     </ClCompile>
@@ -88,58 +37,73 @@
     <ClCompile Include="fccore\Foundation\Buffer.cpp">
       <Filter>fccore\Foundation</Filter>
     </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcFlacContext.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcWaveContext.cpp">
-      <Filter>fccore\Encoder</Filter>
-    </ClCompile>
     <ClCompile Include="fccore\Foundation\TaskGroup.cpp">
       <Filter>fccore\Foundation</Filter>
     </ClCompile>
-    <ClCompile Include="fccore\Encoder\fcOggContext.cpp">
-      <Filter>fccore\Encoder</Filter>
+    <ClCompile Include="fccore\Encoder\WebM\fcWebMWriter.cpp">
+      <Filter>fccore\Encoder\WebM</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\WebM\fcOpusEncoder.cpp">
+      <Filter>fccore\Encoder\WebM</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\WebM\fcVorbisEncoder.cpp">
+      <Filter>fccore\Encoder\WebM</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\WebM\fcVPXEncoder.cpp">
+      <Filter>fccore\Encoder\WebM</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\WebM\fcWebMContext.cpp">
+      <Filter>fccore\Encoder\WebM</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\MP4\fcMP4Writer.cpp">
+      <Filter>fccore\Encoder\MP4</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\MP4\fcAACEncoderFAAC.cpp">
+      <Filter>fccore\Encoder\MP4</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\MP4\fcAACEncoderIntel.cpp">
+      <Filter>fccore\Encoder\MP4</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\MP4\fcH264Encoder.cpp">
+      <Filter>fccore\Encoder\MP4</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\MP4\fcH264EncoderAMD.cpp">
+      <Filter>fccore\Encoder\MP4</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\MP4\fcH264EncoderIntel.cpp">
+      <Filter>fccore\Encoder\MP4</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\MP4\fcH264EncoderNVIDIA.cpp">
+      <Filter>fccore\Encoder\MP4</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\MP4\fcH264EncoderOpenH264.cpp">
+      <Filter>fccore\Encoder\MP4</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\MP4\fcMP4Context.cpp">
+      <Filter>fccore\Encoder\MP4</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\Audio\fcWaveContext.cpp">
+      <Filter>fccore\Encoder\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\Audio\fcFlacContext.cpp">
+      <Filter>fccore\Encoder\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\Audio\fcOggContext.cpp">
+      <Filter>fccore\Encoder\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\Image\fcPngContext.cpp">
+      <Filter>fccore\Encoder\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\Image\fcExrContext.cpp">
+      <Filter>fccore\Encoder\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\Image\fcGifContext.cpp">
+      <Filter>fccore\Encoder\Image</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fccore\GraphicsDevice\fcGraphicsDevice.h">
       <Filter>fccore\GraphisDevice</Filter>
-    </ClInclude>
-    <ClInclude Include="fccore\Encoder\fcAACEncoder.h">
-      <Filter>fccore\Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="fccore\Encoder\fcH264Encoder.h">
-      <Filter>fccore\Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="fccore\Encoder\fcMP4Internal.h">
-      <Filter>fccore\Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="fccore\Encoder\fcMP4Writer.h">
-      <Filter>fccore\Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="fccore\Encoder\fcVorbisEncoder.h">
-      <Filter>fccore\Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="fccore\Encoder\fcVPXEncoder.h">
-      <Filter>fccore\Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="fccore\Encoder\fcWebMWriter.h">
-      <Filter>fccore\Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="fccore\Encoder\fcWebMContext.h">
-      <Filter>fccore\Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="fccore\Encoder\fcExrContext.h">
-      <Filter>fccore\Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="fccore\Encoder\fcGifContext.h">
-      <Filter>fccore\Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="fccore\Encoder\fcMP4Context.h">
-      <Filter>fccore\Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="fccore\Encoder\fcPngContext.h">
-      <Filter>fccore\Encoder</Filter>
     </ClInclude>
     <ClInclude Include="fccore\fccore.h">
       <Filter>fccore</Filter>
@@ -171,17 +135,56 @@
     <ClInclude Include="fccore\Foundation\TaskQueue.h">
       <Filter>fccore\Foundation</Filter>
     </ClInclude>
-    <ClInclude Include="fccore\Encoder\fcWaveContext.h">
-      <Filter>fccore\Encoder</Filter>
-    </ClInclude>
-    <ClInclude Include="fccore\Encoder\fcFlacContext.h">
-      <Filter>fccore\Encoder</Filter>
-    </ClInclude>
     <ClInclude Include="fccore\Foundation\TaskGroup.h">
       <Filter>fccore\Foundation</Filter>
     </ClInclude>
-    <ClInclude Include="fccore\Encoder\fcOggContext.h">
-      <Filter>fccore\Encoder</Filter>
+    <ClInclude Include="fccore\Encoder\WebM\fcWebMWriter.h">
+      <Filter>fccore\Encoder\WebM</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\WebM\fcVorbisEncoder.h">
+      <Filter>fccore\Encoder\WebM</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\WebM\fcVPXEncoder.h">
+      <Filter>fccore\Encoder\WebM</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\WebM\fcWebMContext.h">
+      <Filter>fccore\Encoder\WebM</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\WebM\fcWebMInternal.h">
+      <Filter>fccore\Encoder\WebM</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\MP4\fcMP4Context.h">
+      <Filter>fccore\Encoder\MP4</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\MP4\fcMP4Internal.h">
+      <Filter>fccore\Encoder\MP4</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\MP4\fcMP4Writer.h">
+      <Filter>fccore\Encoder\MP4</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\MP4\fcAACEncoder.h">
+      <Filter>fccore\Encoder\MP4</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\MP4\fcH264Encoder.h">
+      <Filter>fccore\Encoder\MP4</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\Audio\fcWaveContext.h">
+      <Filter>fccore\Encoder\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\Audio\fcFlacContext.h">
+      <Filter>fccore\Encoder\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\Audio\fcOggContext.h">
+      <Filter>fccore\Encoder\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\Image\fcGifContext.h">
+      <Filter>fccore\Encoder\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\Image\fcPngContext.h">
+      <Filter>fccore\Encoder\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="fccore\Encoder\Image\fcExrContext.h">
+      <Filter>fccore\Encoder\Image</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -200,6 +203,18 @@
     <Filter Include="fccore\Foundation">
       <UniqueIdentifier>{99a7fb3c-c008-4ca2-9520-54ad3bfa2ae6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="fccore\Encoder\WebM">
+      <UniqueIdentifier>{f712ab23-4d3d-4f9d-99d8-4838c7a6577b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fccore\Encoder\MP4">
+      <UniqueIdentifier>{cf4fb31e-8360-4cca-9b9f-efc1e74d83e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fccore\Encoder\Image">
+      <UniqueIdentifier>{274207d8-a250-4dc5-9ae1-a00ae79178ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fccore\Encoder\Audio">
+      <UniqueIdentifier>{c9c18dae-7c2d-4783-8af8-9426218beb19}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="NatvisFile.natvis" />
@@ -208,5 +223,10 @@
     <CustomBuild Include="fccore\Foundation\ConvertKernel.ispc">
       <Filter>fccore\Foundation</Filter>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="fccore\Encoder\Image\jo_gif.i">
+      <Filter>fccore\Encoder\Image</Filter>
+    </None>
   </ItemGroup>
 </Project>

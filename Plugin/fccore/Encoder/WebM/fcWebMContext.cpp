@@ -1,13 +1,13 @@
 #include "pch.h"
 #include "fcInternal.h"
-#include "Foundation/fcFoundation.h"
-#include "GraphicsDevice/fcGraphicsDevice.h"
-#include "fcWebMContext.h"
-#include "fcVorbisEncoder.h"
-#include "fcVPXEncoder.h"
-#include "fcWebMWriter.h"
 
 #ifdef fcSupportWebM
+#include "fcWebMInternal.h"
+#include "fcWebMContext.h"
+#include "fcWebMWriter.h"
+#include "fcVorbisEncoder.h"
+#include "fcVPXEncoder.h"
+
 
 class fcWebMContext : public fcIWebMContext
 {
@@ -57,12 +57,12 @@ private:
     TaskQueue           m_video_tasks;
     VideoEncoderPtr     m_video_encoder;
     VideoBufferQueue    m_video_buffers;
-    fcWebMVideoFrame    m_video_frame;
+    fcWebMFrameData    m_video_frame;
 
     TaskQueue           m_audio_tasks;
     AudioEncoderPtr     m_audio_encoder;
     AudioBufferQueue    m_audio_buffers;
-    fcWebMAudioFrame    m_audio_frame;
+    fcWebMFrameData    m_audio_frame;
 };
 
 

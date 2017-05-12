@@ -1,7 +1,8 @@
 #include "pch.h"
 #include "fcInternal.h"
-#include "Foundation/fcFoundation.h"
-#include "GraphicsDevice/fcGraphicsDevice.h"
+
+#ifdef fcSupportWebM
+#include "fcWebMInternal.h"
 #include "fcVPXEncoder.h"
 
 #ifdef fcSupportVPX
@@ -12,19 +13,20 @@
 #endif // _MSC_VER
 
 
-class fcVPXEncoder : public fcIVPXEncoder
+class fcVPXEncoder : public fcIWebMVideoEncoder
 {
 public:
     fcVPXEncoder(const fcVPXEncoderConfig& conf, fcWebMVideoEncoder encoder);
     ~fcVPXEncoder() override;
     void release() override;
     const char* getMatroskaCodecID() const override;
+    const Buffer& getCodecPrivate() const override;
 
-    bool encode(fcVPXFrame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe) override;
-    bool flush(fcVPXFrame& dst) override;
+    bool encode(fcWebMFrameData& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe) override;
+    bool flush(fcWebMFrameData& dst) override;
 
 private:
-    void gatherFrameData(fcVPXFrame& dst);
+    void gatherFrameData(fcWebMFrameData& dst);
 
     fcVPXEncoderConfig  m_conf = {};
     vpx_codec_iface_t   *m_vpx_iface = nullptr;
@@ -93,8 +95,14 @@ const char* fcVPXEncoder::getMatroskaCodecID() const
     return m_matroska_codec_id;
 }
 
+const Buffer & fcVPXEncoder::getCodecPrivate() const
+{
+    static Buffer s_dummy;
+    return s_dummy;
+}
 
-bool fcVPXEncoder::encode(fcVPXFrame& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe)
+
+bool fcVPXEncoder::encode(fcWebMFrameData& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe)
 {
     AnyToI420(m_i420_image, m_rgba_image, image, fmt, m_conf.width, m_conf.height);
     auto data = m_i420_image.data();
@@ -119,7 +127,7 @@ bool fcVPXEncoder::encode(fcVPXFrame& dst, const void *image, fcPixelFormat fmt,
     return true;
 }
 
-bool fcVPXEncoder::flush(fcVPXFrame& dst)
+bool fcVPXEncoder::flush(fcWebMFrameData& dst)
 {
     auto res = vpx_codec_encode(&m_vpx_ctx, nullptr, -1, 0, 0, 0);
     if (res != VPX_CODEC_OK) {
@@ -130,7 +138,7 @@ bool fcVPXEncoder::flush(fcVPXFrame& dst)
     return true;
 }
 
-void fcVPXEncoder::gatherFrameData(fcVPXFrame& dst)
+void fcVPXEncoder::gatherFrameData(fcWebMFrameData& dst)
 {
     vpx_codec_iter_t iter = nullptr;
     const vpx_codec_cx_pkt_t *pkt = nullptr;
@@ -140,19 +148,20 @@ void fcVPXEncoder::gatherFrameData(fcVPXFrame& dst)
 
             double timestamp = nsec_to_sec(pkt->data.frame.pts);
             dst.packets.push_back({
-                (int)pkt->data.frame.sz, timestamp, pkt->data.frame.flags & VPX_FRAME_IS_KEY });
+                (uint32_t)pkt->data.frame.sz, timestamp, (uint32_t)(pkt->data.frame.flags & VPX_FRAME_IS_KEY) });
         }
     }
 }
 
 
-fcIVPXEncoder* fcCreateVP8EncoderVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP8); }
-fcIVPXEncoder* fcCreateVP9EncoderVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP9); }
-fcIVPXEncoder* fcCreateVP9LossLessEncoderVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP9LossLess); }
+fcIWebMVideoEncoder* fcCreateVP8EncoderVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP8); }
+fcIWebMVideoEncoder* fcCreateVP9EncoderVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP9); }
+fcIWebMVideoEncoder* fcCreateVP9LossLessEncoderVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP9LossLess); }
 
 #else // fcSupportVPX
 
-fcIVPXEncoder* fcCreateVP8EncoderVPX(const fcVPXEncoderConfig& conf) { return nullptr; }
-fcIVPXEncoder* fcCreateVP9EncoderVPX(const fcVPXEncoderConfig& conf) { return nullptr; }
+fcIWebMVideoEncoder* fcCreateVP8EncoderVPX(const fcVPXEncoderConfig& conf) { return nullptr; }
+fcIWebMVideoEncoder* fcCreateVP9EncoderVPX(const fcVPXEncoderConfig& conf) { return nullptr; }
 
 #endif // fcSupportVPX
+#endif // fcSupportWebM

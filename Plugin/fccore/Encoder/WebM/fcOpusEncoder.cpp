@@ -1,7 +1,8 @@
 #include "pch.h"
 #include "fcInternal.h"
-#include "Foundation/fcFoundation.h"
-#include "GraphicsDevice/fcGraphicsDevice.h"
+
+#ifdef fcSupportWebM
+#include "fcWebMInternal.h"
 #include "fcVorbisEncoder.h"
 
 #ifdef fcSupportOpus
@@ -15,7 +16,7 @@
 #endif // _MSC_VER
 
 
-class fcOpusEncoder : public fcIVorbisEncoder
+class fcOpusEncoder : public fcIWebMAudioEncoder
 {
 public:
     fcOpusEncoder(const fcOpusEncoderConfig& conf);
@@ -24,8 +25,8 @@ public:
     const char* getMatroskaCodecID() const override;
     const Buffer& getCodecPrivate() const override;
 
-    bool encode(fcVorbisFrame& dst, const float *samples, size_t num_samples) override;
-    bool flush(fcVorbisFrame& dst) override;
+    bool encode(fcWebMFrameData& dst, const float *samples, size_t num_samples) override;
+    bool flush(fcWebMFrameData& dst) override;
 
 private:
     fcOpusEncoderConfig m_conf;
@@ -65,7 +66,7 @@ const Buffer& fcOpusEncoder::getCodecPrivate() const
     return m_codec_private;
 }
 
-bool fcOpusEncoder::encode(fcVorbisFrame& dst, const float *samples, size_t num_samples)
+bool fcOpusEncoder::encode(fcWebMFrameData& dst, const float *samples, size_t num_samples)
 {
     if (!m_op_encoder || !samples) { return false; }
 
@@ -95,16 +96,17 @@ bool fcOpusEncoder::encode(fcVorbisFrame& dst, const float *samples, size_t num_
     //return true;
 }
 
-bool fcOpusEncoder::flush(fcVorbisFrame& dst)
+bool fcOpusEncoder::flush(fcWebMFrameData& dst)
 {
     return true;
 }
 
 
-fcIVorbisEncoder* fcCreateOpusEncoder(const fcOpusEncoderConfig& conf) { return new fcOpusEncoder(conf); }
+fcIWebMAudioEncoder* fcCreateOpusEncoder(const fcOpusEncoderConfig& conf) { return new fcOpusEncoder(conf); }
 
 #else // fcSupportOpus
 
-fcIVorbisEncoder* fcCreateOpusEncoder(const fcOpusEncoderConfig& conf) { return nullptr; }
+fcIWebMAudioEncoder* fcCreateOpusEncoder(const fcOpusEncoderConfig& conf) { return nullptr; }
 
 #endif // fcSupportOpus
+#endif // fcSupportWebM

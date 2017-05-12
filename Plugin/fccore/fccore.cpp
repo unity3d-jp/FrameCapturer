@@ -176,7 +176,7 @@ fcAPI void fcCallDeferredCall(int id)
 // -------------------------------------------------------------
 
 #ifdef fcSupportPNG
-#include "Encoder/fcPngContext.h"
+#include "Encoder/Image/fcPngContext.h"
 
 fcAPI bool fcPngIsSupported() { return true; }
 
@@ -235,7 +235,7 @@ fcAPI int fcPngExportTextureDeferred(fcIPngContext *ctx, const char *path_, void
 // -------------------------------------------------------------
 
 #ifdef fcSupportEXR
-#include "Encoder/fcExrContext.h"
+#include "Encoder/Image/fcExrContext.h"
 
 fcAPI bool fcExrIsSupported() { return true; }
 
@@ -330,7 +330,7 @@ fcAPI int fcExrEndImageDeferred(fcIExrContext *ctx, int id) { return 0; }
 // -------------------------------------------------------------
 
 #ifdef fcSupportGIF
-#include "Encoder/fcGifContext.h"
+#include "Encoder/Image/fcGifContext.h"
 
 fcAPI bool fcGifIsSupported() { return true; }
 
@@ -401,7 +401,7 @@ fcAPI void fcGifForceKeyframe(fcIGifContext *ctx) {}
 // -------------------------------------------------------------
 
 #ifdef fcSupportMP4
-#include "Encoder/fcMP4Context.h"
+#include "Encoder/MP4/fcMP4Context.h"
 
 fcAPI bool fcMP4IsSupported() { return true; }
 
@@ -495,7 +495,7 @@ fcAPI bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_
 // -------------------------------------------------------------
 
 #ifdef fcSupportWebM
-#include "Encoder/fcWebMContext.h"
+#include "Encoder/WebM/fcWebMContext.h"
 
 fcAPI bool fcWebMIsSupported() { return true; }
 
@@ -563,7 +563,7 @@ fcAPI bool fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int nu
 
 
 #ifdef fcSupportWave
-#include "Encoder/fcWaveContext.h"
+#include "Encoder/Audio/fcWaveContext.h"
 
 fcAPI bool fcWaveIsSupported() { return true; }
 
@@ -607,7 +607,7 @@ fcAPI bool            fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samp
 
 
 #ifdef fcSupportVorbis
-#include "Encoder/fcOggContext.h"
+#include "Encoder/Audio/fcOggContext.h"
 
 fcAPI bool fcOggIsSupported() { return true; }
 
@@ -655,7 +655,7 @@ fcAPI bool            fcOggAddAudioFrame(fcIOggContext *ctx, const float *sample
 // -------------------------------------------------------------
 
 #ifdef fcSupportFlac
-#include "Encoder/fcFlacContext.h"
+#include "Encoder/Audio/fcFlacContext.h"
 
 fcAPI bool fcFlacIsSupported() { return true; }
 

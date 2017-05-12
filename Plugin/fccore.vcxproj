@@ -19,26 +19,26 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="fccore\Encoder\fcAACEncoderFAAC.cpp" />
-    <ClCompile Include="fccore\Encoder\fcAACEncoderIntel.cpp" />
-    <ClCompile Include="fccore\Encoder\fcExrContext.cpp" />
-    <ClCompile Include="fccore\Encoder\fcFlacContext.cpp" />
-    <ClCompile Include="fccore\Encoder\fcGifContext.cpp" />
-    <ClCompile Include="fccore\Encoder\fcH264Encoder.cpp" />
-    <ClCompile Include="fccore\Encoder\fcH264EncoderAMD.cpp" />
-    <ClCompile Include="fccore\Encoder\fcH264EncoderIntel.cpp" />
-    <ClCompile Include="fccore\Encoder\fcH264EncoderNVIDIA.cpp" />
-    <ClCompile Include="fccore\Encoder\fcH264EncoderOpenH264.cpp" />
-    <ClCompile Include="fccore\Encoder\fcMP4Context.cpp" />
-    <ClCompile Include="fccore\Encoder\fcMP4Writer.cpp" />
-    <ClCompile Include="fccore\Encoder\fcOggContext.cpp" />
-    <ClCompile Include="fccore\Encoder\fcOpusEncoder.cpp" />
-    <ClCompile Include="fccore\Encoder\fcPngContext.cpp" />
-    <ClCompile Include="fccore\Encoder\fcVorbisEncoder.cpp" />
-    <ClCompile Include="fccore\Encoder\fcVPXEncoder.cpp" />
-    <ClCompile Include="fccore\Encoder\fcWaveContext.cpp" />
-    <ClCompile Include="fccore\Encoder\fcWebMContext.cpp" />
-    <ClCompile Include="fccore\Encoder\fcWebMWriter.cpp" />
+    <ClCompile Include="fccore\Encoder\Audio\fcFlacContext.cpp" />
+    <ClCompile Include="fccore\Encoder\Audio\fcOggContext.cpp" />
+    <ClCompile Include="fccore\Encoder\Audio\fcWaveContext.cpp" />
+    <ClCompile Include="fccore\Encoder\Image\fcExrContext.cpp" />
+    <ClCompile Include="fccore\Encoder\Image\fcGifContext.cpp" />
+    <ClCompile Include="fccore\Encoder\Image\fcPngContext.cpp" />
+    <ClCompile Include="fccore\Encoder\MP4\fcAACEncoderFAAC.cpp" />
+    <ClCompile Include="fccore\Encoder\MP4\fcAACEncoderIntel.cpp" />
+    <ClCompile Include="fccore\Encoder\MP4\fcH264Encoder.cpp" />
+    <ClCompile Include="fccore\Encoder\MP4\fcH264EncoderAMD.cpp" />
+    <ClCompile Include="fccore\Encoder\MP4\fcH264EncoderIntel.cpp" />
+    <ClCompile Include="fccore\Encoder\MP4\fcH264EncoderNVIDIA.cpp" />
+    <ClCompile Include="fccore\Encoder\MP4\fcH264EncoderOpenH264.cpp" />
+    <ClCompile Include="fccore\Encoder\MP4\fcMP4Context.cpp" />
+    <ClCompile Include="fccore\Encoder\MP4\fcMP4Writer.cpp" />
+    <ClCompile Include="fccore\Encoder\WebM\fcOpusEncoder.cpp" />
+    <ClCompile Include="fccore\Encoder\WebM\fcVorbisEncoder.cpp" />
+    <ClCompile Include="fccore\Encoder\WebM\fcVPXEncoder.cpp" />
+    <ClCompile Include="fccore\Encoder\WebM\fcWebMContext.cpp" />
+    <ClCompile Include="fccore\Encoder\WebM\fcWebMWriter.cpp" />
     <ClCompile Include="fccore\Encoder\Windows\fcMP4_WMF.cpp" />
     <ClCompile Include="fccore\fccore.cpp" />
     <ClCompile Include="fccore\Foundation\Buffer.cpp" />
@@ -59,21 +59,22 @@
     <ClCompile Include="fccore\Foundation\YUV.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="fccore\Encoder\fcAACEncoder.h" />
-    <ClInclude Include="fccore\Encoder\fcExrContext.h" />
-    <ClInclude Include="fccore\Encoder\fcFlacContext.h" />
-    <ClInclude Include="fccore\Encoder\fcGifContext.h" />
-    <ClInclude Include="fccore\Encoder\fcH264Encoder.h" />
-    <ClInclude Include="fccore\Encoder\fcMP4Context.h" />
-    <ClInclude Include="fccore\Encoder\fcMP4Internal.h" />
-    <ClInclude Include="fccore\Encoder\fcMP4Writer.h" />
-    <ClInclude Include="fccore\Encoder\fcOggContext.h" />
-    <ClInclude Include="fccore\Encoder\fcPngContext.h" />
-    <ClInclude Include="fccore\Encoder\fcVorbisEncoder.h" />
-    <ClInclude Include="fccore\Encoder\fcVPXEncoder.h" />
-    <ClInclude Include="fccore\Encoder\fcWaveContext.h" />
-    <ClInclude Include="fccore\Encoder\fcWebMContext.h" />
-    <ClInclude Include="fccore\Encoder\fcWebMWriter.h" />
+    <ClInclude Include="fccore\Encoder\Audio\fcFlacContext.h" />
+    <ClInclude Include="fccore\Encoder\Audio\fcOggContext.h" />
+    <ClInclude Include="fccore\Encoder\Audio\fcWaveContext.h" />
+    <ClInclude Include="fccore\Encoder\Image\fcExrContext.h" />
+    <ClInclude Include="fccore\Encoder\Image\fcGifContext.h" />
+    <ClInclude Include="fccore\Encoder\Image\fcPngContext.h" />
+    <ClInclude Include="fccore\Encoder\MP4\fcAACEncoder.h" />
+    <ClInclude Include="fccore\Encoder\MP4\fcH264Encoder.h" />
+    <ClInclude Include="fccore\Encoder\MP4\fcMP4Context.h" />
+    <ClInclude Include="fccore\Encoder\MP4\fcMP4Internal.h" />
+    <ClInclude Include="fccore\Encoder\MP4\fcMP4Writer.h" />
+    <ClInclude Include="fccore\Encoder\WebM\fcVorbisEncoder.h" />
+    <ClInclude Include="fccore\Encoder\WebM\fcVPXEncoder.h" />
+    <ClInclude Include="fccore\Encoder\WebM\fcWebMContext.h" />
+    <ClInclude Include="fccore\Encoder\WebM\fcWebMInternal.h" />
+    <ClInclude Include="fccore\Encoder\WebM\fcWebMWriter.h" />
     <ClInclude Include="fccore\fccore.h" />
     <ClInclude Include="fccore\fcInternal.h" />
     <ClInclude Include="fccore\Foundation\TaskGroup.h" />
@@ -116,6 +117,9 @@
     <ProjectReference Include="setup.vcxproj">
       <Project>{1c5de91b-7ae9-4304-9fa1-0de1aba8c02d}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="fccore\Encoder\Image\jo_gif.i" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{08361722-5520-47AC-A0C2-31E8A062B73F}</ProjectGuid>
