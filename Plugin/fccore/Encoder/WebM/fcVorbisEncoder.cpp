@@ -6,11 +6,11 @@
 #include "fcVorbisEncoder.h"
 
 #ifdef fcSupportVorbis
-#include "vorbis/vorbisenc.h"
 #ifdef _MSC_VER
     #pragma comment(lib, "libvorbis_static.lib")
     #pragma comment(lib, "libogg_static.lib")
 #endif // _MSC_VER
+#include "vorbis/vorbisenc.h"
 
 
 class fcVorbisEncoder : public fcIWebMAudioEncoder
@@ -18,7 +18,6 @@ class fcVorbisEncoder : public fcIWebMAudioEncoder
 public:
     fcVorbisEncoder(const fcVorbisEncoderConfig& conf);
     ~fcVorbisEncoder() override;
-    void release() override;
     const char* getMatroskaCodecID() const override;
     const Buffer& getCodecPrivate() const override;
 
@@ -80,11 +79,6 @@ fcVorbisEncoder::~fcVorbisEncoder()
     vorbis_dsp_clear(&m_vo_dsp);
     vorbis_comment_clear(&m_vo_comment);
     vorbis_info_clear(&m_vo_info);
-}
-
-void fcVorbisEncoder::release()
-{
-    delete this;
 }
 
 const char* fcVorbisEncoder::getMatroskaCodecID() const

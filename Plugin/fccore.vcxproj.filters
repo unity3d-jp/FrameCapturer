@@ -13,9 +13,6 @@
     <ClCompile Include="fccore\GraphicsDevice\fcGraphicsDevice.cpp">
       <Filter>fccore\GraphisDevice</Filter>
     </ClCompile>
-    <ClCompile Include="fccore\Encoder\Windows\fcMP4_WMF.cpp">
-      <Filter>fccore\Encoder\Windows</Filter>
-    </ClCompile>
     <ClCompile Include="fccore\fccore.cpp">
       <Filter>fccore</Filter>
     </ClCompile>
@@ -99,6 +96,15 @@
     </ClCompile>
     <ClCompile Include="fccore\Encoder\Image\fcGifContext.cpp">
       <Filter>fccore\Encoder\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\MP4\fcMP4_Windows.cpp">
+      <Filter>fccore\Encoder\MP4</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\MP4\fcMP4_Mac.cpp">
+      <Filter>fccore\Encoder\MP4</Filter>
+    </ClCompile>
+    <ClCompile Include="fccore\Encoder\MP4\fcMP4_Linux.cpp">
+      <Filter>fccore\Encoder\MP4</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -196,9 +202,6 @@
     </Filter>
     <Filter Include="fccore\Encoder">
       <UniqueIdentifier>{48802eb2-d965-4472-acfa-f45fccdf33ac}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="fccore\Encoder\Windows">
-      <UniqueIdentifier>{7db6f261-324d-4798-962a-36ef674aae56}</UniqueIdentifier>
     </Filter>
     <Filter Include="fccore\Foundation">
       <UniqueIdentifier>{99a7fb3c-c008-4ca2-9520-54ad3bfa2ae6}</UniqueIdentifier>

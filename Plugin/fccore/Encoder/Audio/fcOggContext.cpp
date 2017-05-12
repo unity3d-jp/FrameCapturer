@@ -4,6 +4,10 @@
 #include "fcOggContext.h"
 
 #ifdef fcSupportVorbis
+#ifdef _MSC_VER
+    #pragma comment(lib, "libvorbis_static.lib")
+    #pragma comment(lib, "libogg_static.lib")
+#endif
 #include "vorbis/vorbisenc.h"
 
 class fcOggWriter

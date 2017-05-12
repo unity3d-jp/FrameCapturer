@@ -404,6 +404,7 @@ fcAPI void fcGifForceKeyframe(fcIGifContext *ctx) {}
 #include "Encoder/MP4/fcMP4Context.h"
 
 fcAPI bool fcMP4IsSupported() { return true; }
+fcAPI bool fcMP4OSIsSupported() { return fcMP4OSIsSupportedImpl(); }
 
 fcAPI fcIMP4Context* fcMP4CreateContext(fcMP4Config *conf)
 {

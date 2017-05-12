@@ -1,7 +1,10 @@
 #include "pch.h"
+#include "fcInternal.h"
+
+#ifdef _WIN32
 #include "Foundation/fcFoundation.h"
 #include "GraphicsDevice/fcGraphicsDevice.h"
-#include "Encoder/MP4/fcMP4Context.h"
+#include "fcMP4Context.h"
 
 #include <Windows.h>
 #include <codecapi.h>
@@ -427,3 +430,11 @@ fcIMP4Context* fcMP4OSCreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice *de
     }
     return ret;
 }
+
+bool fcMP4OSIsSupportedImpl()
+{
+    g_MFInitializer.get();
+    return g_MFPlat && g_MFReadWrite;
+}
+
+#endif // _WIN32

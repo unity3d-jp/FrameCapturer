@@ -6,6 +6,8 @@
 #ifdef fcSupportFlac
 #ifdef _MSC_VER
     #pragma comment(lib, "libFLAC_static.lib")
+    #pragma comment(lib, "libvorbis_static.lib")
+    #pragma comment(lib, "libogg_static.lib")
     #define FLAC__NO_DLL
 #endif
 #include "FLAC/stream_encoder.h"

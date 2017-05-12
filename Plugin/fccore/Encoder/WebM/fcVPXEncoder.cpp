@@ -18,7 +18,6 @@ class fcVPXEncoder : public fcIWebMVideoEncoder
 public:
     fcVPXEncoder(const fcVPXEncoderConfig& conf, fcWebMVideoEncoder encoder);
     ~fcVPXEncoder() override;
-    void release() override;
     const char* getMatroskaCodecID() const override;
     const Buffer& getCodecPrivate() const override;
 
@@ -83,11 +82,6 @@ fcVPXEncoder::fcVPXEncoder(const fcVPXEncoderConfig& conf, fcWebMVideoEncoder en
 fcVPXEncoder::~fcVPXEncoder()
 {
     vpx_codec_destroy(&m_vpx_ctx);
-}
-
-void fcVPXEncoder::release()
-{
-    delete this;
 }
 
 const char* fcVPXEncoder::getMatroskaCodecID() const
@@ -162,6 +156,7 @@ fcIWebMVideoEncoder* fcCreateVP9LossLessEncoderVPX(const fcVPXEncoderConfig& con
 
 fcIWebMVideoEncoder* fcCreateVP8EncoderVPX(const fcVPXEncoderConfig& conf) { return nullptr; }
 fcIWebMVideoEncoder* fcCreateVP9EncoderVPX(const fcVPXEncoderConfig& conf) { return nullptr; }
+fcIWebMVideoEncoder* fcCreateVP9LossLessEncoderVPX(const fcVPXEncoderConfig& conf) { return nullptr; }
 
 #endif // fcSupportVPX
 #endif // fcSupportWebM

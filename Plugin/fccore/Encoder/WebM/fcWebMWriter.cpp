@@ -140,8 +140,10 @@ void fcWebMWriter::addAudioFrame(const fcWebMFrameData& frame)
 
 void fcWebMWriter::writeOut(double timestamp_)
 {
-    std::stable_sort(m_mkvframes.begin(), m_mkvframes.end(),
-        [](const MKVFramePtr& a, const MKVFramePtr& b) { return a->timestamp() < b->timestamp(); });
+    if (m_conf.video && m_conf.audio) {
+        std::stable_sort(m_mkvframes.begin(), m_mkvframes.end(),
+            [](const MKVFramePtr& a, const MKVFramePtr& b) { return a->timestamp() < b->timestamp(); });
+    }
 
     size_t num_added = 0;
     auto timestamp = to_nsec(timestamp_);
@@ -159,9 +161,5 @@ void fcWebMWriter::writeOut(double timestamp_)
 
 
 fcIWebMWriter* fcCreateWebMWriter(BinaryStream &stream, const fcWebMConfig &conf) { return new fcWebMWriter(stream, conf); }
-
-#else  // fcSupportWebM
-
-fcIWebMWriter* fcCreateWebMWriter(BinaryStream &stream, const fcWebMConfig &conf) { return nullptr; }
 
 #endif // fcSupportWebM

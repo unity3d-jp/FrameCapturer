@@ -34,12 +34,14 @@
     <ClCompile Include="fccore\Encoder\MP4\fcH264EncoderOpenH264.cpp" />
     <ClCompile Include="fccore\Encoder\MP4\fcMP4Context.cpp" />
     <ClCompile Include="fccore\Encoder\MP4\fcMP4Writer.cpp" />
+    <ClCompile Include="fccore\Encoder\MP4\fcMP4_Linux.cpp" />
+    <ClCompile Include="fccore\Encoder\MP4\fcMP4_Mac.cpp" />
+    <ClCompile Include="fccore\Encoder\MP4\fcMP4_Windows.cpp" />
     <ClCompile Include="fccore\Encoder\WebM\fcOpusEncoder.cpp" />
     <ClCompile Include="fccore\Encoder\WebM\fcVorbisEncoder.cpp" />
     <ClCompile Include="fccore\Encoder\WebM\fcVPXEncoder.cpp" />
     <ClCompile Include="fccore\Encoder\WebM\fcWebMContext.cpp" />
     <ClCompile Include="fccore\Encoder\WebM\fcWebMWriter.cpp" />
-    <ClCompile Include="fccore\Encoder\Windows\fcMP4_WMF.cpp" />
     <ClCompile Include="fccore\fccore.cpp" />
     <ClCompile Include="fccore\Foundation\Buffer.cpp" />
     <ClCompile Include="fccore\Foundation\TaskGroup.cpp" />

@@ -36,4 +36,5 @@ protected:
 
 void            fcMP4SetModulePathImpl(const char *path);
 fcIMP4Context*  fcMP4CreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice*);
+bool            fcMP4OSIsSupportedImpl();
 fcIMP4Context*  fcMP4OSCreateContextImpl(fcMP4Config &conf, fcIGraphicsDevice *dev, const char *path);
