@@ -36,8 +36,11 @@ public:
     void addVideoFrame(const fcWebMFrameData& buf) override;
     void addAudioFrame(const fcWebMFrameData& buf) override;
 
+    void writeOut(double timestamp);
+
 private:
     using StreamPtr = std::unique_ptr<fcMkvStream>;
+    using MKVFramePtr = std::unique_ptr<mkvmuxer::Frame>;
 
     fcWebMConfig m_conf;
     StreamPtr m_stream;
@@ -46,6 +49,10 @@ private:
     mkvmuxer::Segment m_segment;
     uint64_t m_video_track_id = 0;
     uint64_t m_audio_track_id = 0;
+
+    std::vector<MKVFramePtr> m_mkvframes;
+    double m_timestamp_video_last = 0.0;
+    double m_timestamp_audio_last = 0.0;
 };
 
 
@@ -54,7 +61,8 @@ fcWebMWriter::fcWebMWriter(BinaryStream &stream, const fcWebMConfig &conf)
     , m_stream(new fcMkvStream(stream))
 {
     m_segment.Init(m_stream.get());
-    m_segment.set_mode(mkvmuxer::Segment::kLive);
+    m_segment.set_mode(mkvmuxer::Segment::kFile);
+    m_segment.set_estimate_file_duration(true);
     if (conf.video) {
         m_video_track_id = m_segment.AddVideoTrack(conf.video_width, conf.video_height, 0);
     }
@@ -63,11 +71,14 @@ fcWebMWriter::fcWebMWriter(BinaryStream &stream, const fcWebMConfig &conf)
     }
 
     auto info = m_segment.GetSegmentInfo();
-    info->set_writing_app("Unity WebM Recorder");
+    info->set_writing_app("Unity Movie Recorder");
 }
 
 fcWebMWriter::~fcWebMWriter()
 {
+    if (m_conf.video) {
+        writeOut(m_timestamp_video_last);
+    }
     m_segment.Finalize();
 }
 
@@ -95,10 +106,17 @@ void fcWebMWriter::addVideoFrame(const fcWebMFrameData& frame)
     if (m_video_track_id == 0 || frame.data.empty()) { return; }
 
     std::unique_lock<std::mutex> lock(m_mutex);
-    frame.eachPackets([&](const char *data, const fcWebMPacketInfo& pinfo) {
-        uint64_t timestamp_ns = to_nsec(pinfo.timestamp);
-        m_segment.AddFrame((const uint8_t*)data, pinfo.size, m_video_track_id, timestamp_ns, pinfo.keyframe);
+    auto timestamp_prev = m_timestamp_video_last;
+    frame.eachPackets([this](const char *data, const fcWebMPacketInfo& pinfo) {
+        m_timestamp_video_last = pinfo.timestamp;
+        auto mkvf = new mkvmuxer::Frame();
+        mkvf->Init((const uint8_t*)data, pinfo.size);
+        mkvf->set_track_number(m_video_track_id);
+        mkvf->set_timestamp(to_nsec(m_timestamp_video_last));
+        mkvf->set_is_key(pinfo.keyframe);
+        m_mkvframes.emplace_back(mkvf);
     });
+    writeOut(timestamp_prev);
 }
 
 void fcWebMWriter::addAudioFrame(const fcWebMFrameData& frame)
@@ -106,10 +124,37 @@ void fcWebMWriter::addAudioFrame(const fcWebMFrameData& frame)
     if (m_audio_track_id == 0 || frame.data.empty()) { return; }
 
     std::unique_lock<std::mutex> lock(m_mutex);
-    frame.eachPackets([&](const char *data, const fcWebMPacketInfo& pinfo) {
-        uint64_t timestamp_ns = to_nsec(pinfo.timestamp);
-        m_segment.AddFrame((const uint8_t*)data, pinfo.size, m_audio_track_id, timestamp_ns, true);
+    frame.eachPackets([this](const char *data, const fcWebMPacketInfo& pinfo) {
+        m_timestamp_audio_last = pinfo.timestamp;
+        auto mkvf = new mkvmuxer::Frame();
+        mkvf->Init((const uint8_t*)data, pinfo.size);
+        mkvf->set_track_number(m_audio_track_id);
+        mkvf->set_timestamp(to_nsec(m_timestamp_audio_last));
+        mkvf->set_is_key(pinfo.keyframe);
+        m_mkvframes.emplace_back(mkvf);
     });
+    if (!m_conf.video) {
+        writeOut(m_timestamp_audio_last);
+    }
+}
+
+void fcWebMWriter::writeOut(double timestamp_)
+{
+    std::stable_sort(m_mkvframes.begin(), m_mkvframes.end(),
+        [](const MKVFramePtr& a, const MKVFramePtr& b) { return a->timestamp() < b->timestamp(); });
+
+    size_t num_added = 0;
+    auto timestamp = to_nsec(timestamp_);
+    for (auto& mkvf : m_mkvframes) {
+        if (mkvf->timestamp() <= timestamp) {
+            m_segment.AddGenericFrame(mkvf.get());
+            ++num_added;
+        }
+        else {
+            break;
+        }
+    }
+    m_mkvframes.erase(m_mkvframes.begin(), m_mkvframes.begin() + num_added);
 }
 
 

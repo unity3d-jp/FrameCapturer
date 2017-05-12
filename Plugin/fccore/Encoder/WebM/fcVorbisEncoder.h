@@ -12,7 +12,3 @@ using fcOpusEncoderConfig = fcVorbisEncoderConfig;
 
 fcIWebMAudioEncoder* fcCreateVorbisEncoder(const fcVorbisEncoderConfig& conf);
 fcIWebMAudioEncoder* fcCreateOpusEncoder(const fcOpusEncoderConfig& conf);
-
-using fcWebMAudioEncoderConfig = fcVorbisEncoderConfig;
-using fcWebMFrameData = fcWebMFrameData;
-using fcIWebMAudioEncoder = fcIWebMAudioEncoder;

@@ -63,10 +63,4 @@ public:
     virtual bool flush(fcWebMFrameData& dst) = 0;
 };
 
-
-namespace mkvmuxer {
-    class Frame;
-}
-using fcMKVFrame = mkvmuxer::Frame;
-
 #endif // fcSupportWebM

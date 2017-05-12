@@ -1,14 +1,10 @@
 ﻿#pragma once
 
 #ifdef _WIN32
-    #ifndef fcStaticLink
-        #ifdef fcImpl
-            #define fcAPI extern "C" __declspec(dllexport)
-        #else
-            #define fcAPI extern "C" __declspec(dllimport)
-        #endif
+    #ifdef fcImpl
+        #define fcAPI extern "C" __declspec(dllexport)
     #else
-        #define fcAPI extern "C"
+        #define fcAPI extern "C" __declspec(dllimport)
     #endif
 #else
     #define fcAPI extern "C"
@@ -17,14 +13,6 @@
 #include <cstdint>
 
 class fcIGraphicsDevice;
-class fcIPngContext;
-class fcIExrContext;
-class fcIGifContext;
-class fcIMP4Context;
-class fcIWebMContext;
-class fcIWaveContext;
-class fcIOggContext;
-class fcIFlacContext;
 using fcTime = double;
 
 enum fcPixelFormat
@@ -113,6 +101,8 @@ fcAPI uint64_t        fcStreamGetWrittenSize(fcStream *s);
 // PNG Exporter
 // -------------------------------------------------------------
 
+class fcIPngContext;
+
 enum class fcPngPixelFormat
 {
     Adaptive, // select optimal one for input data
@@ -136,6 +126,8 @@ fcAPI bool            fcPngExportTexture(fcIPngContext *ctx, const char *path, v
 // -------------------------------------------------------------
 // EXR Exporter
 // -------------------------------------------------------------
+
+class fcIExrContext;
 
 enum class fcExrPixelFormat
 {
@@ -174,6 +166,8 @@ fcAPI bool            fcExrEndImage(fcIExrContext *ctx);
 // GIF Exporter
 // -------------------------------------------------------------
 
+class fcIGifContext;
+
 struct fcGifConfig
 {
     int width = 0;
@@ -198,6 +192,8 @@ fcAPI void            fcGifForceKeyframe(fcIGifContext *ctx);
 // -------------------------------------------------------------
 // MP4 Exporter
 // -------------------------------------------------------------
+
+class fcIMP4Context;
 
 enum fcMP4VideoFlags
 {
@@ -257,6 +253,8 @@ fcAPI bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *sample
 // WebM Exporter
 // -------------------------------------------------------------
 
+class fcIWebMContext;
+
 enum class fcWebMVideoEncoder
 {
     VP8,
@@ -305,6 +303,8 @@ fcAPI bool            fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samp
 // Wave Exporter
 // -------------------------------------------------------------
 
+class fcIWaveContext;
+
 struct fcWaveConfig
 {
     int sample_rate = 48000;
@@ -321,6 +321,8 @@ fcAPI bool            fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samp
 // -------------------------------------------------------------
 // Ogg Exporter
 // -------------------------------------------------------------
+
+class fcIOggContext;
 
 struct fcOggConfig
 {
@@ -339,6 +341,8 @@ fcAPI bool            fcOggAddAudioFrame(fcIOggContext *ctx, const float *sample
 // -------------------------------------------------------------
 // Flac Exporter
 // -------------------------------------------------------------
+
+class fcIFlacContext;
 
 struct fcFlacConfig
 {

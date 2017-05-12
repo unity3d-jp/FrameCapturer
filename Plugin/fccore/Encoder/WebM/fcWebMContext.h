@@ -20,5 +20,4 @@ protected:
     virtual ~fcIWebMContext() {}
 };
 
-
 fcIWebMContext* fcWebMCreateContextImpl(fcWebMConfig &conf, fcIGraphicsDevice*);
