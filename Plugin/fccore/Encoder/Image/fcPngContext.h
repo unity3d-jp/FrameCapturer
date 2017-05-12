@@ -3,7 +3,7 @@
 class fcIPngContext
 {
 public:
-    virtual void release() = 0;
+    virtual void release(bool async = true) = 0;
     virtual bool exportTexture(const char *path, void *tex, int width, int height, fcPixelFormat fmt, int num_channels) = 0;
     virtual bool exportPixels(const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, int num_channels) = 0;
 protected:

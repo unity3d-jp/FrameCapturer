@@ -28,7 +28,7 @@ public:
 
     fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd);
     ~fcWebMContext() override;
-    void release() override;
+    void release(bool async) override;
 
     void addOutputStream(fcStream *s) override;
 
@@ -127,14 +127,17 @@ fcWebMContext::~fcWebMContext()
     m_writers.clear();
 }
 
-void fcWebMContext::release()
+void fcWebMContext::release(bool async)
 {
-    delete this;
+    if (async) { fcAsyncDelete(this); }
+    else { delete this; }
 }
 
 void fcWebMContext::addOutputStream(fcStream *s)
 {
-    auto *writer = fcCreateWebMWriter(*s, m_conf);
+    if (!s) { return; }
+
+    auto *writer = fcCreateWebMWriter(s, m_conf);
     if (m_video_encoder) { writer->setVideoEncoderInfo(*m_video_encoder); }
     if (m_audio_encoder) { writer->setAudioEncoderInfo(*m_audio_encoder); }
     m_writers.emplace_back(writer);

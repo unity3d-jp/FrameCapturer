@@ -3,7 +3,7 @@
 class fcIWebMContext
 {
 public:
-    virtual void release() = 0;
+    virtual void release(bool async = true) = 0;
 
     virtual void addOutputStream(fcStream *s) = 0;
 

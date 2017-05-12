@@ -51,4 +51,6 @@ int main(int argc, char *argv[])
     if (ogg) OggTest();
     if (flac) FlacTest();
     if (convert) ConvertTest();
+
+    fcWaitAsyncDelete();
 }

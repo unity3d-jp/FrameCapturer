@@ -48,15 +48,15 @@ void WebMTest(fcWebMVideoEncoder ve, fcWebMAudioEncoder ae)
 
     // create output streams
     fcStream* fstream = fcCreateFileStream(filename_f);
-    fcStream* mstream = fcCreateMemoryStream();
-    FILE *ofile = fopen(filename_c, "wb");
-    fcStream* cstream = fcCreateCustomStream(ofile, &tellp, &seekp, &write);
+    //fcStream* mstream = fcCreateMemoryStream();
+    //FILE *ofile = fopen(filename_c, "wb");
+    //fcStream* cstream = fcCreateCustomStream(ofile, &tellp, &seekp, &write);
 
     // create mp4 context and add output streams
     fcIWebMContext *ctx = fcWebMCreateContext(&conf);
     fcWebMAddOutputStream(ctx, fstream);
-    fcWebMAddOutputStream(ctx, mstream);
-    fcWebMAddOutputStream(ctx, cstream);
+    //fcWebMAddOutputStream(ctx, mstream);
+    //fcWebMAddOutputStream(ctx, cstream);
 
     // create movie data
     {
@@ -91,15 +91,15 @@ void WebMTest(fcWebMVideoEncoder ve, fcWebMAudioEncoder ae)
     fcWebMDestroyContext(ctx);
 
     // destroy output streams
-    {
-        fcBufferData bd = fcStreamGetBufferData(mstream);
-        std::fstream of(filename_m, std::ios::binary | std::ios::out);
-        of.write((char*)bd.data, bd.size);
-    }
+    //{
+    //    fcBufferData bd = fcStreamGetBufferData(mstream);
+    //    std::fstream of(filename_m, std::ios::binary | std::ios::out);
+    //    of.write((char*)bd.data, bd.size);
+    //}
     fcDestroyStream(fstream);
-    fcDestroyStream(mstream);
-    fcDestroyStream(cstream);
-    fclose(ofile);
+    //fcDestroyStream(mstream);
+    //fcDestroyStream(cstream);
+    //fclose(ofile);
 }
 
 

@@ -27,7 +27,7 @@ class fcPngContext : public fcIPngContext
 public:
     fcPngContext(const fcPngConfig& conf, fcIGraphicsDevice *dev);
     ~fcPngContext() override;
-    void release() override;
+    void release(bool async) override;
     bool exportTexture(const char *path, void *tex, int width, int height, fcPixelFormat fmt, int num_channels) override;
     bool exportPixels(const char *path, const void *pixels, int width, int height, fcPixelFormat fmt, int num_channels) override;
 
@@ -56,9 +56,10 @@ fcPngContext::~fcPngContext()
     m_tasks.wait();
 }
 
-void fcPngContext::release()
+void fcPngContext::release(bool async)
 {
-    delete this;
+    if (async) { fcAsyncDelete(this); }
+    else { delete this; }
 }
 
 bool fcPngContext::exportTexture(const char *path_, void *tex, int width, int height, fcPixelFormat fmt, int num_channels)

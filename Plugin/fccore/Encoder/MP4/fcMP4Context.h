@@ -3,7 +3,7 @@
 class fcIMP4Context
 {
 public:
-    virtual void release() = 0;
+    virtual void release(bool async = true) = 0;
     virtual bool isValid() const = 0;
 
     virtual const char* getVideoEncoderInfo() = 0;

@@ -35,7 +35,7 @@ public:
 
     fcFlacContext(const fcFlacConfig& c);
     ~fcFlacContext() override;
-    void release() override;
+    void release(bool async) override;
     void addOutputStream(fcStream *s) override;
     bool write(const float *samples, int num_samples) override;
 
@@ -91,7 +91,9 @@ static FLAC__StreamEncoderTellStatus stream_encoder_tellp_callback_(const FLAC__
 
 
 fcFlacWriter::fcFlacWriter(const fcFlacConfig& c, fcStream *s)
+    : m_stream(s)
 {
+    m_stream->addRef();
     m_encoder = FLAC__stream_encoder_new();
     if (c.verify) {
         FLAC__stream_encoder_set_verify(m_encoder, true);
@@ -126,6 +128,8 @@ fcFlacWriter::~fcFlacWriter()
         FLAC__stream_encoder_delete(m_encoder);
         m_encoder = nullptr;
     }
+    m_stream->release();
+    m_stream = nullptr;
 }
 
 bool fcFlacWriter::write(const int *samples, int num_samples)
@@ -149,9 +153,10 @@ fcFlacContext::~fcFlacContext()
     m_writers.clear();
 }
 
-void fcFlacContext::release()
+void fcFlacContext::release(bool async)
 {
-    delete this;
+    if (async) { fcAsyncDelete(this); }
+    else { delete this; }
 }
 
 void fcFlacContext::addOutputStream(fcStream *s)

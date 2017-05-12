@@ -21,11 +21,10 @@ class fcOpusEncoder : public fcIWebMAudioEncoder
 public:
     fcOpusEncoder(const fcOpusEncoderConfig& conf);
     ~fcOpusEncoder() override;
-    void release() override;
     const char* getMatroskaCodecID() const override;
     const Buffer& getCodecPrivate() const override;
 
-    bool encode(fcWebMFrameData& dst, const float *samples, size_t num_samples) override;
+    bool encode(fcWebMFrameData& dst, const float *samples, size_t num_samples, fcTime timestamp) override;
     bool flush(fcWebMFrameData& dst) override;
 
 private:
@@ -51,11 +50,6 @@ fcOpusEncoder::~fcOpusEncoder()
     opus_encoder_destroy(m_op_encoder);
 }
 
-void fcOpusEncoder::release()
-{
-    delete this;
-}
-
 const char* fcOpusEncoder::getMatroskaCodecID() const
 {
     return "A_OPUS";
@@ -66,34 +60,34 @@ const Buffer& fcOpusEncoder::getCodecPrivate() const
     return m_codec_private;
 }
 
-bool fcOpusEncoder::encode(fcWebMFrameData& dst, const float *samples, size_t num_samples)
+bool fcOpusEncoder::encode(fcWebMFrameData& dst, const float *samples, size_t num_samples, fcTime timestamp)
 {
     if (!m_op_encoder || !samples) { return false; }
 
     return false;
     // todo: implement
 
-    //m_samples.append(samples, num_samples);
+    m_samples.append(samples, num_samples);
 
-    //int block_size = m_conf.sample_rate * m_conf.num_channels / 10;
-    //int processed_size = 0;
-    //m_buf_encoded.resize(block_size);
-    //while (processed_size + block_size <= num_samples) {
-    //    auto n = opus_encode_float(m_op_encoder,
-    //        m_samples.data() + processed_size, block_size / m_conf.num_channels,
-    //        (uint8_t*)m_buf_encoded.data(), (int)m_buf_encoded.size());
-    //    if (n > 0) {
-    //        m_buf_encoded.resize(n);
-    //        dst.data.append(m_buf_encoded.data(), m_buf_encoded.size());
-    //    }
-    //    else if (n == 0) {
-    //        break;
-    //    }
-    //    else {
-    //        return false;
-    //    }
-    //}
-    //return true;
+    int block_size = m_conf.sample_rate * m_conf.num_channels / 10;
+    int processed_size = 0;
+    m_buf_encoded.resize(block_size);
+    while (processed_size + block_size <= num_samples) {
+        auto n = opus_encode_float(m_op_encoder,
+            m_samples.data() + processed_size, block_size / m_conf.num_channels,
+            (uint8_t*)m_buf_encoded.data(), (int)m_buf_encoded.size());
+        if (n > 0) {
+            m_buf_encoded.resize(n);
+            dst.data.append(m_buf_encoded.data(), m_buf_encoded.size());
+        }
+        else if (n == 0) {
+            break;
+        }
+        else {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool fcOpusEncoder::flush(fcWebMFrameData& dst)

@@ -10,7 +10,7 @@ class fcWaveContext : public fcIWaveContext
 public:
     fcWaveContext(const fcWaveConfig& c);
     ~fcWaveContext() override;
-    void release() override;
+    void release(bool async) override;
     void addOutputStream(fcStream *s) override;
     bool write(const float *samples, int num_samples) override;
 
@@ -48,17 +48,22 @@ fcWaveContext::fcWaveContext(const fcWaveConfig& c)
 
 fcWaveContext::~fcWaveContext()
 {
-    for (auto s : m_streams) { waveEnd(s); }
+    for (auto s : m_streams) {
+        waveEnd(s);
+        s->release();
+    }
 }
 
-void fcWaveContext::release()
+void fcWaveContext::release(bool async)
 {
-    delete this;
+    if (async) { fcAsyncDelete(this); }
+    else { delete this; }
 }
 
 void fcWaveContext::addOutputStream(fcStream *s)
 {
     if (s) {
+        s->addRef();
         waveBegin(s);
         m_streams.push_back(s);
     }

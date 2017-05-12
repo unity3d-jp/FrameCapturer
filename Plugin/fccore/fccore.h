@@ -71,6 +71,7 @@ fcAPI void            fcGfxSync();
 fcAPI void            fcSetModulePath(const char *path);
 fcAPI const char*     fcGetModulePath();
 fcAPI fcTime          fcGetTime(); // current time in seconds
+fcAPI void            fcWaitAsyncDelete();
 
 
 #ifndef fcImpl

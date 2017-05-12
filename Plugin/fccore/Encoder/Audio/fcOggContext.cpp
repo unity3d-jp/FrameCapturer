@@ -38,7 +38,7 @@ public:
 
     fcOggContext(const fcOggConfig& conf);
     virtual ~fcOggContext() override;
-    virtual void release()  override;
+    virtual void release(bool async)  override;
     virtual void addOutputStream(fcStream *s) override;
     virtual bool write(const float *samples, int num_samples) override;
 
@@ -66,12 +66,14 @@ fcOggWriter::fcOggWriter(fcStream *s)
     : m_stream(s)
 {
     static int s_serial = 0;
+    m_stream->addRef();
     ogg_stream_init(&m_ogstream, s_serial++);
 }
 
 fcOggWriter::~fcOggWriter()
 {
     ogg_stream_clear(&m_ogstream);
+    m_stream->release();
 }
 
 void fcOggWriter::write(ogg_packet& packet)
@@ -143,9 +145,10 @@ fcOggContext::~fcOggContext()
     vorbis_info_clear(&m_vo_info);
 }
 
-void fcOggContext::release()
+void fcOggContext::release(bool async)
 {
-    delete this;
+    if (async) { fcAsyncDelete(this); }
+    else { delete this; }
 }
 
 void fcOggContext::addOutputStream(fcStream *s)

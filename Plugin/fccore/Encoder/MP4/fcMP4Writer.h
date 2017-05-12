@@ -4,7 +4,7 @@
 class fcMP4Writer
 {
 public:
-    fcMP4Writer(BinaryStream &stream, const fcMP4Config &conf);
+    fcMP4Writer(BinaryStream *stream, const fcMP4Config &conf);
     virtual ~fcMP4Writer();
     void addVideoFrame(const fcH264Frame& frame); // thread safe
     void addAudioFrame(const fcAACFrame& frame); // thread safe
@@ -15,7 +15,7 @@ private:
     void mp4End();
 
 private:
-    BinaryStream& m_stream;
+    BinaryStream *m_stream = nullptr;
     fcMP4Config m_conf;
     std::mutex m_mutex;
     RawVector<fcMP4FrameInfo> m_video_frame_info;
@@ -25,6 +25,6 @@ private:
     RawVector<u32> m_iframe_ids;
     RawVector<u8> m_audio_encoder_info;
 
-    size_t m_mdat_begin;
-    size_t m_mdat_end;
+    size_t m_mdat_begin = 0;
+    size_t m_mdat_end = 0;
 };

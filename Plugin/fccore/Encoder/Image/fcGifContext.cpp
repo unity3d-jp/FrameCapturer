@@ -25,7 +25,7 @@ class fcGifContext : public fcIGifContext
 public:
     fcGifContext(const fcGifConfig &conf, fcIGraphicsDevice *dev);
     ~fcGifContext();
-    void release() override;
+    void release(bool async) override;
 
     void addOutputStream(fcStream *s) override;
     bool addFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp) override;
@@ -79,17 +79,22 @@ fcGifContext::~fcGifContext()
     flush();
 
     jo_gif_end(&m_gif);
+
+    for (auto s : m_streams) { s->release(); }
+    m_streams.clear();
 }
 
 
-void fcGifContext::release()
+void fcGifContext::release(bool async)
 {
-    delete this;
+    if (async) { fcAsyncDelete(this); }
+    else { delete this; }
 }
 
 void fcGifContext::addOutputStream(fcStream *os)
 {
     if (!os) { return; }
+    os->addRef();
     m_streams.push_back(os);
 }
 

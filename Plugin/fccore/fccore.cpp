@@ -12,6 +12,35 @@
 // Foundation
 // -------------------------------------------------------------
 
+class fcAsyncDeleteManager
+{
+public:
+    void wait()
+    {
+        for (auto& f : m_futures) { f.get(); }
+        m_futures.clear();
+    }
+
+    void add(std::future<void>&& v)
+    {
+        m_futures.push_back(std::move(v));
+    }
+
+private:
+    std::deque<std::future<void>> m_futures;
+} g_asyncReleaseManager;
+
+void fcAsyncDeleteImpl(std::future<void>&& f)
+{
+    g_asyncReleaseManager.add(std::move(f));
+}
+
+fcAPI void fcWaitAsyncDelete()
+{
+    g_asyncReleaseManager.wait();
+}
+
+
 namespace {
     std::string g_fcModulePath;
 }
@@ -58,7 +87,7 @@ fcAPI fcStream* fcCreateCustomStream(void *obj, fcTellp_t tellp, fcSeekp_t seekp
 fcAPI void fcDestroyStream(fcStream *s)
 {
     fcTraceFunc();
-    delete s;
+    s->release();
 }
 
 fcAPI fcBufferData fcStreamGetBufferData(fcStream *s)

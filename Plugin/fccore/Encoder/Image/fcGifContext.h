@@ -3,7 +3,7 @@
 class fcIGifContext
 {
 public:
-    virtual void release() = 0;
+    virtual void release(bool async = true) = 0;
 
     virtual void addOutputStream(fcStream *s) = 0;
     virtual bool addFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp = -1) = 0;

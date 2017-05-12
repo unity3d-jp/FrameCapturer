@@ -23,7 +23,6 @@
 #endif
 
 
-
 struct fcExrTaskData
 {
     std::string path;
@@ -51,7 +50,7 @@ class fcExrContext : public fcIExrContext
 public:
     fcExrContext(const fcExrConfig& conf, fcIGraphicsDevice *dev);
     ~fcExrContext();
-    void release() override;
+    void release(bool async) override;
     bool beginFrame(const char *path, int width, int height) override;
     bool addLayerTexture(void *tex, fcPixelFormat fmt, int channel, const char *name) override;
     bool addLayerPixels(const void *pixels, fcPixelFormat fmt, int channel, const char *name) override;
@@ -90,9 +89,10 @@ fcExrContext::~fcExrContext()
 }
 
 
-void fcExrContext::release()
+void fcExrContext::release(bool async)
 {
-    delete this;
+    if (async) { fcAsyncDelete(this); }
+    else { delete this; }
 }
 
 bool fcExrContext::beginFrame(const char *path, int width, int height)

@@ -14,21 +14,22 @@
 class fcMkvStream : public mkvmuxer::IMkvWriter
 {
 public:
-    fcMkvStream(BinaryStream &stream) : m_stream(stream) {}
-    int32_t Write(const void* buf, uint32_t len) override { m_stream.write(buf, len); return 0; }
-    mkvmuxer::int64 Position() const override { return m_stream.tellp(); }
-    mkvmuxer::int32 Position(mkvmuxer::int64 position) override { m_stream.seekp((size_t)position); return 0; }
+    fcMkvStream(BinaryStream *stream) : m_stream(stream) { m_stream->addRef(); }
+    ~fcMkvStream() { m_stream->release(); }
+    int32_t Write(const void* buf, uint32_t len) override { m_stream->write(buf, len); return 0; }
+    mkvmuxer::int64 Position() const override { return m_stream->tellp(); }
+    mkvmuxer::int32 Position(mkvmuxer::int64 position) override { m_stream->seekp((size_t)position); return 0; }
     bool Seekable() const override { return true; }
     void ElementStartNotify(mkvmuxer::uint64 element_id, mkvmuxer::int64 position) override {}
 private:
-    BinaryStream &m_stream;
+    BinaryStream *m_stream = nullptr;
 };
 
 
 class fcWebMWriter : public fcIWebMWriter
 {
 public:
-    fcWebMWriter(BinaryStream &stream, const fcWebMConfig &conf);
+    fcWebMWriter(BinaryStream *stream, const fcWebMConfig &conf);
     ~fcWebMWriter() override;
     void setVideoEncoderInfo(const fcIWebMEncoderInfo& info) override;
     void setAudioEncoderInfo(const fcIWebMEncoderInfo& info) override;
@@ -56,7 +57,7 @@ private:
 };
 
 
-fcWebMWriter::fcWebMWriter(BinaryStream &stream, const fcWebMConfig &conf)
+fcWebMWriter::fcWebMWriter(BinaryStream *stream, const fcWebMConfig &conf)
     : m_conf(conf)
     , m_stream(new fcMkvStream(stream))
 {
@@ -160,6 +161,9 @@ void fcWebMWriter::writeOut(double timestamp_)
 }
 
 
-fcIWebMWriter* fcCreateWebMWriter(BinaryStream &stream, const fcWebMConfig &conf) { return new fcWebMWriter(stream, conf); }
+fcIWebMWriter* fcCreateWebMWriter(BinaryStream *stream, const fcWebMConfig &conf)
+{
+    return new fcWebMWriter(stream, conf);
+}
 
 #endif // fcSupportWebM

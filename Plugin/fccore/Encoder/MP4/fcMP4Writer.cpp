@@ -45,22 +45,23 @@ time_t fcGetMacTime()
 } // namespace
 
 
-fcMP4Writer::fcMP4Writer(BinaryStream& stream, const fcMP4Config &conf)
+fcMP4Writer::fcMP4Writer(BinaryStream *stream, const fcMP4Config &conf)
     : m_stream(stream)
     , m_conf(conf)
-    , m_mdat_begin(), m_mdat_end()
 {
+    m_stream->addRef();
     mp4Begin();
 }
 
 fcMP4Writer::~fcMP4Writer()
 {
     mp4End();
+    m_stream->release();
 }
 
 void fcMP4Writer::mp4Begin()
 {
-    BinaryStream& os = m_stream;
+    BinaryStream& os = *m_stream;
     os  << u32_be(0x18)
         << u32_be('ftyp')
         << u32_be('mp42')
@@ -85,7 +86,7 @@ void fcMP4Writer::addVideoFrame(const fcH264Frame& frame)
     if (frame.data.empty()) { return; }
     std::unique_lock<std::mutex> lock(m_mutex);
 
-    BinaryStream& os = m_stream;
+    BinaryStream& os = *m_stream;
     fcMP4FrameInfo info;
     info.file_offset = os.tellp();
     info.timestamp = to_usec(frame.timestamp);
@@ -121,7 +122,7 @@ void fcMP4Writer::addAudioFrame(const fcAACFrame& frame)
     if (frame.data.empty()) { return; }
     std::unique_lock<std::mutex> lock(m_mutex);
 
-    BinaryStream& os = m_stream;
+    BinaryStream& os = *m_stream;
     frame.eachPackets([&](const char *data, const fcAACFrame::PacketInfo& pinfo) {
         fcMP4FrameInfo info;
         info.file_offset = os.tellp();
@@ -228,7 +229,7 @@ void fcMP4Writer::mp4End()
     // moov section
     //------------------------------------------------------
 
-    BinaryStream& bs = m_stream;
+    BinaryStream& bs = *m_stream;
     Box box = Box(bs);
     m_mdat_end = bs.tellp();
 

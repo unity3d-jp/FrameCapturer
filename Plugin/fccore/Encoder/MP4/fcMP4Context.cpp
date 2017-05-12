@@ -30,7 +30,7 @@ public:
 
     fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev);
     ~fcMP4Context();
-    void release() override;
+    void release(bool async) override;
     bool isValid() const override;
 
     const char* getVideoEncoderInfo() override;
@@ -195,9 +195,10 @@ fcMP4Context::~fcMP4Context()
 }
 
 
-void fcMP4Context::release()
+void fcMP4Context::release(bool async)
 {
-    delete this;
+    if (async) { fcAsyncDelete(this); }
+    else { delete this; }
 }
 
 bool fcMP4Context::isValid() const
@@ -219,7 +220,7 @@ const char* fcMP4Context::getVideoEncoderInfo()
 
 void fcMP4Context::addOutputStream(fcStream *s)
 {
-    auto writer = new fcMP4Writer(*s, m_conf);
+    auto writer = new fcMP4Writer(s, m_conf);
     if (m_audio_encoder) {
         writer->setAACEncoderInfo(m_audio_encoder->getDecoderSpecificInfo());
     }

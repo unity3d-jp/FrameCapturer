@@ -37,7 +37,7 @@
     //// WebM-related encoders
     #define fcSupportVPX
     #define fcSupportVorbis
-    //#define fcSupportOpus
+    #define fcSupportOpus
 
     #define fcSupportWave
     #define fcSupportFlac
@@ -51,5 +51,11 @@
 #else
     #define fcDebugLog(...)
 #endif
+
+void fcAsyncDeleteImpl(std::future<void>&& f);
+template<class T> inline void fcAsyncDelete(T *v)
+{
+    fcAsyncDeleteImpl(std::async(std::launch::async, [v]() { delete v; }));
+}
 
 #include "fccore.h"

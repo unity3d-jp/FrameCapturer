@@ -64,6 +64,8 @@ namespace UTJ.FrameCapturer
 
         [DllImport ("fccore")] public static extern void         fcSetModulePath(string path);
         [DllImport ("fccore")] public static extern double       fcGetTime();
+        [DllImport ("fccore")] public static extern void         fcWaitAsyncDelete();
+
 
         public struct fcDeferredCall
         {
