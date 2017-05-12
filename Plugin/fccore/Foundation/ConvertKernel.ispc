@@ -350,7 +350,7 @@ export void Rf32ToRGf32(uniform float dst[], uniform float src[], uniform size_t
 
 export void F32ToU8Samples(uniform unsigned int8 dst[], uniform const float src[], uniform size_t size)
 {
-    foreach(i=0 ... size) { dst[i] = (unsigned int8)((src[i] * 0.5 + 0.5) * 255.0f); }
+    foreach(i=0 ... size) { dst[i] = (int)((src[i] * 0.5 + 0.5) * 255.0f) & 0xFF; }
 }
 export void F32ToI16Samples(uniform int16 dst[], uniform const float src[], uniform size_t size)
 {

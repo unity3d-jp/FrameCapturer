@@ -18,7 +18,7 @@ namespace UTJ.FrameCapturer
         }
     }
 
-    public abstract class AudioEncoder
+    public abstract class AudioEncoder : EncoderBase
     {
         public enum Type
         {
@@ -31,7 +31,6 @@ namespace UTJ.FrameCapturer
 
         // config: config struct (fcGifConfig, fcWebMConfig, etc)
         public abstract void Initialize(object config, string outPath);
-        public abstract void Release();
         public abstract void AddAudioFrame(float[] samples, double timestamp = -1.0);
 
 

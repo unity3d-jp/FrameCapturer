@@ -71,7 +71,6 @@ fcAPI void            fcGfxSync();
 fcAPI void            fcSetModulePath(const char *path);
 fcAPI const char*     fcGetModulePath();
 fcAPI fcTime          fcGetTime(); // current time in seconds
-fcAPI void            fcWaitAsyncDelete();
 
 
 #ifndef fcImpl
@@ -98,6 +97,9 @@ fcAPI fcStream*       fcCreateCustomStream(void *obj, fcTellp_t tellp, fcSeekp_t
 fcAPI void            fcReleaseStream(fcStream *s);
 fcAPI fcBufferData    fcStreamGetBufferData(fcStream *s); // s must be created by fcCreateMemoryStream(), otherwise return {nullptr, 0}.
 fcAPI uint64_t        fcStreamGetWrittenSize(fcStream *s);
+
+fcAPI void            fcEnableAsyncReleaseContext(bool v);
+fcAPI void            fcWaitAsyncDelete();
 
 fcAPI void            fcReleaseContext(fcContextBase *ctx);
 fcAPI void            fcSetOnDeleteCallback(fcContextBase *ctx, void(*cb)(void*), void *param);

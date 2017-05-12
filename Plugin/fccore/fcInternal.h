@@ -58,7 +58,7 @@ class fcContextBase
 protected:
     virtual ~fcContextBase();
 public:
-    virtual void release(bool async = true);
+    virtual void release();
     virtual void setOnDeleteCallback(void(*cb)(void*), void *param);
 
 private:

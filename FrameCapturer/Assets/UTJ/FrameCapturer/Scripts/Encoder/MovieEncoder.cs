@@ -100,7 +100,7 @@ namespace UTJ.FrameCapturer
         }
     }
 
-    public abstract class MovieEncoder
+    public abstract class MovieEncoder : EncoderBase
     {
         public enum Type
         {
@@ -115,7 +115,6 @@ namespace UTJ.FrameCapturer
 
         // config: config struct (fcGifConfig, fcWebMConfig, etc)
         public abstract void Initialize(object config, string outPath);
-        public abstract void Release();
         public abstract void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp = -1.0);
         public abstract void AddAudioFrame(float[] samples, double timestamp = -1.0);
 

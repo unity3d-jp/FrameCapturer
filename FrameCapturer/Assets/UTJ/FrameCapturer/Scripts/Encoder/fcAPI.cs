@@ -149,6 +149,7 @@ namespace UTJ.FrameCapturer
         }
 
 
+        [DllImport ("fccore")] public static extern void fcEnableAsyncReleaseContext(Bool v);
         [DllImport ("fccore")] public static extern void fcWaitAsyncDelete();
         [DllImport ("fccore")] public static extern void fcReleaseContext(IntPtr ctx);
 

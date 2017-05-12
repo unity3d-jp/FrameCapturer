@@ -4,10 +4,9 @@ using UnityEditor;
 
 public class FrameCapturerPackaging
 {
-    [MenuItem("Assets/UTJ/FrameCapturer/MakePackage")]
+    [MenuItem("Assets/Make FrameCapturer.unitypackage")]
     public static void MakePackage()
     {
-        // FrameCapturer.unitypackage
         {
             string[] files = new string[]
             {

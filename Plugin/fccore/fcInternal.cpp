@@ -23,11 +23,20 @@ public:
 
 private:
     TaskQueue m_task_queue;
-} g_asyncReleaseManager;
+};
+
+static fcAsyncDeleteManager g_async_delete_manager;
+static bool g_async_delete = true;
+
+
+fcAPI void fcEnableAsyncReleaseContext(bool v)
+{
+    g_async_delete = v;
+}
 
 fcAPI void fcWaitAsyncDelete()
 {
-    g_asyncReleaseManager.wait();
+    g_async_delete_manager.wait();
 }
 
 
@@ -38,9 +47,9 @@ fcContextBase::~fcContextBase()
     }
 }
 
-void fcContextBase::release(bool async)
+void fcContextBase::release()
 {
-    if (async) { g_asyncReleaseManager.add([this]() { delete this; }); }
+    if (g_async_delete) { g_async_delete_manager.add([this]() { delete this; }); }
     else { delete this; }
 }
 
