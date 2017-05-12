@@ -282,34 +282,57 @@ namespace UTJ.FrameCapturer
             }
             foreach (var rec in m_recorders) { rec.Initialize(m_encoderConfigs, m_outputDir); }
 
+            Debug.Log("GBufferRecorder: BeginRecording()");
             return true;
         }
 
         public void EndRecording()
         {
-            if (!m_recording) { return; }
-            m_recording = false;
+            foreach (var rec in m_recorders) { rec.Release(); }
+            m_recorders.Clear();
 
             var cam = GetComponent<Camera>();
             if (m_cbCopyFB != null)
             {
                 cam.RemoveCommandBuffer(CameraEvent.AfterEverything, m_cbCopyFB);
+                m_cbCopyFB.Release();
+                m_cbCopyFB = null;
             }
             if (m_cbClearGB != null)
             {
                 cam.RemoveCommandBuffer(CameraEvent.BeforeGBuffer, m_cbClearGB);
+                m_cbClearGB.Release();
+                m_cbClearGB = null;
             }
             if (m_cbCopyGB != null)
             {
                 cam.RemoveCommandBuffer(CameraEvent.BeforeLighting, m_cbCopyGB);
+                m_cbCopyGB.Release();
+                m_cbCopyGB = null;
             }
             if (m_cbCopyVelocity != null)
             {
                 cam.RemoveCommandBuffer(CameraEvent.BeforeImageEffectsOpaque, m_cbCopyVelocity);
+                m_cbCopyVelocity.Release();
+                m_cbCopyVelocity = null;
             }
 
-            foreach(var rec in m_recorders) { rec.Release(); }
-            m_recorders.Clear();
+            if (m_rtFB != null)
+            {
+                m_rtFB.Release();
+                m_rtFB = null;
+            }
+            if (m_rtGB != null)
+            {
+                foreach (var rt in m_rtGB) { rt.Release(); }
+                m_rtGB = null;
+            }
+
+            if (m_recording)
+            {
+                m_recording = false;
+                Debug.Log("GBufferRecorder: EndRecording()");
+            }
         }
 
         public void OneShot()
@@ -355,38 +378,6 @@ namespace UTJ.FrameCapturer
         void OnDisable()
         {
             EndRecording();
-
-            if (m_cbCopyFB != null)
-            {
-                m_cbCopyFB.Release();
-                m_cbCopyFB = null;
-            }
-            if (m_cbClearGB != null)
-            {
-                m_cbClearGB.Release();
-                m_cbClearGB = null;
-            }
-            if (m_cbCopyGB != null)
-            {
-                m_cbCopyGB.Release();
-                m_cbCopyGB = null;
-            }
-            if (m_cbCopyVelocity != null)
-            {
-                m_cbCopyVelocity.Release();
-                m_cbCopyVelocity = null;
-            }
-
-            if (m_rtFB != null)
-            {
-                m_rtFB.Release();
-                m_rtFB = null;
-            }
-            if (m_rtGB != null)
-            {
-                foreach (var rt in m_rtGB) { rt.Release(); }
-                m_rtGB = null;
-            }
         }
 
         void Update()

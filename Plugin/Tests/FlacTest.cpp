@@ -30,7 +30,7 @@ void FlacTest(int bits)
         fcTime t = 0;
         while (t < (double)DurationInSeconds) {
             CreateAudioData(audio_sample.data(), (int)audio_sample.size(), t, 1.0f);
-            fcFlacAddAudioFrame(ctx, audio_sample.data(), (int)audio_sample.size(), t);
+            fcFlacAddAudioFrame(ctx, audio_sample.data(), (int)audio_sample.size());
             t += 1.0;
         }
     }

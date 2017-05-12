@@ -80,13 +80,13 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
 
         switch (conf.video_encoder) {
         case fcWebMVideoEncoder::VP8:
-            m_video_encoder.reset(fcCreateVP8EncoderLibVPX(econf));
+            m_video_encoder.reset(fcCreateVP8EncoderVPX(econf));
             break;
         case fcWebMVideoEncoder::VP9:
-            m_video_encoder.reset(fcCreateVP9EncoderLibVPX(econf));
+            m_video_encoder.reset(fcCreateVP9EncoderVPX(econf));
             break;
         case fcWebMVideoEncoder::VP9LossLess:
-            m_video_encoder.reset(fcCreateVP9LossLessEncoderLibVPX(econf));
+            m_video_encoder.reset(fcCreateVP9LossLessEncoderVPX(econf));
             break;
         }
 
@@ -121,8 +121,6 @@ fcWebMContext::~fcWebMContext()
 {
     flushVideo();
     flushAudio();
-    m_video_tasks.wait();
-    m_audio_tasks.wait();
 
     m_video_encoder.reset();
     m_audio_encoder.reset();
@@ -206,6 +204,7 @@ void fcWebMContext::flushVideo()
             m_video_frame.clear();
         }
     });
+    m_video_tasks.wait();
 }
 
 
@@ -240,6 +239,7 @@ void fcWebMContext::flushAudio()
             m_audio_frame.clear();
         }
     });
+    m_audio_tasks.wait();
 }
 
 

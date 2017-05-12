@@ -146,13 +146,13 @@ void fcVPXEncoder::gatherFrameData(fcVPXFrame& dst)
 }
 
 
-fcIVPXEncoder* fcCreateVP8EncoderLibVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP8); }
-fcIVPXEncoder* fcCreateVP9EncoderLibVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP9); }
-fcIVPXEncoder* fcCreateVP9LossLessEncoderLibVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP9LossLess); }
+fcIVPXEncoder* fcCreateVP8EncoderVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP8); }
+fcIVPXEncoder* fcCreateVP9EncoderVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP9); }
+fcIVPXEncoder* fcCreateVP9LossLessEncoderVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP9LossLess); }
 
 #else // fcSupportVPX
 
-fcIVPXEncoder* fcCreateVP8EncoderLibVPX(const fcVPXEncoderConfig& conf) { return nullptr; }
-fcIVPXEncoder* fcCreateVP9EncoderLibVPX(const fcVPXEncoderConfig& conf) { return nullptr; }
+fcIVPXEncoder* fcCreateVP8EncoderVPX(const fcVPXEncoderConfig& conf) { return nullptr; }
+fcIVPXEncoder* fcCreateVP9EncoderVPX(const fcVPXEncoderConfig& conf) { return nullptr; }
 
 #endif // fcSupportVPX

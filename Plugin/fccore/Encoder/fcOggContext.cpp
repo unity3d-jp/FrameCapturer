@@ -37,7 +37,7 @@ public:
     virtual ~fcOggContext() override;
     virtual void release()  override;
     virtual void addOutputStream(fcStream *s) override;
-    virtual bool write(const float *samples, int num_samples, fcTime timestamp) override;
+    virtual bool write(const float *samples, int num_samples) override;
 
     void pageOut();
 
@@ -155,7 +155,7 @@ void fcOggContext::addOutputStream(fcStream *s)
     m_writers.emplace_back(writer);
 }
 
-bool fcOggContext::write(const float *samples, int num_samples, fcTime timestamp)
+bool fcOggContext::write(const float *samples, int num_samples)
 {
     if (!samples || num_samples == 0) { return false; }
 

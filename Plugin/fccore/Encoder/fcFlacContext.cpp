@@ -35,7 +35,7 @@ public:
     ~fcFlacContext() override;
     void release() override;
     void addOutputStream(fcStream *s) override;
-    bool write(const float *samples, int num_samples, fcTime timestamp) override;
+    bool write(const float *samples, int num_samples) override;
 
 private:
     fcFlacConfig m_conf;
@@ -159,7 +159,7 @@ void fcFlacContext::addOutputStream(fcStream *s)
     }
 }
 
-bool fcFlacContext::write(const float *samples, int num_samples, fcTime timestamp)
+bool fcFlacContext::write(const float *samples, int num_samples)
 {
     if (!samples || num_samples == 0) { return false; }
 

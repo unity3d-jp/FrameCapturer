@@ -53,9 +53,9 @@ public:
     virtual bool flush(fcVPXFrame& dst) = 0;
 };
 
-fcIVPXEncoder* fcCreateVP8EncoderLibVPX(const fcVPXEncoderConfig& conf);
-fcIVPXEncoder* fcCreateVP9EncoderLibVPX(const fcVPXEncoderConfig& conf);
-fcIVPXEncoder* fcCreateVP9LossLessEncoderLibVPX(const fcVPXEncoderConfig& conf);
+fcIVPXEncoder* fcCreateVP8EncoderVPX(const fcVPXEncoderConfig& conf);
+fcIVPXEncoder* fcCreateVP9EncoderVPX(const fcVPXEncoderConfig& conf);
+fcIVPXEncoder* fcCreateVP9LossLessEncoderVPX(const fcVPXEncoderConfig& conf);
 
 using fcWebMVideoEncoderConfig = fcVPXEncoderConfig;
 using fcWebMVideoFrame = fcVPXFrame;

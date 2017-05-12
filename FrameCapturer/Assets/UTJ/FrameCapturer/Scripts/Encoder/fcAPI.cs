@@ -504,7 +504,7 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] public static extern fcWaveContext fcWaveCreateContext(ref fcWaveConfig conf);
         [DllImport ("fccore")] private static extern void fcWaveDestroyContext(fcWaveContext ctx);
         [DllImport ("fccore")] public static extern void fcWaveAddOutputStream(fcWaveContext ctx, fcStream stream);
-        [DllImport ("fccore")] public static extern Bool fcWaveAddAudioFrame(fcWaveContext ctx, float[] samples, int num_samples, double timestamp = -1.0);
+        [DllImport ("fccore")] public static extern Bool fcWaveAddAudioFrame(fcWaveContext ctx, float[] samples, int num_samples);
 
         
 
@@ -545,7 +545,7 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] public static extern fcOggContext fcOggCreateContext(ref fcOggConfig conf);
         [DllImport ("fccore")] private static extern void fcOggDestroyContext(fcOggContext ctx);
         [DllImport ("fccore")] public static extern void fcOggAddOutputStream(fcOggContext ctx, fcStream stream);
-        [DllImport ("fccore")] public static extern Bool fcOggAddAudioFrame(fcOggContext ctx, float[] samples, int num_samples, double timestamp = -1.0);
+        [DllImport ("fccore")] public static extern Bool fcOggAddAudioFrame(fcOggContext ctx, float[] samples, int num_samples);
 
 
         // -------------------------------------------------------------
@@ -589,7 +589,7 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] public static extern fcFlacContext fcFlacCreateContext(ref fcFlacConfig conf);
         [DllImport ("fccore")] private static extern void fcFlacDestroyContext(fcFlacContext ctx);
         [DllImport ("fccore")] public static extern void fcFlacAddOutputStream(fcFlacContext ctx, fcStream stream);
-        [DllImport ("fccore")] public static extern Bool fcFlacAddAudioFrame(fcFlacContext ctx, float[] samples, int num_samples, double timestamp = -1.0);
+        [DllImport ("fccore")] public static extern Bool fcFlacAddAudioFrame(fcFlacContext ctx, float[] samples, int num_samples);
 
 
 

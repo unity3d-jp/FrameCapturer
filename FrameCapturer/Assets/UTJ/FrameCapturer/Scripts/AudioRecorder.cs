@@ -92,8 +92,12 @@ namespace UTJ.FrameCapturer
                 m_encoder.Release();
                 m_encoder = null;
             }
-            m_recording = false;
-            Debug.Log("AudioMRecorder: EndRecording()");
+
+            if(m_recording)
+            {
+                m_recording = false;
+                Debug.Log("AudioMRecorder: EndRecording()");
+            }
         }
 
 

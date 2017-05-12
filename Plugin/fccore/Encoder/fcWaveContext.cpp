@@ -12,7 +12,7 @@ public:
     ~fcWaveContext() override;
     void release() override;
     void addOutputStream(fcStream *s) override;
-    bool write(const float *samples, int num_samples, fcTime timestamp) override;
+    bool write(const float *samples, int num_samples) override;
 
 private:
     void waveBegin(fcStream *s);
@@ -86,7 +86,7 @@ void fcWaveContext::waveEnd(fcStream *s)
     s->write(&datasize, 4);
 }
 
-bool fcWaveContext::write(const float *samples, int num_samples, fcTime timestamp)
+bool fcWaveContext::write(const float *samples, int num_samples)
 {
     if (!samples || num_samples == 0) { return false; }
 

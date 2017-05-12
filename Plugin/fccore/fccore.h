@@ -315,7 +315,7 @@ fcAPI bool            fcWaveIsSupported();
 fcAPI fcIWaveContext* fcWaveCreateContext(fcWaveConfig *conf);
 fcAPI void            fcWaveDestroyContext(fcIWaveContext *ctx);
 fcAPI void            fcWaveAddOutputStream(fcIWaveContext *ctx, fcStream *stream);
-fcAPI bool            fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
+fcAPI bool            fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int num_samples);
 
 
 // -------------------------------------------------------------
@@ -333,7 +333,7 @@ fcAPI bool            fcOggIsSupported();
 fcAPI fcIOggContext*  fcOggCreateContext(fcOggConfig *conf);
 fcAPI void            fcOggDestroyContext(fcIOggContext *ctx);
 fcAPI void            fcOggAddOutputStream(fcIOggContext *ctx, fcStream *stream);
-fcAPI bool            fcOggAddAudioFrame(fcIOggContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
+fcAPI bool            fcOggAddAudioFrame(fcIOggContext *ctx, const float *samples, int num_samples);
 
 
 // -------------------------------------------------------------
@@ -353,6 +353,6 @@ fcAPI bool            fcFlacIsSupported();
 fcAPI fcIFlacContext* fcFlacCreateContext(fcFlacConfig *conf);
 fcAPI void            fcFlacDestroyContext(fcIFlacContext *ctx);
 fcAPI void            fcFlacAddOutputStream(fcIFlacContext *ctx, fcStream *stream);
-fcAPI bool            fcFlacAddAudioFrame(fcIFlacContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
+fcAPI bool            fcFlacAddAudioFrame(fcIFlacContext *ctx, const float *samples, int num_samples);
 
 

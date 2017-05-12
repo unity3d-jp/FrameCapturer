@@ -588,11 +588,11 @@ fcAPI void fcWaveAddOutputStream(fcIWaveContext *ctx, fcStream *stream)
     ctx->addOutputStream(stream);
 }
 
-fcAPI bool fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int num_samples, fcTime timestamp)
+fcAPI bool fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int num_samples)
 {
     fcTraceFunc();
     if (!ctx) { return false; }
-    return ctx->write(samples, num_samples, timestamp);
+    return ctx->write(samples, num_samples);
 }
 
 #else // fcSupportWave
@@ -601,7 +601,7 @@ fcAPI bool            fcWaveIsSupported() { return false; }
 fcAPI fcIWaveContext* fcWaveCreateContext(fcWaveConfig *conf) { return nullptr; }
 fcAPI void            fcWaveDestroyContext(fcIWaveContext *ctx) {}
 fcAPI void            fcWaveAddOutputStream(fcIWaveContext *ctx, fcStream *stream) {}
-fcAPI bool            fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int num_samples, fcTime timestamp) { return false; }
+fcAPI bool            fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int num_samples) { return false; }
 
 #endif // fcSupportWave
 
@@ -632,11 +632,11 @@ fcAPI void fcOggAddOutputStream(fcIOggContext *ctx, fcStream *stream)
     ctx->addOutputStream(stream);
 }
 
-fcAPI bool fcOggAddAudioFrame(fcIOggContext *ctx, const float *samples, int num_samples, fcTime timestamp)
+fcAPI bool fcOggAddAudioFrame(fcIOggContext *ctx, const float *samples, int num_samples)
 {
     fcTraceFunc();
     if (!ctx) { return false; }
-    return ctx->write(samples, num_samples, timestamp);
+    return ctx->write(samples, num_samples);
 }
 
 #else // fcSupportVorbis
@@ -645,7 +645,7 @@ fcAPI bool            fcOggIsSupported() { return false; }
 fcAPI fcIOggContext*  fcOggCreateContext(fcOggConfig *conf) { return nullptr; }
 fcAPI void            fcOggDestroyContext(fcIOggContext *ctx) {}
 fcAPI void            fcOggAddOutputStream(fcIOggContext *ctx, fcStream *stream) {}
-fcAPI bool            fcOggAddAudioFrame(fcIOggContext *ctx, const float *samples, int num_samples, fcTime timestamp) { return false; }
+fcAPI bool            fcOggAddAudioFrame(fcIOggContext *ctx, const float *samples, int num_samples) { return false; }
 
 #endif // fcSupportVorbis
 
@@ -680,11 +680,11 @@ fcAPI void fcFlacAddOutputStream(fcIFlacContext *ctx, fcStream *stream)
     ctx->addOutputStream(stream);
 }
 
-fcAPI bool fcFlacAddAudioFrame(fcIFlacContext *ctx, const float *samples, int num_samples, fcTime timestamp)
+fcAPI bool fcFlacAddAudioFrame(fcIFlacContext *ctx, const float *samples, int num_samples)
 {
     fcTraceFunc();
     if (!ctx) { return false; }
-    return ctx->write(samples, num_samples, timestamp);
+    return ctx->write(samples, num_samples);
 }
 
 #else // fcSupportFlac
@@ -693,7 +693,7 @@ fcAPI bool            fcFlacIsSupported() { return false; }
 fcAPI fcIFlacContext* fcFlacCreateContext(fcFlacConfig *conf) { return nullptr; }
 fcAPI void            fcFlacDestroyContext(fcIFlacContext *ctx) { return; }
 fcAPI void            fcFlacAddOutputStream(fcIFlacContext *ctx, fcStream *stream) { return; }
-fcAPI bool            fcFlacAddAudioFrame(fcIFlacContext *ctx, const float *samples, int num_samples, fcTime timestamp) { return false; }
+fcAPI bool            fcFlacAddAudioFrame(fcIFlacContext *ctx, const float *samples, int num_samples) { return false; }
 
 #endif // fcSupportFlac
 

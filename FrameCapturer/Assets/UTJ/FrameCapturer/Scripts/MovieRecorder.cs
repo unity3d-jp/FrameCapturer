@@ -58,7 +58,9 @@ namespace UTJ.FrameCapturer
         CommandBuffer m_cb;
         RenderTexture m_scratchBuffer;
         bool m_recording = false;
+        int m_outputSampleRate;
         int m_numVideoFrames = 0;
+        int m_numAudioSamples = 0;
 
         MovieEncoder m_encoder;
         #endregion
@@ -153,7 +155,9 @@ namespace UTJ.FrameCapturer
             }
 
 
+            m_outputSampleRate = AudioSettings.outputSampleRate;
             m_numVideoFrames = 0;
+            m_numAudioSamples = 0;
 
             // create scratch buffer
             {
@@ -229,7 +233,7 @@ namespace UTJ.FrameCapturer
             cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
 
             m_recording = true;
-            Debug.Log("MovieMRecorder: BeginRecording()");
+            Debug.Log("MovieRecorder: BeginRecording()");
             return true;
         }
 
@@ -251,8 +255,12 @@ namespace UTJ.FrameCapturer
                 m_scratchBuffer.Release();
                 m_scratchBuffer = null;
             }
-            m_recording = false;
-            Debug.Log("MovieMRecorder: EndRecording()");
+
+            if(m_recording)
+            {
+                m_recording = false;
+                Debug.Log("MovieRecorder: EndRecording()");
+            }
         }
 
 
@@ -337,7 +345,9 @@ namespace UTJ.FrameCapturer
         {
             if (m_recording && m_encoder != null)
             {
-                m_encoder.AddAudioFrame(samples);
+                double timestamp = (double)m_numAudioSamples / (double)m_outputSampleRate;
+                m_encoder.AddAudioFrame(samples, timestamp);
+                m_numAudioSamples += samples.Length / channels;
             }
         }
         #endregion
