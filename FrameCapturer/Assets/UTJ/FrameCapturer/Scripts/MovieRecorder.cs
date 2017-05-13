@@ -34,7 +34,7 @@ namespace UTJ.FrameCapturer
         #region fields
         // base settings
         [SerializeField] DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
-        [SerializeField] MovieEncoderConfigs m_encoderConfigs = new MovieEncoderConfigs();
+        [SerializeField] MovieEncoderConfigs m_encoderConfigs = new MovieEncoderConfigs(MovieEncoder.Type.WebM);
 
         // video settings
         [SerializeField] int m_resolutionWidth = -1;
@@ -58,9 +58,7 @@ namespace UTJ.FrameCapturer
         CommandBuffer m_cb;
         RenderTexture m_scratchBuffer;
         bool m_recording = false;
-        int m_outputSampleRate;
         int m_numVideoFrames = 0;
-        int m_numAudioSamples = 0;
 
         MovieEncoder m_encoder;
         #endregion
@@ -155,9 +153,7 @@ namespace UTJ.FrameCapturer
             }
 
 
-            m_outputSampleRate = AudioSettings.outputSampleRate;
             m_numVideoFrames = 0;
-            m_numAudioSamples = 0;
 
             // create scratch buffer
             {
@@ -345,9 +341,7 @@ namespace UTJ.FrameCapturer
         {
             if (m_recording && m_encoder != null)
             {
-                double timestamp = (double)m_numAudioSamples / (double)m_outputSampleRate;
-                m_encoder.AddAudioFrame(samples, timestamp);
-                m_numAudioSamples += samples.Length / channels;
+                m_encoder.AddAudioFrame(samples);
             }
         }
         #endregion

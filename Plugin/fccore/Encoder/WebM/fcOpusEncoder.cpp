@@ -24,7 +24,7 @@ public:
     const char* getMatroskaCodecID() const override;
     const Buffer& getCodecPrivate() const override;
 
-    bool encode(fcWebMFrameData& dst, const float *samples, size_t num_samples, fcTime timestamp) override;
+    bool encode(fcWebMFrameData& dst, const float *samples, size_t num_samples) override;
     bool flush(fcWebMFrameData& dst) override;
 
 private:
@@ -60,7 +60,7 @@ const Buffer& fcOpusEncoder::getCodecPrivate() const
     return m_codec_private;
 }
 
-bool fcOpusEncoder::encode(fcWebMFrameData& dst, const float *samples, size_t num_samples, fcTime timestamp)
+bool fcOpusEncoder::encode(fcWebMFrameData& dst, const float *samples, size_t num_samples)
 {
     if (!m_op_encoder || !samples) { return false; }
 

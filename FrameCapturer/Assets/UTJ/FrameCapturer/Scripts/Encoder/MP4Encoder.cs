@@ -23,10 +23,7 @@ namespace UTJ.FrameCapturer
 
         public override void Release()
         {
-            fcAPI.fcGuard(() =>
-            {
-                m_ctx.Release();
-            });
+            m_ctx.Release();
         }
 
         public override void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp)
@@ -37,7 +34,7 @@ namespace UTJ.FrameCapturer
             }
         }
 
-        public override void AddAudioFrame(float[] samples, double timestamp)
+        public override void AddAudioFrame(float[] samples)
         {
             if (m_config.audio)
             {

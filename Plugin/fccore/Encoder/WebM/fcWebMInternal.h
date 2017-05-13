@@ -57,7 +57,7 @@ public:
 class fcIWebMAudioEncoder : public fcIWebMEncoderInfo
 {
 public:
-    virtual bool encode(fcWebMFrameData& dst, const float *samples, size_t num_samples, fcTime timestamp) = 0;
+    virtual bool encode(fcWebMFrameData& dst, const float *samples, size_t num_samples) = 0;
     virtual bool flush(fcWebMFrameData& dst) = 0;
 };
 

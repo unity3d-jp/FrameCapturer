@@ -21,7 +21,7 @@ public:
     const char* getMatroskaCodecID() const override;
     const Buffer& getCodecPrivate() const override;
 
-    bool encode(fcWebMFrameData& dst, const float *samples, size_t num_samples, fcTime timestamp) override;
+    bool encode(fcWebMFrameData& dst, const float *samples, size_t num_samples) override;
     bool flush(fcWebMFrameData& dst) override;
 
 private:
@@ -107,7 +107,7 @@ void fcVorbisEncoder::gatherPackets(fcWebMFrameData& dst)
     }
 }
 
-bool fcVorbisEncoder::encode(fcWebMFrameData& dst, const float *samples, size_t num_samples, fcTime timestamp)
+bool fcVorbisEncoder::encode(fcWebMFrameData& dst, const float *samples, size_t num_samples)
 {
     if (!samples || num_samples == 0) { return false; }
 

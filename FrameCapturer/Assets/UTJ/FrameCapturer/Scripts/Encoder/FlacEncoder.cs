@@ -8,7 +8,6 @@ namespace UTJ.FrameCapturer
     {
         fcAPI.fcFlacContext m_ctx;
         fcAPI.fcFlacConfig m_config;
-        fcAPI.fcStream m_ostream;
 
         public override Type type { get { return Type.Flac; } }
 
@@ -20,17 +19,14 @@ namespace UTJ.FrameCapturer
             m_ctx = fcAPI.fcFlacCreateContext(ref m_config);
 
             var path = outPath + ".flac";
-            m_ostream = fcAPI.fcCreateFileStream(path);
-            fcAPI.fcFlacAddOutputStream(m_ctx, m_ostream);
+            var stream = fcAPI.fcCreateFileStream(path);
+            fcAPI.fcFlacAddOutputStream(m_ctx, stream);
+            stream.Release();
         }
 
         public override void Release()
         {
-            fcAPI.fcGuard(() =>
-            {
-                m_ctx.Release();
-                m_ostream.Release();
-            });
+            m_ctx.Release();
         }
 
         public override void AddAudioFrame(float[] samples, double timestamp)

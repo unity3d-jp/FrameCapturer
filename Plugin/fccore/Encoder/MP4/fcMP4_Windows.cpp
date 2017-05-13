@@ -51,8 +51,8 @@ public:
     bool addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp) override;
     bool addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp);
 
-    bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp) override;
-    bool addAudioFrameImpl(const float *samples, int num_samples, fcTime timestamp);
+    bool addAudioFrame(const float *samples, int num_samples) override;
+    bool addAudioFrameImpl(const float *samples, int num_samples);
 
 
 private:
@@ -68,6 +68,7 @@ private:
 
     TaskQueue           m_audio_tasks;
     AudioBufferQueue    m_audio_buffers;
+    uint64_t            m_audio_total_samples = 0;
 
     ComPtr<IMFSinkWriter> m_mf_writer;
     DWORD               m_mf_video_index = 0;
@@ -373,22 +374,23 @@ bool fcMP4ContextWMF::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat 
     return true;
 }
 
-bool fcMP4ContextWMF::addAudioFrame(const float *samples, int num_samples, fcTime timestamp)
+bool fcMP4ContextWMF::addAudioFrame(const float *samples, int num_samples)
 {
     if (!isValid() || !m_conf.audio || !samples) { return false; }
 
     auto buf = m_audio_buffers.pop();
     buf->assign(samples, num_samples);
 
-    m_audio_tasks.run([this, buf, num_samples, timestamp]() {
-        addAudioFrameImpl(buf->data(), num_samples, timestamp);
+    m_audio_tasks.run([this, buf, num_samples]() {
+        addAudioFrameImpl(buf->data(), num_samples);
         m_audio_buffers.push(buf);
     });
     return true;
 }
 
-bool fcMP4ContextWMF::addAudioFrameImpl(const float *samples, int num_samples, fcTime timestamp)
+bool fcMP4ContextWMF::addAudioFrameImpl(const float *samples, int num_samples)
 {
+    double timestamp = (double)m_audio_total_samples / (double)m_conf.audio_sample_rate;
     const LONGLONG start = to_hnsec(timestamp);
     const LONGLONG duration = to_hnsec(1.0 / m_conf.video_target_framerate);
     const DWORD data_size = num_samples * 4;
@@ -410,6 +412,7 @@ bool fcMP4ContextWMF::addAudioFrameImpl(const float *samples, int num_samples, f
     pSample->SetSampleDuration(duration);
     m_mf_writer->WriteSample(m_mf_audio_index, pSample.Get());
 
+    m_audio_total_samples += num_samples / m_conf.audio_num_channels;
     return true;
 }
 

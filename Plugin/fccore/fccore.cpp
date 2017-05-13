@@ -449,11 +449,11 @@ fcAPI int fcMP4AddVideoFrameTextureDeferred(fcIMP4Context *ctx, void *tex, fcPix
     }, id);
 }
 
-fcAPI bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp)
+fcAPI bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples)
 {
     fcTraceFunc();
     if (!ctx) { return false; }
-    return ctx->addAudioFrame(samples, num_samples, timestamp);
+    return ctx->addAudioFrame(samples, num_samples);
 }
 #else // fcSupportMP4
 
@@ -467,7 +467,7 @@ fcAPI void fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream) {}
 fcAPI bool fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp) { return false; }
 fcAPI bool fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp) { return false; }
 fcAPI int fcMP4AddVideoFrameTextureDeferred(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp, int id) { return 0; }
-fcAPI bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp) { return false; }
+fcAPI bool fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples) { return false; }
 
 #endif // fcSupportMP4
 
@@ -517,11 +517,11 @@ fcAPI int fcWebMAddVideoFrameTextureDeferred(fcIWebMContext *ctx, void *tex, fcP
     }, id);
 }
 
-fcAPI bool fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples, fcTime timestamp)
+fcAPI bool fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples)
 {
     fcTraceFunc();
     if (!ctx) { return false; }
-    return ctx->addAudioFrame(samples, num_samples, timestamp);
+    return ctx->addAudioFrame(samples, num_samples);
 }
 
 #else // fcSupportWebM
@@ -532,7 +532,7 @@ fcAPI void fcWebMAddOutputStream(fcIWebMContext *ctx, fcStream *stream) {}
 fcAPI bool fcWebMAddVideoFramePixels(fcIWebMContext *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp) { return false; }
 fcAPI bool fcWebMAddVideoFrameTexture(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp) { return false; }
 fcAPI int fcWebMAddVideoFrameTextureDeferred(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp, int id) { return 0; }
-fcAPI bool fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples, fcTime timestamp) { return false; }
+fcAPI bool fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples) { return false; }
 
 #endif // fcSupportWebM
 

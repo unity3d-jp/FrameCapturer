@@ -22,7 +22,7 @@ public:
     ~fcAACEncoderFAAC() override;
     const char* getEncoderInfo() override;
     const Buffer& getDecoderSpecificInfo() override;
-    bool encode(fcAACFrame& dst, const float *samples, size_t num_samples, fcTime timestamp) override;
+    bool encode(fcAACFrame& dst, const float *samples, size_t num_samples) override;
     bool flush(fcAACFrame& dst) override;
 
     bool isValid() const { return m_handle != nullptr; }
@@ -106,7 +106,7 @@ fcAACEncoderFAAC::~fcAACEncoderFAAC()
 }
 const char* fcAACEncoderFAAC::getEncoderInfo() { return "FAAC"; }
 
-bool fcAACEncoderFAAC::encode(fcAACFrame& dst, const float *samples, size_t num_samples, fcTime timestamp)
+bool fcAACEncoderFAAC::encode(fcAACFrame& dst, const float *samples, size_t num_samples)
 {
     m_aac_tmp_buf.resize(m_output_size);
 

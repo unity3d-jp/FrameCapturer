@@ -47,7 +47,7 @@ public:
     virtual ~fcIAACEncoder() {}
     virtual const char* getEncoderInfo() = 0;
     virtual const Buffer& getDecoderSpecificInfo() = 0;
-    virtual bool encode(fcAACFrame& dst, const float *samples, size_t num_samples, fcTime timestamp) = 0;
+    virtual bool encode(fcAACFrame& dst, const float *samples, size_t num_samples) = 0;
     virtual bool flush(fcAACFrame& dst) = 0;
 };
 

@@ -19,7 +19,7 @@ public:
     virtual bool addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1) = 0;
 
     // timestamp=-1 is treated as current time.
-    virtual bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp = -1) = 0;
+    virtual bool addAudioFrame(const float *samples, int num_samples) = 0;
 };
 
 #define fcMP4EachFunctions(Body)\

@@ -249,7 +249,7 @@ fcAPI bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *p
 // timestamp=-1 is treated as current time.
 fcAPI bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
-fcAPI bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
+fcAPI bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples);
 
 
 
@@ -297,8 +297,7 @@ fcAPI void            fcWebMAddOutputStream(fcIWebMContext *ctx, fcStream *strea
 fcAPI bool            fcWebMAddVideoFramePixels(fcIWebMContext *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
 fcAPI bool            fcWebMAddVideoFrameTexture(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1.0);
-// timestamp=-1 is treated as current time.
-fcAPI bool            fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples, fcTime timestamp = -1.0);
+fcAPI bool            fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples);
 
 
 

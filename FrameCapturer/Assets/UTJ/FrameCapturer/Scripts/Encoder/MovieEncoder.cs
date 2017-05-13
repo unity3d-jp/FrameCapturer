@@ -15,6 +15,11 @@ namespace UTJ.FrameCapturer
         public fcAPI.fcWebMConfig webmEncoderSettings = fcAPI.fcWebMConfig.default_value;
         public fcAPI.fcMP4Config mp4EncoderSettings = fcAPI.fcMP4Config.default_value;
 
+        public MovieEncoderConfigs(MovieEncoder.Type t)
+        {
+            format = t;
+        }
+
         public bool supportVideo
         {
             get {
@@ -116,7 +121,7 @@ namespace UTJ.FrameCapturer
         // config: config struct (fcGifConfig, fcWebMConfig, etc)
         public abstract void Initialize(object config, string outPath);
         public abstract void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp = -1.0);
-        public abstract void AddAudioFrame(float[] samples, double timestamp = -1.0);
+        public abstract void AddAudioFrame(float[] samples);
 
 
         public static MovieEncoder Create(Type t)

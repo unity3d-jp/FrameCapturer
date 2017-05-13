@@ -8,7 +8,6 @@ namespace UTJ.FrameCapturer
     {
         fcAPI.fcWebMContext m_ctx;
         fcAPI.fcWebMConfig m_config;
-        fcAPI.fcStream m_ostream;
 
         public override Type type { get { return Type.WebM; } }
 
@@ -21,17 +20,14 @@ namespace UTJ.FrameCapturer
             m_ctx = fcAPI.fcWebMCreateContext(ref m_config);
 
             var path = outPath + ".webm";
-            m_ostream = fcAPI.fcCreateFileStream(path);
-            fcAPI.fcWebMAddOutputStream(m_ctx, m_ostream);
+            var stream = fcAPI.fcCreateFileStream(path);
+            fcAPI.fcWebMAddOutputStream(m_ctx, stream);
+            stream.Release();
         }
 
         public override void Release()
         {
-            fcAPI.fcGuard(() =>
-            {
-                m_ctx.Release();
-                m_ostream.Release();
-            });
+            m_ctx.Release();
         }
 
         public override void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp)
@@ -42,7 +38,7 @@ namespace UTJ.FrameCapturer
             }
         }
 
-        public override void AddAudioFrame(float[] samples, double timestamp)
+        public override void AddAudioFrame(float[] samples)
         {
             if (m_config.audio)
             {

@@ -103,7 +103,7 @@ namespace UTJ.FrameCapturer
 
         #region fields
         [SerializeField] DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
-        [SerializeField] MovieEncoderConfigs m_encoderConfigs = new MovieEncoderConfigs();
+        [SerializeField] MovieEncoderConfigs m_encoderConfigs = new MovieEncoderConfigs(MovieEncoder.Type.Exr);
         [SerializeField] FrameBufferConponents m_fbComponents = FrameBufferConponents.default_value;
         [SerializeField] bool m_fixDeltaTime = true;
         [SerializeField] int m_targetFramerate = 30;

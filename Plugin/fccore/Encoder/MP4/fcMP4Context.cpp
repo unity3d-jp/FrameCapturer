@@ -41,8 +41,8 @@ public:
     bool addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamps);
     void flushVideo();
 
-    bool addAudioFrame(const float *samples, int num_samples, fcTime timestamp) override;
-    bool addAudioFrameImpl(const float *samples, int num_samples, fcTime timestamp);
+    bool addAudioFrame(const float *samples, int num_samples) override;
+    bool addAudioFrameImpl(const float *samples, int num_samples);
     void flushAudio();
 
 private:
@@ -287,7 +287,7 @@ void fcMP4Context::flushVideo()
     });
 }
 
-bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, fcTime timestamp)
+bool fcMP4Context::addAudioFrame(const float *samples, int num_samples)
 {
     if (!m_audio_encoder) {
         fcDebugLog("fcMP4Context::addAudioFrame(): aac encoder is null.");
@@ -297,16 +297,16 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples, fcTime t
     auto buf = m_audio_buffers.pop();
     buf->assign(samples, num_samples);
 
-    m_audio_tasks.run([this, buf, timestamp]() {
-        addAudioFrameImpl(buf->data(), (int)buf->size(), timestamp);
+    m_audio_tasks.run([this, buf]() {
+        addAudioFrameImpl(buf->data(), (int)buf->size());
         m_audio_buffers.push(buf);
     });
     return true;
 }
 
-bool fcMP4Context::addAudioFrameImpl(const float *samples, int num_samples, fcTime timestamp)
+bool fcMP4Context::addAudioFrameImpl(const float *samples, int num_samples)
 {
-    if (m_audio_encoder->encode(m_audio_frame, samples, num_samples, timestamp)) {
+    if (m_audio_encoder->encode(m_audio_frame, samples, num_samples)) {
         eachStreams([this](fcMP4Writer& s) { s.addAudioFrame(m_audio_frame); });
 #ifndef fcMaster
         m_dbg_aac_out->write(m_audio_frame.data.data(), m_audio_frame.data.size());

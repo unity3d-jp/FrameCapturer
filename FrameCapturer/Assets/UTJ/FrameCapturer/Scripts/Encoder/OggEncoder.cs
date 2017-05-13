@@ -8,7 +8,6 @@ namespace UTJ.FrameCapturer
     {
         fcAPI.fcOggContext m_ctx;
         fcAPI.fcOggConfig m_config;
-        fcAPI.fcStream m_ostream;
 
         public override Type type { get { return Type.Ogg; } }
 
@@ -20,17 +19,14 @@ namespace UTJ.FrameCapturer
             m_ctx = fcAPI.fcOggCreateContext(ref m_config);
 
             var path = outPath + ".ogg";
-            m_ostream = fcAPI.fcCreateFileStream(path);
-            fcAPI.fcOggAddOutputStream(m_ctx, m_ostream);
+            var stream = fcAPI.fcCreateFileStream(path);
+            fcAPI.fcOggAddOutputStream(m_ctx, stream);
+            stream.Release();
         }
 
         public override void Release()
         {
-            fcAPI.fcGuard(() =>
-            {
-                m_ctx.Release();
-                m_ostream.Release();
-            });
+            m_ctx.Release();
         }
 
         public override void AddAudioFrame(float[] samples, double timestamp)

@@ -8,7 +8,6 @@ namespace UTJ.FrameCapturer
     {
         fcAPI.fcGifContext m_ctx;
         fcAPI.fcGifConfig m_config;
-        fcAPI.fcStream m_ostream;
 
         public override Type type { get { return Type.Gif; } }
 
@@ -19,17 +18,14 @@ namespace UTJ.FrameCapturer
             m_ctx = fcAPI.fcGifCreateContext(ref m_config);
 
             var path = outPath + ".gif";
-            m_ostream = fcAPI.fcCreateFileStream(path);
-            fcAPI.fcGifAddOutputStream(m_ctx, m_ostream);
+            var stream = fcAPI.fcCreateFileStream(path);
+            fcAPI.fcGifAddOutputStream(m_ctx, stream);
+            stream.Release();
         }
 
         public override void Release()
         {
-            fcAPI.fcGuard(() =>
-            {
-                m_ctx.Release();
-                m_ostream.Release();
-            });
+            m_ctx.Release();
         }
 
         public override void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp)
@@ -37,7 +33,7 @@ namespace UTJ.FrameCapturer
             fcAPI.fcGifAddFramePixels(m_ctx, frame, format, timestamp);
         }
 
-        public override void AddAudioFrame(float[] samples, double timestamp)
+        public override void AddAudioFrame(float[] samples)
         {
             // not supported
         }

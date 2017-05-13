@@ -21,7 +21,7 @@ public:
 
     const char* getEncoderInfo() override;
     const Buffer& getDecoderSpecificInfo() override;
-    bool encode(fcAACFrame& dst, const float *samples, size_t num_samples, fcTime timestamp) override;
+    bool encode(fcAACFrame& dst, const float *samples, size_t num_samples) override;
     bool flush(fcAACFrame& dst) override;
 
     bool isValid() { return m_encoder != nullptr; }
@@ -84,7 +84,7 @@ const Buffer& fcAACEncoderIntel::getDecoderSpecificInfo()
     return m_aac_header;
 }
 
-bool fcAACEncoderIntel::encode(fcAACFrame& dst, const float *samples, size_t num_samples, fcTime timestamp)
+bool fcAACEncoderIntel::encode(fcAACFrame& dst, const float *samples, size_t num_samples)
 {
     if (!isValid()) { return false; }
 
