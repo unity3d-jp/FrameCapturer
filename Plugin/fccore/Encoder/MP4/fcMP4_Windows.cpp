@@ -52,6 +52,7 @@ public:
     bool addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp);
 
     bool addAudioFrame(const float *samples, int num_samples) override;
+    void writeOutAudio(double timestamp);
     bool addAudioFrameImpl(const float *samples, int num_samples);
 
 
@@ -65,10 +66,13 @@ private:
     VideoBufferQueue    m_video_buffers;
     Buffer              m_rgba_image;
     I420Image           m_i420_image;
+    int                 m_frame_count = 0;
+    double              m_last_timestamp = 0.0;
 
     TaskQueue           m_audio_tasks;
+    AudioBuffer         m_audio_samples;
     AudioBufferQueue    m_audio_buffers;
-    uint64_t            m_audio_total_samples = 0;
+    uint64_t            m_audio_written_samples = 0;
 
     ComPtr<IMFSinkWriter> m_mf_writer;
     DWORD               m_mf_video_index = 0;
@@ -140,6 +144,7 @@ fcMP4ContextWMF::fcMP4ContextWMF(const fcMP4Config &conf, fcIGraphicsDevice *dev
 
 fcMP4ContextWMF::~fcMP4ContextWMF()
 {
+    writeOutAudio(m_last_timestamp);
     m_video_tasks.wait();
     m_audio_tasks.wait();
 
@@ -322,6 +327,10 @@ bool fcMP4ContextWMF::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime 
         m_video_buffers.push(buf);
         return false;
     }
+
+    ++m_frame_count;
+    if(m_frame_count % 30 == 0) { writeOutAudio(timestamp); }
+    m_last_timestamp = timestamp;
     return true;
 }
 
@@ -339,6 +348,10 @@ bool fcMP4ContextWMF::addVideoFramePixels(const void *pixels, fcPixelFormat fmt,
         addVideoFramePixelsImpl(buf->data(), fmt, timestamp);
         m_video_buffers.push(buf);
     });
+
+    ++m_frame_count;
+    if (m_frame_count % 30 == 0) { writeOutAudio(timestamp); }
+    m_last_timestamp = timestamp;
     return true;
 }
 
@@ -378,22 +391,47 @@ bool fcMP4ContextWMF::addAudioFrame(const float *samples, int num_samples)
 {
     if (!isValid() || !m_conf.audio || !samples) { return false; }
 
-    auto buf = m_audio_buffers.pop();
-    buf->assign(samples, num_samples);
+    if (m_conf.video) {
+        // delay to writeOutAudio()
+        m_audio_samples.append(samples, num_samples);
+    }
+    else {
+        auto buf = m_audio_buffers.pop();
+        buf->assign(samples, num_samples);
 
-    m_audio_tasks.run([this, buf, num_samples]() {
-        addAudioFrameImpl(buf->data(), num_samples);
+        m_audio_tasks.run([this, buf, num_samples]() {
+            addAudioFrameImpl(buf->data(), num_samples);
+            m_audio_buffers.push(buf);
+        });
+    }
+
+    return true;
+}
+
+void fcMP4ContextWMF::writeOutAudio(double timestamp)
+{
+    uint64_t num_samples = (uint64_t)(std::max<double>(timestamp, 0.0) * (double)(m_conf.audio_sample_rate * m_conf.audio_num_channels));
+    uint64_t num_write = num_samples - m_audio_written_samples;
+    auto unit = m_conf.audio_sample_rate * m_conf.audio_num_channels / 1000;
+    num_write += unit - (num_write % unit);
+    num_write = std::min<uint64_t>(num_write, m_audio_samples.size());
+    if (num_write == 0) { return; }
+
+    auto buf = m_audio_buffers.pop();
+    buf->assign(m_audio_samples.data(), (int)num_write);
+    m_audio_samples.erase(m_audio_samples.begin(), m_audio_samples.begin() + num_write);
+
+    m_audio_tasks.run([this, buf, num_write]() {
+        addAudioFrameImpl(buf->data(), (int)num_write);
         m_audio_buffers.push(buf);
     });
-    return true;
 }
 
 bool fcMP4ContextWMF::addAudioFrameImpl(const float *samples, int num_samples)
 {
-    double timestamp = (double)m_audio_total_samples / (double)m_conf.audio_sample_rate;
-    const LONGLONG start = to_hnsec(timestamp);
-    const LONGLONG duration = to_hnsec(1.0 / m_conf.video_target_framerate);
-    const DWORD data_size = num_samples * 4;
+    double timestamp = (double)m_audio_written_samples / (double)(m_conf.audio_sample_rate * m_conf.audio_num_channels);
+    double duration = (double)num_samples / (double)(m_conf.audio_sample_rate * m_conf.audio_num_channels);
+    const DWORD data_size = num_samples * sizeof(float);
 
     ComPtr<IMFMediaBuffer> pBuffer;
     ComPtr<IMFSample> pSample;
@@ -408,11 +446,11 @@ bool fcMP4ContextWMF::addAudioFrameImpl(const float *samples, int num_samples)
     pBuffer->SetCurrentLength(data_size);
 
     pSample->AddBuffer(pBuffer.Get());
-    pSample->SetSampleTime(start);
-    pSample->SetSampleDuration(duration);
+    pSample->SetSampleTime(to_hnsec(timestamp));
+    pSample->SetSampleDuration(to_hnsec(duration));
     m_mf_writer->WriteSample(m_mf_audio_index, pSample.Get());
 
-    m_audio_total_samples += num_samples / m_conf.audio_num_channels;
+    m_audio_written_samples += num_samples;
     return true;
 }
 

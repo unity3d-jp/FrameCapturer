@@ -58,6 +58,7 @@ namespace UTJ.FrameCapturer
         CommandBuffer m_cb;
         RenderTexture m_scratchBuffer;
         bool m_recording = false;
+        double m_beginTime = 0.0;
         int m_numVideoFrames = 0;
 
         MovieEncoder m_encoder;
@@ -152,7 +153,7 @@ namespace UTJ.FrameCapturer
                 m_matCopy.DisableKeyword("OFFSCREEN");
             }
 
-
+            m_beginTime = Time.unscaledTime;
             m_numVideoFrames = 0;
 
             // create scratch buffer
@@ -324,7 +325,7 @@ namespace UTJ.FrameCapturer
             {
                 yield return new WaitForEndOfFrame();
 
-                double timestamp = Time.unscaledTime;
+                double timestamp = Time.unscaledTime - m_beginTime;
                 if (m_framerateMode == FrameRateMode.Constant)
                 {
                     timestamp = 1.0 / m_targetFramerate * m_numVideoFrames;
