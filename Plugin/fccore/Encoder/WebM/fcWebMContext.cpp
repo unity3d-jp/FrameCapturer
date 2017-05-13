@@ -88,7 +88,7 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
         }
 
         for (int i = 0; i < 4; ++i) {
-            m_video_buffers.push(new VideoBuffer());
+            m_video_buffers.emplace();
         }
     }
 
@@ -109,7 +109,7 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
         }
 
         for (int i = 0; i < 4; ++i) {
-            m_audio_buffers.push(new AudioBuffer());
+            m_audio_buffers.emplace();
         }
     }
 }
@@ -138,18 +138,16 @@ bool fcWebMContext::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime ti
 {
     if (!tex || !m_video_encoder || !m_gdev) { return false; }
 
-    auto buf = m_video_buffers.lock();
+    auto buf = m_video_buffers.acquire();
     size_t psize = fcGetPixelSize(fmt);
     size_t size = m_conf.video_width * m_conf.video_height * psize;
     buf->resize(size);
     if (m_gdev->readTexture(buf->data(), buf->size(), tex, m_conf.video_width, m_conf.video_height, fmt)) {
         m_video_tasks.run([this, buf, fmt, timestamp]() {
             addVideoFramePixelsImpl(buf->data(), fmt, timestamp);
-            m_video_buffers.unlock(buf);
         });
     }
     else {
-        m_video_buffers.unlock(buf);
         return false;
     }
     return true;
@@ -159,7 +157,7 @@ bool fcWebMContext::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, f
 {
     if (!pixels || !m_video_encoder) { return false; }
 
-    auto buf = m_video_buffers.lock();
+    auto buf = m_video_buffers.acquire();
     size_t psize = fcGetPixelSize(fmt);
     size_t size = m_conf.video_width * m_conf.video_height * psize;
     buf->resize(size);
@@ -167,7 +165,6 @@ bool fcWebMContext::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, f
 
     m_video_tasks.run([this, buf, fmt, timestamp]() {
         addVideoFramePixelsImpl(buf->data(), fmt, timestamp);
-        m_video_buffers.unlock(buf);
     });
     return true;
 }
@@ -205,7 +202,7 @@ bool fcWebMContext::addAudioSamples(const float *samples, int num_samples)
 {
     if (!samples || !m_audio_encoder) { return false; }
 
-    auto buf = m_audio_buffers.lock();
+    auto buf = m_audio_buffers.acquire();
     buf->assign(samples, num_samples);
 
     m_audio_tasks.run([this, buf]() {
@@ -215,7 +212,6 @@ bool fcWebMContext::addAudioSamples(const float *samples, int num_samples)
             });
             m_audio_frame.clear();
         }
-        m_audio_buffers.unlock(buf);
     });
     return true;
 }

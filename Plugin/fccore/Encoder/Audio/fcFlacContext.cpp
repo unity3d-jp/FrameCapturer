@@ -142,7 +142,7 @@ fcFlacContext::fcFlacContext(const fcFlacConfig& c)
     : m_conf(c)
 {
     for (int i = 0; i < 8; ++i) {
-        m_buffers.push(new AudioBuffer());
+        m_buffers.emplace();
     }
 }
 
@@ -163,7 +163,7 @@ bool fcFlacContext::addSamples(const float *samples, int num_samples)
 {
     if (!samples || num_samples == 0) { return false; }
 
-    auto buf = m_buffers.lock();
+    auto buf = m_buffers.acquire();
     buf->assign(samples, num_samples);
 
     m_tasks.run([this, buf]() {
@@ -173,7 +173,6 @@ bool fcFlacContext::addSamples(const float *samples, int num_samples)
         for (auto& w : m_writers) {
             w->write(m_conversion_buffer.data(), (int)m_conversion_buffer.size() / m_conf.num_channels);
         }
-        m_buffers.unlock(buf);
     });
     return true;
 }

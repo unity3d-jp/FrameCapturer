@@ -123,7 +123,7 @@ fcOggContext::fcOggContext(const fcOggConfig& conf)
     vorbis_analysis_headerout(&m_vo_dsp, &m_vo_comment, &m_og_header, &m_og_header_comm, &m_og_header_code);
 
     for (int i = 0; i < 8; ++i) {
-        m_buffers.push(new AudioBuffer());
+        m_buffers.emplace();
     }
 }
 
@@ -158,7 +158,7 @@ bool fcOggContext::addSamples(const float *samples, int num_samples)
 {
     if (!samples || num_samples == 0) { return false; }
 
-    auto buf = m_buffers.lock();
+    auto buf = m_buffers.acquire();
     buf->assign(samples, num_samples);
 
     m_tasks.run([this, buf]() {
@@ -176,8 +176,6 @@ bool fcOggContext::addSamples(const float *samples, int num_samples)
         if (vorbis_analysis_wrote(&m_vo_dsp, block_size) == 0) {
             pageOut();
         }
-
-        m_buffers.unlock(buf);
     });
 
     return true;

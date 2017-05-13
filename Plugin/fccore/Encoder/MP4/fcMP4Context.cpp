@@ -141,7 +141,7 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         if (enc) {
             m_video_encoder.reset(enc);
             for (int i = 0; i < 4; ++i) {
-                m_video_buffers.push(new VideoBuffer());
+                m_video_buffers.emplace();
             }
         }
     }
@@ -166,7 +166,7 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         if (enc) {
             m_audio_encoder.reset(enc);
             for (int i = 0; i < 4; ++i) {
-                m_audio_buffers.push(new AudioBuffer());
+                m_audio_buffers.emplace();
             }
         }
     }
@@ -222,18 +222,16 @@ bool fcMP4Context::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime tim
 {
     if (!tex || !m_video_encoder || !m_dev) { return false; }
 
-    auto buf = m_video_buffers.lock();
+    auto buf = m_video_buffers.acquire();
     size_t psize = fcGetPixelSize(fmt);
     size_t size = m_conf.video_width * m_conf.video_height * psize;
     buf->resize(size);
     if (m_dev->readTexture(buf->data(), buf->size(), tex, m_conf.video_width, m_conf.video_height, fmt)) {
         m_video_tasks.run([this, buf, fmt, timestamp]() {
             addVideoFramePixelsImpl(buf->data(), fmt, timestamp);
-            m_video_buffers.unlock(buf);
         });
     }
     else {
-        m_video_buffers.unlock(buf);
         return false;
     }
     return true;
@@ -243,7 +241,7 @@ bool fcMP4Context::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fc
 {
     if (!pixels || !m_video_encoder) { return false; }
 
-    auto buf = m_video_buffers.lock();
+    auto buf = m_video_buffers.acquire();
     size_t psize = fcGetPixelSize(fmt);
     size_t size = m_conf.video_width * m_conf.video_height * psize;
     buf->resize(size);
@@ -251,7 +249,6 @@ bool fcMP4Context::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fc
 
     m_video_tasks.run([this, buf, fmt, timestamp]() {
         addVideoFramePixelsImpl(buf->data(), fmt, timestamp);
-        m_video_buffers.unlock(buf);
     });
     return true;
 
@@ -292,12 +289,11 @@ bool fcMP4Context::addAudioSamples(const float *samples, int num_samples)
         return false;
     }
 
-    auto buf = m_audio_buffers.lock();
+    auto buf = m_audio_buffers.acquire();
     buf->assign(samples, num_samples);
 
     m_audio_tasks.run([this, buf]() {
         addAudioSamplesImpl(buf->data(), (int)buf->size());
-        m_audio_buffers.unlock(buf);
     });
     return true;
 }
