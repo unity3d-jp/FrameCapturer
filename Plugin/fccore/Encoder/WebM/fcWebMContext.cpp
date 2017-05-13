@@ -67,6 +67,9 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
     : m_conf(conf)
     , m_gdev(gd)
 {
+    m_conf.video_max_tasks = std::max<int>(m_conf.video_max_tasks, 1);
+    m_conf.audio_max_tasks = std::max<int>(m_conf.audio_max_tasks, 1);
+
     if (conf.video) {
         fcVPXEncoderConfig econf;
         econf.width = conf.video_width;
@@ -87,7 +90,7 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
             break;
         }
 
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < m_conf.video_max_tasks; ++i) {
             m_video_buffers.emplace();
         }
     }
@@ -108,7 +111,7 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
             break;
         }
 
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < m_conf.audio_max_tasks; ++i) {
             m_audio_buffers.emplace();
         }
     }

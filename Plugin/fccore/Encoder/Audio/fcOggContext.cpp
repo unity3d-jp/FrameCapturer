@@ -108,6 +108,8 @@ void fcOggWriter::pageOut()
 fcOggContext::fcOggContext(const fcOggConfig& conf)
     : m_conf(conf)
 {
+    m_conf.max_tasks = std::max<int>(m_conf.max_tasks, 1);
+
     vorbis_info_init(&m_vo_info);
     switch (conf.bitrate_mode) {
     case fcBitrateMode::CBR:
@@ -122,7 +124,7 @@ fcOggContext::fcOggContext(const fcOggConfig& conf)
     vorbis_block_init(&m_vo_dsp, &m_vo_block);
     vorbis_analysis_headerout(&m_vo_dsp, &m_vo_comment, &m_og_header, &m_og_header_comm, &m_og_header_code);
 
-    for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < m_conf.max_tasks; ++i) {
         m_buffers.emplace();
     }
 }

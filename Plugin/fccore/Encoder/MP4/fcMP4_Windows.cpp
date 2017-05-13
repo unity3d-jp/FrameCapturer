@@ -137,6 +137,9 @@ fcMP4ContextWMF::fcMP4ContextWMF(const fcMP4Config &conf, fcIGraphicsDevice *dev
     , m_gdev(dev)
 {
     g_MFInitializer.get();
+    m_conf.video_max_tasks = std::max<int>(m_conf.video_max_tasks, 1);
+    m_conf.audio_max_tasks = std::max<int>(m_conf.audio_max_tasks, 1);
+
     initializeSinkWriter(path);
 }
 
@@ -248,7 +251,7 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
                 }
             }
 
-            for (int i = 0; i < 4; ++i) {
+            for (int i = 0; i < m_conf.video_max_tasks; ++i) {
                 m_video_buffers.emplace();
             }
         }
@@ -284,7 +287,7 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
             pAudioInMediaType->SetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT, 4 * m_conf.audio_num_channels);
             pSinkWriter->SetInputMediaType(m_mf_audio_index, pAudioInMediaType.Get(), nullptr);
 
-            for (int i = 0; i < 4; ++i) {
+            for (int i = 0; i < m_conf.audio_max_tasks; ++i) {
                 m_audio_buffers.emplace();
             }
         }

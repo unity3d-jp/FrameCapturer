@@ -78,8 +78,8 @@ fcExrContext::fcExrContext(const fcExrConfig& conf, fcIGraphicsDevice *dev)
     , m_dev(dev)
 {
     m_conf = conf;
-    if (m_conf.max_active_tasks <= 0) {
-        m_conf.max_active_tasks = std::thread::hardware_concurrency();
+    if (m_conf.max_tasks <= 0) {
+        m_conf.max_tasks = std::thread::hardware_concurrency();
     }
 }
 
@@ -97,10 +97,10 @@ bool fcExrContext::beginFrame(const char *path, int width, int height)
     }
 
     // 実行中のタスクの数が上限に達している場合適当に待つ
-    if (m_active_task_count >= m_conf.max_active_tasks)
+    if (m_active_task_count >= m_conf.max_tasks)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        if (m_active_task_count >= m_conf.max_active_tasks)
+        if (m_active_task_count >= m_conf.max_tasks)
         {
             m_tasks.wait();
         }

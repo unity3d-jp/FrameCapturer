@@ -92,6 +92,8 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
     }
 #endif // fcMaster
 
+    m_conf.video_max_tasks = std::max<int>(m_conf.video_max_tasks, 1);
+    m_conf.audio_max_tasks = std::max<int>(m_conf.audio_max_tasks, 1);
 
     // create h264 encoder
     m_video_encoder.reset();
@@ -140,7 +142,7 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
 
         if (enc) {
             m_video_encoder.reset(enc);
-            for (int i = 0; i < 4; ++i) {
+            for (int i = 0; i < m_conf.video_max_tasks; ++i) {
                 m_video_buffers.emplace();
             }
         }
@@ -165,7 +167,7 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
 
         if (enc) {
             m_audio_encoder.reset(enc);
-            for (int i = 0; i < 4; ++i) {
+            for (int i = 0; i < m_conf.audio_max_tasks; ++i) {
                 m_audio_buffers.emplace();
             }
         }

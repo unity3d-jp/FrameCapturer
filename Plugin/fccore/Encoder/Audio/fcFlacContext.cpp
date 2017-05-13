@@ -141,7 +141,9 @@ bool fcFlacWriter::write(const int *samples, int num_samples)
 fcFlacContext::fcFlacContext(const fcFlacConfig& c)
     : m_conf(c)
 {
-    for (int i = 0; i < 8; ++i) {
+    m_conf.max_tasks = std::max<int>(m_conf.max_tasks, 1);
+
+    for (int i = 0; i < m_conf.max_tasks; ++i) {
         m_buffers.emplace();
     }
 }

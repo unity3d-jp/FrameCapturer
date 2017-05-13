@@ -46,8 +46,8 @@ fcPngContext::fcPngContext(const fcPngConfig& conf, fcIGraphicsDevice *dev)
     : m_conf(conf)
     , m_dev(dev)
 {
-    if (m_conf.max_active_tasks <= 0) {
-        m_conf.max_active_tasks = std::thread::hardware_concurrency();
+    if (m_conf.max_tasks <= 0) {
+        m_conf.max_tasks = std::thread::hardware_concurrency();
     }
 }
 
@@ -113,9 +113,9 @@ bool fcPngContext::exportPixels(const char *path_, const void *pixels_, int widt
 
 void fcPngContext::waitSome()
 {
-    if (m_active_task_count >= m_conf.max_active_tasks) {
+    if (m_active_task_count >= m_conf.max_tasks) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        if (m_active_task_count >= m_conf.max_active_tasks) {
+        if (m_active_task_count >= m_conf.max_tasks) {
             m_tasks.wait();
         }
     }

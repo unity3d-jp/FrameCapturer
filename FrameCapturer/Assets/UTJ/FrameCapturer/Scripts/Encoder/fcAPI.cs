@@ -168,8 +168,8 @@ namespace UTJ.FrameCapturer
         [Serializable]
         public struct fcPngConfig
         {
-            [Range(1, 32)] public int maxTasks;
             public fcPngPixelFormat pixelFormat;
+            [Range(1, 32)] public int maxTasks;
             // C# ext
             [HideInInspector] public int width;
             [HideInInspector] public int height;
@@ -181,8 +181,8 @@ namespace UTJ.FrameCapturer
                 {
                     return new fcPngConfig
                     {
-                        maxTasks = 4,
                         pixelFormat = fcPngPixelFormat.Adaptive,
+                        maxTasks = 2,
                     };
                 }
             }
@@ -224,9 +224,9 @@ namespace UTJ.FrameCapturer
         [Serializable]
         public struct fcExrConfig
         {
-            [Range(1, 32)] public int maxTasks;
             public fcExrPixelFormat pixelFormat;
             public fcExrCompression compression;
+            [Range(1, 32)] public int maxTasks;
             // C# ext
             [HideInInspector] public int width;
             [HideInInspector] public int height;
@@ -238,9 +238,9 @@ namespace UTJ.FrameCapturer
                 {
                     return new fcExrConfig
                     {
-                        maxTasks = 4,
                         pixelFormat = fcExrPixelFormat.Adaptive,
                         compression = fcExrCompression.Zip,
+                        maxTasks = 2,
                     };
                 }
             }
@@ -279,8 +279,6 @@ namespace UTJ.FrameCapturer
                 {
                     return new fcGifConfig
                     {
-                        width = 320,
-                        height = 240,
                         numColors = 256,
                         maxTasks = 8,
                         keyframeInterval = 30,
@@ -326,20 +324,21 @@ namespace UTJ.FrameCapturer
         public struct fcMP4Config
         {
             [HideInInspector] public Bool video;
-            [HideInInspector] public Bool audio;
-
             [HideInInspector] public int videoWidth;
             [HideInInspector] public int videoHeight;
             [HideInInspector] public int videoTargetFramerate;
             public fcBitrateMode videoBitrateMode;
             public int videoTargetBitrate;
             [HideInInspector] public int videoFlags;
+            [Range(1, 32)] public int videoMaxTasks;
 
+            [HideInInspector] public Bool audio;
             [HideInInspector] public int audioSampleRate;
             [HideInInspector] public int audioNumChannels;
             public fcBitrateMode audioBitrateMode;
             public int audioTargetBitrate;
             [HideInInspector] public int audioFlags;
+            [Range(1, 32)] public int audioMaxTasks;
 
             public static fcMP4Config default_value
             {
@@ -348,20 +347,19 @@ namespace UTJ.FrameCapturer
                     return new fcMP4Config
                     {
                         video = true,
-                        audio = true,
-
-                        videoWidth = 0,
-                        videoHeight = 0,
                         videoBitrateMode = fcBitrateMode.VBR,
                         videoTargetBitrate = 1024 * 1000,
                         videoTargetFramerate = 30,
                         videoFlags = (int)fcMP4VideoFlags.H264Mask,
+                        videoMaxTasks = 4,
 
+                        audio = true,
                         audioSampleRate = 48000,
                         audioNumChannels = 2,
                         audioBitrateMode = fcBitrateMode.VBR,
                         audioTargetBitrate = 128 * 1000,
                         audioFlags = (int)fcMP4AudioFlags.AACMask,
+                        audioMaxTasks = 4,
                     };
                 }
             }
@@ -419,21 +417,22 @@ namespace UTJ.FrameCapturer
         [Serializable]
         public struct fcWebMConfig
         {
-            public fcWebMVideoEncoder videoEncoder;
-            public fcWebMAudioEncoder audioEncoder;
             [HideInInspector] public Bool video;
-            [HideInInspector] public Bool audio;
-
+            public fcWebMVideoEncoder videoEncoder;
             [HideInInspector] public int videoWidth;
             [HideInInspector] public int videoHeight;
             [HideInInspector] public int videoTargetFramerate;
             public fcBitrateMode videoBitrateMode;
             public int videoTargetBitrate;
+            [Range(1, 32)] public int videoMaxTasks;
 
+            [HideInInspector] public Bool audio;
+            public fcWebMAudioEncoder audioEncoder;
             [HideInInspector] public int audioSampleRate;
             [HideInInspector] public int audioNumChannels;
             public fcBitrateMode audioBitrateMode;
             public int audioTargetBitrate;
+            [Range(1, 32)] public int audioMaxTasks;
 
             public static fcWebMConfig default_value
             {
@@ -441,21 +440,20 @@ namespace UTJ.FrameCapturer
                 {
                     return new fcWebMConfig
                     {
-                        videoEncoder = fcWebMVideoEncoder.VP8,
-                        audioEncoder = fcWebMAudioEncoder.Vorbis,
                         video = true,
-                        audio = true,
-
-                        videoWidth = 0,
-                        videoHeight = 0,
+                        videoEncoder = fcWebMVideoEncoder.VP8,
                         videoTargetFramerate = 60,
                         videoBitrateMode = fcBitrateMode.VBR,
                         videoTargetBitrate = 1024 * 1000,
+                        videoMaxTasks = 4,
 
+                        audio = true,
+                        audioEncoder = fcWebMAudioEncoder.Vorbis,
                         audioSampleRate = 48000,
                         audioNumChannels = 2,
                         audioBitrateMode = fcBitrateMode.VBR,
                         audioTargetBitrate = 128 * 1000,
+                        audioMaxTasks = 4,
                     };
                 }
             }
@@ -486,6 +484,7 @@ namespace UTJ.FrameCapturer
             [HideInInspector] public int sampleRate;
             [HideInInspector] public int numChannels;
             public fcAudioBitsPerSample bitsPerSample;
+            [Range(1, 32)] public int maxTasks;
 
             public static fcWaveConfig default_value
             {
@@ -496,6 +495,7 @@ namespace UTJ.FrameCapturer
                         sampleRate = 48000,
                         numChannels = 2,
                         bitsPerSample = fcAudioBitsPerSample._16Bits,
+                        maxTasks = 2,
                     };
                 }
             }
@@ -525,6 +525,7 @@ namespace UTJ.FrameCapturer
             [HideInInspector] public int numChannels;
             public fcBitrateMode bitrateMode;
             public int targetBitrate;
+            [Range(1, 32)] public int maxTasks;
 
             public static fcOggConfig default_value
             {
@@ -536,6 +537,7 @@ namespace UTJ.FrameCapturer
                         numChannels = 2,
                         bitrateMode = fcBitrateMode.VBR,
                         targetBitrate = 128 * 1000,
+                        maxTasks = 2,
                     };
                 }
             }
@@ -566,6 +568,7 @@ namespace UTJ.FrameCapturer
             [Range(0,9)] public int compressionLevel;
             public int blockSize;
             public Bool verify;
+            [Range(1, 32)] public int maxTasks;
 
             public static fcFlacConfig default_value
             {
@@ -579,6 +582,7 @@ namespace UTJ.FrameCapturer
                         compressionLevel = 5,
                         blockSize = 0,
                         verify = false,
+                        maxTasks = 2,
                     };
                 }
             }

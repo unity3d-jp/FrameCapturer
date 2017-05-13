@@ -120,8 +120,8 @@ enum class fcPngPixelFormat
 
 struct fcPngConfig
 {
-    int max_active_tasks = 24;
     fcPngPixelFormat pixel_format = fcPngPixelFormat::Adaptive;
+    int max_tasks = 4;
 };
 
 fcAPI bool            fcPngIsSupported();
@@ -155,9 +155,9 @@ enum class fcExrCompression
 
 struct fcExrConfig
 {
-    int max_active_tasks = 24;
     fcExrPixelFormat pixel_format = fcExrPixelFormat::Adaptive;
     fcExrCompression compression = fcExrCompression::Zip;
+    int max_tasks = 4;
 };
 
 fcAPI bool            fcExrIsSupported();
@@ -180,7 +180,7 @@ struct fcGifConfig
     int height = 0;
     int num_colors = 256;
     int keyframe_interval = 30;
-    int max_active_tasks = 8;
+    int max_tasks = 8;
 };
 
 fcAPI bool            fcGifIsSupported();
@@ -220,20 +220,21 @@ enum fcMP4AudioFlags
 struct fcMP4Config
 {
     bool video = true;
-    bool audio = true;
-
     int video_width = 0;
     int video_height = 0;
     int video_target_framerate = 60;
     fcBitrateMode video_bitrate_mode = fcBitrateMode::VBR;
     int video_target_bitrate = 1024 * 1000;
     int video_flags = fcMP4_H264Mask; // combination of fcMP4VideoFlags
+    int video_max_tasks = 4;
 
+    bool audio = true;
     int audio_sample_rate = 48000;
     int audio_num_channels = 2;
     fcBitrateMode audio_bitrate_mode = fcBitrateMode::VBR;
     int audio_target_bitrate = 128 * 1000;
     int audio_flags = fcMP4_AACMask; // combination of fcMP4AudioFlags
+    int audio_max_tasks = 4;
 };
 
 fcAPI bool            fcMP4IsSupported();
@@ -272,21 +273,22 @@ enum class fcWebMAudioEncoder
 
 struct fcWebMConfig
 {
-    fcWebMVideoEncoder video_encoder = fcWebMVideoEncoder::VP8;
-    fcWebMAudioEncoder audio_encoder = fcWebMAudioEncoder::Vorbis;
     bool video = true;
-    bool audio = true;
-
+    fcWebMVideoEncoder video_encoder = fcWebMVideoEncoder::VP8;
     int video_width = 0;
     int video_height = 0;
     int video_target_framerate = 60;
     fcBitrateMode video_bitrate_mode = fcBitrateMode::VBR;
     int video_target_bitrate = 1024 * 1000;
+    int video_max_tasks = 4;
 
+    bool audio = true;
+    fcWebMAudioEncoder audio_encoder = fcWebMAudioEncoder::Vorbis;
     int audio_sample_rate = 48000;
     int audio_num_channels = 2;
     fcBitrateMode audio_bitrate_mode = fcBitrateMode::VBR;
     int audio_target_bitrate = 128 * 1000;
+    int audio_max_tasks = 4;
 };
 
 fcAPI bool            fcWebMIsSupported();
@@ -311,6 +313,7 @@ struct fcWaveConfig
     int sample_rate = 48000;
     int num_channels = 2;
     int bits_per_sample = 16;
+    int max_tasks = 4;
 };
 fcAPI bool            fcWaveIsSupported();
 fcAPI fcIWaveContext* fcWaveCreateContext(fcWaveConfig *conf);
@@ -330,6 +333,7 @@ struct fcOggConfig
     int num_channels = 2;
     fcBitrateMode bitrate_mode = fcBitrateMode::VBR;
     int target_bitrate = 128 * 1000;
+    int max_tasks = 4;
 };
 fcAPI bool            fcOggIsSupported();
 fcAPI fcIOggContext*  fcOggCreateContext(fcOggConfig *conf);
@@ -351,6 +355,7 @@ struct fcFlacConfig
     int compression_level = 5;
     int block_size = 0;
     bool verify = false;
+    int max_tasks = 4;
 };
 fcAPI bool            fcFlacIsSupported();
 fcAPI fcIFlacContext* fcFlacCreateContext(fcFlacConfig *conf);

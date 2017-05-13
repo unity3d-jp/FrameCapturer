@@ -58,13 +58,11 @@ fcGifContext::fcGifContext(const fcGifConfig &conf, fcIGraphicsDevice *dev)
     : m_conf(conf)
     , m_dev(dev)
 {
+    m_conf.max_tasks = std::max<int>(m_conf.max_tasks, 1);
+
     m_gif = jo_gif_start(m_conf.width, m_conf.height, 0, m_conf.num_colors);
 
-    // allocate working buffers
-    if (m_conf.max_active_tasks <= 0) {
-        m_conf.max_active_tasks = std::thread::hardware_concurrency();
-    }
-    m_buffers.resize(m_conf.max_active_tasks);
+    m_buffers.resize(m_conf.max_tasks);
     for (auto& buf : m_buffers)
     {
         buf.rgba8_pixels.resize(m_conf.width * m_conf.height * fcGetPixelSize(fcPixelFormat_RGBAu8));

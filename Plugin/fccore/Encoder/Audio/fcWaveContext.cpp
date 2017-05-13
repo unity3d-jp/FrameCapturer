@@ -44,6 +44,7 @@ struct WaveHeader
 fcWaveContext::fcWaveContext(const fcWaveConfig& c)
     : m_conf(c)
 {
+    m_conf.max_tasks = std::max<int>(m_conf.max_tasks, 1);
 }
 
 fcWaveContext::~fcWaveContext()
