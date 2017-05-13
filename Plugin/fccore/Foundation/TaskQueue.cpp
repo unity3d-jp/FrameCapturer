@@ -55,7 +55,6 @@ bool TaskQueue::feed()
     }
 }
 
-
 void TaskQueue::process()
 {
     while (!m_stop || !m_tasks.empty())

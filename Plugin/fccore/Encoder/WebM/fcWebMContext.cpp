@@ -18,10 +18,10 @@ public:
     using WriterPtrs        = std::vector<WriterPtr>;
 
     using VideoBuffer       = Buffer;
-    using VideoBufferQueue  = SharedResources<VideoBuffer>;
+    using VideoBuffers      = SharedResources<VideoBuffer>;
 
     using AudioBuffer       = RawVector<float>;
-    using AudioBufferQueue  = SharedResources<AudioBuffer>;
+    using AudioBuffers      = SharedResources<AudioBuffer>;
 
 
     fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd);
@@ -34,7 +34,7 @@ public:
     bool addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp);
     void flushVideo();
 
-    bool AddAudioSamples(const float *samples, int num_samples) override;
+    bool addAudioSamples(const float *samples, int num_samples) override;
     void flushAudio();
 
 
@@ -53,13 +53,13 @@ private:
 
     TaskQueue           m_video_tasks;
     VideoEncoderPtr     m_video_encoder;
-    VideoBufferQueue    m_video_buffers;
-    fcWebMFrameData    m_video_frame;
+    VideoBuffers        m_video_buffers;
+    fcWebMFrameData     m_video_frame;
 
     TaskQueue           m_audio_tasks;
     AudioEncoderPtr     m_audio_encoder;
-    AudioBufferQueue    m_audio_buffers;
-    fcWebMFrameData    m_audio_frame;
+    AudioBuffers        m_audio_buffers;
+    fcWebMFrameData     m_audio_frame;
 };
 
 
@@ -201,7 +201,7 @@ void fcWebMContext::flushVideo()
 }
 
 
-bool fcWebMContext::AddAudioSamples(const float *samples, int num_samples)
+bool fcWebMContext::addAudioSamples(const float *samples, int num_samples)
 {
     if (!samples || !m_audio_encoder) { return false; }
 

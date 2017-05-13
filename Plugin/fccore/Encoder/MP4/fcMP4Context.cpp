@@ -20,10 +20,10 @@ public:
     using WriterPtrs        = std::vector<WriterPtr>;
 
     using VideoBuffer       = Buffer;
-    using VideoBufferQueue  = SharedResources<VideoBuffer>;
+    using VideoBuffers      = SharedResources<VideoBuffer>;
 
     using AudioBuffer       = RawVector<float>;
-    using AudioBufferQueue  = SharedResources<AudioBuffer>;
+    using AudioBuffers      = SharedResources<AudioBuffer>;
 
 
     fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev);
@@ -39,8 +39,8 @@ public:
     bool addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamps);
     void flushVideo();
 
-    bool AddAudioSamples(const float *samples, int num_samples) override;
-    bool AddAudioSamplesImpl(const float *samples, int num_samples);
+    bool addAudioSamples(const float *samples, int num_samples) override;
+    bool addAudioSamplesImpl(const float *samples, int num_samples);
     void flushAudio();
 
 private:
@@ -52,19 +52,19 @@ private:
     }
 
 private:
-    fcMP4Config m_conf;
-    fcIGraphicsDevice *m_dev;
+    fcMP4Config         m_conf;
+    fcIGraphicsDevice   *m_dev;
 
     WriterPtrs          m_writers;
 
     TaskQueue           m_video_tasks;
     VideoEncoderPtr     m_video_encoder;
-    VideoBufferQueue    m_video_buffers;
+    VideoBuffers        m_video_buffers;
     fcH264Frame         m_video_frame;
 
     TaskQueue           m_audio_tasks;
     AudioEncoderPtr     m_audio_encoder;
-    AudioBufferQueue    m_audio_buffers;
+    AudioBuffers        m_audio_buffers;
     fcAACFrame          m_audio_frame;
 
 #ifndef fcMaster
@@ -285,7 +285,7 @@ void fcMP4Context::flushVideo()
     });
 }
 
-bool fcMP4Context::AddAudioSamples(const float *samples, int num_samples)
+bool fcMP4Context::addAudioSamples(const float *samples, int num_samples)
 {
     if (!m_audio_encoder) {
         fcDebugLog("fcMP4Context::AddAudioSamples(): aac encoder is null.");
@@ -296,13 +296,13 @@ bool fcMP4Context::AddAudioSamples(const float *samples, int num_samples)
     buf->assign(samples, num_samples);
 
     m_audio_tasks.run([this, buf]() {
-        AddAudioSamplesImpl(buf->data(), (int)buf->size());
+        addAudioSamplesImpl(buf->data(), (int)buf->size());
         m_audio_buffers.unlock(buf);
     });
     return true;
 }
 
-bool fcMP4Context::AddAudioSamplesImpl(const float *samples, int num_samples)
+bool fcMP4Context::addAudioSamplesImpl(const float *samples, int num_samples)
 {
     if (m_audio_encoder->encode(m_audio_frame, samples, num_samples)) {
         eachStreams([this](fcMP4Writer& s) { s.AddAudioSamples(m_audio_frame); });

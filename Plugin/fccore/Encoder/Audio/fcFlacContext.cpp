@@ -30,21 +30,21 @@ class fcFlacContext : public fcIFlacContext
 {
 public:
     using AudioBuffer = RawVector<float>;
-    using AudioBufferQueue = SharedResources<AudioBuffer>;
+    using AudioBuffers = SharedResources<AudioBuffer>;
 
     fcFlacContext(const fcFlacConfig& c);
     ~fcFlacContext() override;
 
     void addOutputStream(fcStream *s) override;
-    bool write(const float *samples, int num_samples) override;
+    bool addSamples(const float *samples, int num_samples) override;
 
 private:
     fcFlacConfig m_conf;
     std::vector<fcFlacWriterPtr> m_writers;
 
-    TaskQueue           m_tasks;
-    AudioBufferQueue    m_buffers;
-    RawVector<int>      m_conversion_buffer;
+    TaskQueue       m_tasks;
+    AudioBuffers    m_buffers;
+    RawVector<int>  m_conversion_buffer;
 };
 
 
@@ -159,7 +159,7 @@ void fcFlacContext::addOutputStream(fcStream *s)
     }
 }
 
-bool fcFlacContext::write(const float *samples, int num_samples)
+bool fcFlacContext::addSamples(const float *samples, int num_samples)
 {
     if (!samples || num_samples == 0) { return false; }
 

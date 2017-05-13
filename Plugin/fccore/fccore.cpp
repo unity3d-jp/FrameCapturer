@@ -453,7 +453,7 @@ fcAPI bool fcMP4AddAudioSamples(fcIMP4Context *ctx, const float *samples, int nu
 {
     fcTraceFunc();
     if (!ctx) { return false; }
-    return ctx->AddAudioSamples(samples, num_samples);
+    return ctx->addAudioSamples(samples, num_samples);
 }
 #else // fcSupportMP4
 
@@ -521,7 +521,7 @@ fcAPI bool fcWebMAddAudioSamples(fcIWebMContext *ctx, const float *samples, int 
 {
     fcTraceFunc();
     if (!ctx) { return false; }
-    return ctx->AddAudioSamples(samples, num_samples);
+    return ctx->addAudioSamples(samples, num_samples);
 }
 
 #else // fcSupportWebM
@@ -560,7 +560,7 @@ fcAPI bool fcWaveAddAudioSamples(fcIWaveContext *ctx, const float *samples, int 
 {
     fcTraceFunc();
     if (!ctx) { return false; }
-    return ctx->write(samples, num_samples);
+    return ctx->addSamples(samples, num_samples);
 }
 
 #else // fcSupportWave
@@ -596,7 +596,7 @@ fcAPI bool fcOggAddAudioSamples(fcIOggContext *ctx, const float *samples, int nu
 {
     fcTraceFunc();
     if (!ctx) { return false; }
-    return ctx->write(samples, num_samples);
+    return ctx->addSamples(samples, num_samples);
 }
 
 #else // fcSupportVorbis
@@ -636,7 +636,7 @@ fcAPI bool fcFlacAddAudioSamples(fcIFlacContext *ctx, const float *samples, int 
 {
     fcTraceFunc();
     if (!ctx) { return false; }
-    return ctx->write(samples, num_samples);
+    return ctx->addSamples(samples, num_samples);
 }
 
 #else // fcSupportFlac

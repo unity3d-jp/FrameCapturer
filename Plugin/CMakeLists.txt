@@ -86,20 +86,24 @@ IF(FC_ENABLE_ISPC)
         ENDIF()
         SET(ISPC ${CMAKE_CURRENT_SOURCE_DIR}/external/${ISPC_DIR}/ispc CACHE PATH "" FORCE)
 
-        if(NOT EXISTS ${ISPC})
+        IF(NOT EXISTS ${ISPC})
             SET(ISPC_ARCHIVE ${ISPC_DIR}.tar.gz)
             FILE(DOWNLOAD http://downloads.sourceforge.net/project/ispcmirror/v${ISPC_VERSION}/${ISPC_ARCHIVE} ${CMAKE_CURRENT_BINARY_DIR}/${ISPC_ARCHIVE} SHOW_PROGRESS)
             EXECUTE_PROCESS(
-                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/External
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external
                 COMMAND tar -xzvf ${CMAKE_CURRENT_BINARY_DIR}/${ISPC_ARCHIVE}
             )
         ENDIF()
     ENDIF()
 
     SET(FCISPC_DIR ${CMAKE_CURRENT_BINARY_DIR}/fccoreISPC)
+    SET(FCISPC_SRC ${CMAKE_CURRENT_SOURCE_DIR}/fccore/Foundation/ConvertKernel.ispc)
     ADD_CUSTOM_TARGET(fccoreISPC ALL
-        COMMAND ${ISPC} ${CMAKE_CURRENT_SOURCE_DIR}/fccore/Foundation/ConvertKernel.ispc -o ${FCISPC_DIR}/ConvertKernel${CMAKE_CXX_OUTPUT_EXTENSION} -h ${FCISPC_DIR}/ConvertKernel_ispc.h --pic --target=sse2,sse4,avx --arch=x86-64 --opt=fast-masked-vload --opt=fast-math
+        COMMAND ${ISPC} ${FCISPC_SRC} -o ${FCISPC_DIR}/ConvertKernel${CMAKE_CXX_OUTPUT_EXTENSION} -h ${FCISPC_DIR}/ConvertKernel_ispc.h --pic --target=sse2,sse4,avx --arch=x86-64 --opt=fast-masked-vload --opt=fast-math
+        SOURCES ${FCISPC_SRC}
     )
+
+    # create dummy files to make cmake can find it
     SET(FCISPC_FILES
         ${FCISPC_DIR}/ConvertKernel_ispc.h
         ${FCISPC_DIR}/ConvertKernel${CMAKE_CXX_OUTPUT_EXTENSION}
@@ -107,10 +111,10 @@ IF(FC_ENABLE_ISPC)
         ${FCISPC_DIR}/ConvertKernel_sse4${CMAKE_CXX_OUTPUT_EXTENSION}
         ${FCISPC_DIR}/ConvertKernel_avx${CMAKE_CXX_OUTPUT_EXTENSION}
     )
-
-    # create dummy files to make cmake can find it
     FOREACH(F ${FCISPC_FILES})
-        FILE(WRITE ${F} "")
+        IF(NOT EXISTS ${F})
+            FILE(WRITE ${F} "")
+        ENDIF()
     ENDFOREACH(F)
 ENDIF()
 

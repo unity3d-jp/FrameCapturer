@@ -33,13 +33,13 @@ class fcOggContext : public fcIOggContext
 {
 public:
     using AudioBuffer = RawVector<float>;
-    using AudioBufferQueue = SharedResources<AudioBuffer>;
+    using AudioBuffers = SharedResources<AudioBuffer>;
 
     fcOggContext(const fcOggConfig& conf);
     virtual ~fcOggContext() override;
 
     virtual void addOutputStream(fcStream *s) override;
-    virtual bool write(const float *samples, int num_samples) override;
+    virtual bool addSamples(const float *samples, int num_samples) override;
 
     void pageOut();
 
@@ -48,7 +48,7 @@ private:
     std::vector<fcOggWriterPtr> m_writers;
 
     TaskQueue           m_tasks;
-    AudioBufferQueue    m_buffers;
+    AudioBuffers        m_buffers;
 
     vorbis_info         m_vo_info;
     vorbis_comment      m_vo_comment;
@@ -154,7 +154,7 @@ void fcOggContext::addOutputStream(fcStream *s)
     m_writers.emplace_back(writer);
 }
 
-bool fcOggContext::write(const float *samples, int num_samples)
+bool fcOggContext::addSamples(const float *samples, int num_samples)
 {
     if (!samples || num_samples == 0) { return false; }
 

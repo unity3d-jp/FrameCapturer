@@ -30,6 +30,7 @@ namespace UTJ.FrameCapturer
 
         // internal
         bool m_recording = false;
+        int m_recordedSamples = 0;
         AudioEncoder m_encoder;
         #endregion
 
@@ -80,6 +81,7 @@ namespace UTJ.FrameCapturer
                 }
             }
 
+            m_recordedSamples = 0;
             m_recording = true;
             Debug.Log("AudioMRecorder: BeginRecording()");
             return true;
@@ -123,9 +125,9 @@ namespace UTJ.FrameCapturer
 
         void Update()
         {
-            int frame = Time.frameCount;
             if (m_captureControl == CaptureControl.SpecifiedRange)
             {
+                int frame = Time.frameCount;
                 if (frame >= m_startFrame && frame <= m_endFrame)
                 {
                     if (!m_recording) { BeginRecording(); }
@@ -144,6 +146,7 @@ namespace UTJ.FrameCapturer
         {
             if (m_recording && m_encoder != null)
             {
+                m_recordedSamples += samples.Length / channels;
                 m_encoder.AddAudioSamples(samples);
             }
         }

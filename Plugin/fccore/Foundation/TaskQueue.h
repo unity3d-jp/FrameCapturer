@@ -15,6 +15,8 @@ class SharedResources
 public:
     using Resource = T;
     using ResourcePtr = std::shared_ptr<T>;
+    using ResourcePtrs = std::vector<ResourcePtr>;
+    using Lock = std::unique_lock<std::mutex>;
 
     void push(Resource *v)
     {
@@ -24,7 +26,7 @@ public:
     void unlock(ResourcePtr v)
     {
         {
-            std::unique_lock<std::mutex> l(m_mutex);
+            Lock l(m_mutex);
             m_resources.push_back(v);
         }
         m_condition.notify_one();
@@ -34,7 +36,7 @@ public:
     {
         ResourcePtr ret;
         {
-            std::unique_lock<std::mutex> l(m_mutex);
+            Lock l(m_mutex);
             if (m_resources.empty()) {
                 m_condition.wait(l);
             }
@@ -49,7 +51,7 @@ public:
 private:
     std::mutex m_mutex;
     std::condition_variable m_condition;
-    std::vector<ResourcePtr> m_resources;
+    ResourcePtrs m_resources;
 };
 
 

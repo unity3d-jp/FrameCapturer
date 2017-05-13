@@ -29,11 +29,11 @@ public:
 class fcMP4ContextWMF : public fcIMP4Context
 {
 public:
-    using VideoBuffer = Buffer;
-    using VideoBufferQueue = SharedResources<VideoBuffer>;
+    using VideoBuffer   = Buffer;
+    using VideoBuffers  = SharedResources<VideoBuffer>;
 
-    using AudioBuffer = RawVector<float>;
-    using AudioBufferQueue = SharedResources<AudioBuffer>;
+    using AudioBuffer   = RawVector<float>;
+    using AudioBuffers  = SharedResources<AudioBuffer>;
 
 
     fcMP4ContextWMF(const fcMP4Config &conf, fcIGraphicsDevice *dev, const char *path);
@@ -49,9 +49,9 @@ public:
     bool addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp) override;
     bool addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp);
 
-    bool AddAudioSamples(const float *samples, int num_samples) override;
-    void writeOutAudio(double timestamp);
-    bool AddAudioSamplesImpl(const float *samples, int num_samples);
+    bool addAudioSamples(const float *samples, int num_samples) override;
+    void writeOutAudioSamples(double timestamp);
+    bool addAudioSamplesImpl(const float *samples, int num_samples);
 
 
 private:
@@ -61,7 +61,7 @@ private:
     fcIGraphicsDevice   *m_gdev = nullptr;
 
     TaskQueue           m_video_tasks;
-    VideoBufferQueue    m_video_buffers;
+    VideoBuffers        m_video_buffers;
     Buffer              m_rgba_image;
     I420Image           m_i420_image;
     int                 m_frame_count = 0;
@@ -69,7 +69,7 @@ private:
 
     TaskQueue           m_audio_tasks;
     AudioBuffer         m_audio_samples;
-    AudioBufferQueue    m_audio_buffers;
+    AudioBuffers        m_audio_buffers;
     uint64_t            m_audio_written_samples = 0;
 
     ComPtr<IMFSinkWriter> m_mf_writer;
@@ -142,7 +142,7 @@ fcMP4ContextWMF::fcMP4ContextWMF(const fcMP4Config &conf, fcIGraphicsDevice *dev
 
 fcMP4ContextWMF::~fcMP4ContextWMF()
 {
-    writeOutAudio(m_last_timestamp);
+    writeOutAudioSamples(m_last_timestamp);
     m_video_tasks.wait();
     m_audio_tasks.wait();
 
@@ -327,7 +327,7 @@ bool fcMP4ContextWMF::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime 
     }
 
     ++m_frame_count;
-    if(m_frame_count % 30 == 0) { writeOutAudio(timestamp); }
+    if(m_frame_count % 30 == 0) { writeOutAudioSamples(timestamp); }
     m_last_timestamp = timestamp;
     return true;
 }
@@ -348,7 +348,7 @@ bool fcMP4ContextWMF::addVideoFramePixels(const void *pixels, fcPixelFormat fmt,
     });
 
     ++m_frame_count;
-    if (m_frame_count % 30 == 0) { writeOutAudio(timestamp); }
+    if (m_frame_count % 30 == 0) { writeOutAudioSamples(timestamp); }
     m_last_timestamp = timestamp;
     return true;
 }
@@ -385,7 +385,7 @@ bool fcMP4ContextWMF::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat 
     return true;
 }
 
-bool fcMP4ContextWMF::AddAudioSamples(const float *samples, int num_samples)
+bool fcMP4ContextWMF::addAudioSamples(const float *samples, int num_samples)
 {
     if (!isValid() || !m_conf.audio || !samples) { return false; }
 
@@ -398,7 +398,7 @@ bool fcMP4ContextWMF::AddAudioSamples(const float *samples, int num_samples)
         buf->assign(samples, num_samples);
 
         m_audio_tasks.run([this, buf, num_samples]() {
-            AddAudioSamplesImpl(buf->data(), num_samples);
+            addAudioSamplesImpl(buf->data(), num_samples);
             m_audio_buffers.unlock(buf);
         });
     }
@@ -406,7 +406,7 @@ bool fcMP4ContextWMF::AddAudioSamples(const float *samples, int num_samples)
     return true;
 }
 
-void fcMP4ContextWMF::writeOutAudio(double timestamp)
+void fcMP4ContextWMF::writeOutAudioSamples(double timestamp)
 {
     uint64_t num_samples = (uint64_t)(std::max<double>(timestamp, 0.0) * (double)(m_conf.audio_sample_rate * m_conf.audio_num_channels));
     uint64_t num_write = num_samples - m_audio_written_samples;
@@ -420,12 +420,12 @@ void fcMP4ContextWMF::writeOutAudio(double timestamp)
     m_audio_samples.erase(m_audio_samples.begin(), m_audio_samples.begin() + num_write);
 
     m_audio_tasks.run([this, buf, num_write]() {
-        AddAudioSamplesImpl(buf->data(), (int)num_write);
+        addAudioSamplesImpl(buf->data(), (int)num_write);
         m_audio_buffers.unlock(buf);
     });
 }
 
-bool fcMP4ContextWMF::AddAudioSamplesImpl(const float *samples, int num_samples)
+bool fcMP4ContextWMF::addAudioSamplesImpl(const float *samples, int num_samples)
 {
     double timestamp = (double)m_audio_written_samples / (double)(m_conf.audio_sample_rate * m_conf.audio_num_channels);
     double duration = (double)num_samples / (double)(m_conf.audio_sample_rate * m_conf.audio_num_channels);
