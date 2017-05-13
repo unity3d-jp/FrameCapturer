@@ -30,8 +30,7 @@ class fcFlacContext : public fcIFlacContext
 {
 public:
     using AudioBuffer = RawVector<float>;
-    using AudioBufferPtr = std::shared_ptr<AudioBuffer>;
-    using AudioBufferQueue = ResourceQueue<AudioBufferPtr>;
+    using AudioBufferQueue = SharedResources<AudioBuffer>;
 
     fcFlacContext(const fcFlacConfig& c);
     ~fcFlacContext() override;
@@ -143,7 +142,7 @@ fcFlacContext::fcFlacContext(const fcFlacConfig& c)
     : m_conf(c)
 {
     for (int i = 0; i < 8; ++i) {
-        m_buffers.push(AudioBufferPtr(new AudioBuffer()));
+        m_buffers.push(new AudioBuffer());
     }
 }
 
@@ -164,7 +163,7 @@ bool fcFlacContext::write(const float *samples, int num_samples)
 {
     if (!samples || num_samples == 0) { return false; }
 
-    auto buf = m_buffers.pop();
+    auto buf = m_buffers.lock();
     buf->assign(samples, num_samples);
 
     m_tasks.run([this, buf]() {
@@ -174,7 +173,7 @@ bool fcFlacContext::write(const float *samples, int num_samples)
         for (auto& w : m_writers) {
             w->write(m_conversion_buffer.data(), (int)m_conversion_buffer.size() / m_conf.num_channels);
         }
-        m_buffers.push(buf);
+        m_buffers.unlock(buf);
     });
     return true;
 }

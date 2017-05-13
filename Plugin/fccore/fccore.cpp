@@ -181,7 +181,7 @@ fcAPI void fcSetOnDeleteCallback(fcContextBase *ctx, void(*cb)(void*), void *par
 {
     fcTraceFunc();
     if (!ctx) { return; }
-    ctx->setOnDeleteCallback(cb, param);
+    ctx->setOnDeleteCallback([cb, param]() { cb(param); });
 }
 
 

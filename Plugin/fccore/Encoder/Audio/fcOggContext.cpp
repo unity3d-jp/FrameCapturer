@@ -33,8 +33,7 @@ class fcOggContext : public fcIOggContext
 {
 public:
     using AudioBuffer = RawVector<float>;
-    using AudioBufferPtr = std::shared_ptr<AudioBuffer>;
-    using AudioBufferQueue = ResourceQueue<AudioBufferPtr>;
+    using AudioBufferQueue = SharedResources<AudioBuffer>;
 
     fcOggContext(const fcOggConfig& conf);
     virtual ~fcOggContext() override;
@@ -124,7 +123,7 @@ fcOggContext::fcOggContext(const fcOggConfig& conf)
     vorbis_analysis_headerout(&m_vo_dsp, &m_vo_comment, &m_og_header, &m_og_header_comm, &m_og_header_code);
 
     for (int i = 0; i < 8; ++i) {
-        m_buffers.push(AudioBufferPtr(new AudioBuffer()));
+        m_buffers.push(new AudioBuffer());
     }
 }
 
@@ -159,7 +158,7 @@ bool fcOggContext::write(const float *samples, int num_samples)
 {
     if (!samples || num_samples == 0) { return false; }
 
-    auto buf = m_buffers.pop();
+    auto buf = m_buffers.lock();
     buf->assign(samples, num_samples);
 
     m_tasks.run([this, buf]() {
@@ -178,7 +177,7 @@ bool fcOggContext::write(const float *samples, int num_samples)
             pageOut();
         }
 
-        m_buffers.push(buf);
+        m_buffers.unlock(buf);
     });
 
     return true;

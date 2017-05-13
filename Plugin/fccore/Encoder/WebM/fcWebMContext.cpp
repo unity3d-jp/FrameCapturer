@@ -18,12 +18,10 @@ public:
     using WriterPtrs        = std::vector<WriterPtr>;
 
     using VideoBuffer       = Buffer;
-    using VideoBufferPtr    = std::shared_ptr<VideoBuffer>;
-    using VideoBufferQueue  = ResourceQueue<VideoBufferPtr>;
+    using VideoBufferQueue  = SharedResources<VideoBuffer>;
 
     using AudioBuffer       = RawVector<float>;
-    using AudioBufferPtr    = std::shared_ptr<AudioBuffer>;
-    using AudioBufferQueue  = ResourceQueue<AudioBufferPtr>;
+    using AudioBufferQueue  = SharedResources<AudioBuffer>;
 
 
     fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd);
@@ -90,7 +88,7 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
         }
 
         for (int i = 0; i < 4; ++i) {
-            m_video_buffers.push(VideoBufferPtr(new VideoBuffer()));
+            m_video_buffers.push(new VideoBuffer());
         }
     }
 
@@ -111,7 +109,7 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
         }
 
         for (int i = 0; i < 4; ++i) {
-            m_audio_buffers.push(AudioBufferPtr(new AudioBuffer()));
+            m_audio_buffers.push(new AudioBuffer());
         }
     }
 }
@@ -140,18 +138,18 @@ bool fcWebMContext::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime ti
 {
     if (!tex || !m_video_encoder || !m_gdev) { return false; }
 
-    auto buf = m_video_buffers.pop();
+    auto buf = m_video_buffers.lock();
     size_t psize = fcGetPixelSize(fmt);
     size_t size = m_conf.video_width * m_conf.video_height * psize;
     buf->resize(size);
     if (m_gdev->readTexture(buf->data(), buf->size(), tex, m_conf.video_width, m_conf.video_height, fmt)) {
         m_video_tasks.run([this, buf, fmt, timestamp]() {
             addVideoFramePixelsImpl(buf->data(), fmt, timestamp);
-            m_video_buffers.push(buf);
+            m_video_buffers.unlock(buf);
         });
     }
     else {
-        m_video_buffers.push(buf);
+        m_video_buffers.unlock(buf);
         return false;
     }
     return true;
@@ -161,7 +159,7 @@ bool fcWebMContext::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, f
 {
     if (!pixels || !m_video_encoder) { return false; }
 
-    auto buf = m_video_buffers.pop();
+    auto buf = m_video_buffers.lock();
     size_t psize = fcGetPixelSize(fmt);
     size_t size = m_conf.video_width * m_conf.video_height * psize;
     buf->resize(size);
@@ -169,7 +167,7 @@ bool fcWebMContext::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, f
 
     m_video_tasks.run([this, buf, fmt, timestamp]() {
         addVideoFramePixelsImpl(buf->data(), fmt, timestamp);
-        m_video_buffers.push(buf);
+        m_video_buffers.unlock(buf);
     });
     return true;
 }
@@ -207,7 +205,7 @@ bool fcWebMContext::AddAudioSamples(const float *samples, int num_samples)
 {
     if (!samples || !m_audio_encoder) { return false; }
 
-    auto buf = m_audio_buffers.pop();
+    auto buf = m_audio_buffers.lock();
     buf->assign(samples, num_samples);
 
     m_audio_tasks.run([this, buf]() {
@@ -217,7 +215,7 @@ bool fcWebMContext::AddAudioSamples(const float *samples, int num_samples)
             });
             m_audio_frame.clear();
         }
-        m_audio_buffers.push(buf);
+        m_audio_buffers.unlock(buf);
     });
     return true;
 }

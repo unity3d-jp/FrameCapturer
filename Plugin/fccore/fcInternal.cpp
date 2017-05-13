@@ -43,7 +43,7 @@ fcAPI void fcWaitAsyncDelete()
 fcContextBase::~fcContextBase()
 {
     if (m_on_delete) {
-        m_on_delete(m_on_delete_param);
+        m_on_delete();
     }
 }
 
@@ -53,8 +53,7 @@ void fcContextBase::release()
     else { delete this; }
 }
 
-void fcContextBase::setOnDeleteCallback(void(*cb)(void*), void *param)
+void fcContextBase::setOnDeleteCallback(std::function<void()> v)
 {
-    m_on_delete = cb;
-    m_on_delete_param = param;
+    m_on_delete = v;
 }

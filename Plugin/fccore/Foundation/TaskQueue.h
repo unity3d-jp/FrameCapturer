@@ -1,42 +1,55 @@
 #pragma once
 
-#include <deque>
+#include <vector>
+#include <memory>
 #include <functional>
 #include <thread>
 #include <mutex>
+#include <atomic>
 #include <condition_variable>
 
 
 template<class T>
-class ResourceQueue
+class SharedResources
 {
 public:
-    void push(T v)
+    using Resource = T;
+    using ResourcePtr = std::shared_ptr<T>;
+
+    void push(Resource *v)
     {
-        std::unique_lock<std::mutex> l(m_mutex);
-        m_resources.push_back(v);
+        unlock(ResourcePtr(v));
     }
 
-    T pop()
+    void unlock(ResourcePtr v)
     {
-        T ret;
-        for (;;) {
-            {
-                std::unique_lock<std::mutex> l(m_mutex);
-                if (!m_resources.empty()) {
-                    ret = m_resources.back();
-                    m_resources.pop_back();
-                    break;
-                }
+        {
+            std::unique_lock<std::mutex> l(m_mutex);
+            m_resources.push_back(v);
+        }
+        m_condition.notify_one();
+    }
+
+    ResourcePtr lock()
+    {
+        ResourcePtr ret;
+        {
+            std::unique_lock<std::mutex> l(m_mutex);
+            if (m_resources.empty()) {
+                m_condition.wait(l);
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            if (!m_resources.empty()) {
+                ret = m_resources.back();
+                m_resources.pop_back();
+            }
         }
         return ret;
     }
 
 private:
     std::mutex m_mutex;
-    std::deque<T> m_resources;
+    std::condition_variable m_condition;
+    std::vector<ResourcePtr> m_resources;
 };
 
 
@@ -59,7 +72,7 @@ private:
     std::thread             m_thread;
     std::mutex              m_mutex;
     std::condition_variable m_condition;
-    Tasks                   m_tasks;
     std::atomic_bool        m_stop = { false };
     std::atomic_bool        m_running = { false };
+    Tasks                   m_tasks;
 };

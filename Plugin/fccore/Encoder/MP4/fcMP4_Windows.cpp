@@ -30,12 +30,10 @@ class fcMP4ContextWMF : public fcIMP4Context
 {
 public:
     using VideoBuffer = Buffer;
-    using VideoBufferPtr = std::shared_ptr<VideoBuffer>;
-    using VideoBufferQueue = ResourceQueue<VideoBufferPtr>;
+    using VideoBufferQueue = SharedResources<VideoBuffer>;
 
     using AudioBuffer = RawVector<float>;
-    using AudioBufferPtr = std::shared_ptr<AudioBuffer>;
-    using AudioBufferQueue = ResourceQueue<AudioBufferPtr>;
+    using AudioBufferQueue = SharedResources<AudioBuffer>;
 
 
     fcMP4ContextWMF(const fcMP4Config &conf, fcIGraphicsDevice *dev, const char *path);
@@ -251,7 +249,7 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
             }
 
             for (int i = 0; i < 4; ++i) {
-                m_video_buffers.push(VideoBufferPtr(new VideoBuffer()));
+                m_video_buffers.push(new VideoBuffer());
             }
         }
     }
@@ -287,7 +285,7 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
             pSinkWriter->SetInputMediaType(m_mf_audio_index, pAudioInMediaType.Get(), nullptr);
 
             for (int i = 0; i < 4; ++i) {
-                m_audio_buffers.push(AudioBufferPtr(new AudioBuffer()));
+                m_audio_buffers.push(new AudioBuffer());
             }
         }
     }
@@ -313,18 +311,18 @@ bool fcMP4ContextWMF::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime 
 {
     if (!isValid() || !m_conf.video || !tex || !m_gdev) { return false; }
 
-    auto buf = m_video_buffers.pop();
+    auto buf = m_video_buffers.lock();
     size_t psize = fcGetPixelSize(fmt);
     size_t size = m_conf.video_width * m_conf.video_height * psize;
     buf->resize(size);
     if (m_gdev->readTexture(buf->data(), buf->size(), tex, m_conf.video_width, m_conf.video_height, fmt)) {
         m_video_tasks.run([this, buf, fmt, timestamp]() {
             addVideoFramePixelsImpl(buf->data(), fmt, timestamp);
-            m_video_buffers.push(buf);
+            m_video_buffers.unlock(buf);
         });
     }
     else {
-        m_video_buffers.push(buf);
+        m_video_buffers.unlock(buf);
         return false;
     }
 
@@ -338,7 +336,7 @@ bool fcMP4ContextWMF::addVideoFramePixels(const void *pixels, fcPixelFormat fmt,
 {
     if (!isValid() || !m_conf.video || !pixels) { return false; }
 
-    auto buf = m_video_buffers.pop();
+    auto buf = m_video_buffers.lock();
     size_t psize = fcGetPixelSize(fmt);
     size_t size = m_conf.video_width * m_conf.video_height * psize;
     buf->resize(size);
@@ -346,7 +344,7 @@ bool fcMP4ContextWMF::addVideoFramePixels(const void *pixels, fcPixelFormat fmt,
 
     m_video_tasks.run([this, buf, fmt, timestamp]() {
         addVideoFramePixelsImpl(buf->data(), fmt, timestamp);
-        m_video_buffers.push(buf);
+        m_video_buffers.unlock(buf);
     });
 
     ++m_frame_count;
@@ -396,12 +394,12 @@ bool fcMP4ContextWMF::AddAudioSamples(const float *samples, int num_samples)
         m_audio_samples.append(samples, num_samples);
     }
     else {
-        auto buf = m_audio_buffers.pop();
+        auto buf = m_audio_buffers.lock();
         buf->assign(samples, num_samples);
 
         m_audio_tasks.run([this, buf, num_samples]() {
             AddAudioSamplesImpl(buf->data(), num_samples);
-            m_audio_buffers.push(buf);
+            m_audio_buffers.unlock(buf);
         });
     }
 
@@ -417,13 +415,13 @@ void fcMP4ContextWMF::writeOutAudio(double timestamp)
     num_write = std::min<uint64_t>(num_write, m_audio_samples.size());
     if (num_write == 0) { return; }
 
-    auto buf = m_audio_buffers.pop();
+    auto buf = m_audio_buffers.lock();
     buf->assign(m_audio_samples.data(), (int)num_write);
     m_audio_samples.erase(m_audio_samples.begin(), m_audio_samples.begin() + num_write);
 
     m_audio_tasks.run([this, buf, num_write]() {
         AddAudioSamplesImpl(buf->data(), (int)num_write);
-        m_audio_buffers.push(buf);
+        m_audio_buffers.unlock(buf);
     });
 }
 

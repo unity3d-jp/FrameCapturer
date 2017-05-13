@@ -59,11 +59,10 @@ protected:
     virtual ~fcContextBase();
 public:
     virtual void release();
-    virtual void setOnDeleteCallback(void(*cb)(void*), void *param);
+    virtual void setOnDeleteCallback(std::function<void()> cb);
 
 private:
-    void(*m_on_delete)(void*) = nullptr;
-    void *m_on_delete_param = nullptr;
+    std::function<void()> m_on_delete;
 };
 
 #include "fccore.h"

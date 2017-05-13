@@ -20,12 +20,10 @@ public:
     using WriterPtrs        = std::vector<WriterPtr>;
 
     using VideoBuffer       = Buffer;
-    using VideoBufferPtr    = std::shared_ptr<VideoBuffer>;
-    using VideoBufferQueue  = ResourceQueue<VideoBufferPtr>;
+    using VideoBufferQueue  = SharedResources<VideoBuffer>;
 
     using AudioBuffer       = RawVector<float>;
-    using AudioBufferPtr    = std::shared_ptr<AudioBuffer>;
-    using AudioBufferQueue  = ResourceQueue<AudioBufferPtr>;
+    using AudioBufferQueue  = SharedResources<AudioBuffer>;
 
 
     fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev);
@@ -143,7 +141,7 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         if (enc) {
             m_video_encoder.reset(enc);
             for (int i = 0; i < 4; ++i) {
-                m_video_buffers.push(VideoBufferPtr(new VideoBuffer()));
+                m_video_buffers.push(new VideoBuffer());
             }
         }
     }
@@ -168,7 +166,7 @@ fcMP4Context::fcMP4Context(fcMP4Config &conf, fcIGraphicsDevice *dev)
         if (enc) {
             m_audio_encoder.reset(enc);
             for (int i = 0; i < 4; ++i) {
-                m_audio_buffers.push(AudioBufferPtr(new AudioBuffer()));
+                m_audio_buffers.push(new AudioBuffer());
             }
         }
     }
@@ -224,18 +222,18 @@ bool fcMP4Context::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime tim
 {
     if (!tex || !m_video_encoder || !m_dev) { return false; }
 
-    auto buf = m_video_buffers.pop();
+    auto buf = m_video_buffers.lock();
     size_t psize = fcGetPixelSize(fmt);
     size_t size = m_conf.video_width * m_conf.video_height * psize;
     buf->resize(size);
     if (m_dev->readTexture(buf->data(), buf->size(), tex, m_conf.video_width, m_conf.video_height, fmt)) {
         m_video_tasks.run([this, buf, fmt, timestamp]() {
             addVideoFramePixelsImpl(buf->data(), fmt, timestamp);
-            m_video_buffers.push(buf);
+            m_video_buffers.unlock(buf);
         });
     }
     else {
-        m_video_buffers.push(buf);
+        m_video_buffers.unlock(buf);
         return false;
     }
     return true;
@@ -245,7 +243,7 @@ bool fcMP4Context::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fc
 {
     if (!pixels || !m_video_encoder) { return false; }
 
-    auto buf = m_video_buffers.pop();
+    auto buf = m_video_buffers.lock();
     size_t psize = fcGetPixelSize(fmt);
     size_t size = m_conf.video_width * m_conf.video_height * psize;
     buf->resize(size);
@@ -253,7 +251,7 @@ bool fcMP4Context::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fc
 
     m_video_tasks.run([this, buf, fmt, timestamp]() {
         addVideoFramePixelsImpl(buf->data(), fmt, timestamp);
-        m_video_buffers.push(buf);
+        m_video_buffers.unlock(buf);
     });
     return true;
 
@@ -294,12 +292,12 @@ bool fcMP4Context::AddAudioSamples(const float *samples, int num_samples)
         return false;
     }
 
-    auto buf = m_audio_buffers.pop();
+    auto buf = m_audio_buffers.lock();
     buf->assign(samples, num_samples);
 
     m_audio_tasks.run([this, buf]() {
         AddAudioSamplesImpl(buf->data(), (int)buf->size());
-        m_audio_buffers.push(buf);
+        m_audio_buffers.unlock(buf);
     });
     return true;
 }
