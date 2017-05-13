@@ -26,7 +26,7 @@ private:
 };
 
 static fcAsyncDeleteManager g_async_delete_manager;
-static bool g_async_delete = false;
+static bool g_async_delete = true;
 
 
 fcAPI void fcEnableAsyncReleaseContext(bool v)

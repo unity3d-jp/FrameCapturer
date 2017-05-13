@@ -12,8 +12,9 @@ TaskQueue::~TaskQueue()
 
 void TaskQueue::run(const Task& v)
 {
-    if (!m_thread.joinable()) {
+    if (!m_running) {
         m_thread = std::thread([this]() { process(); });
+        m_running = true;
     }
 
     {
@@ -25,10 +26,12 @@ void TaskQueue::run(const Task& v)
 
 void TaskQueue::wait()
 {
-    if (m_thread.joinable()) {
+    if (m_running) {
         m_stop = true;
         m_condition.notify_one();
         m_thread.join();
+        m_running = false;
+        m_stop = false;
     }
 }
 

@@ -60,5 +60,6 @@ private:
     std::mutex              m_mutex;
     std::condition_variable m_condition;
     Tasks                   m_tasks;
-    bool                    m_stop = false;
+    std::atomic_bool        m_stop = { false };
+    std::atomic_bool        m_running = { false };
 };
