@@ -99,16 +99,21 @@ void MP4TestOSProvidedEncoder(const char *filename)
 
 void MP4Test()
 {
-    if (!fcMP4IsSupported()) {
-        printf("MP4Test: mp4 is not supported\n");
-        return;
+    if(!fcMP4OSIsSupported) {
+        printf("MP4Test: OS-provided mp4 encoder is not available\n");
+    }
+    else {
+        MP4TestOSProvidedEncoder("OS.mp4");
     }
 
-    MP4Test(fcMP4_H264NVIDIA, 0, "NVIDIA.mp4");
-    MP4Test(fcMP4_H264AMD, 0, "AMD.mp4");
-    MP4Test(fcMP4_H264IntelHW, 0, "IntelHW.mp4");
-    MP4Test(fcMP4_H264IntelSW, 0, "IntelSW.mp4");
-    MP4Test(fcMP4_H264OpenH264, fcMP4_AACFAAC, "OpenH264.mp4");
-    MP4TestOSProvidedEncoder("WMF.mp4");
+    if (!fcMP4IsSupported()) {
+        printf("MP4Test: mp4 is not supported\n");
+    }
+    else {
+        MP4Test(fcMP4_H264NVIDIA, 0, "NVIDIA.mp4");
+        MP4Test(fcMP4_H264AMD, 0, "AMD.mp4");
+        MP4Test(fcMP4_H264IntelHW, 0, "IntelHW.mp4");
+        MP4Test(fcMP4_H264IntelSW, 0, "IntelSW.mp4");
+        MP4Test(fcMP4_H264OpenH264, fcMP4_AACFAAC, "OpenH264.mp4");
+    }
 }
-

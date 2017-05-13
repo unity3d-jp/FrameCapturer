@@ -5,10 +5,10 @@ set(LIBRARY_PATHS
 )
 
 find_path(WEBM_INCLUDE_DIR
-    libwebm/mkvparser.hpp
-    PATHS ${WEBM_DIR}/include/libwebm
+    mkvparser.hpp
+    PATHS ${WEBM_DIR}/include
 )
-set(WEBM_INCLUDE_DIR ${WEBM_INCLUDE_DIR}/libwebm)
+set(WEBM_INCLUDE_DIR ${WEBM_INCLUDE_DIR})
 
 find_library(WEBM_LIBRARY
     NAMES webm
