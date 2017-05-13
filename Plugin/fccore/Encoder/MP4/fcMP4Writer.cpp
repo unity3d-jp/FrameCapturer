@@ -117,7 +117,7 @@ void fcMP4Writer::addVideoFrame(const fcH264Frame& frame)
     m_video_frame_info.push_back(info);
 }
 
-void fcMP4Writer::addAudioFrame(const fcAACFrame& frame)
+void fcMP4Writer::AddAudioSamples(const fcAACFrame& frame)
 {
     if (frame.data.empty()) { return; }
     std::unique_lock<std::mutex> lock(m_mutex);

@@ -33,7 +33,7 @@ namespace UTJ.FrameCapturer
             fcAPI.fcGifAddFramePixels(m_ctx, frame, format, timestamp);
         }
 
-        public override void AddAudioFrame(float[] samples)
+        public override void AddAudioSamples(float[] samples)
         {
             // not supported
         }

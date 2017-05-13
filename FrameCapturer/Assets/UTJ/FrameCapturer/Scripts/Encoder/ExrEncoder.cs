@@ -43,7 +43,7 @@ namespace UTJ.FrameCapturer
             ++m_frame;
         }
 
-        public override void AddAudioFrame(float[] samples)
+        public override void AddAudioSamples(float[] samples)
         {
             // not supported
         }

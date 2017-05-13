@@ -7,7 +7,7 @@ public:
     fcMP4Writer(BinaryStream *stream, const fcMP4Config &conf);
     virtual ~fcMP4Writer();
     void addVideoFrame(const fcH264Frame& frame); // thread safe
-    void addAudioFrame(const fcAACFrame& frame); // thread safe
+    void AddAudioSamples(const fcAACFrame& frame); // thread safe
     void setAACEncoderInfo(const Buffer& aacheader);
 
 private:

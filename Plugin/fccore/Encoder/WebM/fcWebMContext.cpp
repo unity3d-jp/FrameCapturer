@@ -36,7 +36,7 @@ public:
     bool addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp);
     void flushVideo();
 
-    bool addAudioFrame(const float *samples, int num_samples) override;
+    bool AddAudioSamples(const float *samples, int num_samples) override;
     void flushAudio();
 
 
@@ -203,7 +203,7 @@ void fcWebMContext::flushVideo()
 }
 
 
-bool fcWebMContext::addAudioFrame(const float *samples, int num_samples)
+bool fcWebMContext::AddAudioSamples(const float *samples, int num_samples)
 {
     if (!samples || !m_audio_encoder) { return false; }
 
@@ -213,7 +213,7 @@ bool fcWebMContext::addAudioFrame(const float *samples, int num_samples)
     m_audio_tasks.run([this, buf]() {
         if (m_audio_encoder->encode(m_audio_frame, buf->data(), buf->size())) {
             eachStreams([&](fcIWebMWriter& writer) {
-                writer.addAudioFrame(m_audio_frame);
+                writer.AddAudioSamples(m_audio_frame);
             });
             m_audio_frame.clear();
         }
@@ -229,7 +229,7 @@ void fcWebMContext::flushAudio()
     m_audio_tasks.run([this]() {
         if (m_audio_encoder->flush(m_audio_frame)) {
             eachStreams([&](fcIWebMWriter& writer) {
-                writer.addAudioFrame(m_audio_frame);
+                writer.AddAudioSamples(m_audio_frame);
             });
             m_audio_frame.clear();
         }

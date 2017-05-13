@@ -380,7 +380,7 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] private static extern IntPtr          fcMP4GetAudioEncoderInfo(fcMP4Context ctx);
         [DllImport ("fccore")] private static extern IntPtr          fcMP4GetVideoEncoderInfo(fcMP4Context ctx);
         [DllImport ("fccore")] public static extern Bool             fcMP4AddVideoFramePixels(fcMP4Context ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
-        [DllImport ("fccore")] public static extern Bool             fcMP4AddAudioFrame(fcMP4Context ctx, float[] samples, int num_samples);
+        [DllImport ("fccore")] public static extern Bool             fcMP4AddAudioSamples(fcMP4Context ctx, float[] samples, int num_samples);
 
         public static string fcMP4GetAudioEncoderInfoS(fcMP4Context ctx)
         {
@@ -467,7 +467,7 @@ namespace UTJ.FrameCapturer
         // timestamp=-1 is treated as current time.
         [DllImport ("fccore")] public static extern Bool fcWebMAddVideoFramePixels(fcWebMContext ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
         // timestamp=-1 is treated as current time.
-        [DllImport ("fccore")] public static extern Bool fcWebMAddAudioFrame(fcWebMContext ctx, float[] samples, int num_samples);
+        [DllImport ("fccore")] public static extern Bool fcWebMAddAudioSamples(fcWebMContext ctx, float[] samples, int num_samples);
 
 
         // -------------------------------------------------------------
@@ -504,7 +504,7 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] public static extern Bool fcWaveIsSupported();
         [DllImport ("fccore")] public static extern fcWaveContext fcWaveCreateContext(ref fcWaveConfig conf);
         [DllImport ("fccore")] public static extern void fcWaveAddOutputStream(fcWaveContext ctx, fcStream stream);
-        [DllImport ("fccore")] public static extern Bool fcWaveAddAudioFrame(fcWaveContext ctx, float[] samples, int num_samples);
+        [DllImport ("fccore")] public static extern Bool fcWaveAddAudioSamples(fcWaveContext ctx, float[] samples, int num_samples);
 
         
 
@@ -544,7 +544,7 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] public static extern Bool fcOggIsSupported();
         [DllImport ("fccore")] public static extern fcOggContext fcOggCreateContext(ref fcOggConfig conf);
         [DllImport ("fccore")] public static extern void fcOggAddOutputStream(fcOggContext ctx, fcStream stream);
-        [DllImport ("fccore")] public static extern Bool fcOggAddAudioFrame(fcOggContext ctx, float[] samples, int num_samples);
+        [DllImport ("fccore")] public static extern Bool fcOggAddAudioSamples(fcOggContext ctx, float[] samples, int num_samples);
 
 
         // -------------------------------------------------------------
@@ -587,7 +587,7 @@ namespace UTJ.FrameCapturer
         [DllImport ("fccore")] public static extern Bool fcFlacIsSupported();
         [DllImport ("fccore")] public static extern fcFlacContext fcFlacCreateContext(ref fcFlacConfig conf);
         [DllImport ("fccore")] public static extern void fcFlacAddOutputStream(fcFlacContext ctx, fcStream stream);
-        [DllImport ("fccore")] public static extern Bool fcFlacAddAudioFrame(fcFlacContext ctx, float[] samples, int num_samples);
+        [DllImport ("fccore")] public static extern Bool fcFlacAddAudioSamples(fcFlacContext ctx, float[] samples, int num_samples);
 
 
 

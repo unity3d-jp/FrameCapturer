@@ -248,8 +248,7 @@ fcAPI void            fcMP4AddOutputStream(fcIMP4Context *ctx, fcStream *stream)
 fcAPI bool            fcMP4AddVideoFramePixels(fcIMP4Context *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
 fcAPI bool            fcMP4AddVideoFrameTexture(fcIMP4Context *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1.0);
-// timestamp=-1 is treated as current time.
-fcAPI bool            fcMP4AddAudioFrame(fcIMP4Context *ctx, const float *samples, int num_samples);
+fcAPI bool            fcMP4AddAudioSamples(fcIMP4Context *ctx, const float *samples, int num_samples);
 
 
 
@@ -297,7 +296,7 @@ fcAPI void            fcWebMAddOutputStream(fcIWebMContext *ctx, fcStream *strea
 fcAPI bool            fcWebMAddVideoFramePixels(fcIWebMContext *ctx, const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0);
 // timestamp=-1 is treated as current time.
 fcAPI bool            fcWebMAddVideoFrameTexture(fcIWebMContext *ctx, void *tex, fcPixelFormat fmt, fcTime timestamp = -1.0);
-fcAPI bool            fcWebMAddAudioFrame(fcIWebMContext *ctx, const float *samples, int num_samples);
+fcAPI bool            fcWebMAddAudioSamples(fcIWebMContext *ctx, const float *samples, int num_samples);
 
 
 
@@ -316,7 +315,7 @@ struct fcWaveConfig
 fcAPI bool            fcWaveIsSupported();
 fcAPI fcIWaveContext* fcWaveCreateContext(fcWaveConfig *conf);
 fcAPI void            fcWaveAddOutputStream(fcIWaveContext *ctx, fcStream *stream);
-fcAPI bool            fcWaveAddAudioFrame(fcIWaveContext *ctx, const float *samples, int num_samples);
+fcAPI bool            fcWaveAddAudioSamples(fcIWaveContext *ctx, const float *samples, int num_samples);
 
 
 // -------------------------------------------------------------
@@ -335,7 +334,7 @@ struct fcOggConfig
 fcAPI bool            fcOggIsSupported();
 fcAPI fcIOggContext*  fcOggCreateContext(fcOggConfig *conf);
 fcAPI void            fcOggAddOutputStream(fcIOggContext *ctx, fcStream *stream);
-fcAPI bool            fcOggAddAudioFrame(fcIOggContext *ctx, const float *samples, int num_samples);
+fcAPI bool            fcOggAddAudioSamples(fcIOggContext *ctx, const float *samples, int num_samples);
 
 
 // -------------------------------------------------------------
@@ -356,6 +355,6 @@ struct fcFlacConfig
 fcAPI bool            fcFlacIsSupported();
 fcAPI fcIFlacContext* fcFlacCreateContext(fcFlacConfig *conf);
 fcAPI void            fcFlacAddOutputStream(fcIFlacContext *ctx, fcStream *stream);
-fcAPI bool            fcFlacAddAudioFrame(fcIFlacContext *ctx, const float *samples, int num_samples);
+fcAPI bool            fcFlacAddAudioSamples(fcIFlacContext *ctx, const float *samples, int num_samples);
 
 

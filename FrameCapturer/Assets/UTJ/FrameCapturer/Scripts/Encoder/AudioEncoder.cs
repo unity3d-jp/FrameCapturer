@@ -31,7 +31,7 @@ namespace UTJ.FrameCapturer
 
         // config: config struct (fcGifConfig, fcWebMConfig, etc)
         public abstract void Initialize(object config, string outPath);
-        public abstract void AddAudioFrame(float[] samples, double timestamp = -1.0);
+        public abstract void AddAudioSamples(float[] samples, double timestamp = -1.0);
 
 
         public static AudioEncoder Create(Type t)

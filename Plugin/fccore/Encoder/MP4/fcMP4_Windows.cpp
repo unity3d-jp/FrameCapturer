@@ -51,9 +51,9 @@ public:
     bool addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp) override;
     bool addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp);
 
-    bool addAudioFrame(const float *samples, int num_samples) override;
+    bool AddAudioSamples(const float *samples, int num_samples) override;
     void writeOutAudio(double timestamp);
-    bool addAudioFrameImpl(const float *samples, int num_samples);
+    bool AddAudioSamplesImpl(const float *samples, int num_samples);
 
 
 private:
@@ -387,7 +387,7 @@ bool fcMP4ContextWMF::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat 
     return true;
 }
 
-bool fcMP4ContextWMF::addAudioFrame(const float *samples, int num_samples)
+bool fcMP4ContextWMF::AddAudioSamples(const float *samples, int num_samples)
 {
     if (!isValid() || !m_conf.audio || !samples) { return false; }
 
@@ -400,7 +400,7 @@ bool fcMP4ContextWMF::addAudioFrame(const float *samples, int num_samples)
         buf->assign(samples, num_samples);
 
         m_audio_tasks.run([this, buf, num_samples]() {
-            addAudioFrameImpl(buf->data(), num_samples);
+            AddAudioSamplesImpl(buf->data(), num_samples);
             m_audio_buffers.push(buf);
         });
     }
@@ -422,12 +422,12 @@ void fcMP4ContextWMF::writeOutAudio(double timestamp)
     m_audio_samples.erase(m_audio_samples.begin(), m_audio_samples.begin() + num_write);
 
     m_audio_tasks.run([this, buf, num_write]() {
-        addAudioFrameImpl(buf->data(), (int)num_write);
+        AddAudioSamplesImpl(buf->data(), (int)num_write);
         m_audio_buffers.push(buf);
     });
 }
 
-bool fcMP4ContextWMF::addAudioFrameImpl(const float *samples, int num_samples)
+bool fcMP4ContextWMF::AddAudioSamplesImpl(const float *samples, int num_samples)
 {
     double timestamp = (double)m_audio_written_samples / (double)(m_conf.audio_sample_rate * m_conf.audio_num_channels);
     double duration = (double)num_samples / (double)(m_conf.audio_sample_rate * m_conf.audio_num_channels);

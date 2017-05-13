@@ -38,11 +38,11 @@ namespace UTJ.FrameCapturer
             }
         }
 
-        public override void AddAudioFrame(float[] samples)
+        public override void AddAudioSamples(float[] samples)
         {
             if (m_config.audio)
             {
-                fcAPI.fcWebMAddAudioFrame(m_ctx, samples, samples.Length);
+                fcAPI.fcWebMAddAudioSamples(m_ctx, samples, samples.Length);
             }
         }
     }

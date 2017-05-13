@@ -41,8 +41,8 @@ public:
     bool addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamps);
     void flushVideo();
 
-    bool addAudioFrame(const float *samples, int num_samples) override;
-    bool addAudioFrameImpl(const float *samples, int num_samples);
+    bool AddAudioSamples(const float *samples, int num_samples) override;
+    bool AddAudioSamplesImpl(const float *samples, int num_samples);
     void flushAudio();
 
 private:
@@ -287,10 +287,10 @@ void fcMP4Context::flushVideo()
     });
 }
 
-bool fcMP4Context::addAudioFrame(const float *samples, int num_samples)
+bool fcMP4Context::AddAudioSamples(const float *samples, int num_samples)
 {
     if (!m_audio_encoder) {
-        fcDebugLog("fcMP4Context::addAudioFrame(): aac encoder is null.");
+        fcDebugLog("fcMP4Context::AddAudioSamples(): aac encoder is null.");
         return false;
     }
 
@@ -298,16 +298,16 @@ bool fcMP4Context::addAudioFrame(const float *samples, int num_samples)
     buf->assign(samples, num_samples);
 
     m_audio_tasks.run([this, buf]() {
-        addAudioFrameImpl(buf->data(), (int)buf->size());
+        AddAudioSamplesImpl(buf->data(), (int)buf->size());
         m_audio_buffers.push(buf);
     });
     return true;
 }
 
-bool fcMP4Context::addAudioFrameImpl(const float *samples, int num_samples)
+bool fcMP4Context::AddAudioSamplesImpl(const float *samples, int num_samples)
 {
     if (m_audio_encoder->encode(m_audio_frame, samples, num_samples)) {
-        eachStreams([this](fcMP4Writer& s) { s.addAudioFrame(m_audio_frame); });
+        eachStreams([this](fcMP4Writer& s) { s.AddAudioSamples(m_audio_frame); });
 #ifndef fcMaster
         m_dbg_aac_out->write(m_audio_frame.data.data(), m_audio_frame.data.size());
 #endif // fcMaster
@@ -325,7 +325,7 @@ void fcMP4Context::flushAudio()
     m_audio_tasks.run([this]() {
         if (m_audio_encoder->flush(m_audio_frame)) {
             eachStreams([&](fcMP4Writer& writer) {
-                writer.addAudioFrame(m_audio_frame);
+                writer.AddAudioSamples(m_audio_frame);
             });
             m_audio_frame.clear();
         }

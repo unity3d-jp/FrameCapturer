@@ -144,7 +144,7 @@ namespace UTJ.FrameCapturer
         {
             if (m_recording && m_encoder != null)
             {
-                m_encoder.AddAudioFrame(samples);
+                m_encoder.AddAudioSamples(samples);
             }
         }
         #endregion

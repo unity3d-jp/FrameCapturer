@@ -29,9 +29,9 @@ namespace UTJ.FrameCapturer
             m_ctx.Release();
         }
 
-        public override void AddAudioFrame(float[] samples, double timestamp)
+        public override void AddAudioSamples(float[] samples, double timestamp)
         {
-            fcAPI.fcWaveAddAudioFrame(m_ctx, samples, samples.Length);
+            fcAPI.fcWaveAddAudioSamples(m_ctx, samples, samples.Length);
         }
     }
 }

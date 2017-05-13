@@ -35,7 +35,7 @@ public:
     void setAudioEncoderInfo(const fcIWebMEncoderInfo& info) override;
 
     void addVideoFrame(const fcWebMFrameData& buf) override;
-    void addAudioFrame(const fcWebMFrameData& buf) override;
+    void AddAudioSamples(const fcWebMFrameData& buf) override;
 
     void writeOut(double timestamp);
 
@@ -119,7 +119,7 @@ void fcWebMWriter::addVideoFrame(const fcWebMFrameData& frame)
     writeOut(m_timestamp_video_last - 1.0);
 }
 
-void fcWebMWriter::addAudioFrame(const fcWebMFrameData& frame)
+void fcWebMWriter::AddAudioSamples(const fcWebMFrameData& frame)
 {
     if (m_audio_track_id == 0 || frame.data.empty()) { return; }
 

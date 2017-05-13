@@ -11,7 +11,7 @@ public:
     // timestamp=-1 is treated as current time.
     virtual bool addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp = -1.0) = 0;
 
-    virtual bool addAudioFrame(const float *samples, int num_samples) = 0;
+    virtual bool AddAudioSamples(const float *samples, int num_samples) = 0;
 };
 
 fcIWebMContext* fcWebMCreateContextImpl(fcWebMConfig &conf, fcIGraphicsDevice*);

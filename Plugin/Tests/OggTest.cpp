@@ -28,7 +28,7 @@ void OggTest()
         fcTime t = 0;
         while (t < (double)DurationInSeconds) {
             CreateAudioData(audio_sample.data(), (int)audio_sample.size(), t, 1.0f);
-            fcOggAddAudioFrame(ctx, audio_sample.data(), (int)audio_sample.size());
+            fcOggAddAudioSamples(ctx, audio_sample.data(), (int)audio_sample.size());
             t += 1.0;
         }
     }

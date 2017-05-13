@@ -36,7 +36,7 @@ static void WriteMovieData(fcIMP4Context *ctx)
         fcTime t = 0;
         for (int i = 0; i < DurationInSeconds; ++i) {
             CreateAudioData(&audio_sample[0], (int)audio_sample.size(), i, 1.0f);
-            fcMP4AddAudioFrame(ctx, &audio_sample[0], (int)audio_sample.size());
+            fcMP4AddAudioSamples(ctx, &audio_sample[0], (int)audio_sample.size());
             t += 1.0;
         }
     });

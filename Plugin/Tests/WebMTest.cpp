@@ -113,7 +113,7 @@ void WebMTest(fcWebMVideoEncoder ve, fcWebMAudioEncoder ae)
             fcTime t = 0;
             while (t < (double)DurationInSeconds) {
                 CreateAudioData(audio_sample.data(), (int)audio_sample.size(), t, 1.0f);
-                fcWebMAddAudioFrame(ctx, audio_sample.data(), (int)audio_sample.size());
+                fcWebMAddAudioSamples(ctx, audio_sample.data(), (int)audio_sample.size());
                 t += 1.0;
             }
         });

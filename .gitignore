@@ -8,9 +8,9 @@
 
 *.exe
 *.dll
-*.so
 *.bundle
 *.dylib
+*.so
 *.exr
 *.gif
 *.png
@@ -25,10 +25,10 @@
 .vs/
 _out/
 _tmp/
+_build_*/
 external/
 Library/
 Temp/
-Plugin/_build_*/
 
 FrameCapturer/*.csproj
 FrameCapturer/*.sln
