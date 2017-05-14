@@ -360,12 +360,17 @@ export void F32ToI24Samples(uniform unsigned int8 dst[], uniform const float src
 {
     foreach(i=0 ... size) {
         int32 v = src[i] * 8388608.0f;
+        // this is slow.. is there better way?
         dst[i*3 + 0] = (v & 0x0000FF) >> 0;
         dst[i*3 + 1] = (v & 0x00FF00) >> 8;
         dst[i*3 + 2] = (v & 0xFF0000) >> 16;
     }
 }
-export void F32ToI32Samples(uniform int32 dst[], uniform const float src[], uniform size_t size, uniform float scale)
+export void F32ToI32Samples(uniform int32 dst[], uniform const float src[], uniform size_t size)
+{
+    foreach(i=0 ... size) { dst[i] = (int32)(src[i] * 2147483647.0f); }
+}
+export void F32ToI32ScaleSamples(uniform int32 dst[], uniform const float src[], uniform size_t size, uniform float scale)
 {
     foreach(i=0 ... size) { dst[i] = (int32)(src[i] * scale); }
 }

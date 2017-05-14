@@ -102,6 +102,10 @@ bool fcWaveContext::addSamples(const float *samples, int num_samples)
         m_sample_buffer.resize(num_samples * 3);
         fcF32ToI24Samples((uint8_t*)m_sample_buffer.data(), samples, num_samples);
     }
+    else if (m_conf.bits_per_sample == 32) {
+        m_sample_buffer.resize(num_samples * 4);
+        fcF32ToI32Samples((int32_t*)m_sample_buffer.data(), samples, num_samples);
+    }
     m_sample_size += m_sample_buffer.size();
 
     for (auto s : m_streams) {

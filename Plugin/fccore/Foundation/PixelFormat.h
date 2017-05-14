@@ -17,4 +17,5 @@ fcAPI const void* fcConvertPixelFormat(void *dst, fcPixelFormat dstfmt, const vo
 void fcF32ToU8Samples(uint8_t *dst, const float *src, size_t size);
 void fcF32ToI16Samples(int16_t *dst, const float *src, size_t size);
 void fcF32ToI24Samples(uint8_t *dst, const float *src, size_t size);
-void fcF32ToI32Samples(int32_t *dst, const float *src, size_t size, float scale);
+void fcF32ToI32Samples(int32_t *dst, const float *src, size_t size);
+void fcF32ToI32ScaleSamples(int32_t *dst, const float *src, size_t size, float scale);

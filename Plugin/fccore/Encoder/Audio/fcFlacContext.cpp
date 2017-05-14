@@ -171,7 +171,7 @@ bool fcFlacContext::addSamples(const float *samples, int num_samples)
     m_tasks.run([this, buf]() {
         float scale = float((1 << (m_conf.bits_per_sample - 1)) - 1);
         m_conversion_buffer.resize(buf->size());
-        fcF32ToI32Samples(m_conversion_buffer.data(), buf->data(), buf->size(), scale);
+        fcF32ToI32ScaleSamples(m_conversion_buffer.data(), buf->data(), buf->size(), scale);
         for (auto& w : m_writers) {
             w->write(m_conversion_buffer.data(), (int)m_conversion_buffer.size() / m_conf.num_channels);
         }

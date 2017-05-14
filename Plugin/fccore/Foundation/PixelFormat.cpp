@@ -313,9 +313,13 @@ void fcF32ToI24Samples(uint8_t *dst, const float *src, size_t size)
 {
     ispc::F32ToI24Samples(dst, src, (uint32_t)size);
 }
-void fcF32ToI32Samples(int32_t *dst, const float *src, size_t size, float scale)
+void fcF32ToI32Samples(int32_t *dst, const float *src, size_t size)
 {
-    ispc::F32ToI32Samples(dst, src, (uint32_t)size, scale);
+    ispc::F32ToI32Samples(dst, src, (uint32_t)size);
+}
+void fcF32ToI32ScaleSamples(int32_t *dst, const float *src, size_t size, float scale)
+{
+    ispc::F32ToI32ScaleSamples(dst, src, (uint32_t)size, scale);
 }
 
 #endif // fcEnableISPCKernel
