@@ -17,7 +17,7 @@ namespace UTJ.FrameCapturer
             var recorder = target as RecorderBase;
             var so = serializedObject;
 
-            EditorGUILayout.PropertyField(so.FindProperty("m_resolutionUnit"));
+            EditorGUILayout.PropertyField(so.FindProperty("m_resolution"));
             EditorGUI.indentLevel++;
             if (recorder.resolutionUnit == RecorderBase.ResolutionUnit.Percent)
             {

@@ -34,8 +34,8 @@ namespace UTJ.FrameCapturer
 
         [SerializeField] protected DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
 
-        [SerializeField] protected ResolutionUnit m_resolutionUnit = ResolutionUnit.Percent;
-        [SerializeField] protected int m_resolutionPercent = 100;
+        [SerializeField] protected ResolutionUnit m_resolution = ResolutionUnit.Percent;
+        [SerializeField] [Range(1,100)] protected int m_resolutionPercent = 100;
         [SerializeField] protected int m_resolutionWidth = 1980;
 
         [SerializeField] protected FrameRateMode m_framerateMode = FrameRateMode.Constant;
@@ -68,8 +68,8 @@ namespace UTJ.FrameCapturer
 
         public ResolutionUnit resolutionUnit
         {
-            get { return m_resolutionUnit; }
-            set { m_resolutionUnit = value; }
+            get { return m_resolution; }
+            set { m_resolution = value; }
         }
         public int resolutionPercent
         {
@@ -148,7 +148,7 @@ namespace UTJ.FrameCapturer
 
         protected void GetCaptureResolution(ref int w, ref int h)
         {
-            if(m_resolutionUnit == ResolutionUnit.Percent)
+            if(m_resolution == ResolutionUnit.Percent)
             {
                 float scale = m_resolutionPercent * 0.01f;
                 w = (int)(w * scale);
@@ -162,7 +162,7 @@ namespace UTJ.FrameCapturer
             }
         }
 
-        IEnumerator Wait()
+        protected IEnumerator Wait()
         {
             yield return new WaitForEndOfFrame();
 
