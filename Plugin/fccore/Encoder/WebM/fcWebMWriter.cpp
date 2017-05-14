@@ -140,13 +140,16 @@ void fcWebMWriter::AddAudioSamples(const fcWebMFrameData& frame)
 
 void fcWebMWriter::writeOut(double timestamp_)
 {
+    if (timestamp_ < 0.0) { return; }
+
     if (m_conf.video && m_conf.audio) {
+        // must be stable sort
         std::stable_sort(m_mkvframes.begin(), m_mkvframes.end(),
             [](const MKVFramePtr& a, const MKVFramePtr& b) { return a->timestamp() < b->timestamp(); });
     }
 
     size_t num_added = 0;
-    auto timestamp = to_nsec(std::max<double>(timestamp_, 0.0));
+    auto timestamp = to_nsec(timestamp_);
     for (auto& mkvf : m_mkvframes) {
         if (mkvf->timestamp() <= timestamp) {
             m_segment.AddGenericFrame(mkvf.get());

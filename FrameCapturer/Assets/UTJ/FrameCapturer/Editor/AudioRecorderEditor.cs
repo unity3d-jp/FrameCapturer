@@ -5,7 +5,7 @@ using UnityEngine;
 namespace UTJ.FrameCapturer
 {
     [CustomEditor(typeof(AudioRecorder))]
-    public class AudioRecorderEditor : Editor
+    public class AudioRecorderEditor : RecorderBaseEditor
     {
         public override void OnInspectorGUI()
         {
@@ -19,33 +19,7 @@ namespace UTJ.FrameCapturer
 
             EditorGUILayout.Space();
 
-            // capture control
-            EditorGUILayout.PropertyField(so.FindProperty("m_captureControl"), true);
-            EditorGUI.indentLevel++;
-            if (recorder.captureControl == AudioRecorder.CaptureControl.SpecifiedRange)
-            {
-                EditorGUILayout.PropertyField(so.FindProperty("m_startFrame"), true);
-                EditorGUILayout.PropertyField(so.FindProperty("m_endFrame"), true);
-            }
-            else if (recorder.captureControl == AudioRecorder.CaptureControl.Manual)
-            {
-                EditorGUILayout.Space();
-                if (!recorder.isRecording)
-                {
-                    if (GUILayout.Button("Begin Recording"))
-                    {
-                        recorder.BeginRecording();
-                    }
-                }
-                else
-                {
-                    if (GUILayout.Button("End Recording"))
-                    {
-                        recorder.EndRecording();
-                    }
-                }
-            }
-            EditorGUI.indentLevel--;
+            RecordingControl();
 
             so.ApplyModifiedProperties();
         }

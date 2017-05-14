@@ -567,7 +567,7 @@ namespace UTJ.FrameCapturer
             public fcAudioBitsPerSample bitsPerSample;
             [Range(0,9)] public int compressionLevel;
             public int blockSize;
-            public Bool verify;
+            [HideInInspector] public Bool verify;
             [Range(1, 32)] public int maxTasks;
 
             public static fcFlacConfig default_value

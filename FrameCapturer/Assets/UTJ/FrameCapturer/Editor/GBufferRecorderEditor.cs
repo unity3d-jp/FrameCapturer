@@ -5,7 +5,7 @@ using UnityEngine;
 namespace UTJ.FrameCapturer
 {
     [CustomEditor(typeof(GBufferRecorder))]
-    public class ImageSequenceRecorderEditor : Editor
+    public class ImageSequenceRecorderEditor : RecorderBaseEditor
     {
         public override void OnInspectorGUI()
         {
@@ -53,38 +53,7 @@ namespace UTJ.FrameCapturer
 
             EditorGUILayout.Space();
 
-            // capture control
-            EditorGUILayout.PropertyField(so.FindProperty("m_captureControl"), true);
-            EditorGUI.indentLevel++;
-            if (recorder.captureControl == GBufferRecorder.CaptureControl.SpecifiedRange)
-            {
-                EditorGUILayout.PropertyField(so.FindProperty("m_startFrame"), true);
-                EditorGUILayout.PropertyField(so.FindProperty("m_endFrame"), true);
-            }
-            else if (recorder.captureControl == GBufferRecorder.CaptureControl.Manual)
-            {
-                EditorGUILayout.Space();
-                if (!recorder.isRecording)
-                {
-                    if (GUILayout.Button("Begin Recording"))
-                    {
-                        recorder.BeginRecording();
-                    }
-                    EditorGUILayout.Space();
-                    if (GUILayout.Button("One Shot"))
-                    {
-                        recorder.OneShot();
-                    }
-                }
-                else
-                {
-                    if (GUILayout.Button("End Recording"))
-                    {
-                        recorder.EndRecording();
-                    }
-                }
-            }
-            EditorGUI.indentLevel--;
+            RecordingControl();
 
             so.ApplyModifiedProperties();
         }

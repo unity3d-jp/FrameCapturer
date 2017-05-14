@@ -10,15 +10,10 @@ namespace UTJ.FrameCapturer
 
     [AddComponentMenu("UTJ/FrameCapturer/GBuffer Recorder")]
     [RequireComponent(typeof(Camera))]
-    public class GBufferRecorder : MonoBehaviour
+    [ExecuteInEditMode]
+    public class GBufferRecorder : RecorderBase
     {
         #region inner_types
-        public enum CaptureControl
-        {
-            Manual,
-            SpecifiedRange,
-        }
-
         [Serializable]
         public struct FrameBufferConponents
         {
@@ -102,14 +97,8 @@ namespace UTJ.FrameCapturer
 
 
         #region fields
-        [SerializeField] DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
         [SerializeField] MovieEncoderConfigs m_encoderConfigs = new MovieEncoderConfigs(MovieEncoder.Type.Exr);
         [SerializeField] FrameBufferConponents m_fbComponents = FrameBufferConponents.default_value;
-        [SerializeField] bool m_fixDeltaTime = true;
-        [SerializeField] int m_targetFramerate = 30;
-        [SerializeField] CaptureControl m_captureControl = CaptureControl.SpecifiedRange;
-        [SerializeField] int m_startFrame = 0;
-        [SerializeField] int m_endFrame = 100;
 
         [SerializeField] Shader m_shCopy;
         Material m_matCopy;
@@ -120,62 +109,23 @@ namespace UTJ.FrameCapturer
         CommandBuffer m_cbCopyVelocity;
         RenderTexture m_rtFB;
         RenderTexture[] m_rtGB;
-        bool m_recording;
-        bool m_oneShot;
-        double m_beginTime = 0.0;
-        int m_frame = 0;
-        int m_frameRecorded = 0;
-
         List<BufferRecorder> m_recorders = new List<BufferRecorder>();
         #endregion
 
 
         #region properties
-        public DataPath outputDir
-        {
-            get { return m_outputDir; }
-            set { m_outputDir = value; }
-        }
         public FrameBufferConponents fbComponents
         {
             get { return m_fbComponents; }
             set { m_fbComponents = value; }
         }
-        public bool fixDeltaTime
-        {
-            get { return m_fixDeltaTime; }
-            set { m_fixDeltaTime = value; }
-        }
-        public int targetFramerate
-        {
-            get { return m_targetFramerate; }
-            set { m_targetFramerate = value; }
-        }
-
-        public CaptureControl captureControl
-        {
-            get { return m_captureControl; }
-            set { m_captureControl = value; }
-        }
-        public int startFrame
-        {
-            get { return m_startFrame; }
-            set { m_startFrame = value; }
-        }
-        public int endFrame
-        {
-            get { return m_endFrame; }
-            set { m_endFrame = value; }
-        }
 
         public MovieEncoderConfigs encoderConfigs { get { return m_encoderConfigs; } }
-        public bool isRecording { get { return m_recording; } }
-        public int frame { get { return m_frame; } }
         #endregion
 
 
 
-        public bool BeginRecording()
+        public override bool BeginRecording()
         {
             if (m_recording) { return false; }
             if (m_shCopy == null)
@@ -282,14 +232,16 @@ namespace UTJ.FrameCapturer
             }
             foreach (var rec in m_recorders) { rec.Initialize(m_encoderConfigs, m_outputDir); }
 
-            m_beginTime = Time.unscaledTime;
+            m_initialTime = Time.unscaledTime;
+            m_recordedFrames = 0;
+            m_recordedSamples = 0;
             m_recording = true;
 
             Debug.Log("GBufferRecorder: BeginRecording()");
             return true;
         }
 
-        public void EndRecording()
+        public override void EndRecording()
         {
             foreach (var rec in m_recorders) { rec.Release(); }
             m_recorders.Clear();
@@ -334,99 +286,31 @@ namespace UTJ.FrameCapturer
             if (m_recording)
             {
                 m_recording = false;
+                m_aborted = true;
                 Debug.Log("GBufferRecorder: EndRecording()");
             }
         }
 
-        public void OneShot()
-        {
-            m_oneShot = true;
-        }
 
         #region impl
-        public void Export()
-        {
-            //double timestamp = Time.unscaledTime - m_beginTime;
-            double timestamp = 1.0 / m_targetFramerate * m_frameRecorded;
-            foreach (var rec in m_recorders) { rec.Update(timestamp); }
-        }
-
-
-        IEnumerator Wait()
-        {
-            yield return new WaitForEndOfFrame();
-
-            // wait until current dt reaches target dt
-            float wt = Time.maximumDeltaTime;
-            while (Time.realtimeSinceStartup - Time.unscaledTime < wt)
-            {
-                System.Threading.Thread.Sleep(1);
-            }
-        }
-
-
-
 #if UNITY_EDITOR
         void Reset()
         {
             m_shCopy = fcAPI.GetFrameBufferCopyShader();
         }
-
-        void OnValidate()
-        {
-            m_startFrame = Mathf.Max(0, m_startFrame);
-            m_endFrame = Mathf.Max(m_startFrame, m_endFrame);
-        }
 #endif // UNITY_EDITOR
-
-        void OnDisable()
-        {
-            EndRecording();
-        }
-
-        void Update()
-        {
-            if (m_captureControl == CaptureControl.SpecifiedRange)
-            {
-                if (m_frame >= m_startFrame && m_frame <= m_endFrame)
-                {
-                    if (!m_recording) { BeginRecording(); }
-                }
-                else if(m_recording)
-                {
-                    EndRecording();
-                }
-            }
-            else if (m_captureControl == CaptureControl.Manual)
-            {
-                if(m_oneShot)
-                {
-                    if (!m_recording)
-                    {
-                        BeginRecording();
-                    }
-                    else
-                    {
-                        EndRecording();
-                        m_oneShot = false;
-                    }
-                }
-            }
-
-            if (m_fixDeltaTime)
-            {
-                Time.maximumDeltaTime = (1.0f / m_targetFramerate);
-                StartCoroutine(Wait());
-            }
-        }
 
         IEnumerator OnPostRender()
         {
             if (m_recording)
             {
                 yield return new WaitForEndOfFrame();
-                Export();
-                ++m_frameRecorded;
+
+                //double timestamp = Time.unscaledTime - m_initialTime;
+                double timestamp = 1.0 / m_targetFramerate * m_recordedFrames;
+                foreach (var rec in m_recorders) { rec.Update(timestamp); }
+
+                ++m_recordedFrames;
             }
             m_frame++;
         }
