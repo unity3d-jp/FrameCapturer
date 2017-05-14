@@ -12,6 +12,12 @@ namespace UTJ.FrameCapturer
     [ExecuteInEditMode]
     public abstract class RecorderBase : MonoBehaviour
     {
+        public enum ResolutionUnit
+        {
+            Percent,
+            Pixels,
+        }
+
         public enum FrameRateMode
         {
             Variable,
@@ -27,15 +33,22 @@ namespace UTJ.FrameCapturer
 
 
         [SerializeField] protected DataPath m_outputDir = new DataPath(DataPath.Root.Current, "Capture");
+
+        [SerializeField] protected ResolutionUnit m_resolutionUnit = ResolutionUnit.Percent;
+        [SerializeField] protected int m_resolutionPercent = 100;
+        [SerializeField] protected int m_resolutionWidth = 1980;
+
         [SerializeField] protected FrameRateMode m_framerateMode = FrameRateMode.Constant;
         [SerializeField] protected int m_targetFramerate = 30;
         [SerializeField] protected bool m_fixDeltaTime = true;
         [SerializeField] protected int m_captureEveryNthFrame = 1;
+
         [SerializeField] protected CaptureControl m_captureControl = CaptureControl.FrameRange;
         [SerializeField] protected int m_startFrame = 0;
         [SerializeField] protected int m_endFrame = 100;
         [SerializeField] protected float m_startTime = 0.0f;
         [SerializeField] protected float m_endTime = 10.0f;
+
         protected bool m_recording = false;
         protected bool m_aborted = false;
         protected float m_initialTime = 0.0f;
@@ -52,6 +65,23 @@ namespace UTJ.FrameCapturer
             get { return m_outputDir; }
             set { m_outputDir = value; }
         }
+
+        public ResolutionUnit resolutionUnit
+        {
+            get { return m_resolutionUnit; }
+            set { m_resolutionUnit = value; }
+        }
+        public int resolutionPercent
+        {
+            get { return m_resolutionPercent; }
+            set { m_resolutionPercent = value; }
+        }
+        public int resolutionWidth
+        {
+            get { return m_resolutionWidth; }
+            set { m_resolutionWidth = value; }
+        }
+
         public FrameRateMode framerateMode
         {
             get { return m_framerateMode; }
@@ -115,6 +145,22 @@ namespace UTJ.FrameCapturer
         public abstract bool BeginRecording();
         public abstract void EndRecording();
 
+
+        protected void GetCaptureResolution(ref int w, ref int h)
+        {
+            if(m_resolutionUnit == ResolutionUnit.Percent)
+            {
+                float scale = m_resolutionPercent * 0.01f;
+                w = (int)(w * scale);
+                h = (int)(h * scale);
+            }
+            else
+            {
+                float aspect = (float)h / w;
+                w = m_resolutionWidth;
+                h = (int)(m_resolutionWidth * aspect);
+            }
+        }
 
         IEnumerator Wait()
         {

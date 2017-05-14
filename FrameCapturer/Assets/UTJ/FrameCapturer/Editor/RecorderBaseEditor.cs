@@ -12,6 +12,25 @@ namespace UTJ.FrameCapturer
             EditorGUILayout.PropertyField(so.FindProperty("m_encoderConfigs"), true);
         }
 
+        public virtual void ResolutionConfig()
+        {
+            var recorder = target as RecorderBase;
+            var so = serializedObject;
+
+            EditorGUILayout.PropertyField(so.FindProperty("m_resolutionUnit"));
+            EditorGUI.indentLevel++;
+            if (recorder.resolutionUnit == RecorderBase.ResolutionUnit.Percent)
+            {
+                EditorGUILayout.PropertyField(so.FindProperty("m_resolutionPercent"));
+            }
+            else if (recorder.resolutionUnit == RecorderBase.ResolutionUnit.Pixels)
+            {
+                EditorGUILayout.PropertyField(so.FindProperty("m_resolutionWidth"));
+            }
+            EditorGUI.indentLevel--;
+        }
+
+
         public virtual void RecordingControl()
         {
             var recorder = target as RecorderBase;

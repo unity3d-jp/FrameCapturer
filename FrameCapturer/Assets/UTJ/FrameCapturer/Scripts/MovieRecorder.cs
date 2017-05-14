@@ -25,7 +25,6 @@ namespace UTJ.FrameCapturer
 
         #region fields
         [SerializeField] MovieEncoderConfigs m_encoderConfigs = new MovieEncoderConfigs(MovieEncoder.Type.WebM);
-        [SerializeField] int m_resolutionWidth = -1;
         [SerializeField] CaptureTarget m_captureTarget = CaptureTarget.FrameBuffer;
         [SerializeField] RenderTexture m_targetRT;
 
@@ -53,7 +52,6 @@ namespace UTJ.FrameCapturer
         public MovieEncoderConfigs encoderConfigs { get { return m_encoderConfigs; } }
 
         public RenderTexture scratchBuffer { get { return m_scratchBuffer; } }
-        public CommandBuffer commandBuffer { get { return m_cb; } }
         #endregion
 
 
@@ -87,23 +85,9 @@ namespace UTJ.FrameCapturer
 
             // create scratch buffer
             {
-                int targetWidth = cam.pixelWidth;
-                int targetHeight = cam.pixelHeight;
-                int captureWidth = targetWidth;
-                int captureHeight = targetHeight;
-
-                if (m_resolutionWidth > 0)
-                {
-                    captureWidth = m_resolutionWidth;
-                    captureHeight = (int)((float)m_resolutionWidth / ((float)targetWidth / (float)targetHeight));
-                }
-                else if (m_resolutionWidth < 0)
-                {
-                    int div = System.Math.Abs(m_resolutionWidth);
-                    captureWidth = targetWidth / div;
-                    captureHeight = targetHeight / div;
-                }
-
+                int captureWidth = cam.pixelWidth;
+                int captureHeight = cam.pixelHeight;
+                GetCaptureResolution(ref captureWidth, ref captureHeight);
                 if (m_encoderConfigs.format == MovieEncoder.Type.MP4 ||
                     m_encoderConfigs.format == MovieEncoder.Type.WebM)
                 {
@@ -154,9 +138,8 @@ namespace UTJ.FrameCapturer
                     m_cb.SetGlobalTexture("_TmpRenderTarget", m_targetRT);
                     m_cb.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 1);
                 }
+                cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
             }
-
-            cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
 
             m_initialTime = Time.unscaledTime;
             m_recordedFrames = 0;

@@ -14,8 +14,9 @@ namespace UTJ.FrameCapturer
             var recorder = target as GBufferRecorder;
             var so = serializedObject;
 
-            EditorGUILayout.PropertyField(so.FindProperty("m_outputDir"), true);
-            EditorGUILayout.PropertyField(so.FindProperty("m_encoderConfigs"), true);
+            CommonConfig();
+            EditorGUILayout.Space();
+            ResolutionConfig();
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Capture Components");

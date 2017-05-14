@@ -12,7 +12,7 @@ namespace UTJ.FrameCapturer
             var recorder = target as MovieRecorder;
             var so = serializedObject;
 
-            EditorGUILayout.PropertyField(so.FindProperty("m_resolutionWidth"));
+            ResolutionConfig();
             EditorGUILayout.PropertyField(so.FindProperty("m_captureTarget"));
             if(recorder.captureTarget == MovieRecorder.CaptureTarget.RenderTexture)
             {

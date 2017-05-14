@@ -139,8 +139,18 @@ namespace UTJ.FrameCapturer
             if (m_matCopy == null) m_matCopy = new Material(m_shCopy);
 
             var cam = GetComponent<Camera>();
+            if (cam.targetTexture != null)
+            {
+                m_matCopy.EnableKeyword("OFFSCREEN");
+            }
+            else
+            {
+                m_matCopy.DisableKeyword("OFFSCREEN");
+            }
+
             int captureWidth = cam.pixelWidth;
             int captureHeight = cam.pixelHeight;
+            GetCaptureResolution(ref captureWidth, ref captureHeight);
             if (m_encoderConfigs.format == MovieEncoder.Type.MP4 ||
                 m_encoderConfigs.format == MovieEncoder.Type.WebM)
             {
@@ -150,68 +160,59 @@ namespace UTJ.FrameCapturer
 
             if (m_fbComponents.frameBuffer)
             {
-                if (m_cbCopyFB == null)
-                {
-                    m_rtFB = new RenderTexture(captureWidth, captureHeight, 0, RenderTextureFormat.ARGBHalf);
-                    m_rtFB.wrapMode = TextureWrapMode.Repeat;
-                    m_rtFB.Create();
+                m_rtFB = new RenderTexture(captureWidth, captureHeight, 0, RenderTextureFormat.ARGBHalf);
+                m_rtFB.wrapMode = TextureWrapMode.Repeat;
+                m_rtFB.Create();
 
-                    int tid = Shader.PropertyToID("_TmpFrameBuffer");
-                    m_cbCopyFB = new CommandBuffer();
-                    m_cbCopyFB.name = "GBufferRecorder: Copy FrameBuffer";
-                    m_cbCopyFB.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Point);
-                    m_cbCopyFB.Blit(BuiltinRenderTextureType.CurrentActive, tid);
-                    m_cbCopyFB.SetRenderTarget(m_rtFB);
-                    m_cbCopyFB.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 0);
-                    m_cbCopyFB.ReleaseTemporaryRT(tid);
-                }
+                int tid = Shader.PropertyToID("_TmpFrameBuffer");
+                m_cbCopyFB = new CommandBuffer();
+                m_cbCopyFB.name = "GBufferRecorder: Copy FrameBuffer";
+                m_cbCopyFB.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Point);
+                m_cbCopyFB.Blit(BuiltinRenderTextureType.CurrentActive, tid);
+                m_cbCopyFB.SetRenderTarget(m_rtFB);
+                m_cbCopyFB.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 0);
+                m_cbCopyFB.ReleaseTemporaryRT(tid);
                 cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cbCopyFB);
             }
             if (m_fbComponents.GBuffer)
             {
-                if (m_cbCopyGB == null)
+                m_rtGB = new RenderTexture[8];
+                for (int i = 0; i < m_rtGB.Length; ++i)
                 {
-                    m_rtGB = new RenderTexture[8];
-                    for (int i = 0; i < m_rtGB.Length; ++i)
-                    {
-                        m_rtGB[i] = new RenderTexture(captureWidth, captureHeight, 0, RenderTextureFormat.ARGBHalf);
-                        m_rtGB[i].filterMode = FilterMode.Point;
-                        m_rtGB[i].Create();
-                    }
-
-                    // clear gbuffer (Unity doesn't clear emission buffer - it is not needed usually)
-                    m_cbClearGB = new CommandBuffer();
-                    m_cbClearGB.name = "GBufferRecorder: Cleanup GBuffer";
-                    if (cam.allowHDR)
-                    {
-                        m_cbClearGB.SetRenderTarget(BuiltinRenderTextureType.CameraTarget);
-                    }
-                    else
-                    {
-                        m_cbClearGB.SetRenderTarget(BuiltinRenderTextureType.GBuffer3);
-                    }
-                    m_cbClearGB.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 3);
-
-                    // copy gbuffer
-                    m_cbCopyGB = new CommandBuffer();
-                    m_cbCopyGB.name = "GBufferRecorder: Copy GBuffer";
-                    m_cbCopyGB.SetRenderTarget(new RenderTargetIdentifier[] {
-                            m_rtGB[0], m_rtGB[1], m_rtGB[2], m_rtGB[3], m_rtGB[4], m_rtGB[5], m_rtGB[6]
-                        }, m_rtGB[0]);
-                    m_cbCopyGB.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 2);
+                    m_rtGB[i] = new RenderTexture(captureWidth, captureHeight, 0, RenderTextureFormat.ARGBHalf);
+                    m_rtGB[i].filterMode = FilterMode.Point;
+                    m_rtGB[i].Create();
                 }
+
+                // clear gbuffer (Unity doesn't clear emission buffer - it is not needed usually)
+                m_cbClearGB = new CommandBuffer();
+                m_cbClearGB.name = "GBufferRecorder: Cleanup GBuffer";
+                if (cam.allowHDR)
+                {
+                    m_cbClearGB.SetRenderTarget(BuiltinRenderTextureType.CameraTarget);
+                }
+                else
+                {
+                    m_cbClearGB.SetRenderTarget(BuiltinRenderTextureType.GBuffer3);
+                }
+                m_cbClearGB.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 3);
+
+                // copy gbuffer
+                m_cbCopyGB = new CommandBuffer();
+                m_cbCopyGB.name = "GBufferRecorder: Copy GBuffer";
+                m_cbCopyGB.SetRenderTarget(new RenderTargetIdentifier[] {
+                    m_rtGB[0], m_rtGB[1], m_rtGB[2], m_rtGB[3], m_rtGB[4], m_rtGB[5], m_rtGB[6]
+                }, m_rtGB[0]);
+                m_cbCopyGB.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 2);
                 cam.AddCommandBuffer(CameraEvent.BeforeGBuffer, m_cbClearGB);
                 cam.AddCommandBuffer(CameraEvent.BeforeLighting, m_cbCopyGB);
 
                 if (m_fbComponents.velocity)
                 {
-                    if (m_cbCopyVelocity == null)
-                    {
-                        m_cbCopyVelocity = new CommandBuffer();
-                        m_cbCopyVelocity.name = "GBufferRecorder: Copy Velocity";
-                        m_cbCopyVelocity.SetRenderTarget(m_rtGB[7]);
-                        m_cbCopyVelocity.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 4);
-                    }
+                    m_cbCopyVelocity = new CommandBuffer();
+                    m_cbCopyVelocity.name = "GBufferRecorder: Copy Velocity";
+                    m_cbCopyVelocity.SetRenderTarget(m_rtGB[7]);
+                    m_cbCopyVelocity.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 4);
                     cam.AddCommandBuffer(CameraEvent.BeforeImageEffectsOpaque, m_cbCopyVelocity);
                     cam.depthTextureMode = DepthTextureMode.Depth | DepthTextureMode.MotionVectors;
                 }
