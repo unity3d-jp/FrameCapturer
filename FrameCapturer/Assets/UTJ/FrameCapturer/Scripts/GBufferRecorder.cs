@@ -120,9 +120,11 @@ namespace UTJ.FrameCapturer
         CommandBuffer m_cbCopyVelocity;
         RenderTexture m_rtFB;
         RenderTexture[] m_rtGB;
-        int m_frame;
         bool m_recording;
         bool m_oneShot;
+        double m_beginTime = 0.0;
+        int m_frame = 0;
+        int m_frameRecorded = 0;
 
         List<BufferRecorder> m_recorders = new List<BufferRecorder>();
         #endregion
@@ -181,8 +183,6 @@ namespace UTJ.FrameCapturer
                 Debug.LogError("GBufferRecorder: copy shader is missing!");
                 return false;
             }
-
-            m_recording = true;
 
             m_outputDir.CreateDirectory();
             if (m_quad == null) m_quad = fcAPI.CreateFullscreenQuad();
@@ -282,6 +282,9 @@ namespace UTJ.FrameCapturer
             }
             foreach (var rec in m_recorders) { rec.Initialize(m_encoderConfigs, m_outputDir); }
 
+            m_beginTime = Time.unscaledTime;
+            m_recording = true;
+
             Debug.Log("GBufferRecorder: BeginRecording()");
             return true;
         }
@@ -343,7 +346,8 @@ namespace UTJ.FrameCapturer
         #region impl
         public void Export()
         {
-            double timestamp = 1.0 / m_targetFramerate * m_frame;
+            //double timestamp = Time.unscaledTime - m_beginTime;
+            double timestamp = 1.0 / m_targetFramerate * m_frameRecorded;
             foreach (var rec in m_recorders) { rec.Update(timestamp); }
         }
 
@@ -382,8 +386,6 @@ namespace UTJ.FrameCapturer
 
         void Update()
         {
-            m_frame = Time.frameCount;
-
             if (m_captureControl == CaptureControl.SpecifiedRange)
             {
                 if (m_frame >= m_startFrame && m_frame <= m_endFrame)
@@ -424,7 +426,9 @@ namespace UTJ.FrameCapturer
             {
                 yield return new WaitForEndOfFrame();
                 Export();
+                ++m_frameRecorded;
             }
+            m_frame++;
         }
         #endregion
     }

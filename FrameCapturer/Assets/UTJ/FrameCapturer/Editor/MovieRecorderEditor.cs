@@ -55,21 +55,54 @@ namespace UTJ.FrameCapturer
             EditorGUILayout.Space();
 
             // capture control
-            EditorGUILayout.PropertyField(so.FindProperty("m_captureControl"), true);
+            EditorGUILayout.PropertyField(so.FindProperty("m_captureControl"));
             EditorGUI.indentLevel++;
-            if (recorder.captureControl == MovieRecorder.CaptureControl.SpecifiedRange)
+            if (recorder.captureControl == MovieRecorder.CaptureControl.FrameRange)
             {
-                EditorGUILayout.PropertyField(so.FindProperty("m_startFrame"), true);
-                EditorGUILayout.PropertyField(so.FindProperty("m_endFrame"), true);
+                EditorGUILayout.PropertyField(so.FindProperty("m_startFrame"));
+                EditorGUILayout.PropertyField(so.FindProperty("m_endFrame"));
+            }
+            else if (recorder.captureControl == MovieRecorder.CaptureControl.TimeRange)
+            {
+                EditorGUILayout.PropertyField(so.FindProperty("m_startTime"));
+                EditorGUILayout.PropertyField(so.FindProperty("m_endTime"));
+            }
+
+            if( recorder.captureControl == MovieRecorder.CaptureControl.FrameRange ||
+                recorder.captureControl == MovieRecorder.CaptureControl.TimeRange)
+            {
+                if (!EditorApplication.isPlaying)
+                {
+                    EditorGUILayout.Space();
+                    if (GUILayout.Button("Play"))
+                    {
+                        EditorApplication.isPlaying = true;
+                    }
+                }
+                else if(recorder.isRecording)
+                {
+                    if (GUILayout.Button("Abort"))
+                    {
+                        recorder.EndRecording();
+                    }
+                }
             }
             else if (recorder.captureControl == MovieRecorder.CaptureControl.Manual)
             {
                 EditorGUILayout.Space();
                 if (!recorder.isRecording)
                 {
-                    if (GUILayout.Button("Begin Recording"))
+                    if (GUILayout.Button("Start Recording"))
                     {
-                        recorder.BeginRecording();
+                        if (!EditorApplication.isPlaying)
+                        {
+                            recorder.recordingOnStart = true;
+                            EditorApplication.isPlaying = true;
+                        }
+                        else
+                        {
+                            recorder.BeginRecording();
+                        }
                     }
                 }
                 else

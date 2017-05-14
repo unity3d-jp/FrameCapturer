@@ -2,12 +2,16 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 
 namespace UTJ.FrameCapturer
 {
     [AddComponentMenu("UTJ/FrameCapturer/Movie Recorder")]
     [RequireComponent(typeof(Camera))]
+    [ExecuteInEditMode]
     public class MovieRecorder : MonoBehaviour
     {
         #region inner_types
@@ -26,7 +30,8 @@ namespace UTJ.FrameCapturer
         public enum CaptureControl
         {
             Manual,
-            SpecifiedRange,
+            FrameRange,
+            TimeRange,
         }
         #endregion
 
@@ -46,9 +51,11 @@ namespace UTJ.FrameCapturer
         [SerializeField] int m_captureEveryNthFrame = 1;
 
         // capture control
-        [SerializeField] CaptureControl m_captureControl = CaptureControl.SpecifiedRange;
+        [SerializeField] CaptureControl m_captureControl = CaptureControl.FrameRange;
         [SerializeField] int m_startFrame = 0;
         [SerializeField] int m_endFrame = 100;
+        [SerializeField] float m_startTime = 0.0f;
+        [SerializeField] float m_endTime = 10.0f;
 
         // internal
         [SerializeField] Shader m_shCopy;
@@ -58,10 +65,15 @@ namespace UTJ.FrameCapturer
         CommandBuffer m_cb;
         RenderTexture m_scratchBuffer;
         bool m_recording = false;
-        double m_beginTime = 0.0;
-        int m_numVideoFrames = 0;
-
+        bool m_aborted = false;
+        float m_initialTime = 0.0f;
+        int m_frame = 0;
+        int m_frameRecorded = 0;
         MovieEncoder m_encoder;
+
+#if UNITY_EDITOR
+        [SerializeField] bool m_recordingOnStart = false;
+#endif
         #endregion
 
 
@@ -122,6 +134,9 @@ namespace UTJ.FrameCapturer
         public RenderTexture scratchBuffer { get { return m_scratchBuffer; } }
         public CommandBuffer commandBuffer { get { return m_cb; } }
         public bool isRecording { get { return m_recording; } }
+#if UNITY_EDITOR
+        public bool recordingOnStart { set { m_recordingOnStart = value; } }
+#endif
         #endregion
 
 
@@ -152,9 +167,6 @@ namespace UTJ.FrameCapturer
             {
                 m_matCopy.DisableKeyword("OFFSCREEN");
             }
-
-            m_beginTime = Time.unscaledTime;
-            m_numVideoFrames = 0;
 
             // create scratch buffer
             {
@@ -229,7 +241,9 @@ namespace UTJ.FrameCapturer
 
             cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
 
+            m_initialTime = Time.unscaledTime;
             m_recording = true;
+
             Debug.Log("MovieRecorder: BeginRecording()");
             return true;
         }
@@ -256,6 +270,7 @@ namespace UTJ.FrameCapturer
             if(m_recording)
             {
                 m_recording = false;
+                m_aborted = true;
                 Debug.Log("MovieRecorder: EndRecording()");
             }
         }
@@ -285,37 +300,71 @@ namespace UTJ.FrameCapturer
         {
             m_startFrame = Mathf.Max(0, m_startFrame);
             m_endFrame = Mathf.Max(m_startFrame, m_endFrame);
+            m_startTime = Mathf.Max(0.0f, m_startTime);
+            m_endTime = Mathf.Max(m_startTime, m_endTime);
         }
 
 #endif // UNITY_EDITOR
 
+        void Start()
+        {
+#if UNITY_EDITOR
+            if(EditorApplication.isPlaying && m_recordingOnStart)
+            {
+                BeginRecording();
+            }
+            m_recordingOnStart = false;
+#endif
+        }
+
         void OnDisable()
         {
-            EndRecording();
+#if UNITY_EDITOR
+            if (EditorApplication.isPlaying)
+#endif
+            {
+                EndRecording();
+            }
         }
 
         void Update()
         {
-            int frame = Time.frameCount;
-            if (m_captureControl == CaptureControl.SpecifiedRange)
+#if UNITY_EDITOR
+            if (EditorApplication.isPlaying)
+#endif
             {
-                if (frame >= m_startFrame && frame <= m_endFrame)
+                if (m_captureControl == CaptureControl.FrameRange)
                 {
-                    if (!m_recording) { BeginRecording(); }
+                    if (!m_aborted && m_frame >= m_startFrame && m_frame <= m_endFrame)
+                    {
+                        if (!m_recording) { BeginRecording(); }
+                    }
+                    else if (m_recording)
+                    {
+                        EndRecording();
+                    }
                 }
-                else if (m_recording)
+                else if (m_captureControl == CaptureControl.TimeRange)
                 {
-                    EndRecording();
+                    float time = Time.unscaledTime - m_initialTime;
+                    if (!m_aborted && time >= m_startTime && time <= m_endTime)
+                    {
+                        if (!m_recording) { BeginRecording(); }
+                    }
+                    else if (m_recording)
+                    {
+                        EndRecording();
+                    }
                 }
-            }
-            else if (m_captureControl == CaptureControl.Manual)
-            {
-            }
+                else if (m_captureControl == CaptureControl.Manual)
+                {
+                }
 
-            if (m_fixDeltaTime)
-            {
-                Time.maximumDeltaTime = (1.0f / m_targetFramerate);
-                StartCoroutine(Wait());
+                if (m_fixDeltaTime)
+                {
+                    Time.maximumDeltaTime = (1.0f / m_targetFramerate);
+                    StartCoroutine(Wait());
+                }
             }
         }
 
@@ -325,17 +374,19 @@ namespace UTJ.FrameCapturer
             {
                 yield return new WaitForEndOfFrame();
 
-                double timestamp = Time.unscaledTime - m_beginTime;
+                double timestamp = Time.unscaledTime - m_initialTime;
                 if (m_framerateMode == FrameRateMode.Constant)
                 {
-                    timestamp = 1.0 / m_targetFramerate * m_numVideoFrames;
+                    timestamp = 1.0 / m_targetFramerate * m_frameRecorded;
                 }
 
-                fcAPI.fcLock(m_scratchBuffer, TextureFormat.RGB24, (data, fmt) => {
+                fcAPI.fcLock(m_scratchBuffer, TextureFormat.RGB24, (data, fmt) =>
+                {
                     m_encoder.AddVideoFrame(data, fmt, timestamp);
                 });
-                m_numVideoFrames++;
+                ++m_frameRecorded;
             }
+            ++m_frame;
         }
 
         void OnAudioFilterRead(float[] samples, int channels)
