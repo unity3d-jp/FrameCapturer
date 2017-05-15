@@ -20,42 +20,43 @@ public:
     using VideoBuffers      = SharedResources<VideoBuffer>;
     using AudioBuffer       = RawVector<float>;
     using AudioBuffers      = SharedResources<AudioBuffer>;
+    using MKVFramePtr       = std::unique_ptr<mkvmuxer::Frame>;
+    using MKVFramePtrs      = std::vector<MKVFramePtr>;
 
 
     fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd);
-    ~fcWebMContext() override;
-
     void addOutputStream(fcStream *s) override;
     bool addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp) override;
     bool addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp) override;
-    bool addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp);
-    void flushVideo();
-
     bool addAudioSamples(const float *samples, int num_samples) override;
-    void flushAudio();
 
-    // Body: [](fcIWebMWriter& writer) {}
-    template<class Body>
-    void eachStreams(const Body &b)
-    {
-        for (auto& s : m_writers) { b(*s); }
-    }
+private:
+    ~fcWebMContext() override;
+    void addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp);
+    void flushVideo();
+    void flushAudio();
+    void addMkvFrames(fcWebMFrameData& data, int track, double& last_timestamp);
+    void writeOut(double timestamp);
 
 private:
     fcWebMConfig        m_conf;
     fcIGraphicsDevice   *m_gdev = nullptr;
 
+    std::mutex          m_mutex;
     WriterPtrs          m_writers;
+    MKVFramePtrs        m_mkv_frames;
 
     TaskQueue           m_video_tasks;
     VideoEncoderPtr     m_video_encoder;
     VideoBuffers        m_video_buffers;
     fcWebMFrameData     m_video_frame;
+    double              m_video_last_timestamp = 0.0;
 
     TaskQueue           m_audio_tasks;
     AudioEncoderPtr     m_audio_encoder;
     AudioBuffers        m_audio_buffers;
     fcWebMFrameData     m_audio_frame;
+    double              m_audio_last_timestamp = 0.0;
 };
 
 
@@ -117,7 +118,15 @@ fcWebMContext::~fcWebMContext()
 {
     flushVideo();
     flushAudio();
+    m_video_tasks.wait();
+    m_audio_tasks.wait();
+
+    if (m_conf.video) {
+        writeOut(m_video_last_timestamp);
+    }
+    m_mkv_frames.clear();
     m_writers.clear();
+
     m_video_encoder.reset();
     m_audio_encoder.reset();
 }
@@ -163,17 +172,16 @@ bool fcWebMContext::addVideoFramePixels(const void *pixels, fcPixelFormat fmt, f
     return true;
 }
 
-bool fcWebMContext::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp)
+void fcWebMContext::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp)
 {
-    // encode!
     if (m_video_encoder->encode(m_video_frame, pixels, fmt, timestamp)) {
-        eachStreams([&](fcWebMWriter& writer) {
-            writer.addVideoFrame(m_video_frame);
-        });
+        {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            addMkvFrames(m_video_frame, fcWebMWriter::VideoTrackIndex, m_video_last_timestamp);
+            writeOut(m_video_last_timestamp - 1.0);
+        }
         m_video_frame.clear();
     }
-
-    return true;
 }
 
 void fcWebMContext::flushVideo()
@@ -182,13 +190,13 @@ void fcWebMContext::flushVideo()
 
     m_video_tasks.run([this]() {
         if (m_video_encoder->flush(m_video_frame)) {
-            eachStreams([&](fcWebMWriter& writer) {
-                writer.addVideoFrame(m_video_frame);
-            });
+            {
+                std::unique_lock<std::mutex> lock(m_mutex);
+                addMkvFrames(m_video_frame, fcWebMWriter::VideoTrackIndex, m_video_last_timestamp);
+            }
             m_video_frame.clear();
         }
     });
-    m_video_tasks.wait();
 }
 
 
@@ -201,9 +209,13 @@ bool fcWebMContext::addAudioSamples(const float *samples, int num_samples)
 
     m_audio_tasks.run([this, buf]() {
         if (m_audio_encoder->encode(m_audio_frame, buf->data(), buf->size())) {
-            eachStreams([&](fcWebMWriter& writer) {
-                writer.addAudioSamples(m_audio_frame);
-            });
+            {
+                std::unique_lock<std::mutex> lock(m_mutex);
+                addMkvFrames(m_audio_frame, fcWebMWriter::AudioTrackIndex, m_audio_last_timestamp);
+                if (!m_conf.video) {
+                    writeOut(m_audio_last_timestamp);
+                }
+            }
             m_audio_frame.clear();
         }
     });
@@ -216,14 +228,56 @@ void fcWebMContext::flushAudio()
 
     m_audio_tasks.run([this]() {
         if (m_audio_encoder->flush(m_audio_frame)) {
-            eachStreams([&](fcWebMWriter& writer) {
-                writer.addAudioSamples(m_audio_frame);
-            });
+            {
+                std::unique_lock<std::mutex> lock(m_mutex);
+                addMkvFrames(m_audio_frame, fcWebMWriter::AudioTrackIndex, m_audio_last_timestamp);
+                if (!m_conf.video) {
+                    writeOut(m_audio_last_timestamp);
+                }
+            }
             m_audio_frame.clear();
         }
     });
-    m_audio_tasks.wait();
 }
+
+void fcWebMContext::addMkvFrames(fcWebMFrameData& fd, int track, double& last_timestamp)
+{
+    fd.eachPackets([this, track, &last_timestamp](const char *data, const fcWebMPacketInfo& pinfo) {
+        last_timestamp = pinfo.timestamp;
+        auto mkvf = new mkvmuxer::Frame();
+        mkvf->Init((const uint8_t*)data, pinfo.size);
+        mkvf->set_track_number(track);
+        mkvf->set_timestamp(to_nsec(last_timestamp));
+        mkvf->set_is_key(pinfo.keyframe);
+        m_mkv_frames.emplace_back(mkvf);
+    });
+}
+
+void fcWebMContext::writeOut(double timestamp_)
+{
+    if (timestamp_ < 0.0) { return; }
+
+    if (m_conf.video && m_conf.audio) {
+        std::stable_sort(m_mkv_frames.begin(), m_mkv_frames.end(),
+            [](const MKVFramePtr& a, const MKVFramePtr& b) { return a->timestamp() < b->timestamp(); });
+    }
+
+    int num_added = 0;
+    auto timestamp = to_nsec(timestamp_);
+    for (auto& mkvf : m_mkv_frames) {
+        if (mkvf->timestamp() <= timestamp) {
+            for (auto& w : m_writers) {
+                w->addFrame(*mkvf);
+            }
+            ++num_added;
+        }
+        else {
+            break;
+        }
+    }
+    m_mkv_frames.erase(m_mkv_frames.begin(), m_mkv_frames.begin() + num_added);
+}
+
 
 
 fcIWebMContext* fcWebMCreateContextImpl(fcWebMConfig &conf, fcIGraphicsDevice *gd) { return new fcWebMContext(conf, gd); }
