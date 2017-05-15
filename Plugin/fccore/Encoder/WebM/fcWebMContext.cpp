@@ -178,7 +178,12 @@ void fcWebMContext::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fm
         {
             std::unique_lock<std::mutex> lock(m_mutex);
             addMkvFrames(m_video_frame, fcWebMWriter::VideoTrackIndex, m_video_last_timestamp);
-            writeOut(m_video_last_timestamp - 1.0);
+            if (!m_conf.audio) {
+                writeOut(m_video_last_timestamp);
+            }
+            else {
+                writeOut(std::min<double>(m_video_last_timestamp, m_audio_last_timestamp) - 1.0);
+            }
         }
         m_video_frame.clear();
     }

@@ -12,7 +12,7 @@ namespace UTJ.FrameCapturer
             EditorGUILayout.PropertyField(so.FindProperty("m_encoderConfigs"), true);
         }
 
-        public virtual void ResolutionConfig()
+        public virtual void ResolutionControl()
         {
             var recorder = target as RecorderBase;
             var so = serializedObject;
@@ -30,6 +30,26 @@ namespace UTJ.FrameCapturer
             EditorGUI.indentLevel--;
         }
 
+        public virtual void FramerateControl()
+        {
+            var recorder = target as RecorderBase;
+            var so = serializedObject;
+
+            EditorGUILayout.PropertyField(so.FindProperty("m_framerateMode"));
+            if (recorder.framerateMode == MovieRecorder.FrameRateMode.Constant)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(so.FindProperty("m_targetFramerate"));
+                EditorGUILayout.PropertyField(so.FindProperty("m_fixDeltaTime"));
+                if (recorder.fixDeltaTime)
+                {
+                    EditorGUI.indentLevel++;
+                    EditorGUILayout.PropertyField(so.FindProperty("m_waitDeltaTime"));
+                    EditorGUI.indentLevel--;
+                }
+                EditorGUI.indentLevel--;
+            }
+        }
 
         public virtual void RecordingControl()
         {

@@ -15,8 +15,6 @@ namespace UTJ.FrameCapturer
             var so = serializedObject;
 
             CommonConfig();
-            EditorGUILayout.Space();
-            ResolutionConfig();
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Capture Components");
@@ -44,13 +42,8 @@ namespace UTJ.FrameCapturer
 
             EditorGUILayout.Space();
 
-            EditorGUILayout.PropertyField(so.FindProperty("m_fixDeltaTime"), true);
-            if(recorder.fixDeltaTime)
-            {
-                EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(so.FindProperty("m_targetFramerate"), true);
-                EditorGUI.indentLevel--;
-            }
+            ResolutionControl();
+            FramerateControl();
 
             EditorGUILayout.Space();
 

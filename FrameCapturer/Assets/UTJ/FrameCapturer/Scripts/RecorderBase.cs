@@ -41,6 +41,7 @@ namespace UTJ.FrameCapturer
         [SerializeField] protected FrameRateMode m_framerateMode = FrameRateMode.Constant;
         [SerializeField] protected int m_targetFramerate = 30;
         [SerializeField] protected bool m_fixDeltaTime = true;
+        [SerializeField] protected bool m_waitDeltaTime = true;
         [SerializeField] protected int m_captureEveryNthFrame = 1;
 
         [SerializeField] protected CaptureControl m_captureControl = CaptureControl.FrameRange;
@@ -51,7 +52,9 @@ namespace UTJ.FrameCapturer
 
         protected bool m_recording = false;
         protected bool m_aborted = false;
+        protected int m_initialFrame = 0;
         protected float m_initialTime = 0.0f;
+        protected float m_initialRealTime = 0.0f;
         protected int m_frame = 0;
         protected int m_recordedFrames = 0;
         protected int m_recordedSamples = 0;
@@ -96,6 +99,11 @@ namespace UTJ.FrameCapturer
         {
             get { return m_fixDeltaTime; }
             set { m_fixDeltaTime = value; }
+        }
+        public bool waitDeltaTime
+        {
+            get { return m_waitDeltaTime; }
+            set { m_waitDeltaTime = value; }
         }
         public int captureEveryNthFrame
         {
@@ -142,8 +150,44 @@ namespace UTJ.FrameCapturer
 
 
 
-        public abstract bool BeginRecording();
-        public abstract void EndRecording();
+        public virtual bool BeginRecording()
+        {
+            if(m_recording) { return false; }
+
+            // delta time control
+            if (m_framerateMode == FrameRateMode.Constant && m_fixDeltaTime)
+            {
+                Time.maximumDeltaTime = (1.0f / m_targetFramerate);
+                if (!m_waitDeltaTime)
+                {
+                    Time.captureFramerate = m_targetFramerate;
+                }
+            }
+
+            m_initialFrame = Time.renderedFrameCount;
+            m_initialTime = Time.unscaledTime;
+            m_initialRealTime = Time.realtimeSinceStartup;
+            m_recordedFrames = 0;
+            m_recordedSamples = 0;
+            m_recording = true;
+            return true;
+        }
+
+        public virtual void EndRecording()
+        {
+            if (!m_recording) { return; }
+
+            if (m_framerateMode == FrameRateMode.Constant && m_fixDeltaTime)
+            {
+                if (!m_waitDeltaTime)
+                {
+                    Time.captureFramerate = 0;
+                }
+            }
+
+            m_recording = false;
+            m_aborted = true;
+        }
 
 
         protected void GetCaptureResolution(ref int w, ref int h)
@@ -156,9 +200,8 @@ namespace UTJ.FrameCapturer
             }
             else
             {
-                float aspect = (float)h / w;
                 w = m_resolutionWidth;
-                h = (int)(m_resolutionWidth * aspect);
+                h = (int)(m_resolutionWidth * ((float)h / w));
             }
         }
 
@@ -166,9 +209,8 @@ namespace UTJ.FrameCapturer
         {
             yield return new WaitForEndOfFrame();
 
-            // wait until current dt reaches target dt
-            float wt = Time.maximumDeltaTime;
-            while (Time.realtimeSinceStartup - Time.unscaledTime < wt)
+            float wt = (1.0f / m_targetFramerate) * (Time.renderedFrameCount - m_initialFrame);
+            while (Time.realtimeSinceStartup - m_initialRealTime < wt)
             {
                 System.Threading.Thread.Sleep(1);
             }
@@ -193,6 +235,9 @@ namespace UTJ.FrameCapturer
             }
             m_recordOnStart = false;
 #endif
+            m_initialFrame = Time.renderedFrameCount;
+            m_initialTime = Time.unscaledTime;
+            m_initialRealTime = Time.realtimeSinceStartup;
         }
 
         protected virtual void OnDisable()
@@ -238,9 +283,8 @@ namespace UTJ.FrameCapturer
                 {
                 }
 
-                if (m_fixDeltaTime)
+                if(m_framerateMode == FrameRateMode.Constant && m_fixDeltaTime && m_waitDeltaTime)
                 {
-                    Time.maximumDeltaTime = (1.0f / m_targetFramerate);
                     StartCoroutine(Wait());
                 }
             }

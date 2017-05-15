@@ -233,10 +233,7 @@ namespace UTJ.FrameCapturer
             }
             foreach (var rec in m_recorders) { rec.Initialize(m_encoderConfigs, m_outputDir); }
 
-            m_initialTime = Time.unscaledTime;
-            m_recordedFrames = 0;
-            m_recordedSamples = 0;
-            m_recording = true;
+            base.BeginRecording();
 
             Debug.Log("GBufferRecorder: BeginRecording()");
             return true;
@@ -244,6 +241,8 @@ namespace UTJ.FrameCapturer
 
         public override void EndRecording()
         {
+            if (!m_recording) { return; }
+
             foreach (var rec in m_recorders) { rec.Release(); }
             m_recorders.Clear();
 
@@ -284,12 +283,8 @@ namespace UTJ.FrameCapturer
                 m_rtGB = null;
             }
 
-            if (m_recording)
-            {
-                m_recording = false;
-                m_aborted = true;
-                Debug.Log("GBufferRecorder: EndRecording()");
-            }
+            base.EndRecording();
+            Debug.Log("GBufferRecorder: EndRecording()");
         }
 
 

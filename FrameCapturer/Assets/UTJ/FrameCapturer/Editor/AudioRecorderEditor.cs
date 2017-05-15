@@ -9,15 +9,12 @@ namespace UTJ.FrameCapturer
     {
         public override void OnInspectorGUI()
         {
-            //DrawDefaultInspector();
-
-            var recorder = target as AudioRecorder;
             var so = serializedObject;
 
             CommonConfig();
-
             EditorGUILayout.Space();
-
+            FramerateControl();
+            EditorGUILayout.Space();
             RecordingControl();
 
             so.ApplyModifiedProperties();

@@ -141,18 +141,16 @@ namespace UTJ.FrameCapturer
                 cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cb);
             }
 
-            m_initialTime = Time.unscaledTime;
-            m_recordedFrames = 0;
-            m_recordedSamples = 0;
-            m_recording = true;
-
+            base.BeginRecording();
             Debug.Log("MovieRecorder: BeginRecording()");
             return true;
         }
 
         public override void EndRecording()
         {
-            if(m_encoder != null)
+            if (!m_recording) { return; }
+
+            if (m_encoder != null)
             {
                 m_encoder.Release();
                 m_encoder = null;
@@ -169,12 +167,8 @@ namespace UTJ.FrameCapturer
                 m_scratchBuffer = null;
             }
 
-            if(m_recording)
-            {
-                m_recording = false;
-                m_aborted = true;
-                Debug.Log("MovieRecorder: EndRecording()");
-            }
+            base.EndRecording();
+            Debug.Log("MovieRecorder: EndRecording()");
         }
 
 

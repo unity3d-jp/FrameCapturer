@@ -12,7 +12,6 @@ namespace UTJ.FrameCapturer
             var recorder = target as MovieRecorder;
             var so = serializedObject;
 
-            ResolutionConfig();
             EditorGUILayout.PropertyField(so.FindProperty("m_captureTarget"));
             if(recorder.captureTarget == MovieRecorder.CaptureTarget.RenderTexture)
             {
@@ -21,14 +20,7 @@ namespace UTJ.FrameCapturer
                 EditorGUI.indentLevel--;
             }
 
-            EditorGUILayout.PropertyField(so.FindProperty("m_framerateMode"));
-            if(recorder.framerateMode == MovieRecorder.FrameRateMode.Constant)
-            {
-                EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(so.FindProperty("m_targetFramerate"));
-                EditorGUILayout.PropertyField(so.FindProperty("m_fixDeltaTime"));
-                EditorGUI.indentLevel--;
-            }
+            ResolutionControl();
             EditorGUILayout.PropertyField(so.FindProperty("m_captureEveryNthFrame"));
         }
 
@@ -59,7 +51,7 @@ namespace UTJ.FrameCapturer
             }
             else if (ec.supportVideo && ec.supportAudio)
             {
-                ec.captureVideo = EditorGUILayout.Toggle("Video", ec.captureVideo);
+                ec.captureVideo = EditorGUILayout.Toggle("Capture Video", ec.captureVideo);
                 if(ec.captureVideo)
                 {
                     EditorGUI.indentLevel++;
@@ -68,7 +60,7 @@ namespace UTJ.FrameCapturer
                 }
                 EditorGUILayout.Space();
 
-                ec.captureAudio = EditorGUILayout.Toggle("Audio", ec.captureAudio);
+                ec.captureAudio = EditorGUILayout.Toggle("Capture Audio", ec.captureAudio);
                 if (ec.captureAudio)
                 {
                     EditorGUI.indentLevel++;
@@ -78,7 +70,8 @@ namespace UTJ.FrameCapturer
             }
 
             EditorGUILayout.Space();
-
+            FramerateControl();
+            EditorGUILayout.Space();
             RecordingControl();
 
             so.ApplyModifiedProperties();
