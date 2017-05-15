@@ -19,6 +19,7 @@ struct WebMTestContext
 
     WebMTestContext(const fcWebMConfig& conf);
     ~WebMTestContext();
+    static void Release(void *_this);
 };
 
 WebMTestContext::WebMTestContext(const fcWebMConfig& conf)
@@ -26,8 +27,8 @@ WebMTestContext::WebMTestContext(const fcWebMConfig& conf)
     const char *video_encoder_name = nullptr;
     const char *audio_encoder_name = nullptr;
     switch (conf.video_encoder) {
-    case fcWebMVideoEncoder::VP8: video_encoder_name = "VP8"; break;
-    case fcWebMVideoEncoder::VP9: video_encoder_name = "VP9"; break;
+    case fcWebMVideoEncoder::VPX_VP8: video_encoder_name = "VP8"; break;
+    case fcWebMVideoEncoder::VPX_VP9: video_encoder_name = "VP9"; break;
     }
     switch (conf.audio_encoder) {
     case fcWebMAudioEncoder::Vorbis: audio_encoder_name = "Vorbis"; break;
@@ -56,7 +57,7 @@ WebMTestContext::~WebMTestContext()
     fclose(ofile);
 }
 
-static void ReleaseWebMTestContext(void *_this)
+void WebMTestContext::Release(void *_this)
 {
     delete (WebMTestContext*)_this;
 }
@@ -91,7 +92,7 @@ void WebMTest(fcWebMVideoEncoder ve, fcWebMAudioEncoder ae)
     fcWebMAddOutputStream(ctx, testctx->fstream);
     fcWebMAddOutputStream(ctx, testctx->mstream);
     fcWebMAddOutputStream(ctx, testctx->cstream);
-    fcSetOnDeleteCallback(ctx, &ReleaseWebMTestContext, testctx);
+    fcSetOnDeleteCallback(ctx, &WebMTestContext::Release, testctx);
 
     // create movie data
     {
@@ -136,11 +137,11 @@ void WebMTest()
     }
 
     printf("WebMTest (VP8 & Vorbis) begin\n");
-    WebMTest(fcWebMVideoEncoder::VP8, fcWebMAudioEncoder::Vorbis);
+    WebMTest(fcWebMVideoEncoder::VPX_VP8, fcWebMAudioEncoder::Vorbis);
     printf("WebMTest (VP8 & Vorbis) end\n");
 
     printf("WebMTest (VP9 & Opus) begin\n");
-    WebMTest(fcWebMVideoEncoder::VP9, fcWebMAudioEncoder::Opus);
+    WebMTest(fcWebMVideoEncoder::VPX_VP9, fcWebMAudioEncoder::Opus);
     printf("WebMTest (VP9 & Opus) end\n");
 }
 

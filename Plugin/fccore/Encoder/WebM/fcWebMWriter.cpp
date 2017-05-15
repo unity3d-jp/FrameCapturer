@@ -5,7 +5,6 @@
 #include "fcWebMInternal.h"
 #include "fcWebMWriter.h"
 
-#include "mkvmuxer.hpp"
 #ifdef _MSC_VER
     #pragma comment(lib, "libwebm.lib")
 #endif // _MSC_VER
@@ -26,37 +25,9 @@ private:
 };
 
 
-class fcWebMWriter : public fcIWebMWriter
-{
-public:
-    fcWebMWriter(BinaryStream *stream, const fcWebMConfig &conf, const fcIWebMEncoderInfo* vinfo, const fcIWebMEncoderInfo* ainfo);
-    ~fcWebMWriter() override;
-    void addVideoFrame(const fcWebMFrameData& buf) override;
-    void addAudioSamples(const fcWebMFrameData& buf) override;
-
-    void writeOut(double timestamp);
-
-private:
-    using StreamPtr = std::unique_ptr<fcMkvStream>;
-    using MKVFramePtr = std::unique_ptr<mkvmuxer::Frame>;
-
-    fcWebMConfig m_conf;
-    StreamPtr m_stream;
-    std::mutex m_mutex;
-
-    mkvmuxer::Segment m_segment;
-    uint64_t m_video_track_id = 0;
-    uint64_t m_audio_track_id = 0;
-
-    std::vector<MKVFramePtr> m_mkvframes;
-    double m_timestamp_video_last = 0.0;
-    double m_timestamp_audio_last = 0.0;
-};
-
-
 fcWebMWriter::fcWebMWriter(
     BinaryStream *stream, const fcWebMConfig &conf,
-    const fcIWebMEncoderInfo* vinfo, const fcIWebMEncoderInfo* ainfo)
+    const fcIWebMVideoEncoder *vinfo, const fcIWebMAudioEncoder *ainfo)
     : m_conf(conf)
     , m_stream(new fcMkvStream(stream))
 {
@@ -165,13 +136,6 @@ void fcWebMWriter::writeOut(double timestamp_)
         }
     }
     m_mkvframes.erase(m_mkvframes.begin(), m_mkvframes.begin() + num_added);
-}
-
-
-fcIWebMWriter* fcCreateWebMWriter(
-    BinaryStream *stream, const fcWebMConfig &conf, const fcIWebMEncoderInfo* vinfo, const fcIWebMEncoderInfo* ainfo)
-{
-    return new fcWebMWriter(stream, conf, vinfo, ainfo);
 }
 
 #endif // fcSupportWebM

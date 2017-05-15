@@ -261,9 +261,9 @@ class fcIWebMContext;
 
 enum class fcWebMVideoEncoder
 {
-    VP8,
-    VP9,
-    VP9LossLess,
+    VPX_VP8,
+    VPX_VP9,
+    VPX_VP9LossLess,
 };
 enum class fcWebMAudioEncoder
 {
@@ -274,7 +274,7 @@ enum class fcWebMAudioEncoder
 struct fcWebMConfig
 {
     bool video = true;
-    fcWebMVideoEncoder video_encoder = fcWebMVideoEncoder::VP8;
+    fcWebMVideoEncoder video_encoder = fcWebMVideoEncoder::VPX_VP8;
     int video_width = 0;
     int video_height = 0;
     int video_target_framerate = 60;

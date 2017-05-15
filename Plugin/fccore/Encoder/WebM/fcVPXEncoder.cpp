@@ -42,12 +42,12 @@ fcVPXEncoder::fcVPXEncoder(const fcVPXEncoderConfig& conf, fcWebMVideoEncoder en
     : m_conf(conf)
 {
     switch (encoder) {
-    case fcWebMVideoEncoder::VP8:
+    case fcWebMVideoEncoder::VPX_VP8:
         m_matroska_codec_id = "V_VP8";
         m_vpx_iface = vpx_codec_vp8_cx();
         break;
-    case fcWebMVideoEncoder::VP9:
-    case fcWebMVideoEncoder::VP9LossLess:
+    case fcWebMVideoEncoder::VPX_VP9:
+    case fcWebMVideoEncoder::VPX_VP9LossLess:
         m_matroska_codec_id = "V_VP9";
         m_vpx_iface = vpx_codec_vp9_cx();
         break;
@@ -61,7 +61,7 @@ fcVPXEncoder::fcVPXEncoder(const fcVPXEncoderConfig& conf, fcWebMVideoEncoder en
     vpx_config.g_timebase.den = 1000000000; // nsec
     vpx_config.rc_target_bitrate = m_conf.target_bitrate;
 
-    if (encoder != fcWebMVideoEncoder::VP9LossLess) {
+    if (encoder != fcWebMVideoEncoder::VPX_VP9LossLess) {
         switch (conf.bitrate_mode) {
         case fcBitrateMode::CBR:
             vpx_config.rc_end_usage = VPX_CBR;
@@ -72,7 +72,7 @@ fcVPXEncoder::fcVPXEncoder(const fcVPXEncoderConfig& conf, fcWebMVideoEncoder en
         }
     }
     vpx_codec_enc_init(&m_vpx_ctx, m_vpx_iface, &vpx_config, 0);
-    if (encoder == fcWebMVideoEncoder::VP9LossLess) {
+    if (encoder == fcWebMVideoEncoder::VPX_VP9LossLess) {
         vpx_codec_control_(&m_vpx_ctx, VP9E_SET_LOSSLESS, 1);
     }
 
@@ -148,15 +148,15 @@ void fcVPXEncoder::gatherFrameData(fcWebMFrameData& dst)
 }
 
 
-fcIWebMVideoEncoder* fcCreateVP8EncoderVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP8); }
-fcIWebMVideoEncoder* fcCreateVP9EncoderVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP9); }
-fcIWebMVideoEncoder* fcCreateVP9LossLessEncoderVPX(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VP9LossLess); }
+fcIWebMVideoEncoder* fcCreateVPXVP8Encoder(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VPX_VP8); }
+fcIWebMVideoEncoder* fcCreateVPXVP9Encoder(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VPX_VP9); }
+fcIWebMVideoEncoder* fcCreateVPXVP9LossLessEncoder(const fcVPXEncoderConfig& conf) { return new fcVPXEncoder(conf, fcWebMVideoEncoder::VPX_VP9LossLess); }
 
 #else // fcSupportVPX
 
-fcIWebMVideoEncoder* fcCreateVP8EncoderVPX(const fcVPXEncoderConfig& conf) { return nullptr; }
-fcIWebMVideoEncoder* fcCreateVP9EncoderVPX(const fcVPXEncoderConfig& conf) { return nullptr; }
-fcIWebMVideoEncoder* fcCreateVP9LossLessEncoderVPX(const fcVPXEncoderConfig& conf) { return nullptr; }
+fcIWebMVideoEncoder* fcCreateVPXVP8Encoder(const fcVPXEncoderConfig& conf) { return nullptr; }
+fcIWebMVideoEncoder* fcCreateVPXVP9Encoder(const fcVPXEncoderConfig& conf) { return nullptr; }
+fcIWebMVideoEncoder* fcCreateVPXVP9LossLessEncoder(const fcVPXEncoderConfig& conf) { return nullptr; }
 
 #endif // fcSupportVPX
 #endif // fcSupportWebM

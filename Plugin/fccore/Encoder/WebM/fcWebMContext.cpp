@@ -14,12 +14,10 @@ class fcWebMContext : public fcIWebMContext
 public:
     using VideoEncoderPtr   = std::unique_ptr<fcIWebMVideoEncoder>;
     using AudioEncoderPtr   = std::unique_ptr<fcIWebMAudioEncoder>;
-    using WriterPtr         = std::unique_ptr<fcIWebMWriter>;
+    using WriterPtr         = std::unique_ptr<fcWebMWriter>;
     using WriterPtrs        = std::vector<WriterPtr>;
-
     using VideoBuffer       = Buffer;
     using VideoBuffers      = SharedResources<VideoBuffer>;
-
     using AudioBuffer       = RawVector<float>;
     using AudioBuffers      = SharedResources<AudioBuffer>;
 
@@ -28,7 +26,6 @@ public:
     ~fcWebMContext() override;
 
     void addOutputStream(fcStream *s) override;
-
     bool addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp) override;
     bool addVideoFramePixels(const void *pixels, fcPixelFormat fmt, fcTime timestamp) override;
     bool addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fmt, fcTime timestamp);
@@ -36,7 +33,6 @@ public:
 
     bool addAudioSamples(const float *samples, int num_samples) override;
     void flushAudio();
-
 
     // Body: [](fcIWebMWriter& writer) {}
     template<class Body>
@@ -79,14 +75,14 @@ fcWebMContext::fcWebMContext(fcWebMConfig &conf, fcIGraphicsDevice *gd)
         econf.target_bitrate = conf.video_target_bitrate;
 
         switch (conf.video_encoder) {
-        case fcWebMVideoEncoder::VP8:
-            m_video_encoder.reset(fcCreateVP8EncoderVPX(econf));
+        case fcWebMVideoEncoder::VPX_VP8:
+            m_video_encoder.reset(fcCreateVPXVP8Encoder(econf));
             break;
-        case fcWebMVideoEncoder::VP9:
-            m_video_encoder.reset(fcCreateVP9EncoderVPX(econf));
+        case fcWebMVideoEncoder::VPX_VP9:
+            m_video_encoder.reset(fcCreateVPXVP9Encoder(econf));
             break;
-        case fcWebMVideoEncoder::VP9LossLess:
-            m_video_encoder.reset(fcCreateVP9LossLessEncoderVPX(econf));
+        case fcWebMVideoEncoder::VPX_VP9LossLess:
+            m_video_encoder.reset(fcCreateVPXVP9LossLessEncoder(econf));
             break;
         }
 
@@ -129,9 +125,8 @@ fcWebMContext::~fcWebMContext()
 void fcWebMContext::addOutputStream(fcStream *s)
 {
     if (!s) { return; }
-    m_writers.emplace_back(fcCreateWebMWriter(s, m_conf, m_video_encoder.get(), m_audio_encoder.get()));
+    m_writers.emplace_back(new fcWebMWriter(s, m_conf, m_video_encoder.get(), m_audio_encoder.get()));
 }
-
 
 bool fcWebMContext::addVideoFrameTexture(void *tex, fcPixelFormat fmt, fcTime timestamp)
 {
@@ -172,7 +167,7 @@ bool fcWebMContext::addVideoFramePixelsImpl(const void *pixels, fcPixelFormat fm
 {
     // encode!
     if (m_video_encoder->encode(m_video_frame, pixels, fmt, timestamp)) {
-        eachStreams([&](fcIWebMWriter& writer) {
+        eachStreams([&](fcWebMWriter& writer) {
             writer.addVideoFrame(m_video_frame);
         });
         m_video_frame.clear();
@@ -187,7 +182,7 @@ void fcWebMContext::flushVideo()
 
     m_video_tasks.run([this]() {
         if (m_video_encoder->flush(m_video_frame)) {
-            eachStreams([&](fcIWebMWriter& writer) {
+            eachStreams([&](fcWebMWriter& writer) {
                 writer.addVideoFrame(m_video_frame);
             });
             m_video_frame.clear();
@@ -206,7 +201,7 @@ bool fcWebMContext::addAudioSamples(const float *samples, int num_samples)
 
     m_audio_tasks.run([this, buf]() {
         if (m_audio_encoder->encode(m_audio_frame, buf->data(), buf->size())) {
-            eachStreams([&](fcIWebMWriter& writer) {
+            eachStreams([&](fcWebMWriter& writer) {
                 writer.addAudioSamples(m_audio_frame);
             });
             m_audio_frame.clear();
@@ -221,7 +216,7 @@ void fcWebMContext::flushAudio()
 
     m_audio_tasks.run([this]() {
         if (m_audio_encoder->flush(m_audio_frame)) {
-            eachStreams([&](fcIWebMWriter& writer) {
+            eachStreams([&](fcWebMWriter& writer) {
                 writer.addAudioSamples(m_audio_frame);
             });
             m_audio_frame.clear();

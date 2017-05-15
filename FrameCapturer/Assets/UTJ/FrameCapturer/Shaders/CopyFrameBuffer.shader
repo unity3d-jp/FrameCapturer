@@ -65,13 +65,13 @@ half4 copy_rendertarget(v2f I) : SV_Target
 // gbuffer
 struct gbuffer_out
 {
-    half4 albedo            : SV_Target0;
-    half4 occlusion         : SV_Target1;
-    half4 specular          : SV_Target2;
-    half4 smoothness        : SV_Target3;
-    half4 normal            : SV_Target4;
-    half4 emission          : SV_Target5;
-    half4 depth             : SV_Target6;
+    half4 albedo        : SV_Target0;
+    half4 occlusion     : SV_Target1;
+    half4 specular      : SV_Target2;
+    half4 smoothness    : SV_Target3;
+    half4 normal        : SV_Target4;
+    half4 emission      : SV_Target5;
+    half4 depth         : SV_Target6;
 };
 gbuffer_out copy_gbuffer(v2f I)
 {
@@ -160,6 +160,7 @@ Subshader {
     Pass{
         Blend Off Cull Off ZTest Off ZWrite Off
         CGPROGRAM
+        #pragma target 4.0
         #pragma vertex vert
         #pragma fragment copy_gbuffer
         ENDCG

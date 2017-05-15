@@ -10,6 +10,6 @@ struct fcVPXEncoderConfig
 };
 
 
-fcIWebMVideoEncoder* fcCreateVP8EncoderVPX(const fcVPXEncoderConfig& conf);
-fcIWebMVideoEncoder* fcCreateVP9EncoderVPX(const fcVPXEncoderConfig& conf);
-fcIWebMVideoEncoder* fcCreateVP9LossLessEncoderVPX(const fcVPXEncoderConfig& conf);
+fcIWebMVideoEncoder* fcCreateVPXVP8Encoder(const fcVPXEncoderConfig& conf);
+fcIWebMVideoEncoder* fcCreateVPXVP9Encoder(const fcVPXEncoderConfig& conf);
+fcIWebMVideoEncoder* fcCreateVPXVP9LossLessEncoder(const fcVPXEncoderConfig& conf);

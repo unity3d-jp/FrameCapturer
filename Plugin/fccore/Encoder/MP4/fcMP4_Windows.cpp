@@ -220,7 +220,7 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
             pVideoOutMediaType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);
             pVideoOutMediaType->SetUINT32(MF_MT_AVG_BITRATE, m_conf.video_target_bitrate);
             pVideoOutMediaType->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);
-            pVideoOutMediaType->SetUINT32(MF_MT_MPEG2_PROFILE, eAVEncH264VProfile_Base);
+            pVideoOutMediaType->SetUINT32(MF_MT_MPEG2_PROFILE, eAVEncH264VProfile_High);
             MFSetAttributeSize(pVideoOutMediaType.Get(), MF_MT_FRAME_SIZE, m_conf.video_width, m_conf.video_height);
             MFSetAttributeRatio(pVideoOutMediaType.Get(), MF_MT_FRAME_RATE, m_conf.video_target_framerate, 1);
             MFSetAttributeRatio(pVideoOutMediaType.Get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
