@@ -129,11 +129,7 @@ fcWebMContext::~fcWebMContext()
 void fcWebMContext::addOutputStream(fcStream *s)
 {
     if (!s) { return; }
-
-    auto *writer = fcCreateWebMWriter(s, m_conf);
-    if (m_video_encoder) { writer->setVideoEncoderInfo(*m_video_encoder); }
-    if (m_audio_encoder) { writer->setAudioEncoderInfo(*m_audio_encoder); }
-    m_writers.emplace_back(writer);
+    m_writers.emplace_back(fcCreateWebMWriter(s, m_conf, m_video_encoder.get(), m_audio_encoder.get()));
 }
 
 
@@ -211,7 +207,7 @@ bool fcWebMContext::addAudioSamples(const float *samples, int num_samples)
     m_audio_tasks.run([this, buf]() {
         if (m_audio_encoder->encode(m_audio_frame, buf->data(), buf->size())) {
             eachStreams([&](fcIWebMWriter& writer) {
-                writer.AddAudioSamples(m_audio_frame);
+                writer.addAudioSamples(m_audio_frame);
             });
             m_audio_frame.clear();
         }
@@ -226,7 +222,7 @@ void fcWebMContext::flushAudio()
     m_audio_tasks.run([this]() {
         if (m_audio_encoder->flush(m_audio_frame)) {
             eachStreams([&](fcIWebMWriter& writer) {
-                writer.AddAudioSamples(m_audio_frame);
+                writer.addAudioSamples(m_audio_frame);
             });
             m_audio_frame.clear();
         }

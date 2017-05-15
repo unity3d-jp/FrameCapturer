@@ -50,6 +50,7 @@ public:
 class fcIWebMVideoEncoder : public fcIWebMEncoderInfo
 {
 public:
+    virtual ~fcIWebMVideoEncoder() {}
     virtual bool encode(fcWebMFrameData& dst, const void *image, fcPixelFormat fmt, fcTime timestamp, bool force_keyframe = false) = 0;
     virtual bool flush(fcWebMFrameData& dst) = 0;
 };
@@ -57,6 +58,7 @@ public:
 class fcIWebMAudioEncoder : public fcIWebMEncoderInfo
 {
 public:
+    virtual ~fcIWebMAudioEncoder() {}
     virtual bool encode(fcWebMFrameData& dst, const float *samples, size_t num_samples) = 0;
     virtual bool flush(fcWebMFrameData& dst) = 0;
 };

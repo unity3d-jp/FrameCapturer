@@ -29,13 +29,10 @@ private:
 class fcWebMWriter : public fcIWebMWriter
 {
 public:
-    fcWebMWriter(BinaryStream *stream, const fcWebMConfig &conf);
+    fcWebMWriter(BinaryStream *stream, const fcWebMConfig &conf, const fcIWebMEncoderInfo* vinfo, const fcIWebMEncoderInfo* ainfo);
     ~fcWebMWriter() override;
-    void setVideoEncoderInfo(const fcIWebMEncoderInfo& info) override;
-    void setAudioEncoderInfo(const fcIWebMEncoderInfo& info) override;
-
     void addVideoFrame(const fcWebMFrameData& buf) override;
-    void AddAudioSamples(const fcWebMFrameData& buf) override;
+    void addAudioSamples(const fcWebMFrameData& buf) override;
 
     void writeOut(double timestamp);
 
@@ -57,20 +54,47 @@ private:
 };
 
 
-fcWebMWriter::fcWebMWriter(BinaryStream *stream, const fcWebMConfig &conf)
+fcWebMWriter::fcWebMWriter(
+    BinaryStream *stream, const fcWebMConfig &conf,
+    const fcIWebMEncoderInfo* vinfo, const fcIWebMEncoderInfo* ainfo)
     : m_conf(conf)
     , m_stream(new fcMkvStream(stream))
 {
     m_segment.Init(m_stream.get());
     m_segment.set_mode(mkvmuxer::Segment::kFile);
     m_segment.set_estimate_file_duration(true);
-    if (conf.video) {
+    if (conf.video && vinfo) {
         m_video_track_id = m_segment.AddVideoTrack(conf.video_width, conf.video_height, 0);
-    }
-    if(conf.audio) {
-        m_audio_track_id = m_segment.AddAudioTrack(conf.audio_sample_rate, conf.audio_num_channels, 0);
-    }
+        auto track = dynamic_cast<mkvmuxer::VideoTrack*>(m_segment.GetTrackByNumber(m_video_track_id));
+        track->set_codec_id(vinfo->getMatroskaCodecID());
 
+        mkvmuxer::Colour color;
+        color.set_bits_per_channel(10);
+        const uint64_t horizontal_subsampling = 1;
+        const uint64_t vertical_subsampling = 1;
+        color.set_chroma_subsampling_horz(horizontal_subsampling);
+        color.set_chroma_subsampling_vert(vertical_subsampling);
+        track->SetColour(color);
+        track->set_display_width(conf.video_width);
+        track->set_display_height(conf.video_height);
+        track->set_frame_rate(conf.video_target_framerate);
+
+        m_segment.CuesTrack(m_video_track_id);
+    }
+    if (conf.audio && ainfo) {
+        m_audio_track_id = m_segment.AddAudioTrack(conf.audio_sample_rate, conf.audio_num_channels, 0);
+        auto track = dynamic_cast<mkvmuxer::AudioTrack*>(m_segment.GetTrackByNumber(m_audio_track_id));
+        track->set_codec_id(ainfo->getMatroskaCodecID());
+
+        const auto& cp = ainfo->getCodecPrivate();
+        if (!cp.empty()) {
+            track->SetCodecPrivate((const uint8_t*)cp.data(), cp.size());
+        }
+
+        if (!conf.video) {
+            m_segment.CuesTrack(m_audio_track_id);
+        }
+    }
     auto info = m_segment.GetSegmentInfo();
     info->set_writing_app("Unity Movie Recorder");
 }
@@ -81,25 +105,6 @@ fcWebMWriter::~fcWebMWriter()
         writeOut(m_timestamp_video_last);
     }
     m_segment.Finalize();
-}
-
-void fcWebMWriter::setVideoEncoderInfo(const fcIWebMEncoderInfo& info)
-{
-    auto track = dynamic_cast<mkvmuxer::VideoTrack*>(m_segment.GetTrackByNumber(m_video_track_id));
-    if (track) {
-        track->set_codec_id(info.getMatroskaCodecID());
-    }
-}
-
-void fcWebMWriter::setAudioEncoderInfo(const fcIWebMEncoderInfo& info)
-{
-    auto track = dynamic_cast<mkvmuxer::AudioTrack*>(m_segment.GetTrackByNumber(m_audio_track_id));
-    if (track) {
-        track->set_codec_id(info.getMatroskaCodecID());
-
-        const auto& cp = info.getCodecPrivate();
-        track->SetCodecPrivate((const uint8_t*)cp.data(), cp.size());
-    }
 }
 
 void fcWebMWriter::addVideoFrame(const fcWebMFrameData& frame)
@@ -119,7 +124,7 @@ void fcWebMWriter::addVideoFrame(const fcWebMFrameData& frame)
     writeOut(m_timestamp_video_last - 1.0);
 }
 
-void fcWebMWriter::AddAudioSamples(const fcWebMFrameData& frame)
+void fcWebMWriter::addAudioSamples(const fcWebMFrameData& frame)
 {
     if (m_audio_track_id == 0 || frame.data.empty()) { return; }
 
@@ -163,9 +168,10 @@ void fcWebMWriter::writeOut(double timestamp_)
 }
 
 
-fcIWebMWriter* fcCreateWebMWriter(BinaryStream *stream, const fcWebMConfig &conf)
+fcIWebMWriter* fcCreateWebMWriter(
+    BinaryStream *stream, const fcWebMConfig &conf, const fcIWebMEncoderInfo* vinfo, const fcIWebMEncoderInfo* ainfo)
 {
-    return new fcWebMWriter(stream, conf);
+    return new fcWebMWriter(stream, conf, vinfo, ainfo);
 }
 
 #endif // fcSupportWebM

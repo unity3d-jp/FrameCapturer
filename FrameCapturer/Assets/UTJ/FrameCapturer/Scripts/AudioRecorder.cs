@@ -8,6 +8,7 @@ namespace UTJ.FrameCapturer
 {
     [AddComponentMenu("UTJ/FrameCapturer/Audio Recorder")]
     [RequireComponent(typeof(AudioListener))]
+    [ExecuteInEditMode]
     public class AudioRecorder : RecorderBase
     {
         #region fields

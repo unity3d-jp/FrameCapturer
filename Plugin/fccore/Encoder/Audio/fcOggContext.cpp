@@ -10,24 +10,6 @@
 #endif
 #include "vorbis/vorbisenc.h"
 
-class fcOggWriter
-{
-public:
-    fcOggWriter(fcStream *s);
-    ~fcOggWriter();
-    void write(ogg_packet& packet);
-    void flush();
-    void pageOut();
-
-private:
-    fcStream *m_stream = nullptr;
-    ogg_stream_state m_ogstream;
-    ogg_page         m_ogpage;
-    ogg_packet       m_ogpacket;
-
-};
-using fcOggWriterPtr = std::unique_ptr<fcOggWriter>;
-
 
 class fcOggContext : public fcIOggContext
 {
@@ -45,63 +27,20 @@ public:
 
 private:
     fcOggConfig m_conf;
-    std::vector<fcOggWriterPtr> m_writers;
+    std::vector<fcStream*> m_streams;
 
     TaskQueue           m_tasks;
     AudioBuffers        m_buffers;
+    Buffer              m_header_data;
 
     vorbis_info         m_vo_info;
     vorbis_comment      m_vo_comment;
     vorbis_dsp_state    m_vo_dsp;
     vorbis_block        m_vo_block;
-    ogg_packet          m_og_header;
-    ogg_packet          m_og_header_comm;
-    ogg_packet          m_og_header_code;
+
+    ogg_stream_state    m_ogstream;
+    ogg_page            m_ogpage;
 };
-
-
-
-fcOggWriter::fcOggWriter(fcStream *s)
-    : m_stream(s)
-{
-    static int s_serial = 0;
-    m_stream->addRef();
-    ogg_stream_init(&m_ogstream, s_serial++);
-}
-
-fcOggWriter::~fcOggWriter()
-{
-    ogg_stream_clear(&m_ogstream);
-    m_stream->release();
-}
-
-void fcOggWriter::write(ogg_packet& packet)
-{
-    ogg_stream_packetin(&m_ogstream, &packet);
-}
-
-void fcOggWriter::flush()
-{
-    for (;;) {
-        int result = ogg_stream_flush(&m_ogstream, &m_ogpage);
-        if (result == 0)break;
-        m_stream->write(m_ogpage.header, m_ogpage.header_len);
-        m_stream->write(m_ogpage.body, m_ogpage.body_len);
-    }
-}
-
-void fcOggWriter::pageOut()
-{
-    bool eos = false;
-    while (!eos) {
-        int result = ogg_stream_pageout(&m_ogstream, &m_ogpage);
-        if (result == 0)break;
-        m_stream->write(m_ogpage.header, m_ogpage.header_len);
-        m_stream->write(m_ogpage.body, m_ogpage.body_len);
-
-        if (ogg_page_eos(&m_ogpage))eos = true;
-    }
-}
 
 
 
@@ -122,7 +61,25 @@ fcOggContext::fcOggContext(const fcOggConfig& conf)
     vorbis_comment_init(&m_vo_comment);
     vorbis_analysis_init(&m_vo_dsp, &m_vo_info);
     vorbis_block_init(&m_vo_dsp, &m_vo_block);
-    vorbis_analysis_headerout(&m_vo_dsp, &m_vo_comment, &m_og_header, &m_og_header_comm, &m_og_header_code);
+
+    static int s_serial = 0;
+    ogg_stream_init(&m_ogstream, ++s_serial);
+
+    ogg_packet og_header, og_header_comm, og_header_code;
+    vorbis_analysis_headerout(&m_vo_dsp, &m_vo_comment, &og_header, &og_header_comm, &og_header_code);
+    ogg_stream_packetin(&m_ogstream, &og_header);
+    ogg_stream_packetin(&m_ogstream, &og_header_comm);
+    ogg_stream_packetin(&m_ogstream, &og_header_code);
+    {
+        // make ogg header data
+        BufferStream hs(m_header_data);
+        for (;;) {
+            int result = ogg_stream_flush(&m_ogstream, &m_ogpage);
+            if (result == 0) break;
+            hs.write(m_ogpage.header, m_ogpage.header_len);
+            hs.write(m_ogpage.body, m_ogpage.body_len);
+        }
+    }
 
     for (int i = 0; i < m_conf.max_tasks; ++i) {
         m_buffers.emplace();
@@ -138,8 +95,9 @@ fcOggContext::~fcOggContext()
         }
     });
     m_tasks.wait();
-    m_writers.clear();
+    for (auto s : m_streams) { s->release(); }
 
+    ogg_stream_clear(&m_ogstream);
     vorbis_block_clear(&m_vo_block);
     vorbis_dsp_clear(&m_vo_dsp);
     vorbis_comment_clear(&m_vo_comment);
@@ -148,12 +106,10 @@ fcOggContext::~fcOggContext()
 
 void fcOggContext::addOutputStream(fcStream *s)
 {
-    auto writer = new fcOggWriter(s);
-    writer->write(m_og_header);
-    writer->write(m_og_header_comm);
-    writer->write(m_og_header_code);
-    writer->flush();
-    m_writers.emplace_back(writer);
+    if (!s) { return; }
+    s->addRef();
+    m_streams.push_back(s);
+    s->write(m_header_data.data(), m_header_data.size());
 }
 
 bool fcOggContext::addSamples(const float *samples, int num_samples)
@@ -191,9 +147,15 @@ void fcOggContext::pageOut()
 
         ogg_packet packet;
         while (vorbis_bitrate_flushpacket(&m_vo_dsp, &packet) == 1) {
-            for (auto& w : m_writers) {
-                w->write(packet);
-                w->pageOut();
+            ogg_stream_packetin(&m_ogstream, &packet);
+            for (;;) {
+                int result = ogg_stream_pageout(&m_ogstream, &m_ogpage);
+                if (result == 0) { break; }
+                for (auto& w : m_streams) {
+                    w->write(m_ogpage.header, m_ogpage.header_len);
+                    w->write(m_ogpage.body, m_ogpage.body_len);
+                }
+                if (ogg_page_eos(&m_ogpage)) { break; }
             }
         }
     }

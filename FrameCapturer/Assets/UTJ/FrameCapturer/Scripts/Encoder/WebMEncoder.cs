@@ -14,7 +14,6 @@ namespace UTJ.FrameCapturer
         public override void Initialize(object config, string outPath)
         {
             m_config = (fcAPI.fcWebMConfig)config;
-            m_config.videoTargetFramerate = 60;
             m_config.audioSampleRate = AudioSettings.outputSampleRate;
             m_config.audioNumChannels = fcAPI.fcGetNumAudioChannels();
             m_ctx = fcAPI.fcWebMCreateContext(ref m_config);

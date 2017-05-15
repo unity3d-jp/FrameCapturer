@@ -37,7 +37,6 @@ private:
 };
 
 
-
 fcVorbisEncoder::fcVorbisEncoder(const fcVorbisEncoderConfig& conf)
     : m_conf(conf)
 {
@@ -54,22 +53,22 @@ fcVorbisEncoder::fcVorbisEncoder(const fcVorbisEncoderConfig& conf)
     vorbis_analysis_init(&m_vo_dsp, &m_vo_info);
     vorbis_block_init(&m_vo_dsp, &m_vo_block);
 
-
     {
         // get codec private data
-        ogg_packet ident, comment, setup;
-        vorbis_analysis_headerout(&m_vo_dsp, &m_vo_comment, &ident, &comment, &setup);
+        ogg_packet header, comment, code;
+        vorbis_analysis_headerout(&m_vo_dsp, &m_vo_comment, &header, &comment, &code);
 
-        m_codec_private.resize(ident.bytes + comment.bytes + setup.bytes + 3);
+        m_codec_private.resize(header.bytes + comment.bytes + code.bytes + 3);
         auto* it = (uint8_t*)m_codec_private.data();
         *it++ = 2;
-        *it++ = (uint8_t)(ident.bytes);
+        *it++ = (uint8_t)(header.bytes);
         *it++ = (uint8_t)(comment.bytes);
-        memcpy(it, ident.packet, ident.bytes);
-        it += ident.bytes;
+
+        memcpy(it, header.packet, header.bytes);
+        it += header.bytes;
         memcpy(it, comment.packet, comment.bytes);
         it += comment.bytes;
-        memcpy(it, setup.packet, setup.bytes);
+        memcpy(it, code.packet, code.bytes);
     }
 }
 
