@@ -36,13 +36,13 @@ namespace UTJ.FrameCapturer
 
         [SerializeField] protected ResolutionUnit m_resolution = ResolutionUnit.Percent;
         [SerializeField] [Range(1,100)] protected int m_resolutionPercent = 100;
-        [SerializeField] protected int m_resolutionWidth = 1980;
+        [SerializeField] protected int m_resolutionWidth = 1920;
 
         [SerializeField] protected FrameRateMode m_framerateMode = FrameRateMode.Constant;
         [SerializeField] protected int m_targetFramerate = 30;
         [SerializeField] protected bool m_fixDeltaTime = true;
         [SerializeField] protected bool m_waitDeltaTime = true;
-        [SerializeField] protected int m_captureEveryNthFrame = 1;
+        [SerializeField] [Range(1,10)]protected int m_captureEveryNthFrame = 1;
 
         [SerializeField] protected CaptureControl m_captureControl = CaptureControl.FrameRange;
         [SerializeField] protected int m_startFrame = 0;
@@ -219,6 +219,7 @@ namespace UTJ.FrameCapturer
 #if UNITY_EDITOR
         protected virtual void OnValidate()
         {
+            m_targetFramerate = Mathf.Max(1, m_targetFramerate);
             m_startFrame = Mathf.Max(0, m_startFrame);
             m_endFrame = Mathf.Max(m_startFrame, m_endFrame);
             m_startTime = Mathf.Max(0.0f, m_startTime);

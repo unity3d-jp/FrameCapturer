@@ -27,6 +27,8 @@ namespace UTJ.FrameCapturer
         [SerializeField] MovieEncoderConfigs m_encoderConfigs = new MovieEncoderConfigs(MovieEncoder.Type.WebM);
         [SerializeField] CaptureTarget m_captureTarget = CaptureTarget.FrameBuffer;
         [SerializeField] RenderTexture m_targetRT;
+        [SerializeField] bool m_captureVideo = true;
+        [SerializeField] bool m_captureAudio = true;
 
         [SerializeField] Shader m_shCopy;
         Material m_matCopy;
@@ -48,9 +50,19 @@ namespace UTJ.FrameCapturer
             get { return m_targetRT; }
             set { m_targetRT = value; }
         }
+        public bool captureAudio
+        {
+            get { return m_captureAudio; }
+            set { m_captureAudio = value; }
+        }
+        public bool captureVideo
+        {
+            get { return m_captureVideo; }
+            set { m_captureVideo = value; }
+        }
 
-        public MovieEncoderConfigs encoderConfigs { get { return m_encoderConfigs; } }
-
+        public bool supportVideo { get { return m_encoderConfigs.supportVideo; } }
+        public bool supportAudio { get { return m_encoderConfigs.supportAudio; } }
         public RenderTexture scratchBuffer { get { return m_scratchBuffer; } }
         #endregion
 
@@ -109,6 +121,8 @@ namespace UTJ.FrameCapturer
                 }
                 string outPath = m_outputDir.GetFullPath() + "/" + DateTime.Now.ToString("yyyyMMdd_HHmmss");
 
+                m_encoderConfigs.captureVideo = m_captureVideo;
+                m_encoderConfigs.captureAudio = m_captureAudio;
                 m_encoderConfigs.Setup(m_scratchBuffer.width, m_scratchBuffer.height, 3, targetFramerate);
                 m_encoder = MovieEncoder.Create(m_encoderConfigs, outPath);
                 if (m_encoder == null)

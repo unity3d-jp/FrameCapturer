@@ -40,19 +40,18 @@ namespace UTJ.FrameCapturer
 
             EditorGUILayout.Space();
 
-            var ec = recorder.encoderConfigs;
-            if (ec.supportVideo && !ec.supportAudio)
+            if (recorder.supportVideo && !recorder.supportAudio)
             {
                 VideoConfig();
             }
-            else if (!ec.supportVideo && ec.supportAudio)
+            else if (!recorder.supportVideo && recorder.supportAudio)
             {
                 AudioConfig();
             }
-            else if (ec.supportVideo && ec.supportAudio)
+            else if (recorder.supportVideo && recorder.supportAudio)
             {
-                ec.captureVideo = EditorGUILayout.Toggle("Capture Video", ec.captureVideo);
-                if(ec.captureVideo)
+                EditorGUILayout.PropertyField(so.FindProperty("m_captureVideo"));
+                if (recorder.captureVideo)
                 {
                     EditorGUI.indentLevel++;
                     VideoConfig();
@@ -60,8 +59,8 @@ namespace UTJ.FrameCapturer
                 }
                 EditorGUILayout.Space();
 
-                ec.captureAudio = EditorGUILayout.Toggle("Capture Audio", ec.captureAudio);
-                if (ec.captureAudio)
+                EditorGUILayout.PropertyField(so.FindProperty("m_captureAudio"));
+                if (recorder.captureAudio)
                 {
                     EditorGUI.indentLevel++;
                     AudioConfig();
