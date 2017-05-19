@@ -200,8 +200,9 @@ namespace UTJ.FrameCapturer
             }
             else
             {
+                float aspect = (float)h / w;
                 w = m_resolutionWidth;
-                h = (int)(m_resolutionWidth * ((float)h / w));
+                h = (int)(m_resolutionWidth * aspect);
             }
         }
 
