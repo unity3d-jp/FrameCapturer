@@ -9,6 +9,8 @@ namespace UTJ.FrameCapturer
         fcAPI.fcMP4Context m_ctx;
         fcAPI.fcMP4Config m_config;
 
+        public override void Release() { m_ctx.Release(); }
+        public override bool IsValid() { return m_ctx; }
         public override Type type { get { return Type.MP4; } }
 
         public override void Initialize(object config, string outPath)
@@ -25,11 +27,6 @@ namespace UTJ.FrameCapturer
 
             var path = outPath + ".mp4";
             m_ctx = fcAPI.fcMP4OSCreateContext(ref m_config, path);
-        }
-
-        public override void Release()
-        {
-            m_ctx.Release();
         }
 
         public override void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp)

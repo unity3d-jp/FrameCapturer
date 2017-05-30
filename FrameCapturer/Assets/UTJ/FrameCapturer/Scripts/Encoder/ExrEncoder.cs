@@ -13,6 +13,8 @@ namespace UTJ.FrameCapturer
         string m_outPath;
         int m_frame;
 
+        public override void Release() { m_ctx.Release(); }
+        public override bool IsValid() { return m_ctx; }
         public override Type type { get { return Type.Exr; } }
 
         public override void Initialize(object config, string outPath)
@@ -27,11 +29,6 @@ namespace UTJ.FrameCapturer
             m_ctx = fcAPI.fcExrCreateContext(ref m_config);
             m_outPath = outPath;
             m_frame = 0;
-        }
-
-        public override void Release()
-        {
-            m_ctx.Release();
         }
 
         public override void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp = -1.0)

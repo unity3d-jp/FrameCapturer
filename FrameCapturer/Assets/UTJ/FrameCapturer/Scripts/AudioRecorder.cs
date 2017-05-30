@@ -29,7 +29,7 @@ namespace UTJ.FrameCapturer
 
                 m_encoderConfigs.Setup();
                 m_encoder = AudioEncoder.Create(m_encoderConfigs, outPath);
-                if (m_encoder == null)
+                if (m_encoder == null || !m_encoder.IsValid())
                 {
                     EndRecording();
                     return false;
@@ -43,16 +43,18 @@ namespace UTJ.FrameCapturer
 
         public override void EndRecording()
         {
-            if (!m_recording) { return; }
-
             if (m_encoder != null)
             {
                 m_encoder.Release();
                 m_encoder = null;
             }
 
+            if (m_recording)
+            {
+                Debug.Log("AudioMRecorder: EndRecording()");
+            }
             base.EndRecording();
-            Debug.Log("AudioMRecorder: EndRecording()");
+            
         }
 
 

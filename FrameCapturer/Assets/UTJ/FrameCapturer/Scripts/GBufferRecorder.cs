@@ -65,11 +65,12 @@ namespace UTJ.FrameCapturer
                 m_name = name;
             }
 
-            public void Initialize(MovieEncoderConfigs c, DataPath p)
+            public bool Initialize(MovieEncoderConfigs c, DataPath p)
             {
                 string path = p.GetFullPath() + "/" + m_name;
                 c.Setup(m_rt.width, m_rt.height, m_channels, m_targetFramerate);
                 m_encoder = MovieEncoder.Create(c, path);
+                return m_encoder != null && m_encoder.IsValid();
             }
 
             public void Release()
@@ -231,7 +232,14 @@ namespace UTJ.FrameCapturer
                 if (m_fbComponents.depth)       { m_recorders.Add(new BufferRecorder(m_rtGB[6], 1, "Depth", framerate)); }
                 if (m_fbComponents.velocity)    { m_recorders.Add(new BufferRecorder(m_rtGB[7], 2, "Velocity", framerate)); }
             }
-            foreach (var rec in m_recorders) { rec.Initialize(m_encoderConfigs, m_outputDir); }
+            foreach (var rec in m_recorders)
+            {
+                if (!rec.Initialize(m_encoderConfigs, m_outputDir))
+                {
+                    EndRecording();
+                    return false;
+                }
+            }
 
             base.BeginRecording();
 
@@ -241,8 +249,6 @@ namespace UTJ.FrameCapturer
 
         public override void EndRecording()
         {
-            if (!m_recording) { return; }
-
             foreach (var rec in m_recorders) { rec.Release(); }
             m_recorders.Clear();
 
@@ -283,8 +289,11 @@ namespace UTJ.FrameCapturer
                 m_rtGB = null;
             }
 
+            if (m_recording)
+            {
+                Debug.Log("GBufferRecorder: EndRecording()");
+            }
             base.EndRecording();
-            Debug.Log("GBufferRecorder: EndRecording()");
         }
 
 

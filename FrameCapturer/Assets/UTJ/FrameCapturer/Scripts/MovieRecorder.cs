@@ -125,7 +125,7 @@ namespace UTJ.FrameCapturer
                 m_encoderConfigs.captureAudio = m_captureAudio;
                 m_encoderConfigs.Setup(m_scratchBuffer.width, m_scratchBuffer.height, 3, targetFramerate);
                 m_encoder = MovieEncoder.Create(m_encoderConfigs, outPath);
-                if (m_encoder == null)
+                if (m_encoder == null || !m_encoder.IsValid())
                 {
                     EndRecording();
                     return false;
@@ -162,8 +162,6 @@ namespace UTJ.FrameCapturer
 
         public override void EndRecording()
         {
-            if (!m_recording) { return; }
-
             if (m_encoder != null)
             {
                 m_encoder.Release();
@@ -181,8 +179,11 @@ namespace UTJ.FrameCapturer
                 m_scratchBuffer = null;
             }
 
+            if (m_recording)
+            {
+                Debug.Log("MovieRecorder: EndRecording()");
+            }
             base.EndRecording();
-            Debug.Log("MovieRecorder: EndRecording()");
         }
 
 

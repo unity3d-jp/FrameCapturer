@@ -9,6 +9,8 @@ namespace UTJ.FrameCapturer
         fcAPI.fcGifContext m_ctx;
         fcAPI.fcGifConfig m_config;
 
+        public override void Release() { m_ctx.Release(); }
+        public override bool IsValid() { return m_ctx; }
         public override Type type { get { return Type.Gif; } }
 
         public override void Initialize(object config, string outPath)
@@ -27,11 +29,6 @@ namespace UTJ.FrameCapturer
             var stream = fcAPI.fcCreateFileStream(path);
             fcAPI.fcGifAddOutputStream(m_ctx, stream);
             stream.Release();
-        }
-
-        public override void Release()
-        {
-            m_ctx.Release();
         }
 
         public override void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp)

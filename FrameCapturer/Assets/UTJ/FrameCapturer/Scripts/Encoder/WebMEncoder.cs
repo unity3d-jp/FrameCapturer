@@ -9,6 +9,8 @@ namespace UTJ.FrameCapturer
         fcAPI.fcWebMContext m_ctx;
         fcAPI.fcWebMConfig m_config;
 
+        public override void Release() { m_ctx.Release(); }
+        public override bool IsValid() { return m_ctx; }
         public override Type type { get { return Type.WebM; } }
 
         public override void Initialize(object config, string outPath)
@@ -38,11 +40,6 @@ namespace UTJ.FrameCapturer
             var stream = fcAPI.fcCreateFileStream(path);
             fcAPI.fcWebMAddOutputStream(m_ctx, stream);
             stream.Release();
-        }
-
-        public override void Release()
-        {
-            m_ctx.Release();
         }
 
         public override void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp)

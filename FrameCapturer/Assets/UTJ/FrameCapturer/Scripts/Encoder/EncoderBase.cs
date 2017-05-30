@@ -17,6 +17,7 @@ namespace UTJ.FrameCapturer
         }
 
         public abstract void Release();
+        public abstract bool IsValid();
     }
 
 }
