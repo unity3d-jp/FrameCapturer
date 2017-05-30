@@ -15,6 +15,12 @@ namespace UTJ.FrameCapturer
 
         public override void Initialize(object config, string outPath)
         {
+            if (!fcAPI.fcPngIsSupported())
+            {
+                Debug.LogError("Png encoder is not available on this platform.");
+                return;
+            }
+
             m_config = (fcAPI.fcPngConfig)config;
             m_ctx = fcAPI.fcPngCreateContext(ref m_config);
             m_outPath = outPath;
@@ -28,11 +34,12 @@ namespace UTJ.FrameCapturer
 
         public override void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp = -1.0)
         {
-            string path = m_outPath + "_" + m_frame.ToString("0000") + ".png";
-            int channels = System.Math.Min(m_config.channels, (int)format & 7);
-
-            fcAPI.fcPngExportPixels(m_ctx, path, frame, m_config.width, m_config.height, format, channels);
-
+            if (m_ctx)
+            {
+                string path = m_outPath + "_" + m_frame.ToString("0000") + ".png";
+                int channels = System.Math.Min(m_config.channels, (int)format & 7);
+                fcAPI.fcPngExportPixels(m_ctx, path, frame, m_config.width, m_config.height, format, channels);
+            }
             ++m_frame;
         }
 

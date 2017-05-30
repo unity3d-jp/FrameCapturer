@@ -44,6 +44,10 @@ fcOpusEncoder::fcOpusEncoder(const fcOpusEncoderConfig& conf)
 {
     int err;
     m_opus = opus_encoder_create(conf.sample_rate, conf.num_channels, OPUS_APPLICATION_RESTRICTED_LOWDELAY, &err);
+
+    // opus doesn't support 41.1kHz and often fails
+    if (!m_opus) { return; }
+
     opus_encoder_ctl(m_opus, OPUS_SET_BITRATE(conf.target_bitrate));
 
     {
@@ -71,7 +75,10 @@ fcOpusEncoder::fcOpusEncoder(const fcOpusEncoderConfig& conf)
 
 fcOpusEncoder::~fcOpusEncoder()
 {
-    opus_encoder_destroy(m_opus);
+    if (m_opus) {
+        opus_encoder_destroy(m_opus);
+        m_opus = nullptr;
+    }
 }
 
 const char* fcOpusEncoder::getMatroskaCodecID() const

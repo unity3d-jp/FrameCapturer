@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -115,6 +116,17 @@ namespace UTJ.FrameCapturer
             WebM,
             MP4,
         }
+        static public Type[] GetAvailableEncoderTypes()
+        {
+            var ret = new List<Type>();
+            if (fcAPI.fcPngIsSupported()) { ret.Add(Type.Png); }
+            if (fcAPI.fcExrIsSupported()) { ret.Add(Type.Exr); }
+            if (fcAPI.fcGifIsSupported()) { ret.Add(Type.Gif); }
+            if (fcAPI.fcWebMIsSupported()) { ret.Add(Type.WebM); }
+            if (fcAPI.fcMP4OSIsSupported()) { ret.Add(Type.MP4); }
+            return ret.ToArray();
+        }
+
 
         public abstract Type type { get; }
 

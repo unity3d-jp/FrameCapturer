@@ -13,6 +13,12 @@ namespace UTJ.FrameCapturer
 
         public override void Initialize(object config, string outPath)
         {
+            if (!fcAPI.fcWaveIsSupported())
+            {
+                Debug.LogError("Wave encoder is not available on this platform.");
+                return;
+            }
+
             m_config = (fcAPI.fcWaveConfig)config;
             m_config.sampleRate = AudioSettings.outputSampleRate;
             m_config.numChannels = fcAPI.fcGetNumAudioChannels();
@@ -31,7 +37,10 @@ namespace UTJ.FrameCapturer
 
         public override void AddAudioSamples(float[] samples)
         {
-            fcAPI.fcWaveAddAudioSamples(m_ctx, samples, samples.Length);
+            if(m_ctx)
+            {
+                fcAPI.fcWaveAddAudioSamples(m_ctx, samples, samples.Length);
+            }
         }
     }
 }

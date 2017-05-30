@@ -372,6 +372,7 @@ namespace UTJ.FrameCapturer
         }
 
         [DllImport ("fccore")] public static extern Bool             fcMP4IsSupported();
+        [DllImport ("fccore")] public static extern Bool             fcMP4OSIsSupported();
         [DllImport ("fccore")] public static extern fcMP4Context     fcMP4CreateContext(ref fcMP4Config conf);
         [DllImport ("fccore")] public static extern fcMP4Context     fcMP4OSCreateContext(ref fcMP4Config conf, string path);
         [DllImport ("fccore")] public static extern void             fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);

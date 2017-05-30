@@ -13,7 +13,23 @@ namespace UTJ.FrameCapturer
 
         public override void Initialize(object config, string outPath)
         {
+            if (!fcAPI.fcWebMIsSupported())
+            {
+                Debug.LogError("WebM encoder is not available on this platform.");
+                return;
+            }
+
             m_config = (fcAPI.fcWebMConfig)config;
+            if (m_config.audio && m_config.audioEncoder == fcAPI.fcWebMAudioEncoder.Opus)
+            {
+                var sampleRate = AudioSettings.outputSampleRate;
+                if (sampleRate != 8000 && sampleRate != 12000 && sampleRate != 16000 && sampleRate != 24000 && sampleRate != 48000)
+                {
+                    Debug.LogError("Output sample rate must be 8000, 12000, 16000, 24000 or 48000 to use Opus audio encoder. Fallback to Vorbis.");
+                    m_config.audioEncoder = fcAPI.fcWebMAudioEncoder.Vorbis;
+                }
+            }
+
             m_config.audioSampleRate = AudioSettings.outputSampleRate;
             m_config.audioNumChannels = fcAPI.fcGetNumAudioChannels();
             m_ctx = fcAPI.fcWebMCreateContext(ref m_config);
@@ -31,7 +47,7 @@ namespace UTJ.FrameCapturer
 
         public override void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp)
         {
-            if (m_config.video)
+            if (m_ctx && m_config.video)
             {
                 fcAPI.fcWebMAddVideoFramePixels(m_ctx, frame, format, timestamp);
             }
@@ -39,7 +55,7 @@ namespace UTJ.FrameCapturer
 
         public override void AddAudioSamples(float[] samples)
         {
-            if (m_config.audio)
+            if (m_ctx && m_config.audio)
             {
                 fcAPI.fcWebMAddAudioSamples(m_ctx, samples, samples.Length);
             }

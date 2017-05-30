@@ -13,6 +13,12 @@ namespace UTJ.FrameCapturer
 
         public override void Initialize(object config, string outPath)
         {
+            if (!fcAPI.fcOggIsSupported())
+            {
+                Debug.LogError("Ogg encoder is not available on this platform.");
+                return;
+            }
+
             m_config = (fcAPI.fcOggConfig)config;
             m_config.sampleRate = AudioSettings.outputSampleRate;
             m_config.numChannels = fcAPI.fcGetNumAudioChannels();
@@ -31,7 +37,10 @@ namespace UTJ.FrameCapturer
 
         public override void AddAudioSamples(float[] samples)
         {
-            fcAPI.fcOggAddAudioSamples(m_ctx, samples, samples.Length);
+            if(m_ctx)
+            {
+                fcAPI.fcOggAddAudioSamples(m_ctx, samples, samples.Length);
+            }
         }
     }
 }

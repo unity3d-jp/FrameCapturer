@@ -13,6 +13,12 @@ namespace UTJ.FrameCapturer
 
         public override void Initialize(object config, string outPath)
         {
+            if (!fcAPI.fcMP4OSIsSupported())
+            {
+                Debug.LogError("MP4 encoder is not available on this platform.");
+                return;
+            }
+
             m_config = (fcAPI.fcMP4Config)config;
             m_config.audioSampleRate = AudioSettings.outputSampleRate;
             m_config.audioNumChannels = fcAPI.fcGetNumAudioChannels();
@@ -28,7 +34,7 @@ namespace UTJ.FrameCapturer
 
         public override void AddVideoFrame(byte[] frame, fcAPI.fcPixelFormat format, double timestamp)
         {
-            if (m_config.video)
+            if (m_ctx && m_config.video)
             {
                 fcAPI.fcMP4AddVideoFramePixels(m_ctx, frame, format, timestamp);
             }
@@ -36,7 +42,7 @@ namespace UTJ.FrameCapturer
 
         public override void AddAudioSamples(float[] samples)
         {
-            if (m_config.audio)
+            if (m_ctx && m_config.audio)
             {
                 fcAPI.fcMP4AddAudioSamples(m_ctx, samples, samples.Length);
             }

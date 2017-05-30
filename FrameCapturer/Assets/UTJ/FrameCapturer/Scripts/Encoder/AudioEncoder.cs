@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -26,6 +27,15 @@ namespace UTJ.FrameCapturer
             Ogg,
             Flac,
         }
+        static public Type[] GetAvailableEncoderTypes()
+        {
+            var ret = new List<Type>();
+            if (fcAPI.fcWaveIsSupported()) { ret.Add(Type.Wave); }
+            if (fcAPI.fcOggIsSupported()) { ret.Add(Type.Ogg); }
+            if (fcAPI.fcFlacIsSupported()) { ret.Add(Type.Flac); }
+            return ret.ToArray();
+        }
+
 
         public abstract Type type { get; }
 
