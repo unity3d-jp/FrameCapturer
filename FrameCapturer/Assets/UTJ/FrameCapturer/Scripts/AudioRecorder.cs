@@ -57,6 +57,11 @@ namespace UTJ.FrameCapturer
 
 
         #region impl
+        void LateUpdate()
+        {
+            ++m_frame;
+        }
+
         void OnAudioFilterRead(float[] samples, int channels)
         {
             if (m_recording && m_encoder != null)

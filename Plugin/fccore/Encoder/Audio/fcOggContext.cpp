@@ -65,12 +65,13 @@ fcOggContext::fcOggContext(const fcOggConfig& conf)
     static int s_serial = 0;
     ogg_stream_init(&m_ogstream, ++s_serial);
 
-    ogg_packet og_header, og_header_comm, og_header_code;
-    vorbis_analysis_headerout(&m_vo_dsp, &m_vo_comment, &og_header, &og_header_comm, &og_header_code);
-    ogg_stream_packetin(&m_ogstream, &og_header);
-    ogg_stream_packetin(&m_ogstream, &og_header_comm);
-    ogg_stream_packetin(&m_ogstream, &og_header_code);
     {
+        ogg_packet og_header, og_header_comm, og_header_code;
+        vorbis_analysis_headerout(&m_vo_dsp, &m_vo_comment, &og_header, &og_header_comm, &og_header_code);
+        ogg_stream_packetin(&m_ogstream, &og_header);
+        ogg_stream_packetin(&m_ogstream, &og_header_comm);
+        ogg_stream_packetin(&m_ogstream, &og_header_code);
+
         // make ogg header data
         BufferStream hs(m_header_data);
         for (;;) {
@@ -126,7 +127,7 @@ bool fcOggContext::addSamples(const float *samples, int num_samples)
 
         int block_size = (int)num_samples / num_channels;
         float **buffer = vorbis_analysis_buffer(&m_vo_dsp, block_size);
-        for (int bi = 0; bi < block_size; bi += num_channels) {
+        for (int bi = 0; bi < block_size; ++bi) {
             for (int ci = 0; ci < num_channels; ++ci) {
                 buffer[ci][bi] = samples[bi*num_channels + ci];
             }

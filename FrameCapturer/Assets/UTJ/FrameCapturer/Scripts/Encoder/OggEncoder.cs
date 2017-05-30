@@ -29,7 +29,7 @@ namespace UTJ.FrameCapturer
             m_ctx.Release();
         }
 
-        public override void AddAudioSamples(float[] samples, double timestamp)
+        public override void AddAudioSamples(float[] samples)
         {
             fcAPI.fcOggAddAudioSamples(m_ctx, samples, samples.Length);
         }

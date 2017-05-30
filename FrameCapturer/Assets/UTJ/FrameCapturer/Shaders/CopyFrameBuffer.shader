@@ -160,7 +160,7 @@ Subshader {
     Pass{
         Blend Off Cull Off ZTest Off ZWrite Off
         CGPROGRAM
-        #pragma target 4.0
+        #pragma exclude_renderers d3d9
         #pragma vertex vert
         #pragma fragment copy_gbuffer
         ENDCG

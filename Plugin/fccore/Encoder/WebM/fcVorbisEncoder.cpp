@@ -113,7 +113,7 @@ bool fcVorbisEncoder::encode(fcWebMFrameData& dst, const float *samples, size_t 
     int num_channels = m_conf.num_channels;
     int block_size = (int)num_samples / num_channels;
     float **buffer = vorbis_analysis_buffer(&m_vo_dsp, block_size);
-    for (int bi = 0; bi < block_size; bi += num_channels) {
+    for (int bi = 0; bi < block_size; ++bi) {
         for (int ci = 0; ci < num_channels; ++ci) {
             buffer[ci][bi] = samples[bi*num_channels + ci];
         }
