@@ -411,7 +411,7 @@ namespace UTJ.FrameCapturer
         public enum fcWebMAudioEncoder
         {
             Vorbis,
-            //Opus, // not implemented yet
+            Opus,
         };
 
         [Serializable]

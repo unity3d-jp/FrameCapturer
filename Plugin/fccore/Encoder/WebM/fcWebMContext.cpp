@@ -121,7 +121,7 @@ fcWebMContext::~fcWebMContext()
     m_video_tasks.wait();
     m_audio_tasks.wait();
 
-    if (m_conf.video) {
+    if (m_conf.video && m_conf.audio) {
         writeOut(m_video_last_timestamp);
     }
     m_mkv_frames.clear();
