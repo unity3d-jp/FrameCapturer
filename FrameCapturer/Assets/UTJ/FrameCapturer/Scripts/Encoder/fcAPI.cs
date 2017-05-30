@@ -642,15 +642,16 @@ namespace UTJ.FrameCapturer
         }
 
 #if UNITY_EDITOR
-        public static bool IsRenderingPathDeferred(Camera cam)
-        {
-            if (cam.renderingPath == RenderingPath.DeferredShading ||
-                (cam.renderingPath == RenderingPath.UsePlayerSettings && PlayerSettings.renderingPath == RenderingPath.DeferredShading))
-            {
-                return true;
-            }
-            return false;
-        }
+        //public static bool IsRenderingPathDeferred(Camera cam)
+        //{
+        //    if (cam.renderingPath == RenderingPath.DeferredShading ||
+        //        (cam.renderingPath == RenderingPath.UsePlayerSettings &&
+        //        UnityEditor.Rendering.EditorGraphicsSettings.GetTierSettings(EditorUserBuildSettings.selectedBuildTargetGroup, Graphics.activeTier).renderingPath == RenderingPath.DeferredShading))
+        //    {
+        //        return true;
+        //    }
+        //    return false;
+        //}
 
         public static Shader GetFrameBufferCopyShader()
         {

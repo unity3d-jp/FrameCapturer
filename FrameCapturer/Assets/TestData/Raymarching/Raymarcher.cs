@@ -123,7 +123,7 @@ public class Raymarcher : MonoBehaviour
     void OnPreRender()
     {
         m_material.SetInt("g_frame", Time.frameCount);
-        m_material.SetInt("g_hdr", m_camera.hdr ? 1 : 0);
+        m_material.SetInt("g_hdr", m_camera.allowHDR ? 1 : 0);
         m_material.SetInt("g_scene", m_scene);
         m_material.SetInt("g_enable_adaptive", m_enable_adaptive ? 1 : 0);
         m_material.SetInt("g_enable_temporal", m_enable_temporal ? 1 : 0);
