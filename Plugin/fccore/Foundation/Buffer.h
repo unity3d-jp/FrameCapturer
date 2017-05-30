@@ -218,7 +218,7 @@ class BufferStream : public BinaryStream
 public:
     BufferStream(Buffer &buf) : m_buf(buf), m_wpos(buf.size()), m_rpos(), m_delete_flag(false) {}
     BufferStream(Buffer *buf, bool del) : m_buf(*buf), m_wpos(buf->size()), m_rpos(), m_delete_flag(del) {}
-    ~BufferStream() { if (m_delete_flag) { delete &m_buf; } }
+    ~BufferStream() override { if (m_delete_flag) { delete &m_buf; } }
 
     Buffer& get()               { return m_buf; }
     const Buffer& get() const   { return m_buf; }
@@ -277,7 +277,7 @@ class StdOStream : public BinaryStream
 public:
     StdOStream(std::ostream& os) : m_os(os), m_delete_flag(false) {}
     StdOStream(std::ostream *os, bool del) : m_os(*os), m_delete_flag(del) {}
-    ~StdOStream() { if (m_delete_flag) { delete &m_os; } }
+    ~StdOStream() override { if (m_delete_flag) { delete &m_os; } }
 
     std::ostream& get()             { return m_os; }
     const std::ostream& get() const { return m_os; }
@@ -314,7 +314,7 @@ class StdIStream : public BinaryStream
 public:
     StdIStream(std::istream& is) : m_is(is), m_delete_flag(false) {}
     StdIStream(std::istream *is, bool del) : m_is(*is), m_delete_flag(del) {}
-    ~StdIStream() { if (m_delete_flag) { delete &m_is; } }
+    ~StdIStream() override { if (m_delete_flag) { delete &m_is; } }
 
     std::istream& get()             { return m_is; }
     const std::istream& get() const { return m_is; }
@@ -351,7 +351,7 @@ class StdIOStream : public BinaryStream
 public:
     StdIOStream(std::iostream& ios) : m_ios(ios), m_delete_flag(false) {}
     StdIOStream(std::iostream *ios, bool del) : m_ios(*ios), m_delete_flag(del) {}
-    ~StdIOStream() { if (m_delete_flag) { delete &m_ios; } }
+    ~StdIOStream() override { if (m_delete_flag) { delete &m_ios; } }
 
     std::iostream& get()            { return m_ios; }
     const std::iostream& get() const{ return m_ios; }
@@ -396,13 +396,13 @@ protected:
 
 
 
-typedef size_t (*tellg_t)(void *obj);
-typedef void   (*seekg_t)(void *obj, size_t pos);
-typedef size_t (*read_t)(void *obj, void *dst, size_t len);
+using tellg_t = size_t (*)(void *obj);
+using seekg_t = void   (*)(void *obj, size_t pos);
+using read_t  = size_t (*)(void *obj, void *dst, size_t len);
 
-typedef size_t (*tellp_t)(void *obj);
-typedef void   (*seekp_t)(void *obj, size_t pos);
-typedef size_t (*write_t)(void *obj, const void *data, size_t len);
+using tellp_t = size_t (*)(void *obj);
+using seekp_t = void   (*)(void *obj, size_t pos);
+using write_t = size_t (*)(void *obj, const void *data, size_t len);
 
 struct CustomStreamData
 {

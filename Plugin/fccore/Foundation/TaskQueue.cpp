@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "TaskQueue.h"
 
+//#define fcForceSingleThreaded
+
 TaskQueue::TaskQueue()
 {
 }
@@ -12,6 +14,9 @@ TaskQueue::~TaskQueue()
 
 void TaskQueue::run(const Task& v)
 {
+#ifdef fcForceSingleThreaded
+    v();
+#else
     if (!m_running) {
         m_thread = std::thread([this]() { process(); });
         m_running = true;
@@ -22,10 +27,13 @@ void TaskQueue::run(const Task& v)
         m_tasks.push_back(v);
     }
     m_condition.notify_one();
+#endif
 }
 
 void TaskQueue::wait()
 {
+#ifdef fcForceSingleThreaded
+#else
     if (m_running) {
         m_stop = true;
         m_condition.notify_one();
@@ -33,6 +41,7 @@ void TaskQueue::wait()
         m_running = false;
         m_stop = false;
     }
+#endif
 }
 
 bool TaskQueue::feed()

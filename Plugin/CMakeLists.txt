@@ -211,7 +211,14 @@ IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 ENDIF()
 
 
-IF(NOT FC_ENABLE_OSX_BUNDLE)
+IF(FC_ENABLE_OSX_BUNDLE)
+    # deploy
+    ADD_CUSTOM_TARGET(deploy ALL
+        COMMAND rm -rf ${PLUGINS_DIR}/fccore.bundle
+        COMMAND cp -r fccore.bundle ${PLUGINS_DIR}
+        DEPENDS fccore
+    )
+ELSE()
     # tests
     IF(FC_ENABLE_TESTS)
         FILE(GLOB Tests_CXX_FILES Tests/*.cpp)
