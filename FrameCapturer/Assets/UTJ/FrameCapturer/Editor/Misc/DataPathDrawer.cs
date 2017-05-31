@@ -17,13 +17,27 @@ namespace UTJ.FrameCapturer
             var indent = EditorGUI.indentLevel;
             EditorGUI.indentLevel = 0;
 
+            float buttonWidth = 22;
             float rootWidth = 70;
-            float leafWidth = position.width - rootWidth - 5;
-            Rect rootRect = new Rect(position.x, position.y, rootWidth, position.height);
-            Rect leafRect = new Rect(position.x + rootWidth + 5, position.y, leafWidth, position.height);
+            float leafWidth = position.width - rootWidth - 5 - buttonWidth;
+            var rootRect = new Rect(position.x, position.y, rootWidth, position.height);
+            var leafRect = new Rect(position.x + rootWidth + 5, position.y, leafWidth, position.height);
+            var buttonRect = new Rect(position.x + rootWidth + 5 + leafWidth, position.y, buttonWidth, position.height);
 
-            EditorGUI.PropertyField(rootRect, property.FindPropertyRelative("m_root"), GUIContent.none);
-            EditorGUI.PropertyField(leafRect, property.FindPropertyRelative("m_leaf"), GUIContent.none);
+            var pRoot = property.FindPropertyRelative("m_root");
+            var pLeaf = property.FindPropertyRelative("m_leaf");
+            EditorGUI.PropertyField(rootRect, pRoot, GUIContent.none);
+            EditorGUI.PropertyField(leafRect, pLeaf, GUIContent.none);
+            if (GUI.Button(buttonRect, "..."))
+            {
+                var path = EditorUtility.OpenFolderPanel("Output Directory", ".", "");
+                if (path.Length > 0)
+                {
+                    var newPath = new DataPath(path);
+                    pRoot.intValue = (int)newPath.root;
+                    pLeaf.stringValue = newPath.leaf;
+                }
+            }
 
             EditorGUI.indentLevel = indent;
             EditorGUI.EndProperty();

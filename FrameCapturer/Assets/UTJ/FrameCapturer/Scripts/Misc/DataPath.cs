@@ -56,27 +56,36 @@ namespace UTJ.FrameCapturer
             if (path.Contains(Application.streamingAssetsPath))
             {
                 m_root = Root.StreamingAssets;
-                m_leaf = path.Replace(Application.streamingAssetsPath, "");
+                m_leaf = path.Replace(Application.streamingAssetsPath, "").TrimStart('/');
             }
             else if (path.Contains(Application.dataPath))
             {
                 m_root = Root.DataPath;
-                m_leaf = path.Replace(Application.dataPath, "");
+                m_leaf = path.Replace(Application.dataPath, "").TrimStart('/');
             }
             else if (path.Contains(Application.persistentDataPath))
             {
                 m_root = Root.PersistentData;
-                m_leaf = path.Replace(Application.persistentDataPath, "");
+                m_leaf = path.Replace(Application.persistentDataPath, "").TrimStart('/');
             }
             else if (path.Contains(Application.temporaryCachePath))
             {
                 m_root = Root.TemporaryCache;
-                m_leaf = path.Replace(Application.temporaryCachePath, "");
+                m_leaf = path.Replace(Application.temporaryCachePath, "").TrimStart('/');
             }
             else
             {
-                m_root = Root.Absolute;
-                m_leaf = path;
+                var cur = System.IO.Directory.GetCurrentDirectory().Replace("\\", "/");
+                if (path.Contains(cur))
+                {
+                    m_root = Root.Current;
+                    m_leaf = path.Replace(cur, "").TrimStart('/');
+                }
+                else
+                {
+                    m_root = Root.Absolute;
+                    m_leaf = path;
+                }
             }
         }
 
