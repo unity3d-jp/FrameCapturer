@@ -2,9 +2,10 @@
 # FrameCapturer
 [English](https://translate.google.com/translate?sl=ja&tl=en&u=https://github.com/unity3d-jp/FrameCapturer/) (by Google Translate)
 
-フレームバッファの内容をキャプチャして画像や動画に出力する Unity 用のプラグインです。gif, mp4, exr, png への出力に対応しています。動作環境は Unity 5.2 以上で、OpenGL, D3D9, D3D11 環境下で動作します。現状 Windows  専用です (32bit, 64bit 両対応)。ソースレベルでは Mac や Linux でもビルドできて動くはずですが、未確認です。
+フレームバッファ、およびサウンドをキャプチャして画像や動画に出力する Unity 用のプラグインです。exr, png, gif, webm, mp4, wav, ogg, flac への出力に対応しています。動作環境は Unity 5.2 or later & Windows, Mac, Linux に対応しています。
 
 使用するにはまずこのパッケージをプロジェクトにインポートしてください: [FrameCapturer.unitypackage](https://github.com/unity3d-jp/FrameCapturer/releases/download/20170531/FrameCapturer.unitypackage)   
+(Linux の場合、プラグインはソースからビルドする必要があります。このリポジトリを clone した後 Plugin/ に移動して cmake を用いてビルドしてください)
 
 以下は各コンポーネントの説明になります。
 - [Gif Recorder](#gif-recorder)

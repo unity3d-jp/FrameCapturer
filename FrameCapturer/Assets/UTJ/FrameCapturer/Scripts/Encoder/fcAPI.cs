@@ -160,7 +160,7 @@ namespace UTJ.FrameCapturer
 
         public enum fcPngPixelFormat
         {
-            Adaptive, // select optimal one for input data
+            Auto, // select optimal one for input data
             UInt8,
             UInt16,
         };
@@ -181,7 +181,7 @@ namespace UTJ.FrameCapturer
                 {
                     return new fcPngConfig
                     {
-                        pixelFormat = fcPngPixelFormat.Adaptive,
+                        pixelFormat = fcPngPixelFormat.Auto,
                         maxTasks = 2,
                     };
                 }
@@ -206,7 +206,7 @@ namespace UTJ.FrameCapturer
 
         public enum fcExrPixelFormat
         {
-            Adaptive, // select optimal one for input data
+            Auto, // select optimal one for input data
             Half,
             Float,
             Int,
@@ -238,7 +238,7 @@ namespace UTJ.FrameCapturer
                 {
                     return new fcExrConfig
                     {
-                        pixelFormat = fcExrPixelFormat.Adaptive,
+                        pixelFormat = fcExrPixelFormat.Auto,
                         compression = fcExrCompression.Zip,
                         maxTasks = 2,
                     };
