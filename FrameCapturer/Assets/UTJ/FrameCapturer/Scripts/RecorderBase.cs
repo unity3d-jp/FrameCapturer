@@ -49,6 +49,7 @@ namespace UTJ.FrameCapturer
         [SerializeField] protected int m_endFrame = 100;
         [SerializeField] protected float m_startTime = 0.0f;
         [SerializeField] protected float m_endTime = 10.0f;
+        [SerializeField] bool m_recordOnStart = false;
 
         protected bool m_recording = false;
         protected bool m_aborted = false;
@@ -58,9 +59,6 @@ namespace UTJ.FrameCapturer
         protected int m_frame = 0;
         protected int m_recordedFrames = 0;
         protected int m_recordedSamples = 0;
-#if UNITY_EDITOR
-        [SerializeField] bool m_recordOnStart = false;
-#endif
 
 
         public DataPath outputDir
@@ -144,9 +142,7 @@ namespace UTJ.FrameCapturer
                 else { EndRecording(); }
             }
         }
-#if UNITY_EDITOR
         public bool recordOnStart { set { m_recordOnStart = value; } }
-#endif
 
 
 
@@ -233,13 +229,17 @@ namespace UTJ.FrameCapturer
             m_initialFrame = Time.renderedFrameCount;
             m_initialTime = Time.unscaledTime;
             m_initialRealTime = Time.realtimeSinceStartup;
+
 #if UNITY_EDITOR
-            if (EditorApplication.isPlaying && m_recordOnStart)
+            if (EditorApplication.isPlaying)
+#endif
             {
-                BeginRecording();
+                if (m_recordOnStart)
+                {
+                    BeginRecording();
+                }
             }
             m_recordOnStart = false;
-#endif
         }
 
         protected virtual void OnDisable()
