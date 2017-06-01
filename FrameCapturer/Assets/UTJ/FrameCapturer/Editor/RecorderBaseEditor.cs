@@ -98,7 +98,7 @@ namespace UTJ.FrameCapturer
                     {
                         if (!EditorApplication.isPlaying)
                         {
-                            recorder.recordOnStart = true;
+                            so.FindProperty("m_recordOnStart").boolValue = true;
                             EditorApplication.isPlaying = true;
                         }
                         else

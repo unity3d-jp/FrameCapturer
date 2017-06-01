@@ -230,6 +230,9 @@ namespace UTJ.FrameCapturer
 
         protected virtual void Start()
         {
+            m_initialFrame = Time.renderedFrameCount;
+            m_initialTime = Time.unscaledTime;
+            m_initialRealTime = Time.realtimeSinceStartup;
 #if UNITY_EDITOR
             if (EditorApplication.isPlaying && m_recordOnStart)
             {
@@ -237,9 +240,6 @@ namespace UTJ.FrameCapturer
             }
             m_recordOnStart = false;
 #endif
-            m_initialFrame = Time.renderedFrameCount;
-            m_initialTime = Time.unscaledTime;
-            m_initialRealTime = Time.realtimeSinceStartup;
         }
 
         protected virtual void OnDisable()

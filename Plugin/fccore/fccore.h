@@ -113,14 +113,14 @@ class fcIPngContext;
 
 enum class fcPngPixelFormat
 {
-    Adaptive, // select optimal one for input data
+    Auto, // select optimal one for input data
     UInt8,
     UInt16,
 };
 
 struct fcPngConfig
 {
-    fcPngPixelFormat pixel_format = fcPngPixelFormat::Adaptive;
+    fcPngPixelFormat pixel_format = fcPngPixelFormat::Auto;
     int max_tasks = 4;
 };
 
@@ -138,7 +138,7 @@ class fcIExrContext;
 
 enum class fcExrPixelFormat
 {
-    Adaptive, // select optimal one for input data
+    Auto, // select optimal one for input data
     Half,
     Float,
     Int,
@@ -155,7 +155,7 @@ enum class fcExrCompression
 
 struct fcExrConfig
 {
-    fcExrPixelFormat pixel_format = fcExrPixelFormat::Adaptive;
+    fcExrPixelFormat pixel_format = fcExrPixelFormat::Auto;
     fcExrCompression compression = fcExrCompression::Zip;
     int max_tasks = 4;
 };

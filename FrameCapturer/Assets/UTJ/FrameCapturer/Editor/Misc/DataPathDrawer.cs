@@ -30,7 +30,8 @@ namespace UTJ.FrameCapturer
             EditorGUI.PropertyField(leafRect, pLeaf, GUIContent.none);
             if (GUI.Button(buttonRect, "..."))
             {
-                var path = EditorUtility.OpenFolderPanel("Output Directory", ".", "");
+                var tmp = new DataPath((DataPath.Root)pRoot.intValue, pLeaf.stringValue);
+                var path = EditorUtility.OpenFolderPanel("Select Directory", tmp.GetFullPath(), "");
                 if (path.Length > 0)
                 {
                     var newPath = new DataPath(path);
