@@ -18,32 +18,37 @@ namespace UTJ.FrameCapturer
         public struct FrameBufferConponents
         {
             public bool frameBuffer;
-            public bool GBuffer;
-            public bool albedo;
-            public bool occlusion;
-            public bool specular;
-            public bool smoothness;
-            public bool normal;
-            public bool emission;
-            public bool depth;
-            public bool velocity;
+            public bool fbColor;
+            public bool fbAlpha;
 
-            public static FrameBufferConponents default_value
+            public bool GBuffer;
+            public bool gbAlbedo;
+            public bool gbOcclusion;
+            public bool gbSpecular;
+            public bool gbSmoothness;
+            public bool gbNormal;
+            public bool gbEmission;
+            public bool gbDepth;
+            public bool gbVelocity;
+
+            public static FrameBufferConponents defaultValue
             {
                 get
                 {
                     var ret = new FrameBufferConponents
                     {
                         frameBuffer = true,
+                        fbColor = true,
+                        fbAlpha = true,
                         GBuffer = true,
-                        albedo = true,
-                        occlusion = true,
-                        specular = true,
-                        smoothness = true,
-                        normal = true,
-                        emission = true,
-                        depth = true,
-                        velocity = true,
+                        gbAlbedo = true,
+                        gbOcclusion = true,
+                        gbSpecular = true,
+                        gbSmoothness = true,
+                        gbNormal = true,
+                        gbEmission = true,
+                        gbDepth = true,
+                        gbVelocity = true,
                     };
                     return ret;
                 }
@@ -99,7 +104,7 @@ namespace UTJ.FrameCapturer
 
         #region fields
         [SerializeField] MovieEncoderConfigs m_encoderConfigs = new MovieEncoderConfigs(MovieEncoder.Type.Exr);
-        [SerializeField] FrameBufferConponents m_fbComponents = FrameBufferConponents.default_value;
+        [SerializeField] FrameBufferConponents m_fbComponents = FrameBufferConponents.defaultValue;
 
         [SerializeField] Shader m_shCopy;
         Material m_matCopy;
@@ -108,7 +113,7 @@ namespace UTJ.FrameCapturer
         CommandBuffer m_cbCopyGB;
         CommandBuffer m_cbClearGB;
         CommandBuffer m_cbCopyVelocity;
-        RenderTexture m_rtFB;
+        RenderTexture[] m_rtFB;
         RenderTexture[] m_rtGB;
         List<BufferRecorder> m_recorders = new List<BufferRecorder>();
         #endregion
@@ -161,16 +166,20 @@ namespace UTJ.FrameCapturer
 
             if (m_fbComponents.frameBuffer)
             {
-                m_rtFB = new RenderTexture(captureWidth, captureHeight, 0, RenderTextureFormat.ARGBHalf);
-                m_rtFB.wrapMode = TextureWrapMode.Repeat;
-                m_rtFB.Create();
+                m_rtFB = new RenderTexture[2];
+                for (int i = 0; i < m_rtFB.Length; ++i)
+                {
+                    m_rtFB[i] = new RenderTexture(captureWidth, captureHeight, 0, RenderTextureFormat.ARGBHalf);
+                    m_rtFB[i].filterMode = FilterMode.Point;
+                    m_rtFB[i].Create();
+                }
 
                 int tid = Shader.PropertyToID("_TmpFrameBuffer");
                 m_cbCopyFB = new CommandBuffer();
                 m_cbCopyFB.name = "GBufferRecorder: Copy FrameBuffer";
                 m_cbCopyFB.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Point);
                 m_cbCopyFB.Blit(BuiltinRenderTextureType.CurrentActive, tid);
-                m_cbCopyFB.SetRenderTarget(m_rtFB);
+                m_cbCopyFB.SetRenderTarget(new RenderTargetIdentifier[] { m_rtFB[0], m_rtFB[1] }, m_rtFB[0]);
                 m_cbCopyFB.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 0);
                 m_cbCopyFB.ReleaseTemporaryRT(tid);
                 cam.AddCommandBuffer(CameraEvent.AfterEverything, m_cbCopyFB);
@@ -208,7 +217,7 @@ namespace UTJ.FrameCapturer
                 cam.AddCommandBuffer(CameraEvent.BeforeGBuffer, m_cbClearGB);
                 cam.AddCommandBuffer(CameraEvent.BeforeLighting, m_cbCopyGB);
 
-                if (m_fbComponents.velocity)
+                if (m_fbComponents.gbVelocity)
                 {
                     m_cbCopyVelocity = new CommandBuffer();
                     m_cbCopyVelocity.name = "GBufferRecorder: Copy Velocity";
@@ -220,17 +229,20 @@ namespace UTJ.FrameCapturer
             }
 
             int framerate = m_targetFramerate;
-            if (m_fbComponents.frameBuffer) { m_recorders.Add(new BufferRecorder(m_rtFB, 4, "FrameBuffer", framerate)); }
+            if (m_fbComponents.frameBuffer) {
+                if (m_fbComponents.fbColor) m_recorders.Add(new BufferRecorder(m_rtFB[0], 4, "FrameBuffer", framerate));
+                if (m_fbComponents.fbAlpha) m_recorders.Add(new BufferRecorder(m_rtFB[1], 1, "Alpha", framerate));
+            }
             if (m_fbComponents.GBuffer)
             {
-                if (m_fbComponents.albedo)      { m_recorders.Add(new BufferRecorder(m_rtGB[0], 3, "Albedo", framerate)); }
-                if (m_fbComponents.occlusion)   { m_recorders.Add(new BufferRecorder(m_rtGB[1], 1, "Occlusion", framerate)); }
-                if (m_fbComponents.specular)    { m_recorders.Add(new BufferRecorder(m_rtGB[2], 3, "Specular", framerate)); }
-                if (m_fbComponents.smoothness)  { m_recorders.Add(new BufferRecorder(m_rtGB[3], 1, "Smoothness", framerate)); }
-                if (m_fbComponents.normal)      { m_recorders.Add(new BufferRecorder(m_rtGB[4], 3, "Normal", framerate)); }
-                if (m_fbComponents.emission)    { m_recorders.Add(new BufferRecorder(m_rtGB[5], 3, "Emission", framerate)); }
-                if (m_fbComponents.depth)       { m_recorders.Add(new BufferRecorder(m_rtGB[6], 1, "Depth", framerate)); }
-                if (m_fbComponents.velocity)    { m_recorders.Add(new BufferRecorder(m_rtGB[7], 2, "Velocity", framerate)); }
+                if (m_fbComponents.gbAlbedo)      { m_recorders.Add(new BufferRecorder(m_rtGB[0], 3, "Albedo", framerate)); }
+                if (m_fbComponents.gbOcclusion)   { m_recorders.Add(new BufferRecorder(m_rtGB[1], 1, "Occlusion", framerate)); }
+                if (m_fbComponents.gbSpecular)    { m_recorders.Add(new BufferRecorder(m_rtGB[2], 3, "Specular", framerate)); }
+                if (m_fbComponents.gbSmoothness)  { m_recorders.Add(new BufferRecorder(m_rtGB[3], 1, "Smoothness", framerate)); }
+                if (m_fbComponents.gbNormal)      { m_recorders.Add(new BufferRecorder(m_rtGB[4], 3, "Normal", framerate)); }
+                if (m_fbComponents.gbEmission)    { m_recorders.Add(new BufferRecorder(m_rtGB[5], 3, "Emission", framerate)); }
+                if (m_fbComponents.gbDepth)       { m_recorders.Add(new BufferRecorder(m_rtGB[6], 1, "Depth", framerate)); }
+                if (m_fbComponents.gbVelocity)    { m_recorders.Add(new BufferRecorder(m_rtGB[7], 2, "Velocity", framerate)); }
             }
             foreach (var rec in m_recorders)
             {
@@ -280,7 +292,7 @@ namespace UTJ.FrameCapturer
 
             if (m_rtFB != null)
             {
-                m_rtFB.Release();
+                foreach (var rt in m_rtFB) { rt.Release(); }
                 m_rtFB = null;
             }
             if (m_rtGB != null)

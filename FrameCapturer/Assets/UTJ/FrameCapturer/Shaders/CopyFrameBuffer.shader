@@ -43,13 +43,23 @@ float2 get_texcoord_gb(v2f i)
 }
 
 
-half4 copy_framebuffer(v2f I) : SV_Target
+// framebuffer
+struct framebuffer_out
+{
+    half4 color         : SV_Target0;
+    half4 alpha         : SV_Target1;
+};
+framebuffer_out copy_framebuffer(v2f I) : SV_Target
 {
     float2 t = get_texcoord(I);
 #if !defined(OFFSCREEN) || !defined(UNITY_UV_STARTS_AT_TOP)
     t.y = 1.0 - t.y;
 #endif
-    half4 O = tex2D(_TmpFrameBuffer, t);
+    half4 c = tex2D(_TmpFrameBuffer, t);
+
+    framebuffer_out O;
+    O.color = half4(c.rgb, 1.0);
+    O.alpha = half4(c.aaa, 1.0);
     return O;
 }
 

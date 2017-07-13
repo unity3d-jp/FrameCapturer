@@ -22,19 +22,28 @@ namespace UTJ.FrameCapturer
             {
                 EditorGUI.BeginChangeCheck();
                 var fbc = recorder.fbComponents;
+
                 fbc.frameBuffer = EditorGUILayout.Toggle("Frame Buffer", fbc.frameBuffer);
+                if(fbc.frameBuffer)
+                {
+                    EditorGUI.indentLevel++;
+                    fbc.fbColor = EditorGUILayout.Toggle("Color", fbc.fbColor);
+                    fbc.fbAlpha = EditorGUILayout.Toggle("Alpha", fbc.fbAlpha);
+                    EditorGUI.indentLevel--;
+                }
+
                 fbc.GBuffer = EditorGUILayout.Toggle("GBuffer", fbc.GBuffer);
                 if (fbc.GBuffer)
                 {
                     EditorGUI.indentLevel++;
-                    fbc.albedo      = EditorGUILayout.Toggle("Albedo", fbc.albedo);
-                    fbc.occlusion   = EditorGUILayout.Toggle("Occlusion", fbc.occlusion);
-                    fbc.specular    = EditorGUILayout.Toggle("Specular", fbc.specular);
-                    fbc.smoothness  = EditorGUILayout.Toggle("Smoothness", fbc.smoothness);
-                    fbc.normal      = EditorGUILayout.Toggle("Normal", fbc.normal);
-                    fbc.emission    = EditorGUILayout.Toggle("Emission", fbc.emission);
-                    fbc.depth       = EditorGUILayout.Toggle("Depth", fbc.depth);
-                    fbc.velocity    = EditorGUILayout.Toggle("Velocity", fbc.velocity);
+                    fbc.gbAlbedo    = EditorGUILayout.Toggle("Albedo", fbc.gbAlbedo);
+                    fbc.gbOcclusion = EditorGUILayout.Toggle("Occlusion", fbc.gbOcclusion);
+                    fbc.gbSpecular  = EditorGUILayout.Toggle("Specular", fbc.gbSpecular);
+                    fbc.gbSmoothness= EditorGUILayout.Toggle("Smoothness", fbc.gbSmoothness);
+                    fbc.gbNormal    = EditorGUILayout.Toggle("Normal", fbc.gbNormal);
+                    fbc.gbEmission  = EditorGUILayout.Toggle("Emission", fbc.gbEmission);
+                    fbc.gbDepth     = EditorGUILayout.Toggle("Depth", fbc.gbDepth);
+                    fbc.gbVelocity  = EditorGUILayout.Toggle("Velocity", fbc.gbVelocity);
                     EditorGUI.indentLevel--;
                 }
                 if (EditorGUI.EndChangeCheck())
