@@ -50,7 +50,6 @@ half4 copy_framebuffer(v2f I) : SV_Target
     t.y = 1.0 - t.y;
 #endif
     half4 O = tex2D(_TmpFrameBuffer, t);
-    O.a = 1.0;
     return O;
 }
 
@@ -121,18 +120,11 @@ clear_out clear_gbuffer(v2f I)
 }
 
 // velocity
-struct velocity_out
-{
-    half4 velocity : SV_Target0;
-};
-velocity_out copy_velocity(v2f I)
+half4 copy_velocity(v2f I) : SV_Target
 {
     float2 t = get_texcoord_gb(I);
     half2 velocity = tex2D(_CameraMotionVectorsTexture, t).rg;
-
-    velocity_out O;
-    O.velocity = half4(velocity, 1.0, 1.0);
-    return O;
+    return half4(velocity, 1.0, 1.0);
 }
 
 ENDCG

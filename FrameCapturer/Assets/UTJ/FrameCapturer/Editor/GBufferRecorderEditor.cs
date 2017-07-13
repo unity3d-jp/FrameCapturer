@@ -20,6 +20,7 @@ namespace UTJ.FrameCapturer
             EditorGUILayout.LabelField("Capture Components");
             EditorGUI.indentLevel++;
             {
+                EditorGUI.BeginChangeCheck();
                 var fbc = recorder.fbComponents;
                 fbc.frameBuffer = EditorGUILayout.Toggle("Frame Buffer", fbc.frameBuffer);
                 fbc.GBuffer = EditorGUILayout.Toggle("GBuffer", fbc.GBuffer);
@@ -36,7 +37,11 @@ namespace UTJ.FrameCapturer
                     fbc.velocity    = EditorGUILayout.Toggle("Velocity", fbc.velocity);
                     EditorGUI.indentLevel--;
                 }
-                recorder.fbComponents = fbc;
+                if (EditorGUI.EndChangeCheck())
+                {
+                    recorder.fbComponents = fbc;
+                    EditorUtility.SetDirty(recorder);
+                }
             }
             EditorGUI.indentLevel--;
 
