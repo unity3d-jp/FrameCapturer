@@ -100,16 +100,16 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Master|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">false</ExcludedFromBuild>
-      <DeploymentContent>$(TargetDir)%(Filename).obj;$(TargetDir)%(Filename)_sse2.obj;$(TargetDir)%(Filename)_sse4.obj;$(TargetDir)%(Filename)_avx.obj</DeploymentContent>
+      <DeploymentContent>$(IntDir)%(Filename).obj;$(IntDir)%(Filename)_sse2.obj;$(IntDir)%(Filename)_sse4.obj;$(IntDir)%(Filename)_avx.obj</DeploymentContent>
       <FileType>Document</FileType>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)%(Filename).obj;$(TargetDir)%(Filename)_sse2.obj;$(TargetDir)%(Filename)_sse4.obj;$(TargetDir)%(Filename)_avx.obj</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)%(Filename).obj;$(TargetDir)%(Filename)_sse2.obj;$(TargetDir)%(Filename)_sse4.obj;$(TargetDir)%(Filename)_avx.obj</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Master|x64'">$(TargetDir)%(Filename).obj;$(TargetDir)%(Filename)_sse2.obj;$(TargetDir)%(Filename)_sse4.obj;$(TargetDir)%(Filename)_avx.obj</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">$(TargetDir)%(Filename).obj;$(TargetDir)%(Filename)_sse2.obj;$(TargetDir)%(Filename)_sse4.obj;$(TargetDir)%(Filename)_avx.obj</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">external\ispc %(FullPath) -o $(TargetDir)%(Filename).obj -h $(TargetDir)%(Filename)_ispc.h --target=sse2,sse4,avx --arch=x86 --opt=fast-masked-vload --opt=fast-math --opt=force-aligned-memory</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">external\ispc %(FullPath) -o $(TargetDir)%(Filename).obj -h $(TargetDir)%(Filename)_ispc.h --target=sse2,sse4,avx --arch=x86-64 --opt=fast-masked-vload --opt=fast-math --opt=force-aligned-memory</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Master|x64'">external\ispc %(FullPath) -o $(TargetDir)%(Filename).obj -h $(TargetDir)%(Filename)_ispc.h --target=sse2,sse4,avx --arch=x86-64 --opt=fast-masked-vload --opt=fast-math --opt=force-aligned-memory</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">external\ispc %(FullPath) -o $(TargetDir)%(Filename).obj -h $(TargetDir)%(Filename)_ispc.h --target=sse2,sse4,avx --arch=x86 --opt=fast-masked-vload --opt=fast-math --opt=force-aligned-memory</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename).obj;$(IntDir)%(Filename)_sse2.obj;$(IntDir)%(Filename)_sse4.obj;$(IntDir)%(Filename)_avx.obj</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename).obj;$(IntDir)%(Filename)_sse2.obj;$(IntDir)%(Filename)_sse4.obj;$(IntDir)%(Filename)_avx.obj</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Master|x64'">$(IntDir)%(Filename).obj;$(IntDir)%(Filename)_sse2.obj;$(IntDir)%(Filename)_sse4.obj;$(IntDir)%(Filename)_avx.obj</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">$(IntDir)%(Filename).obj;$(IntDir)%(Filename)_sse2.obj;$(IntDir)%(Filename)_sse4.obj;$(IntDir)%(Filename)_avx.obj</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">external\ispc %(FullPath) -o $(IntDir)%(Filename).obj -h $(IntDir)%(Filename)_ispc.h --target=sse2,sse4,avx --arch=x86 --opt=fast-masked-vload --opt=fast-math --opt=force-aligned-memory</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">external\ispc %(FullPath) -o $(IntDir)%(Filename).obj -h $(IntDir)%(Filename)_ispc.h --target=sse2,sse4,avx --arch=x86-64 --opt=fast-masked-vload --opt=fast-math --opt=force-aligned-memory</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Master|x64'">external\ispc %(FullPath) -o $(IntDir)%(Filename).obj -h $(IntDir)%(Filename)_ispc.h --target=sse2,sse4,avx --arch=x86-64 --opt=fast-masked-vload --opt=fast-math --opt=force-aligned-memory</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">external\ispc %(FullPath) -o $(IntDir)%(Filename).obj -h $(IntDir)%(Filename)_ispc.h --target=sse2,sse4,avx --arch=x86 --opt=fast-masked-vload --opt=fast-math --opt=force-aligned-memory</Command>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">false</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
@@ -156,25 +156,25 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>fccore;external;external\glew;external\OpenEXR;external\libzip;external\libwebm;external\libpng;external\libyuv;external\libvpx;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\win64;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>fccore;external;external\glew;external\OpenEXR;external\libzip;external\libwebm;external\libpng;external\libyuv;external\libvpx;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\win32;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|x64'">
     <IncludePath>fccore;external;external\glew;external\OpenEXR;external\libzip;external\libwebm;external\libpng;external\libyuv;external\libvpx;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\win64;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">
     <IncludePath>fccore;external;external\glew;external\OpenEXR;external\libzip;external\libwebm;external\libpng;external\libyuv;external\libvpx;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>external\libs\win32;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -188,7 +188,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>fcDebug;fcVerboseDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(TargetDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
@@ -207,7 +207,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>fcDebug;fcVerboseDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(TargetDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
@@ -228,7 +228,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
       <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>fcMaster;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>$(TargetDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
@@ -254,7 +254,7 @@ $(SolutionDir)external\PatchLibrary\PatchLibraryProxy64.exe /target:Unity.exe /p
       <AdditionalOptions>/Zo %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>fcMaster;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>$(TargetDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>

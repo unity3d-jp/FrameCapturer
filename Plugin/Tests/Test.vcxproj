@@ -84,25 +84,25 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(SolutionDir)external;$(SolutionDir)external\OpenEXR;$(SolutionDir)fccore;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)external\libs\win64;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(SolutionDir)external;$(SolutionDir)external\OpenEXR;$(SolutionDir)fccore;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)external\libs\win32;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|x64'">
     <IncludePath>$(SolutionDir)external;$(SolutionDir)external\OpenEXR;$(SolutionDir)fccore;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)external\libs\win64;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">
     <IncludePath>$(SolutionDir)external;$(SolutionDir)external\OpenEXR;$(SolutionDir)fccore;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)external\libs\win32;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)_out\$(SolutionName)_$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)_out\$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)_tmp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
