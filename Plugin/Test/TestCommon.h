@@ -10,7 +10,7 @@
 #include <fstream>
 #include <vector>
 #include <thread>
-#include <half.h>
+#include <OpenEXR/half.h>
 #include "../fccore/fccore.h"
 #include "../fccore/Foundation/fcFoundation.h"
 

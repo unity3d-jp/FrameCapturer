@@ -54,7 +54,7 @@ void fcImageFlipY(void *image_, int width, int height, fcPixelFormat fmt)
 
 
 #ifdef fcEnableISPCKernel
-#include "ConvertKernel_ispc.h"
+#include "ConvertKernel.h"
 
 void fcScaleArray(uint8_t *data, size_t size, float scale)  { ispc::ScaleU8(data, (uint32_t)size, scale); }
 void fcScaleArray(uint16_t *data, size_t size, float scale) { ispc::ScaleI16(data, (uint32_t)size, scale); }

@@ -96,24 +96,10 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="fccore\Foundation\ConvertKernel.ispc">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Master|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">false</ExcludedFromBuild>
-      <DeploymentContent>$(IntDir)%(Filename).obj;$(IntDir)%(Filename)_sse2.obj;$(IntDir)%(Filename)_sse4.obj;$(IntDir)%(Filename)_avx.obj</DeploymentContent>
       <FileType>Document</FileType>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename).obj;$(IntDir)%(Filename)_sse2.obj;$(IntDir)%(Filename)_sse4.obj;$(IntDir)%(Filename)_avx.obj</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename).obj;$(IntDir)%(Filename)_sse2.obj;$(IntDir)%(Filename)_sse4.obj;$(IntDir)%(Filename)_avx.obj</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Master|x64'">$(IntDir)%(Filename).obj;$(IntDir)%(Filename)_sse2.obj;$(IntDir)%(Filename)_sse4.obj;$(IntDir)%(Filename)_avx.obj</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">$(IntDir)%(Filename).obj;$(IntDir)%(Filename)_sse2.obj;$(IntDir)%(Filename)_sse4.obj;$(IntDir)%(Filename)_avx.obj</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">external\ispc %(FullPath) -o $(IntDir)%(Filename).obj -h $(IntDir)%(Filename)_ispc.h --target=sse2,sse4,avx --arch=x86 --opt=fast-masked-vload --opt=fast-math --opt=force-aligned-memory</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">external\ispc %(FullPath) -o $(IntDir)%(Filename).obj -h $(IntDir)%(Filename)_ispc.h --target=sse2,sse4,avx --arch=x86-64 --opt=fast-masked-vload --opt=fast-math --opt=force-aligned-memory</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Master|x64'">external\ispc %(FullPath) -o $(IntDir)%(Filename).obj -h $(IntDir)%(Filename)_ispc.h --target=sse2,sse4,avx --arch=x86-64 --opt=fast-masked-vload --opt=fast-math --opt=force-aligned-memory</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">external\ispc %(FullPath) -o $(IntDir)%(Filename).obj -h $(IntDir)%(Filename)_ispc.h --target=sse2,sse4,avx --arch=x86 --opt=fast-masked-vload --opt=fast-math --opt=force-aligned-memory</Command>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Master|Win32'">false</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Master|x64'">false</DeploymentContent>
+      <Command Condition="'$(Platform)'=='Win32'">external\ispc %(FullPath) -o $(IntDir)%(Filename).obj -h $(IntDir)%(Filename).h --target=sse2,sse4,avx --arch=x86 --opt=fast-masked-vload --opt=fast-math --opt=force-aligned-memory</Command>
+      <Command Condition="'$(Platform)'=='x64'">external\ispc %(FullPath) -o $(IntDir)%(Filename).obj -h $(IntDir)%(Filename).h --target=sse2,sse4,avx --arch=x86-64 --opt=fast-masked-vload --opt=fast-math --opt=force-aligned-memory</Command>
+      <Outputs>$(IntDir)%(Filename).obj;$(IntDir)%(Filename)_sse2.obj;$(IntDir)%(Filename)_sse4.obj;$(IntDir)%(Filename)_avx.obj</Outputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

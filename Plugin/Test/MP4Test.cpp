@@ -99,7 +99,7 @@ void MP4TestOSProvidedEncoder(const char *filename)
 
 void MP4Test()
 {
-    if(!fcMP4OSIsSupported) {
+    if(!fcMP4OSIsSupported()) {
         printf("MP4Test: OS-provided mp4 encoder is not available\n");
     }
     else {

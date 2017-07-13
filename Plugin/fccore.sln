@@ -1,15 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fccore", "fccore.vcxproj", "{08361722-5520-47AC-A0C2-31E8A062B73F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{FECF9257-E769-403F-89EC-1767901184CD}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "Tests\Test.vcxproj", "{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{FECF9257-E769-403F-89EC-1767901184CD}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "setup", "setup.vcxproj", "{1C5DE91B-7AE9-4304-9FA1-0DE1ABA8C02D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "Test\Test.vcxproj", "{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,14 +27,6 @@ Global
 		{08361722-5520-47AC-A0C2-31E8A062B73F}.Master|Win32.Build.0 = Master|Win32
 		{08361722-5520-47AC-A0C2-31E8A062B73F}.Master|x64.ActiveCfg = Master|x64
 		{08361722-5520-47AC-A0C2-31E8A062B73F}.Master|x64.Build.0 = Master|x64
-		{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}.Debug|Win32.ActiveCfg = Debug|Win32
-		{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}.Debug|Win32.Build.0 = Debug|Win32
-		{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}.Debug|x64.ActiveCfg = Debug|x64
-		{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}.Debug|x64.Build.0 = Debug|x64
-		{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}.Master|Win32.ActiveCfg = Master|Win32
-		{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}.Master|Win32.Build.0 = Master|Win32
-		{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}.Master|x64.ActiveCfg = Master|x64
-		{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}.Master|x64.Build.0 = Master|x64
 		{1C5DE91B-7AE9-4304-9FA1-0DE1ABA8C02D}.Debug|Win32.ActiveCfg = Debug|Win32
 		{1C5DE91B-7AE9-4304-9FA1-0DE1ABA8C02D}.Debug|Win32.Build.0 = Debug|Win32
 		{1C5DE91B-7AE9-4304-9FA1-0DE1ABA8C02D}.Debug|x64.ActiveCfg = Debug|x64
@@ -43,6 +35,14 @@ Global
 		{1C5DE91B-7AE9-4304-9FA1-0DE1ABA8C02D}.Master|Win32.Build.0 = Master|Win32
 		{1C5DE91B-7AE9-4304-9FA1-0DE1ABA8C02D}.Master|x64.ActiveCfg = Master|x64
 		{1C5DE91B-7AE9-4304-9FA1-0DE1ABA8C02D}.Master|x64.Build.0 = Master|x64
+		{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}.Debug|Win32.Build.0 = Debug|Win32
+		{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}.Debug|x64.ActiveCfg = Debug|x64
+		{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}.Debug|x64.Build.0 = Debug|x64
+		{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}.Master|Win32.ActiveCfg = Master|Win32
+		{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}.Master|Win32.Build.0 = Master|Win32
+		{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}.Master|x64.ActiveCfg = Master|x64
+		{2E766DA9-F367-4363-A7D7-05EE6C11F5D1}.Master|x64.Build.0 = Master|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "fccore.h"
+#include "../fccore.h"
 #include "Misc.h"
 #include "Buffer.h"
 #include "PixelFormat.h"

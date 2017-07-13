@@ -5,13 +5,13 @@
 #include "fcExrContext.h"
 
 #ifdef fcSupportEXR
-#include <ImfRgbaFile.h>
-#include <ImfOutputFile.h>
-#include <ImfInputFile.h>
-#include <ImfChannelList.h>
-#include <ImfStringAttribute.h>
-#include <ImfMatrixAttribute.h>
-#include <ImfArray.h>
+#include <OpenEXR/ImfRgbaFile.h>
+#include <OpenEXR/ImfOutputFile.h>
+#include <OpenEXR/ImfInputFile.h>
+#include <OpenEXR/ImfChannelList.h>
+#include <OpenEXR/ImfStringAttribute.h>
+#include <OpenEXR/ImfMatrixAttribute.h>
+#include <OpenEXR/ImfArray.h>
 
 #if defined(fcWindows)
     #pragma comment(lib, "Half.lib")
