@@ -1,34 +1,25 @@
 
 # FrameCapturer
-[English](https://translate.google.com/translate?sl=ja&tl=en&u=https://github.com/unity3d-jp/FrameCapturer/) (by Google Translate)
+This plugin allow you to capture framebuffer, G-buffer and audio and output to file. Supported file formats are exr, png, gif, webm, mp4, wav, ogg, flac. You may also interested in  [FrameRecorder](https://github.com/Unity-Technologies/GenericFrameRecorder).
 
-フレームバッファ、およびサウンドをキャプチャして画像や動画に出力する Unity 用のプラグインです。exr, png, gif, webm, mp4, wav, ogg, flac への出力に対応しています。動作環境は Unity 5.2 or later & Windows, Mac, Linux に対応しています。
+Supported platforms are Windows and Mac. (Also confirmed to work on Linux, but you need to build plugin from source)
 
-使用するにはまずこのパッケージをプロジェクトにインポートしてください: [FrameCapturer.unitypackage](https://github.com/unity3d-jp/FrameCapturer/releases/download/20170531/FrameCapturer.unitypackage)   
-(Linux の場合、プラグインはソースからビルドする必要があります。このリポジトリを clone した後 Plugin/ に移動して cmake を用いてビルドしてください)
+## Usage
 
----
+1. Import this package to your project: [FrameCapturer.unitypackage](https://github.com/unity3d-jp/FrameCapturer/releases/download/20170531/FrameCapturer.unitypackage)
+2. Add recorder component to camera (Add Component -> UTJ -> FrameCapturer -> * Recorder)
+3. Setup recorder settings and capture
 
-## MovieRecorder
+There are 3 recorder components: MovieRecorder, GBufferRecorder and AudioRecorder.
+- MovieRecorder: capture framebuffer and audio.  
+- GBufferRecorder: capture G-buffer (depth buffer, albedo buffer, normal buffer, etc). This is useful for composite process in movie making. Rendering path must be deferred to use this recorder.  
+- AudioRecorder: just capture audio. This is also useful for movie making.   
 
-<img align="right" src = "https://cloud.githubusercontent.com/assets/1488611/26622197/86f42110-4624-11e7-970b-58f13a85ba6c.png">
+## Limitations
+Currently MP4 recordering is available only on Windows.
 
-出力例:  
+## Example Outputs:  
 ![gif_example1](Screenshots/gif_example1.gif)  
-
-## AudioRecorder
-
-<img align="right" src = "https://cloud.githubusercontent.com/assets/1488611/26622199/87207922-4624-11e7-961c-bc7da891645a.png">
-
-## GBufferRecorder
-deferred shading の際に生成される G-Buffer および motion vector をキャプチャします。
-主にコンポジットに使うことを想定しています。  
-エンコーダの設定など多くの設定は MovieRecorder と共通で、"Capture Component" でキャプチャする G-Buffer のコンポーネントを選べるようになっています。  
-コンポジットの場合主に exr か png のイメージシーケンスを使うことになると思われますが、WebM などの動画としても出力可能です。
-
-<img align="right" src = "https://cloud.githubusercontent.com/assets/1488611/26622198/8719de50-4624-11e7-9989-cbb3b5024979.png">
-
-出力例:  
 ![gif_example1](Screenshots/exr_example1.png)  
 
 
