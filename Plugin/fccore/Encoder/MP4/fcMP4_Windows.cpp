@@ -7,6 +7,7 @@
 #include "fcMP4Context.h"
 
 #include <Windows.h>
+#include <VersionHelpers.h>
 #include <codecapi.h>
 #include <mfapi.h>
 #include <mfidl.h>
@@ -94,6 +95,8 @@ static LazyInstance<MFInitializer> g_MFInitializer;
 
 MFInitializer::MFInitializer()
 {
+    if (!IsWindows7OrGreater()) { return; }
+
     g_MFPlat = ::LoadLibraryA("MFPlat.DLL");
     g_MFReadWrite = ::LoadLibraryA("MFReadWrite.dll");
     if (g_MFPlat && g_MFReadWrite) {
@@ -220,7 +223,6 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
             pVideoOutMediaType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);
             pVideoOutMediaType->SetUINT32(MF_MT_AVG_BITRATE, m_conf.video_target_bitrate);
             pVideoOutMediaType->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);
-            pVideoOutMediaType->SetUINT32(MF_MT_MPEG2_PROFILE, eAVEncH264VProfile_High);
             MFSetAttributeSize(pVideoOutMediaType.Get(), MF_MT_FRAME_SIZE, m_conf.video_width, m_conf.video_height);
             MFSetAttributeRatio(pVideoOutMediaType.Get(), MF_MT_FRAME_RATE, m_conf.video_target_framerate, 1);
             MFSetAttributeRatio(pVideoOutMediaType.Get(), MF_MT_PIXEL_ASPECT_RATIO, 1, 1);
@@ -237,17 +239,24 @@ bool fcMP4ContextWMF::initializeSinkWriter(const char *path)
             ComPtr<ICodecAPI> encoder;
             pSinkWriter->GetServiceForStream(m_mf_video_index, GUID_NULL, IID_PPV_ARGS(&encoder));
             if (encoder) {
-                SetAttributeU32(encoder, CODECAPI_AVEncAdaptiveMode, eAVEncAdaptiveMode_FrameRate);
+                if (IsWindows8OrGreater()) {
+                    pVideoOutMediaType->SetUINT32(MF_MT_MPEG2_PROFILE, eAVEncH264VProfile_High);
+                    SetAttributeU32(encoder, CODECAPI_AVEncAdaptiveMode, eAVEncAdaptiveMode_FrameRate);
 
-                switch (m_conf.video_bitrate_mode) {
-                case fcBitrateMode::CBR:
-                    SetAttributeU32(encoder, CODECAPI_AVEncCommonRateControlMode, eAVEncCommonRateControlMode_CBR);
-                    SetAttributeU32(encoder, CODECAPI_AVEncCommonMeanBitRate, m_conf.video_target_bitrate);
-                    break;
-                case fcBitrateMode::VBR:
-                    SetAttributeU32(encoder, CODECAPI_AVEncCommonRateControlMode, eAVEncCommonRateControlMode_PeakConstrainedVBR);
-                    SetAttributeU32(encoder, CODECAPI_AVEncCommonMaxBitRate, m_conf.video_target_bitrate);
-                    break;
+                    switch (m_conf.video_bitrate_mode) {
+                    case fcBitrateMode::CBR:
+                        SetAttributeU32(encoder, CODECAPI_AVEncCommonRateControlMode, eAVEncCommonRateControlMode_CBR);
+                        SetAttributeU32(encoder, CODECAPI_AVEncCommonMeanBitRate, m_conf.video_target_bitrate);
+                        break;
+                    case fcBitrateMode::VBR:
+                        SetAttributeU32(encoder, CODECAPI_AVEncCommonRateControlMode, eAVEncCommonRateControlMode_PeakConstrainedVBR);
+                        SetAttributeU32(encoder, CODECAPI_AVEncCommonMaxBitRate, m_conf.video_target_bitrate);
+                        break;
+                    }
+                }
+                else {
+                    pVideoOutMediaType->SetUINT32(MF_MT_MPEG2_PROFILE, eAVEncH264VProfile_Main);
+
                 }
             }
 
