@@ -206,6 +206,7 @@ namespace UTJ.FrameCapturer
                     m_cbClearGB.SetRenderTarget(BuiltinRenderTextureType.GBuffer3);
                 }
                 m_cbClearGB.DrawMesh(m_quad, Matrix4x4.identity, m_matCopy, 0, 3);
+                m_matCopy.SetColor("_ClearColor", cam.backgroundColor);
 
                 // copy gbuffer
                 m_cbCopyGB = new CommandBuffer();

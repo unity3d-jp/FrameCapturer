@@ -13,6 +13,7 @@ sampler2D _CameraGBufferTexture3;
 sampler2D_float _CameraDepthTexture;
 sampler2D_half _CameraMotionVectorsTexture;
 sampler2D _TmpRenderTarget;
+float4 _ClearColor;
 
 struct v2f {
     float4 pos : POSITION;
@@ -49,7 +50,7 @@ struct framebuffer_out
     half4 color         : SV_Target0;
     half4 alpha         : SV_Target1;
 };
-framebuffer_out copy_framebuffer(v2f I) : SV_Target
+framebuffer_out copy_framebuffer(v2f I)
 {
     float2 t = get_texcoord(I);
 #if !defined(OFFSCREEN) || !defined(UNITY_UV_STARTS_AT_TOP)
@@ -109,24 +110,10 @@ gbuffer_out copy_gbuffer(v2f I)
 }
 
 
-// clear gbuffer
-struct clear_out
+// clear
+half4 clear(v2f I) : SV_Target
 {
-    half4 gb0   : SV_Target0;
-    half4 gb1   : SV_Target1;
-    half4 gb2   : SV_Target2;
-    half4 gb3   : SV_Target3;
-    float depth : SV_Depth;
-};
-clear_out clear_gbuffer(v2f I)
-{
-    clear_out O;
-    O.gb0.xyzw = 0.0;
-    O.gb1.xyzw = 0.0;
-    O.gb2.xyzw = 0.0;
-    O.gb3.xyzw = 0.0;
-    O.depth = 1.0;
-    return O;
+    return _ClearColor;
 }
 
 // velocity
@@ -173,7 +160,7 @@ Subshader {
         Blend Off Cull Off ZTest Off ZWrite Off
         CGPROGRAM
         #pragma vertex vert
-        #pragma fragment clear_gbuffer
+        #pragma fragment clear
         ENDCG
     }
 
