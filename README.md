@@ -1,12 +1,12 @@
 
 # FrameCapturer
-This plugin allow you to capture framebuffer, G-buffer and audio and output to file. Supported file formats are exr, png, gif, webm, mp4, wav, ogg, flac. You may also interested in  [FrameRecorder](https://github.com/Unity-Technologies/GenericFrameRecorder).
+This plugin allow you to capture framebuffer, G-buffer and audio and output to file. Supported file formats are exr, png, gif, webm, mp4, wav, ogg and flac. You may also interested in  [FrameRecorder](https://github.com/Unity-Technologies/GenericFrameRecorder).
 
 Supported platforms are Windows and Mac. (Also confirmed to work on Linux, but you need to build plugin from source)
 
 ## Usage
 
-1. Import this package to your project: [FrameCapturer.unitypackage](https://github.com/unity3d-jp/FrameCapturer/releases/download/20170531/FrameCapturer.unitypackage)
+1. Import this package to your project: [FrameCapturer.unitypackage](https://github.com/unity3d-jp/FrameCapturer/releases/download/20170715/FrameCapturer.unitypackage)
 2. Add recorder component to camera (Add Component -> UTJ -> FrameCapturer -> * Recorder)
 3. Setup recorder settings and capture
 
