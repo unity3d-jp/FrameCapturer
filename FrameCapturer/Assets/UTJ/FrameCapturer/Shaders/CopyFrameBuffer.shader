@@ -47,8 +47,9 @@ float2 get_texcoord_gb(v2f i)
 // framebuffer
 struct framebuffer_out
 {
-    half4 color         : SV_Target0;
-    half4 alpha         : SV_Target1;
+    half4 color           : SV_Target0;
+    half4 alpha           : SV_Target1;
+    half4 color_and_alpha : SV_Target2;
 };
 framebuffer_out copy_framebuffer(v2f I)
 {
@@ -61,6 +62,7 @@ framebuffer_out copy_framebuffer(v2f I)
     framebuffer_out O;
     O.color = half4(c.rgb, 1.0);
     O.alpha = half4(c.aaa, 1.0);
+    O.color_and_alpha = c.rgba;
     return O;
 }
 

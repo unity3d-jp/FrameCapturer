@@ -27,8 +27,9 @@ namespace UTJ.FrameCapturer
                 if(fbc.frameBuffer)
                 {
                     EditorGUI.indentLevel++;
-                    fbc.fbColor = EditorGUILayout.Toggle("Color", fbc.fbColor);
+                    fbc.fbRGB   = EditorGUILayout.Toggle("RGB", fbc.fbRGB);
                     fbc.fbAlpha = EditorGUILayout.Toggle("Alpha", fbc.fbAlpha);
+                    fbc.fbRGBA  = EditorGUILayout.Toggle("RGBA", fbc.fbRGBA);
                     EditorGUI.indentLevel--;
                 }
 
