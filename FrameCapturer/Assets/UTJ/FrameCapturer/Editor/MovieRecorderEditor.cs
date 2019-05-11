@@ -38,6 +38,10 @@ namespace UTJ.FrameCapturer
 
             CommonConfig();
 
+            if(recorder.supportVideoWithAlpha) {
+                EditorGUILayout.PropertyField(so.FindProperty("m_captureColorComponent"));
+            }
+
             EditorGUILayout.Space();
 
             if (recorder.supportVideo && !recorder.supportAudio)
