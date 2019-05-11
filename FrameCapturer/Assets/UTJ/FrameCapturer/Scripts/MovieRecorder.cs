@@ -20,12 +20,18 @@ namespace UTJ.FrameCapturer
             FrameBuffer,
             RenderTexture,
         }
+        public enum CaptureColorComponent
+        {
+            RGB,
+            RGBA,
+        }
         #endregion
 
 
         #region fields
         [SerializeField] MovieEncoderConfigs m_encoderConfigs = new MovieEncoderConfigs(MovieEncoder.Type.WebM);
         [SerializeField] CaptureTarget m_captureTarget = CaptureTarget.FrameBuffer;
+        [SerializeField] CaptureColorComponent m_captureColorComponent = CaptureColorComponent.RGB;
         [SerializeField] RenderTexture m_targetRT;
         [SerializeField] bool m_captureVideo = true;
         [SerializeField] bool m_captureAudio = true;
@@ -45,6 +51,11 @@ namespace UTJ.FrameCapturer
             get { return m_captureTarget; }
             set { m_captureTarget = value; }
         }
+        public CaptureColorComponent captureColorComponent
+        {
+            get { return m_captureColorComponent; }
+            set { m_captureColorComponent = value; }
+        }
         public RenderTexture targetRT
         {
             get { return m_targetRT; }
@@ -62,6 +73,8 @@ namespace UTJ.FrameCapturer
         }
 
         public bool supportVideo { get { return m_encoderConfigs.supportVideo; } }
+        public bool supportVideoWithAlpha { get { return m_encoderConfigs.supportVideoWithAlpha; } }
+        public bool requiresAlpha { get { return supportVideoWithAlpha && captureColorComponent == CaptureColorComponent.RGBA; } }
         public bool supportAudio { get { return m_encoderConfigs.supportAudio; } }
         public RenderTexture scratchBuffer { get { return m_scratchBuffer; } }
         #endregion
@@ -123,7 +136,7 @@ namespace UTJ.FrameCapturer
 
                 m_encoderConfigs.captureVideo = m_captureVideo;
                 m_encoderConfigs.captureAudio = m_captureAudio;
-                m_encoderConfigs.Setup(m_scratchBuffer.width, m_scratchBuffer.height, 3, targetFramerate);
+                m_encoderConfigs.Setup(m_scratchBuffer.width, m_scratchBuffer.height, requiresAlpha ? 4 : 3, targetFramerate);
                 m_encoder = MovieEncoder.Create(m_encoderConfigs, outPath);
                 if (m_encoder == null || !m_encoder.IsValid())
                 {
@@ -207,7 +220,7 @@ namespace UTJ.FrameCapturer
                     timestamp = 1.0 / m_targetFramerate * m_recordedFrames;
                 }
 
-                fcAPI.fcLock(m_scratchBuffer, TextureFormat.RGB24, (data, fmt) =>
+                fcAPI.fcLock(m_scratchBuffer, requiresAlpha ? TextureFormat.RGBA32 : TextureFormat.RGB24, (data, fmt) =>
                 {
                     m_encoder.AddVideoFrame(data, fmt, timestamp);
                 });

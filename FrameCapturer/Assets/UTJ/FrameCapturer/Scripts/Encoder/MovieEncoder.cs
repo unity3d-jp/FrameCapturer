@@ -33,6 +33,19 @@ namespace UTJ.FrameCapturer
             }
         }
 
+        public bool supportVideoWithAlpha
+        {
+            get {
+                /// @todo Test for other formats
+                return
+                  format == MovieEncoder.Type.Png
+                  // || format == MovieEncoder.Type.Exr
+                  // || format == MovieEncoder.Type.Gif
+                  // || format == MovieEncoder.Type.WebM
+                  ;
+            }
+        }
+
         public bool supportAudio
         {
             get
