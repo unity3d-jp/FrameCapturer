@@ -57,6 +57,22 @@ namespace UTJ.FrameCapturer
             }
         }
 
+        [Serializable]
+        public class FilenamePrefixes
+        {
+            public string fbRGB = "FrameBuffer_RGB";
+            public string fbAlpha = "FrameBuffer_Alpha";
+            public string fbRGBA = "FrameBuffer_RGBA";
+            public string gbAlbedo = "Albedo";
+            public string gbOcclusion = "Occlusion";
+            public string gbSpecular = "Specular";
+            public string gbSmoothness = "Smoothness";
+            public string gbNormal = "Normal";
+            public string gbEmission = "Emission";
+            public string gbDepth = "Depth";
+            public string gbVelocity = "Velocity";
+        }
+
         class BufferRecorder
         {
             RenderTexture m_rt;
@@ -107,6 +123,7 @@ namespace UTJ.FrameCapturer
         #region fields
         [SerializeField] MovieEncoderConfigs m_encoderConfigs = new MovieEncoderConfigs(MovieEncoder.Type.Exr);
         [SerializeField] FrameBufferConponents m_fbComponents = FrameBufferConponents.defaultValue;
+        [SerializeField] FilenamePrefixes m_filenamePrefixes = new FilenamePrefixes();
 
         [SerializeField] Shader m_shCopy;
         Material m_matCopy;
@@ -126,6 +143,12 @@ namespace UTJ.FrameCapturer
         {
             get { return m_fbComponents; }
             set { m_fbComponents = value; }
+        }
+
+        public FilenamePrefixes filenamePrefixes
+        {
+            get { return m_filenamePrefixes; }
+            set { m_filenamePrefixes = value; }
         }
 
         public MovieEncoderConfigs encoderConfigs { get { return m_encoderConfigs; } }
@@ -233,20 +256,20 @@ namespace UTJ.FrameCapturer
 
             int framerate = m_targetFramerate;
             if (m_fbComponents.frameBuffer) {
-                if (m_fbComponents.fbRGB) m_recorders.Add(new BufferRecorder(m_rtFB[0], 4, "FrameBuffer_RGB", framerate));
-                if (m_fbComponents.fbAlpha) m_recorders.Add(new BufferRecorder(m_rtFB[1], 1, "FrameBuffer_Alpha", framerate));
-                if (m_fbComponents.fbRGBA) m_recorders.Add(new BufferRecorder(m_rtFB[2], 4, "FrameBuffer_RGBA", framerate));
+                if (m_fbComponents.fbRGB) m_recorders.Add(new BufferRecorder(m_rtFB[0], 4, m_filenamePrefixes.fbRGB, framerate));
+                if (m_fbComponents.fbAlpha) m_recorders.Add(new BufferRecorder(m_rtFB[1], 1, m_filenamePrefixes.fbAlpha, framerate));
+                if (m_fbComponents.fbRGBA) m_recorders.Add(new BufferRecorder(m_rtFB[2], 4, m_filenamePrefixes.fbRGBA, framerate));
             }
             if (m_fbComponents.GBuffer)
             {
-                if (m_fbComponents.gbAlbedo)      { m_recorders.Add(new BufferRecorder(m_rtGB[0], 3, "Albedo", framerate)); }
-                if (m_fbComponents.gbOcclusion)   { m_recorders.Add(new BufferRecorder(m_rtGB[1], 1, "Occlusion", framerate)); }
-                if (m_fbComponents.gbSpecular)    { m_recorders.Add(new BufferRecorder(m_rtGB[2], 3, "Specular", framerate)); }
-                if (m_fbComponents.gbSmoothness)  { m_recorders.Add(new BufferRecorder(m_rtGB[3], 1, "Smoothness", framerate)); }
-                if (m_fbComponents.gbNormal)      { m_recorders.Add(new BufferRecorder(m_rtGB[4], 3, "Normal", framerate)); }
-                if (m_fbComponents.gbEmission)    { m_recorders.Add(new BufferRecorder(m_rtGB[5], 3, "Emission", framerate)); }
-                if (m_fbComponents.gbDepth)       { m_recorders.Add(new BufferRecorder(m_rtGB[6], 1, "Depth", framerate)); }
-                if (m_fbComponents.gbVelocity)    { m_recorders.Add(new BufferRecorder(m_rtGB[7], 2, "Velocity", framerate)); }
+                if (m_fbComponents.gbAlbedo)      { m_recorders.Add(new BufferRecorder(m_rtGB[0], 3, m_filenamePrefixes.gbAlbedo, framerate)); }
+                if (m_fbComponents.gbOcclusion)   { m_recorders.Add(new BufferRecorder(m_rtGB[1], 1, m_filenamePrefixes.gbOcclusion, framerate)); }
+                if (m_fbComponents.gbSpecular)    { m_recorders.Add(new BufferRecorder(m_rtGB[2], 3, m_filenamePrefixes.gbSpecular, framerate)); }
+                if (m_fbComponents.gbSmoothness)  { m_recorders.Add(new BufferRecorder(m_rtGB[3], 1, m_filenamePrefixes.gbSmoothness, framerate)); }
+                if (m_fbComponents.gbNormal)      { m_recorders.Add(new BufferRecorder(m_rtGB[4], 3, m_filenamePrefixes.gbNormal, framerate)); }
+                if (m_fbComponents.gbEmission)    { m_recorders.Add(new BufferRecorder(m_rtGB[5], 3, m_filenamePrefixes.gbEmission, framerate)); }
+                if (m_fbComponents.gbDepth)       { m_recorders.Add(new BufferRecorder(m_rtGB[6], 1, m_filenamePrefixes.gbDepth, framerate)); }
+                if (m_fbComponents.gbVelocity)    { m_recorders.Add(new BufferRecorder(m_rtGB[7], 2, m_filenamePrefixes.gbVelocity, framerate)); }
             }
             foreach (var rec in m_recorders)
             {
