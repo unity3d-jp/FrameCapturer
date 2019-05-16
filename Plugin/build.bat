@@ -1,3 +1,5 @@
+setlocal
+cd /d "%~dp0"
 call toolchain.bat
 
 msbuild fccore.sln /t:Build /p:Configuration=Master /p:Platform=x64 /m /nologo
