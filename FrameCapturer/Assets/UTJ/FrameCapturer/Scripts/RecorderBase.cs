@@ -209,7 +209,7 @@ namespace UTJ.FrameCapturer
             float wt = (1.0f / m_targetFramerate) * (Time.renderedFrameCount - m_initialFrame);
             while (Time.realtimeSinceStartup - m_initialRealTime < wt)
             {
-                System.Threading.Thread.Yield();
+                System.Threading.Thread.Sleep(1);
             }
         }
 
