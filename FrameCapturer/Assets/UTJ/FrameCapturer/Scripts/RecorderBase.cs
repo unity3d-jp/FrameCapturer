@@ -285,9 +285,12 @@ namespace UTJ.FrameCapturer
                 {
                 }
 
-                if(m_framerateMode == FrameRateMode.Constant && m_fixDeltaTime && m_waitDeltaTime)
+                if (m_recording)
                 {
-                    StartCoroutine(Wait());
+                    if (m_framerateMode == FrameRateMode.Constant && m_fixDeltaTime && m_waitDeltaTime)
+                    {
+                        StartCoroutine(Wait());
+                    }
                 }
             }
         }
